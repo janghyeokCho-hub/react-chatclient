@@ -45,8 +45,3 @@ https://kangax.github.io/compat-table/es2016plus/
  npm run make:ia32              // windows ia32 (32비트) product 빌드
  npm run make:macos             // MacOS product 빌드
 ```
-
-
-
-## chatmobile (Mobile)
-### Installation
