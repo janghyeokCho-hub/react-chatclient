@@ -1,0 +1,375 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>eumtalk</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: 맑은 고딕, Malgun Gothic, sans-serif, dotum, '돋움',
+          Apple-Gothic;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: 100%;
+        color: #000;
+      }
+
+      body {
+        width: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 13px;
+        line-height: 14px;
+        font-family: 맑은 고딕, Malgun Gothic, sans-serif, dotum, '돋움',
+          Apple-Gothic;
+        color: #000;
+        -ms-user-select: none;
+        -moz-user-select: -moz-none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      h1 {
+        font-weight: normal;
+      }
+      #LoginWrap {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+      .LoginBox {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 300px;
+        transform: translate(-50%, -50%);
+      }
+
+      .LoginBox .logo-img {
+        text-align: center;
+        margin: 0 0 30px 0;
+        display: inline-block;
+        width: 100%;
+        height: 100px;
+      }
+
+      .blue .LoginBox .LoginBtn.Type1 {
+        background-color: #12cfee;
+      }
+
+      .LoginBox .LoginBtn.Type1 {
+        color: #fff;
+      }
+      .LoginBox .LoginBtn {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 12px;
+        height: 44px;
+        font-size: 14px;
+        letter-spacing: -0.5px;
+      }
+      button {
+        border: none;
+        cursor: pointer;
+        outline: none;
+        background: none;
+      }
+
+      .LoginBox .LoginBtn.Type2 {
+        border: 1px solid #999999;
+      }
+
+      .LoginInputBox .LoginInput {
+        display: block;
+        width: 100%;
+        position: relative;
+        font-size: 14px;
+        height: auto;
+        padding: 10px 15px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-collapse: collapse;
+      }
+      .TopBar {
+        background-color: #fff;
+        height: 30px;
+        width: 100%;
+        z-index: 990;
+        position: relative;
+        border-bottom: 1px solid #ddd;
+        box-sizing: border-box;
+        padding: 0 0 0 15px;
+      }
+      .topbar-name {
+        color: #444;
+        float: left;
+        line-height: 27px;
+        margin: 0;
+      }
+      .rightCont {
+        float: right;
+      }
+      .rightCont button {
+        display: inline-block;
+        width: 40px;
+        height: 29px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" style="width: 100%; height: 100%; overflow: hidden;">
+      <div class="blue" style="width: 100%; height: 100%;">
+        <div class="TopBar" style="-webkit-app-region: drag;">
+          <div
+            style="
+              position: absolute;
+              top: 0px;
+              width: 100%;
+              height: 3px;
+              -webkit-app-region: no-drag;
+              z-index: 999;
+            "
+          ></div>
+          <div></div>
+          <p class="topbar-name">eumtalk</p>
+          <div class="rightCont">
+            <button
+              id="btnClose"
+              class="close"
+              alt="닫기"
+              title="닫기"
+              style="-webkit-app-region: no-drag;"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="9.193"
+                height="9.192"
+                viewBox="0 0 9.193 9.192"
+              >
+                <g transform="translate(-477.808 -9.904)">
+                  <rect
+                    width="2"
+                    height="11"
+                    transform="translate(477.808 11.318) rotate(-45)"
+                    fill="#53524f"
+                  />
+                  <rect
+                    width="2"
+                    height="11"
+                    transform="translate(485.586 9.904) rotate(45)"
+                    fill="#53524f"
+                  />
+                </g>
+                <script xmlns="" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div style="width: 100%; height: 100%; position: relative;">
+          <div id="LoginWrap">
+            <div class="LoginBox">
+              <h1 class="logo-img">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="202.355"
+                  height="101"
+                  viewBox="0 0 202.355 101"
+                >
+                  <g
+                    id="그룹_452"
+                    data-name="그룹 452"
+                    transform="translate(-77 -39)"
+                  >
+                    <g
+                      id="eum"
+                      transform="translate(34.346 34.024)"
+                      style="isolation: isolate;"
+                    >
+                      <g
+                        id="그룹_439"
+                        data-name="그룹 439"
+                        transform="translate(42.654 35.976)"
+                        style="isolation: isolate;"
+                      >
+                        <path
+                          id="패스_1919"
+                          data-name="패스 1919"
+                          d="M50.265,58.54a12.139,12.139,0,0,0,4.205,6A11.488,11.488,0,0,0,61.548,66.9a14.883,14.883,0,0,0,6.281-1.447,11.2,11.2,0,0,0,4.843-3.8l5.8,3.966a17.727,17.727,0,0,1-7.291,6.056,21.808,21.808,0,0,1-9.634,2.305A18.142,18.142,0,0,1,48.189,68.4,18.334,18.334,0,0,1,42.654,55,18.4,18.4,0,0,1,48.189,41.55a18.732,18.732,0,0,1,26.665,0A18.4,18.4,0,0,1,80.389,55a18.992,18.992,0,0,1-.319,3.484ZM61.548,43.051A11.483,11.483,0,0,0,54.47,45.41a12.124,12.124,0,0,0-4.205,6.055H72.778a12.128,12.128,0,0,0-4.2-6.055A11.412,11.412,0,0,0,61.548,43.051Z"
+                          transform="translate(-42.654 -35.976)"
+                          fill="#325272"
+                        />
+                      </g>
+                      <g
+                        id="그룹_440"
+                        data-name="그룹 440"
+                        transform="translate(79.437 35.976)"
+                        style="isolation: isolate;"
+                      >
+                        <path
+                          id="패스_1920"
+                          data-name="패스 1920"
+                          d="M117.171,35.976V55a18.334,18.334,0,0,1-5.535,13.4,18.731,18.731,0,0,1-26.664,0A18.33,18.33,0,0,1,79.437,55V35.976h7.025V55A11.851,11.851,0,0,0,98.331,66.9a11.344,11.344,0,0,0,8.356-3.483A11.5,11.5,0,0,0,110.146,55V35.976Z"
+                          transform="translate(-79.437 -35.976)"
+                          fill="#325272"
+                        />
+                      </g>
+                      <g
+                        id="그룹_441"
+                        data-name="그룹 441"
+                        transform="translate(116.706 35.976)"
+                        style="isolation: isolate;"
+                      >
+                        <path
+                          id="패스_1921"
+                          data-name="패스 1921"
+                          d="M116.706,73.976V51.089a14.69,14.69,0,0,1,4.364-10.665,14.461,14.461,0,0,1,10.644-4.448,14.236,14.236,0,0,1,11.5,5.413,14.937,14.937,0,0,1,22.141-.965,14.6,14.6,0,0,1,4.418,10.665V73.976h-7.026V51.089a7.769,7.769,0,0,0-2.342-5.68,7.66,7.66,0,0,0-5.641-2.358,8.024,8.024,0,0,0-8.037,8.038V73.976H139.7V51.089a7.769,7.769,0,0,0-2.342-5.68,7.927,7.927,0,0,0-11.283,0,7.766,7.766,0,0,0-2.342,5.68V73.976Z"
+                          transform="translate(-116.706 -35.976)"
+                          fill="#325272"
+                        />
+                      </g>
+                    </g>
+                    <text
+                      id="대화를_잇다_이음톡"
+                      data-name="대화를 잇다, 이음톡"
+                      transform="translate(121 136)"
+                      fill="#888"
+                      font-size="14"
+                      font-family="NotoSansCJKkr-Regular, Noto Sans CJK KR"
+                      letter-spacing="-0.05em"
+                    >
+                      <tspan x="0" y="0">대화를 잇다, 이음톡</tspan>
+                    </text>
+                    <g
+                      id="그룹_450"
+                      data-name="그룹 450"
+                      transform="matrix(0.719, 0.695, -0.695, 0.719, 238.778, 39)"
+                    >
+                      <path
+                        id="패스_2190"
+                        data-name="패스 2190"
+                        d="M1.121,16.225S2.845,23.64.259,29.111,15.11,23.538,22.048,5.85,1.121,16.225,1.121,16.225Z"
+                        transform="translate(31.154 33.761) rotate(9)"
+                        fill="#12cfee"
+                      />
+                      <ellipse
+                        id="타원_369"
+                        data-name="타원 369"
+                        cx="28.204"
+                        cy="28.204"
+                        rx="28.204"
+                        ry="28.204"
+                        transform="translate(0 0)"
+                        fill="#12cfee"
+                      />
+                    </g>
+                    <text
+                      id="talk"
+                      transform="translate(220 87)"
+                      fill="#fff"
+                      font-size="23"
+                      font-family='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'
+                      letter-spacing="-0.019em"
+                    >
+                      <tspan x="0" y="0">talk</tspan>
+                    </text>
+                  </g>
+                  <script xmlns="" />
+                </svg>
+              </h1>
+              <div>
+                <div class="LoginInputBox">
+                  <input
+                    type="text"
+                    placeholder="Please enter domain information"
+                    class="LoginInput"
+                    value=""
+                    id="txtDomain"
+                  />
+                </div>
+                <div style="margin-top: 10px;">
+                  <button type="button" class="LoginBtn Type1" id="btnRegist">
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const electron = require('electron');
+      let { ipcRenderer, remote } = electron;
+
+      window.onload = () => {
+        const closeBtn = document.querySelector('#btnClose');
+        const confirmBtn = document.querySelector('#btnRegist');
+        const txtDomain = document.querySelector('#txtDomain');
+
+        confirmBtn.addEventListener('click', () => {
+          let domain = txtDomain.value;
+          const result = checkDomain(domain);
+          if (result.isURL) {
+            // 공백 제거
+            domain = domain.trim();
+            fetch(`${domain}/restful/na/test`, { method: 'GET', mode: 'cors' })
+              .then(response => {
+                if (response.status == 200) {
+                  const result = ipcRenderer.sendSync(
+                    'req-regist-domain',
+                    domain,
+                  );
+                } else {
+                  remote.dialog.showMessageBox(remote.getCurrentWindow(), {
+                    type: 'info',
+                    title: '실패 / failure',
+                    message:
+                      '올바른 도메인이 아닙니다.\r\nThis is not a valid domain.',
+                  });
+                }
+              })
+              .catch(e => {
+                remote.dialog.showMessageBox(remote.getCurrentWindow(), {
+                  type: 'info',
+                  title: '실패 / failure',
+                  message:
+                    '올바른 도메인이 아닙니다.\r\nThis is not a valid domain.',
+                });
+              });
+          } else {
+            remote.dialog.showMessageBox(remote.getCurrentWindow(), {
+              type: 'info',
+              title: '실패 / failure',
+              message:
+                '올바른 도메인이 아닙니다.\r\nThis is not a valid domain.',
+            });
+          }
+        });
+
+        closeBtn.addEventListener('click', () => {
+          remote.app.quit();
+          remote.app.exit();
+        });
+      };
+
+      const checkDomain = domain => {
+        const regex = /(?:(?:(https?):\/\/|[\s\t\r\n\[\]\`\<\>\"\'])((?:[\w$\-_\.+!*\'\(\),]|%[0-9a-f][0-9a-f])*\:(?:[\w$\-_\.+!*\'\(\),;\?&=]|%[0-9a-f][0-9a-f])+\@)?(?:((?:(?:[a-z0-9\-가-힣]+\.)+[a-z0-9\-]{2,})|(?:[\d]{1,3}\.){3}[\d]{1,3})|localhost)(?:\:([0-9]+))?((?:\/(?:[\w$\-_\.+!*\'\(\),;:@&=ㄱ-ㅎㅏ-ㅣ가-힣]|%[0-9a-f][0-9a-f])+)*)(?:\/([^\s\/\?\.:<>|#]*(?:\.[^\s\/\?:<>|#]+)*))?(\/?[\?;](?:[a-z0-9\-]+(?:=[^\s:&<>]*)?\&)*[a-z0-9\-]+(?:=[^\s:&<>]*)?)?(#[\w\-]+)?)/gim;
+
+        let isURL = false;
+        let result = domain.match(regex);
+        let url = '';
+
+        if (result != null) {
+          url = result[0];
+          isURL = true;
+        }
+
+        return { isURL: isURL, url: url };
+      };
+    </script>
+  </body>
+</html>

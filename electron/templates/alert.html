@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        margin: 0px;
+        padding: 0px;
+        box-sizing: border-box;
+        font-family: 맑은 고딕, Malgun Gothic, sans-serif, dotum, '돋움',
+          Apple-Gothic;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: 100%;
+      }
+      .popup-layer {
+        background: #fff;
+        display: block;
+        width: 300px;
+        height: auto;
+        padding: 25px 20px 10px 20px;
+        border-radius: 5px;
+        box-sizing: border-box;
+        position: relative;
+      }
+      .popup-layer .normaltxt {
+        color: #222;
+        font-size: 13px;
+        line-height: 16px;
+      }
+      .popup-layer .btnbox {
+        display: inline-block;
+        width: 100%;
+        padding-top: 20px;
+      }
+      .popup-layer .btnbox a {
+        font-weight: 700;
+        float: right;
+        margin-left: 10px;
+        padding: 10px 0;
+        box-sizing: border-box;
+      }
+      .colortxt-point {
+        color: #10c1de;
+      }
+      .colortxt-grey {
+        color: #666;
+      }
+      .btnbox a {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapBox" class="popup-layer type01">
+      <p id="message" class="normaltxt"></p>
+      <div class="btnbox">
+        <a id="btnConfirm"><span class="colortxt-point">OK</span></a>
+      </div>
+    </div>
+    <script>
+      const electron = require('electron');
+      let { ipcRenderer, remote } = electron;
+    </script>
+  </body>
+</html>

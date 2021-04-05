@@ -1,0 +1,313 @@
+import React, { useMemo, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Plain, Link, Tag, Sticker, Mention  } from '@C/chat/message/types';
+import {
+  getDictionary,
+  isJSONStr,
+  getSysMsgFormatStr,
+  moveRoom,
+  eumTalkRegularExp,
+  convertEumTalkProtocol,
+} from '@/lib/common';
+import ParamUtil, { encryptText } from '@/lib/util/paramUtil';
+import { evalConnector } from '@/lib/deviceConnector';
+
+const getAttribute = tag => {
+  const attrPattern = new RegExp(
+    /(\S+)=["']?((?:.(?!["']?\s+(?:\S+)=|[>"']))+.)["']?/,
+    'gi',
+  );
+  let attrs = {};
+  const match = tag.match(attrPattern);
+
+  if (match && match.length > 0) {
+    match.forEach(item => {
+      try {
+        const key = item.split('=')[0];
+        let value = decodeURIComponent(item.split('=')[1]);
+
+        if (
+          (value[0] == '"' && value[value.length - 1] == '"') ||
+          (value[0] == "'" && value[value.length - 1] == "'")
+        ) {
+          value = value.substring(1, value.length - 1);
+        }
+
+        attrs[key] = value;
+      } catch (e) {}
+    });
+  }
+
+  return attrs;
+};
+
+const Notice = ({ type, value, title, func }) => {
+  const dispatch = useDispatch();
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const loginId = useSelector(({ login }) => login.id);
+
+  const drawText = useMemo(() => {
+    let procVal = value;
+    let mentionInfo = [];
+    let marking = '';
+
+    if (isJSONStr(value)) {
+      const jsonData = JSON.parse(value);
+      procVal = getSysMsgFormatStr(
+        covi.getDic(jsonData.templateKey),
+        jsonData.datas,
+      );
+    }
+    let procValMsgMessage = procVal;
+    const pattern = new RegExp(/[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/, 'gi');
+
+    if (eumTalkRegularExp.test(procVal)) {
+      const processMsg = convertEumTalkProtocol(procVal);
+      procValMsgMessage = processMsg.message;
+      mentionInfo = processMsg.mentionInfo;
+    }
+    else if(pattern.exec(procVal)){
+      const processMsg = convertEumTalkProtocol(procVal);
+      procValMsgMessage = processMsg.message;
+    }
+
+    const pattern2 = new RegExp(/[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/, 'gi');
+    let returnJSX = [];
+
+    let beforeLastIndex = 0;
+    let match = null;
+
+    while ((match = pattern2.exec(procValMsgMessage)) !== null) {
+      if (match.index > 0 && match.index > beforeLastIndex) {
+        returnJSX.push(
+          <Plain
+            key={returnJSX.length}
+            text={procValMsgMessage.substring(beforeLastIndex, match.index)}
+          ></Plain>,
+        );
+      }
+      var attrs = getAttribute(match[0]);
+      if (match[1] == 'LINK') {
+        returnJSX.push(<Link key={returnJSX.length} text={procValMsgMessage.substring(beforeLastIndex, match.index)} {...attrs}></Link>);
+      } else if (match[1] == 'NEWLINE') {
+        returnJSX.push(<br key={returnJSX.length} />);
+      } 
+      else if (match[1] == 'TAG') {
+        returnJSX.push(
+          <Tag key={returnJSX.length} marking={marking} {...attrs}></Tag>,
+        );
+      } else if (match[1] == 'STICKER') {
+        returnJSX.push(<Sticker key={returnJSX.length} {...attrs}></Sticker>);
+      } else if (match[1] == 'MENTION') {
+        returnJSX.push(
+          <Mention
+            key={returnJSX.length}
+            marking={marking}
+            mentionInfo={mentionInfo}
+            {...attrs}
+          ></Mention>,
+        );
+      }
+      beforeLastIndex = match.index + match[0].length;
+    }
+
+    if (beforeLastIndex < procValMsgMessage.length){
+      returnJSX.push(
+        <Plain
+          key={returnJSX.length}
+          text={procValMsgMessage.substring(beforeLastIndex)}
+        ></Plain>,
+      );
+    }
+  
+    return returnJSX;
+  }, [value]);
+
+  const actionHandler = useCallback(
+    (type, data) => {
+      if (type == 'link') {
+        return async () => {
+          // data object 여부 확인 및 처리
+          let url = '';
+
+          if (typeof data === 'string') {
+            url = data;
+          } else if (typeof data === 'object' && data !== null) {
+            url = data.baseURL;
+            let paramStr = '';
+
+            if (data.params) {
+              for (const [key, value] of Object.entries(data.params)) {
+                let expressionStr = value.param;
+                if (!value.plain) {
+                  const pUtil = new ParamUtil(value.param, userInfo);
+                  expressionStr = pUtil.getURLParam();
+                }
+
+                if (value.enc) {
+                  const { data } = await encryptText(expressionStr);
+
+                  if (data.status === 'SUCCESS') {
+                    expressionStr = data.result;
+                  }
+                }
+
+                paramStr += `${
+                  paramStr.length > 0 ? '&' : ''
+                }${key}=${encodeURIComponent(expressionStr)}`;
+              }
+            }
+
+            if (paramStr.length > 0) {
+              if (url.indexOf('?') > -1) {
+                url = `${url}&${paramStr}`;
+              } else {
+                url = `${url}?${paramStr}`;
+              }
+            }
+          }
+
+          if (DEVICE_TYPE == 'd') {
+            window.openExternalPopup(url);
+          } else {
+            window.open(url, '_blank');
+          }
+        };
+      } else if (type == 'moveChannel') {
+        return () => {
+          moveRoom(data, true, dispatch);
+        };
+      } else if (type == 'remote') {
+        return () => {
+          evalConnector({
+            method: 'removeListener',
+            channel: 'onRemoteAssistance'
+          })
+
+          evalConnector({
+            method: 'send',
+            channel: 'onRemoteAssistance',
+            message: {
+              sessionKey: data.sessionKey,
+              isViewer: 'Y'
+            },
+          });
+        }
+      }
+    },
+    [dispatch, userInfo],
+  );
+
+  const drawFunc = useMemo(() => {
+    if (func) {
+      const handlerFunc = actionHandler(func.type, func.data);
+
+      if (type == 'C') {
+        return (
+          <button
+            type="button"
+            className="system-btn"
+            onClick={e => handlerFunc()}
+          >
+            {covi.getDic(func.name)}
+          </button>
+        );
+      } else {
+        return (
+          <button
+            type="button"
+            className="system-btn"
+            onClick={e => handlerFunc()}
+          >
+            {func.name}
+          </button>
+        );
+      }
+    } else {
+      return <></>;
+    }
+  }, [func]);
+
+  return (
+    <>
+      {(type == 'I' && (
+        <div
+          style={{
+            color: '#000',
+            background: '#fff',
+            display: 'inline-block',
+            lineHeight: '140%',
+            wordBreak: 'break-all',
+            userSelect: 'text',
+            borderRadius: '5px',
+            maxWidth: '400px',
+            border: '1px solid #eee',
+            width: '250px',
+            boxSizing: 'border-box',
+            padding: '20px',
+            textAlign: 'left',
+          }}
+        >
+          <span className="sys-tit">
+            <span style={{ float: 'left' }}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22.469"
+                height="19.05"
+                viewBox="0 0 22.469 19.05"
+              >
+                <g id="그룹_465" transform="translate(3296.9 -3961.1)">
+                  <path
+                    id="빼기_12"
+                    d="M3.5,17.25A2.754,2.754,0,0,1,.75,14.5v-2c0-.086,0-.172.012-.257L6.25,13.994V14.5A2.753,2.753,0,0,1,3.5,17.25Z"
+                    transform="translate(-3291 3962)"
+                    fill="none"
+                    stroke="#444"
+                    strokeWidth="1.8"
+                  />
+                  <rect
+                    id="사각형_1651"
+                    width="5"
+                    height="7"
+                    transform="translate(-3296 3967)"
+                    fill="none"
+                    stroke="#444"
+                    strokeLinejoin="round"
+                    strokeWidth="1.8"
+                  />
+                  <path
+                    id="패스_1934"
+                    d="M0,1,15.67-4V13L0,8Z"
+                    transform="translate(-3291 3966)"
+                    fill="none"
+                    stroke="#444"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.8"
+                  />
+                </g>
+              </svg>
+            </span>
+            <span style={{ float: 'left', marginLeft: '10px' }}>
+              {covi.getDic('AddNotice')}
+            </span>
+          </span>
+          {drawText}
+        </div>
+      )) || (
+        <div className="msgtxt" style={{ color: '#000' }}>
+          <span className="sys-tit">
+            {(title && getDictionary(title)) ||
+              getDictionary(
+                '시스템 알림;System Alarm;System Alarm;System Alarm;System Alarm;System Alarm;System Alarm;System Alarm;System Alarm;',
+              )}
+          </span>
+          {drawText}
+          {drawFunc}
+        </div>
+      )}
+    </>
+  );
+};
+
+export default React.memo(Notice);

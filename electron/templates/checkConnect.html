@@ -1,0 +1,160 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>eumtalk</title>
+    <style>
+      * {
+        -webkit-app-region: drag;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: 맑은 고딕, Malgun Gothic, sans-serif, dotum, '돋움',
+          Apple-Gothic;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: 100%;
+        color: #000;
+        background-color: #fff;
+      }
+
+      body {
+        width: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 13px;
+        line-height: 14px;
+        font-family: 맑은 고딕, Malgun Gothic, sans-serif, dotum, '돋움',
+          Apple-Gothic;
+        color: #000;
+        -ms-user-select: none;
+        -moz-user-select: -moz-none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="width: 100%; height: 100%; overflow: hidden; padding: 10px;">
+      <p>DOMAIN : <span id="domain_info"></span></p>
+      <p>Chat Status : <span id="conn_chat">check...</span></p>
+      <p>Chat Status (App Area) : <span id="conn_chat_app">check...</span></p>
+      <p>Restful Status : <span id="conn_restful">check...</span></p>
+      <p>
+        Restful Status (App Area) : <span id="conn_restful_app">check...</span>
+      </p>
+      <p>Socket Status : <span id="conn_socket">check...</span></p>
+    </div>
+
+    <script>
+      const electron = require('electron');
+      let { ipcRenderer, remote } = electron;
+
+      window.onload = () => {
+        const domainInfo = remote.getGlobal('APP_SETTING').get('domain');
+
+        let connChat = false;
+        let connRestful = false;
+        let connSocket = false;
+
+        if (domainInfo) {
+          document.querySelector('#domain_Info').innerText = domainInfo;
+          const socket = remote.getGlobal('CONN_SOCKET');
+          const socketConnect = socket && socket.connected;
+          document.querySelector('#conn_socket').innerText = socketConnect
+            ? 'connected'
+            : 'disconnected';
+
+          document.querySelector('#conn_socket').style.color = socketConnect
+            ? 'green'
+            : 'red';
+
+          fetch(`${domainInfo}/server/na/test`, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ test: 'test' }),
+          })
+            .then(response => {
+              const domObj = document.querySelector('#conn_chat');
+              if (response.status == 200) {
+                domObj.innerText = 'success';
+                domObj.style.color = 'green';
+              } else {
+                domObj.innerText = 'failure';
+                domObj.style.color = 'red';
+              }
+            })
+            .catch(e => {
+              const domObj = document.querySelector('#conn_chat');
+              domObj.innerText = 'failure';
+              domObj.style.color = 'red';
+            });
+
+          fetch(`${domainInfo}/restful/na/test`, {
+            method: 'GET',
+            mode: 'cors',
+          })
+            .then(response => {
+              const domObj = document.querySelector('#conn_restful');
+              if (response.status == 200) {
+                domObj.innerText = 'success';
+                domObj.style.color = 'green';
+              } else {
+                domObj.innerText = 'failure';
+                domObj.style.color = 'red';
+              }
+            })
+            .catch(e => {
+              const domObj = document.querySelector('#conn_restful');
+              domObj.innerText = 'failure';
+              domObj.style.color = 'red';
+            });
+
+          // app 영역 체크
+          const chatResult = ipcRenderer.sendSync('check-connect', 'chat');
+          const managerResult = ipcRenderer.sendSync(
+            'check-connect',
+            'manager',
+          );
+          const managerDom = document.querySelector('#conn_restful_app');
+          const chatDom = document.querySelector('#conn_chat_app');
+
+          if (chatResult) {
+            chatDom.innerText = 'success';
+            chatDom.style.color = 'green';
+          } else {
+            chatDom.innerText = 'failure';
+            chatDom.style.color = 'red';
+          }
+
+          if (managerResult) {
+            managerDom.innerText = 'success';
+            managerDom.style.color = 'green';
+          } else {
+            managerDom.innerText = 'failure';
+            managerDom.style.color = 'red';
+          }
+        } else {
+          document.querySelector('#domain_Info').innerText =
+            '도메인 정보가 없습니다.';
+          document.querySelector('#domain_Info').style.color = 'red';
+          document.querySelector('#conn_socket').innerText = 'disconnected';
+          document.querySelector('#conn_socket').style.color = 'red';
+          document.querySelector('#conn_chat').innerText = 'failure';
+          document.querySelector('#conn_chat').style.color = 'red';
+          document.querySelector('#conn_restful').innerText = 'failure';
+          document.querySelector('#conn_restful').style.color = 'red';
+          document.querySelector('#conn_chat_app').innerText = 'failure';
+          document.querySelector('#conn_chat_app').style.color = 'red';
+          document.querySelector('#conn_restful_app').innerText = 'failure';
+          document.querySelector('#conn_restful_app').style.color = 'red';
+        }
+      };
+    </script>
+  </body>
+</html>

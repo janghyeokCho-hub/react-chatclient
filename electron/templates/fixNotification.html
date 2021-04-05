@@ -1,0 +1,256 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>eumtalk</title>
+    <style>
+      * {
+        -webkit-app-region: no-drag;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: 맑은 고딕, Malgun Gothic, sans-serif, dotum, '돋움',
+          Apple-Gothic;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: 100%;
+        color: #000;
+      }
+
+      body {
+        width: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 13px;
+        line-height: 14px;
+        font-family: 맑은 고딕, Malgun Gothic, sans-serif, dotum, '돋움',
+          Apple-Gothic;
+        color: #000;
+        -ms-user-select: none;
+        -moz-user-select: -moz-none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      .fixScrollWrap {
+        min-height: 80px;
+        max-height: 260px;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      .fixAlarmWrap {
+        border-radius: 5px;
+        width: 300px;
+        height: 80px;
+        overflow: hidden;
+        background-color: #f6f6f6;
+        padding: 13px 15px;
+        box-sizing: border-box;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .fixAlarmWrap .profile-photo {
+        position: relative;
+        display: inline-block;
+        float: left;
+        width: 52px;
+        height: 52px;
+        margin-right: 10px;
+        border-radius: 30%;
+        box-sizing: border-box;
+        background: #f3f3f3;
+        border: 1px solid #eee;
+      }
+
+      .fixAlarmWrap .profile-photo img {
+        width: 100%;
+        height: 100%;
+        border-radius: 30%;
+        float: left;
+        margin-right: 10px;
+        box-sizing: border-box;
+      }
+
+      .fixAlarmWrap span.name {
+        font-size: 15px;
+        line-height: 22px;
+        color: #222;
+        font-weight: 600;
+        display: inline-block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        max-width: calc(100% - 138px);
+      }
+
+      .fixAlarmWrap span.preview {
+        margin-top: 3px;
+        font-size: 14px;
+        display: block;
+        overflow: hidden !important;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        color: #444;
+        line-height: 22px;
+        min-height: 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="fixScrollWrap">
+      <div id="fixBox" class="fixAlarmWrap">
+        <div class="profile-photo">
+          <img id="fixImg" src="" />
+        </div>
+        <span id="fixTitle" class="name"></span>
+        <span id="fixMessage" class="preview"></span>
+      </div>
+    </div>
+
+    <script>
+      const electron = require('electron');
+      let { ipcRenderer, remote } = electron;
+      let HOST = '';
+      let clickTarget = null;
+      let alarmWin = remote.getCurrentWindow();
+      let hideActionId = null;
+      let hideAnimationId = null;
+
+      window.onload = () => {
+        ipcRenderer.on('show-fixNotification', (event, args) => {
+          showCustomAlarm(args);
+        });
+
+        ipcRenderer.on('hide-fixNotification', (event, args) => {
+          hideCustomAlarm(args);
+        });
+
+        const appConfigs = remote.getGlobal('APP_SETTING');
+        HOST = appConfigs.get('domain');
+
+        const img = document.querySelector('#fixImg');
+        img.onerror = event => {
+          event.target.src = `${HOST}/storage/no_image.jpg`;
+        };
+
+        const box = document.querySelector('#fixBox');
+        box.onclick = () => {
+          clickTarget &&
+            openFocusRoom(clickTarget.roomID, clickTarget.isChannel);
+        };
+      };
+
+      const funcOpacity = (from, to, change, compare, func, toCallback) => {
+        alarmWin.setOpacity(from);
+        if (compare(from, to)) {
+          let next = Math.round((from + change) * 10) / 10;
+          hideAnimationId = setTimeout(() => {
+            func(next, to, change, compare, func, toCallback);
+          }, 50);
+        }
+
+        if (from == to) {
+          if (typeof toCallback === 'function') toCallback(to);
+        }
+      };
+
+      const showCustomAlarm = obj => {
+        // 기존 interval 초기화
+        clearTimeout(hideActionId);
+        clearTimeout(hideAnimationId);
+        try {
+          setAlarmData(obj);
+        } catch (e) {}
+
+        if (!alarmWin.isVisible()) {
+          alarmWin.show();
+          funcOpacity(
+            0,
+            1,
+            0.1,
+            (from, to) => {
+              return from < to;
+            },
+            funcOpacity,
+            to => {},
+          );
+        } else {
+          alarmWin.setOpacity(1);
+        }
+
+        // 5s 후 자동으로 알림 닫힘 - 닫히기전에 도착할경우 5초씩 증가
+        hideActionId = setTimeout(hideCustomAlarm, 5000);
+      };
+
+      const hideCustomAlarm = () => {
+        if (alarmWin.isVisible()) {
+          funcOpacity(
+            1,
+            0,
+            -0.1,
+            (from, to) => {
+              return from > to;
+            },
+            funcOpacity,
+            to => {
+              alarmWin.hide();
+            },
+          );
+        }
+      };
+
+      const setAlarmData = data => {
+        clickTarget = data.clickData;
+
+        const img = document.querySelector('#fixImg');
+        const title = document.querySelector('#fixTitle');
+        const message = document.querySelector('#fixMessage');
+
+        if (data.photoPath) {
+          img.src = `${HOST}/${data.photoPath}`;
+        } else {
+          img.src = data.iconPath;
+        }
+
+        title.innerText = data.title;
+        message.innerText = data.message;
+      };
+
+      const openFocusRoom = (roomID, isChannel) => {
+        const room_win_map = remote.getGlobal('ROOM_WIN_MAP');
+
+        const id = room_win_map[roomID];
+        let focusWin = null;
+
+        if (id) {
+          const findWin = remote.BrowserWindow.fromId(id);
+          if (findWin) {
+            focusWin = findWin;
+          } else {
+            focusWin = remote.BrowserWindow.fromId(1);
+            focusWin.webContents.send('onAlarmClick', { roomID, isChannel });
+          }
+        } else {
+          focusWin = remote.BrowserWindow.fromId(1);
+          focusWin.webContents.send('onAlarmClick', { roomID, isChannel });
+        }
+
+        if (focusWin.isMinimized()) {
+          focusWin.restore();
+        } else if (!focusWin.isVisible()) {
+          focusWin.show();
+        }
+
+        focusWin.flashFrame(false);
+        focusWin.focus();
+      };
+    </script>
+  </body>
+</html>

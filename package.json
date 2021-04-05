@@ -1,0 +1,215 @@
+{
+  "name": "eumtalk",
+  "version": "1.9.2",
+  "main": "build/electron/main.js",
+  "appId": "com.covision.eumtalk",
+  "browserslist": [
+    "last 2 version",
+    "android >= 4.4",
+    "IE >= 10"
+  ],
+  "scripts": {
+    "build": "webpack --config ./webpack.config.prod",
+    "make:macos": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --arch darwin --config ./webpack.config.ele && electron-builder build --macos -c.directories.output=prod/macos",
+    "make:x64": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --arch x64 --config ./webpack.config.ele && electron-builder build --win --x64 -c.directories.output=prod/x64",
+    "make:ia32": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --arch x86 --config ./webpack.config.ele && electron-builder build --win --ia32 -c.directories.output=prod/ia32",
+    "build-dev": "webpack --mode development --config ./webpack.config.dev",
+    "build-ele": "webpack --config ./webpack.config.ele",
+    "start": "webpack-dev-server --mode development --hot --config ./webpack.config.dev",
+    "electron-dev": "electron ./dev-build/electron/main.js dev",
+    "electron-prod": "electron ./build/electron/main.js",
+    "electron-dev-all": "webpack --mode development --target electron-renderer --config ./webpack.config.dev && webpack --mode development --config ./webpack.config.ele && electron ./dev-build/electron/main.js dev",
+    "build-prod-all": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --config ./webpack.config.ele",
+    "postinstall": "electron-builder install-app-deps",
+    "browserslist": "browserslist"
+  },
+  "build": {
+    "productName": "eumtalk",
+    "appId": "com.covision.eumtalk",
+    "asar": true,
+    "files": [
+      "build/electron/templates/**",
+      "build/electron/main.js"
+    ],
+    "extraFiles": [
+      {
+        "from": "resources/icons",
+        "to": "resources/icons",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "build/electron/vcredist",
+        "to": "resources/vcredist",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "build/electron/renderer",
+        "to": "resources/renderer",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./remote",
+        "to": "remote",
+        "filter": [
+          "**/**"
+        ]
+      },
+      {
+        "from": "./remote/RACE",
+        "to": "remote/RACE",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./remote/RACE/068",
+        "to": "remote/RACE/068",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./remote/RACE/105",
+        "to": "remote/RACE/105",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./remote/RACE/105/x86",
+        "to": "remote/RACE/105/x86",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./remote/RACE/105/x64",
+        "to": "remote/RACE/105/x64",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "mac": {
+      "target": [
+        "default"
+      ],
+      "icon": "resources/icons/main_dmg.png"
+    },
+    "dmg": {
+      "title": "eumtalk",
+      "icon": "resources/icons/main_dmg.png"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "resources/icons/main.ico",
+      "certificateFile": "make/cert/www.covision.co.kr.pfx",
+      "certificatePassword": "covicovi"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": false,
+      "language": 1042,
+      "shortcutName": "eumtalk",
+      "createStartMenuShortcut": true,
+      "include": "make/installer.nsh",
+      "license": "make/license.html",
+      "deleteAppDataOnUninstall": true
+    },
+    "directories": {
+      "output": "prod",
+      "app": "."
+    },
+    "publish": {
+      "provider": "generic",
+      "url": ""
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.7.7",
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/preset-react": "^7.0.0",
+    "@loadable/component": "^5.12.0",
+    "axios": "^0.19.0",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-module-resolver": "^3.2.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-polyfill": "^6.26.0",
+    "cheerio": "^1.0.0-rc.3",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.1.1",
+    "crypto-js": "^3.1.9-1",
+    "css-loader": "^3.2.0",
+    "date-fns": "^2.9.0",
+    "electron": "^4.2.12",
+    "electron-builder": "^22.9.1",
+    "electron-devtools-installer": "^3.1.1",
+    "electron-updater": "^4.2.0",
+    "file-loader": "^4.2.0",
+    "hard-source-webpack-plugin": "^0.13.1",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "immer": "^4.0.1",
+    "jimp": "^0.16.1",
+    "js-file-download": "^0.4.8",
+    "mini-css-extract-plugin": "^0.8.0",
+    "mkdirp": "^0.5.1",
+    "node-loader": "^0.6.0",
+    "node-macaddress": "^0.2.4",
+    "qs": "^6.9.0",
+    "react": "^16.9.0",
+    "react-app-polyfill": "^1.0.6",
+    "react-contextmenu": "^2.13.0",
+    "react-custom-scrollbars": "^4.2.1",
+    "react-dom": "^16.9.0",
+    "react-hot-loader": "^4.12.14",
+    "react-redux": "^7.1.1",
+    "react-rnd": "^10.2.4",
+    "react-router-dom": "^5.0.1",
+    "redux": "^4.0.4",
+    "redux-actions": "^2.6.5",
+    "redux-devtools-extension": "^2.13.8",
+    "redux-saga": "^1.1.1",
+    "socket.io": "^2.2.0",
+    "socket.io-client": "^2.3.0",
+    "uuidv4": "^6.2.5",
+    "webpack": "^4.39.3",
+    "webpack-bundle-analyzer": "^3.6.0",
+    "webpack-cli": "^3.3.7",
+    "webpack-dev-server": "^3.8.0",
+    "webpack-manifest-plugin": "^2.2.0",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.4.0",
+    "pg": "^7.4.1"
+  },
+  "description": "",
+  "dependencies": {
+    "@babel/runtime": "^7.7.7",
+    "@journeyapps/sqlcipher": "^4.0.0",
+    "auto-launch": "^5.0.5",
+    "electron-windows-notifications": "file:lib/electron-windows-notifications-3.0.6.tgz",
+    "exif-js": "^2.3.0",
+    "exif2css": "^1.3.0",
+    "image-extensions": "^1.1.0",
+    "knex": "file:lib/knex-0.20.4.tgz",
+    "macaddress": "^0.5.1",
+    "mobile-detect": "^1.4.4",
+    "react-helmet": "^6.1.0",
+    "spectre.css": "^0.5.3",
+    "webpack-node-externals": "^1.7.2"
+  }
+}

@@ -1,0 +1,598 @@
+import React, { useEffect, useState, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { getSubPopData, moveContentView } from '@/lib/deviceConnector';
+import * as messageApi from '@/lib/message';
+import {
+  resizeImage,
+  downloadByToken,
+  convertFileSize,
+  getOrientation,
+ // getOrientationFixedStyles,
+} from '@/lib/fileUpload/coviFile';
+import * as coviFile from '@/lib/fileUpload/coviFile';
+import Config from '@/config/config';
+import { openPopup } from '@/lib/common';
+import { format } from 'date-fns';
+import LoadingWrap from '@COMMON/LoadingWrap';
+
+let isDown = false;
+const FileLayer = () => {
+  const fileData = getSubPopData('preview');
+
+  /*
+  const fileData = {
+    file: {
+      ext: 'png',
+      fileName: 'more-options.png',
+      isImage: 'Y',
+      size: 4858,
+      thumbnail: true,
+      token: '20200529172232358_6a0a0203apys161rg31p7d',
+    },
+    files: [
+      {
+        ext: 'jpg',
+        fileName: '20191212_092710_270.jpg',
+        isImage: 'Y',
+        size: 5826,
+        thumbnail: true,
+        token: '20200529172232190_aaagp5755688014s00f03n',
+      },
+      {
+        ext: 'jpg',
+        fileName: 'profileIcon.jpg',
+        isImage: 'Y',
+        size: 20223,
+        thumbnail: true,
+        token: '20200529172232307_pu0a61gl844rlgj9wj5ulr',
+      },
+      {
+        ext: 'png',
+        fileName: 'more-options.png',
+        isImage: 'Y',
+        size: 4858,
+        thumbnail: true,
+        token: '20200529172232358_6a0a0203apys161rg31p7d',
+      },
+    ],
+    params: null,
+    type: 'L',
+  };
+  */
+
+  const [viewSize, setViewSize] = useState(0);
+  const [previewFile, setPreviewFile] = useState(fileData.file);
+  const [totalFile, setTotalFile] = useState(fileData.files);
+  const [currIndex, setCurrIndex] = useState(0);
+  const [maxIndex, setMaxIndex] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const [infoBox, setInfoBox] = useState(true);
+  
+  const [orientationStyle, setOrientationStyle] = useState({});
+
+  const dispatch = useDispatch();
+
+  const imageBox = useRef();
+  const mainBox = useRef();
+
+  const handleBefore = () => {
+    if (currIndex - 1 >= 0) {
+      const moveIdx = currIndex - 1;
+      if (fileData.type == 'A' && totalFile[moveIdx] == null) {
+        setLoading(true);
+        messageApi
+          .getRoomImages({
+            roomID: fileData.params.roomID,
+            token: previewFile.token,
+            type: 'B',
+            cnt: 10,
+          })
+          .then(({ data }) => {
+            let files = totalFile;
+            let moveFile = null;
+
+            data.images.forEach(item => {
+              const file = {
+                fileName: item.FileName,
+                token: item.FileID,
+                size: item.FileSize,
+                sendDate: item.sendDate,
+                messageId: item.MessageID,
+                ext: item.Extension,
+              };
+
+              files[item.RNUM - 1] = file;
+
+              if (item.RNUM - 1 == moveIdx) {
+                moveFile = file;
+              }
+            });
+
+            files = files.map(item => {
+              return item;
+            });
+
+            setTotalFile(files);
+            setPreviewFile(moveFile);
+            setLoading(false);
+          });
+      }
+
+      setPreviewFile(totalFile[moveIdx]);
+      setCurrIndex(moveIdx);
+      setViewSize(0);
+    }
+  };
+
+  const handleNext = () => {
+    if (currIndex + 1 < maxIndex) {
+      const moveIdx = currIndex + 1;
+      if (fileData.type == 'A' && totalFile[moveIdx] == null) {
+        setLoading(true);
+        messageApi
+          .getRoomImages({
+            roomID: fileData.params.roomID,
+            token: previewFile.token,
+            type: 'N',
+            cnt: 10,
+          })
+          .then(({ data }) => {
+            let files = totalFile;
+            let moveFile = null;
+
+            data.images.forEach(item => {
+              const file = {
+                fileName: item.FileName,
+                token: item.FileID,
+                size: item.FileSize,
+                sendDate: item.sendDate,
+                messageId: item.MessageID,
+                ext: item.Extension,
+              };
+
+              files[item.RNUM - 1] = file;
+
+              if (item.RNUM - 1 == moveIdx) {
+                moveFile = file;
+              }
+            });
+
+            files = files.map(item => item);
+
+            setTotalFile(files);
+            setPreviewFile(moveFile);
+            setLoading(false);
+          });
+      }
+      setPreviewFile(totalFile[moveIdx]);
+      setCurrIndex(moveIdx);
+      setViewSize(0);
+    }
+  };
+
+  const handleSave = () => {
+    const download = downloadByToken(
+      previewFile.token,
+      previewFile.fileName,
+      data => {
+        if (data.result != 'SUCCESS') {
+          openPopup(
+            {
+              type: 'Alert',
+              message: data.message,
+            },
+            dispatch,
+          );
+        } else {
+          openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic('Msg_Save'),
+            },
+            dispatch,
+          );
+        }
+      },
+    );
+  };
+
+  const handleInfo = () => {
+    messageApi.getFileInfo({ fileId: previewFile.token }).then(({ data }) => {
+      if (data.status == 'SUCCESS') {
+        openPopup(
+          {
+            type: 'Alert',
+            message: `<ul className="menulist"><li>${covi.getDic(
+              'FileName',
+            )} : ${data.result.fileName}</li><li>${covi.getDic(
+              'FileSize',
+            )} : ${convertFileSize(data.result.fileSize)}</li><li>${covi.getDic(
+              'ReceiveDate',
+            )} : ${format(
+              new Date(data.result.sendDate),
+              'yyyy.MM.dd HH:mm:ss',
+            )}</li>`,
+          },
+          dispatch,
+        );
+      }
+    });
+  };
+
+  const handleMoveContent = () => {
+    messageApi.getFileInfo({ fileId: previewFile.token }).then(({ data }) => {
+      if (data.status == 'SUCCESS') {
+        moveContentView(data.result.roomID, {
+          moveId: data.result.messageID,
+          roomId: data.result.roomID,
+          isChannel: data.result.roomType == 'C',
+        });
+      }
+    });
+  };
+
+  useEffect(() => {
+    const firstLoad = async () => {
+      if (fileData.type == 'L' && fileData.files) {
+        let findIndex = -1;
+        totalFile.forEach((item, index) => {
+          if (item.token == previewFile.token) {
+            findIndex = index;
+            return false;
+          }
+        });
+
+        if (findIndex > -1) {
+          setCurrIndex(findIndex);
+        }
+
+        setMaxIndex(totalFile.length);
+      } else if (fileData.type == 'A') {
+        // 파일 관련 정보 load 및 state 세팅
+
+        const response = await messageApi.getRoomImages({
+          roomID: fileData.params.roomID,
+          token: previewFile.token,
+          type: 'E',
+          cnt: 0,
+        });
+
+        const data = response.data;
+        // 전체 파일 기준 현재 index 조회 ( RoomID, UserCode, FileToken 정보 필요)
+
+        // total, current, currentObj 정보가 조회되면 state 변경
+        const total = data.cntInfo.maxCnt;
+        const curr = data.cntInfo.rowNum - 1;
+        let files = new Array(total);
+        files.fill(null); // null 초기화
+
+        files[curr] = fileData.file;
+
+        setCurrIndex(curr);
+        setMaxIndex(total);
+        setTotalFile(files);
+        setViewSize(0);
+      }
+    };
+    /* 코드 중복.
+    // 차후 renderer - main 통신으로 변경 필요
+    if (previewFile != null) {
+      messageApi
+        .getOriginalImage({
+          token: previewFile.token,
+        })
+        .then(response => {
+          const data = Buffer.from(response.data, 'binary').toString('base64');
+
+          const image = new Image();
+          image.src = `data:image/png;base64,${data}`;
+          image.onload = () => {
+            const imgBox = imageBox.current;
+            try {
+              // hieght에 따른 width 비율계산 필요
+              const resize = resizeImage(image.width, image.height, 650, 720);
+
+              imgBox.width = resize.resizeWidth;
+              imgBox.height = resize.resizeHeight;
+              imgBox.setAttribute('data-width', resize.resizeWidth);
+              imgBox.setAttribute('data-height', resize.resizeHeight);
+              imgBox.src = image.src;
+            } catch (e) {}
+          };
+        })
+        .catch(() => {
+          const imgBox = imageBox.current;
+          imgBox.src = `${Config.ServerURL.HOST}/storage/no_image.jpg`;
+          imgBox.width = 300;
+          imgBox.height = 300;
+        });
+    } else {
+      const imgBox = imageBox.current;
+      imgBox.src = `${Config.ServerURL.HOST}/storage/no_image.jpg`;
+      imgBox.width = 300;
+      imgBox.height = 300;
+    }
+*/
+    firstLoad();
+
+    console.log('monted');
+
+    window.onmousewheel = event => {
+      if (event.ctrlKey == true) {
+        event.preventDefault();
+
+        if (event.wheelDelta > 0) {
+          handleViewSize(1);
+        } else {
+          handleViewSize(-1);
+        }
+      }
+    };
+
+    window.onresize = event => {
+      handleViewCenter();
+    };
+
+    imageBox.current.ondragstart = event => {
+      event.preventDefault();
+    };
+
+    imageBox.current.onmousedown = event => {
+      isDown = true;
+    };
+
+    imageBox.current.onmousemove = event => {
+      if (isDown) {
+        const {
+          offsetHeight: parentHeight,
+          offsetWidth: parentWidth,
+        } = event.target.offsetParent;
+        const {
+          height: height,
+          width: width,
+          offsetTop: top,
+          offsetLeft: left,
+        } = event.target;
+
+        if (parentHeight < height || parentWidth < width) {
+          const moveTop = top + event.movementY;
+          const moveLeft = left + event.movementX;
+
+          if (moveTop < 0 && moveTop > parentHeight - height) {
+            event.target.style.top = `${moveTop}px`;
+          }
+
+          if (moveLeft < 0 && moveLeft > parentWidth - width) {
+            event.target.style.left = `${moveLeft}px`;
+          }
+        }
+      }
+    };
+
+    imageBox.current.onmouseup = event => {
+      isDown = false;
+    };
+
+    return () => {
+      window.onresize = null;
+      window.onmousewheel = null;
+      imageBox.current.onmousedown = null;
+      imageBox.current.onmouseup = null;
+      imageBox.current.onmousemove = null;
+      imageBox.current.ondragstart = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (previewFile != null) {
+      messageApi
+        .getOriginalImage({
+          token: previewFile.token,
+        })
+        .then(async(response) => {
+          console.log("response!!");
+          const data = Buffer.from(response.data, 'binary').toString('base64');
+          const image = new Image();
+          image.src = `data:image/png;base64,${data}`;
+          image.onload = async () => {
+            const imgBox = imageBox.current;
+            try {
+              const fileCtrl = coviFile.getInstance();
+              let orientation = await  getOrientation(image);
+              const resize = resizeImage(image.width, image.height, 650, 650);
+              const rotatedImage = fileCtrl.makeThumb(image, resize.resizeWidth * 3, resize.resizeHeight * 3,orientation);
+              imgBox.setAttribute('data-width', rotatedImage.width / 3);
+              imgBox.setAttribute('data-height', rotatedImage.height / 3);
+              imgBox.width =rotatedImage.width / 3;
+              imgBox.height = rotatedImage.height / 3;
+              imgBox.src = rotatedImage.data;
+              
+              /*
+              // 미리보기 성능 이슈로 css rotate로 변경 필요
+              // css로  rotate시 position 트러짐. top margin 수정 필요.  
+              let styles = await getOrientationFixedStyles(image);     
+              setOrientationStyle(styles);
+              const resize = resizeImage(image.width, image.height, 650, 650);
+              imgBox.setAttribute('data-width', resize.resizeWidth);
+              imgBox.setAttribute('data-height', resize.resizeHeight);
+              imgBox.width = resize.resizeWidth;
+              imgBox.height = resize.resizeHeight;
+              imgBox.src = image.src;
+              */
+              handleViewCenter();
+            } catch (e) {}
+          };
+        })
+        .catch(() => {
+          const imgBox = imageBox.current;
+          imgBox.src = `${Config.ServerURL.HOST}/storage/no_image.jpg`;
+          imgBox.width = 300;
+          imgBox.height = 300;
+
+          handleViewCenter();
+        });
+    } else {
+      const imgBox = imageBox.current;
+      imgBox.src = `${Config.ServerURL.HOST}/storage/no_image.jpg`;
+      imgBox.width = 300;
+      imgBox.height = 300;
+
+      handleViewCenter();
+    }
+  }, [previewFile]);
+
+  const handleViewSize = change => {
+    const changeSize = viewSize + change;
+    const box = imageBox.current;
+    try {
+      const aWidth = parseInt(box.getAttribute('data-width'));
+      const aHeight = parseInt(box.getAttribute('data-height'));
+
+      if (aWidth && aHeight) {
+        if (changeSize >= 0 && changeSize <= 10) {
+          // 20%씩 증가 및 감소
+          const incWidth = Math.floor(aWidth * 0.3) * change;
+          const incHeight = Math.floor(aHeight * 0.3) * change;
+
+          box.width = box.width + incWidth;
+          box.height = box.height + incHeight;
+
+          setViewSize(changeSize);
+        }
+      }
+
+      handleViewCenter();
+    } catch (e) {
+      console.dir(e);
+    }
+  };
+
+  const handleViewCenter = () => {
+    const box = imageBox.current;
+    try {
+      const {
+        offsetHeight: parentHeight,
+        offsetWidth: parentWidth,
+      } = box.offsetParent;
+      const { height: height, width: width } = box;
+
+      box.style.top = `${Math.floor(parentHeight / 2 - height / 2)}px`;
+      box.style.left = `${Math.floor(parentWidth / 2 - width / 2)}px`;
+    } catch (e) {
+      console.dir(e);
+    }
+  };
+
+  /**
+   * 2020.12.28
+   * 휠스크롤 줌인/줌아웃 구현
+   * Notes:
+   *  1. 추후 성능이슈 발생시 throttle 적용 예정
+   * @param {*} e 
+   */
+  const handleWheelScroll = (e) => {
+
+    /**
+     * e.deltaY
+     * wheel-up => negative
+     * wheel-down => positive
+     */
+    const direction = e.deltaY;
+    if (direction > 0) {
+      // zoom-out when wheel-down
+      handleViewSize(-1);
+    } else {
+      // zoom-in when wheel-up
+      handleViewSize(1);
+    }
+  };
+
+  return (
+    <div className="wrap" style={{ width: '100%', height: '100%' }}>
+      <div
+        ref={mainBox}
+        onMouseOver={e => {
+          setInfoBox(true);
+        }}
+        onMouseOut={e => {
+          setInfoBox(false);
+        }}
+        onWheel={handleWheelScroll}
+        className="image-viewer"
+      >
+        <div className="imgbox">
+          {loading && <LoadingWrap></LoadingWrap>}
+          <img
+            ref={imageBox}
+            style={{ position: 'absolute', display: 'block', ...orientationStyle}}
+            src={`${Config.ServerURL.HOST}/storage/no_image.jpg`}
+            width={200}
+            height={200}
+          ></img>
+        </div>
+        {(fileData.type == 'L' || fileData.type == 'A') && (
+          <>
+            <span className="image-view-number">{`(${
+              currIndex + 1
+            } / ${maxIndex})`}</span>
+
+            <button
+              className="prev"
+              onClick={handleBefore}
+              type="button"
+              disabled={loading || currIndex - 1 < 0}
+            ></button>
+            <button
+              className="next"
+              onClick={handleNext}
+              type="button"
+              disabled={loading || currIndex + 1 >= maxIndex}
+            ></button>
+          </>
+        )}
+        <div className="image-view-control">
+          <div className="left-box">
+            <button
+              type="button"
+              className="zoomin"
+              onClick={e => handleViewSize(1)}
+              disabled={loading}
+              title={covi.getDic('ZoomIn')}
+            ></button>
+            <button
+              type="button"
+              className="zoomout"
+              onClick={e => handleViewSize(-1)}
+              disabled={loading}
+              title={covi.getDic('ZoomOut')}
+            ></button>
+            <button
+              type="button"
+              className="download"
+              onClick={handleSave}
+              disabled={loading}
+              title={covi.getDic('Save')}
+            ></button>
+            <button
+              type="button"
+              className="info"
+              onClick={handleInfo}
+              disabled={loading}
+              title={covi.getDic('Detail')}
+            ></button>
+            <button
+              type="button"
+              className="chat"
+              onClick={handleMoveContent}
+              disabled={loading}
+              title={covi.getDic('ShowChat')}
+            ></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default FileLayer;

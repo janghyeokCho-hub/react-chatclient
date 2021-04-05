@@ -1,0 +1,214 @@
+import React, { useCallback, useMemo, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import ProfileBox from '@COMMON/ProfileBox';
+import { openChatRoomView } from '@/lib/roomUtil';
+import { format } from 'date-fns';
+// import { modifyUserInfo } from '@/lib/setting';
+
+import { addFavorite, deleteFavorite } from '@/lib/contactUtil';
+
+import {
+  deleteLayer,
+  clearLayer,
+  getJobInfo,
+  getDictionary,
+} from '@/lib/common';
+import useTyping from '@/hooks/useTyping';
+
+// const dispatch = useDispatch();
+
+const ProfilePopup = ({ userInfo }) => {
+  const { viewType, rooms, selectId, myInfo, contact } = useSelector(
+    ({ room, login, contact }) => ({
+      viewType: room.viewType,
+      rooms: room.rooms,
+      selectId: room.selectId,
+      myInfo: login.userInfo,
+      contact: contact.contacts,
+    }),
+  );
+
+  const [isFavorite, setIsFavorite] = useState(userInfo.isFavorite);
+  const { confirm } = useTyping();
+  const dispatch = useDispatch();
+
+  const getAbsenceInfo = useMemo(() => {
+    try {
+      let absenceInfo = userInfo.absenceInfo;
+      if (typeof userInfo.absenceInfo !== 'object') {
+        try {
+          absenceInfo = JSON.parse(userInfo.absenceInfo);
+        } catch (e) {
+          absenceInfo = null;
+        }
+      }
+
+      return (
+        <>
+          <span className="team">{covi.getDic(`Ab_${absenceInfo.code}`)}</span>
+          <span className="team">{`${format(
+            absenceInfo.startDate,
+            `MM. dd`,
+          )} ~ ${format(absenceInfo.endDate, `MM. dd`)}`}</span>
+        </>
+      );
+    } catch (e) {
+      return <></>;
+    }
+  }, [userInfo]);
+
+  const handleClose = useCallback(() => {
+    deleteLayer(dispatch);
+  }, []);
+
+  const handleFavorit = () => {
+    if (userInfo.isFavorite === 'Y') {
+      deleteFavorite(dispatch, userInfo.id);
+      setIsFavorite('N');
+      userInfo.isFavorite = 'N';
+    } else if (userInfo.isFavorite === 'N') {
+      // 다른 연락처에 있는지 없는지 확인
+      if (contact[2].sub && contact[2].sub.length > 0) {
+        let flag = false;
+        contact[2].sub.map(data => {
+          if (userInfo.id == data.id) {
+            // 만약 다른 연락처에 사용자가 있다면....
+            addFavorite(dispatch, userInfo, contact[2].folderType);
+            flag = true;
+          }
+        });
+        if (!flag) {
+          addFavorite(dispatch, userInfo, '');
+        }
+      } else {
+        addFavorite(dispatch, userInfo, '');
+      }
+      setIsFavorite('Y');
+      userInfo.isFavorite = 'Y';
+    }
+  };
+
+  return (
+    <div
+      className="cover_profile type2"
+      style={{
+        width: '100%',
+      }}
+    >
+      <div className="innerbox">
+        <div className="profileheader">
+          <a onClick={handleClose} className="closebtn"></a>
+          <a
+            onClick={handleFavorit}
+            className={['favoritebtn', isFavorite == 'Y' && 'active'].join(' ')}
+            style={{ cursor: 'default' }}
+          ></a>
+        </div>
+        <div className="profile-con-box">
+          <div className="pro-photobox">
+            <ProfileBox
+              userId={userInfo.id}
+              img={userInfo.photoPath}
+              userName={userInfo.name}
+              presence={userInfo.presence}
+              isInherit={false}
+              handleClick={false}
+            />
+            <div className="txtbox">
+              <span className="name" style={{
+                    wordBreak: 'break-all',
+                    lineHeight: '1.0'
+              }}>
+                {getJobInfo(userInfo)}
+                {userInfo.isMobile === 'Y' && (
+                  <span style={{ padding: '0px 5px' }}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="15"
+                      viewBox="0 0 7 10"
+                    >
+                      <g transform="translate(-185 -231)">
+                        <rect
+                          width="7"
+                          height="10"
+                          transform="translate(185 231)"
+                          fill="#4f5050"
+                        ></rect>
+                        <rect
+                          width="5"
+                          height="6"
+                          transform="translate(186 232)"
+                          fill="#fff"
+                        ></rect>
+                        <circle
+                          cx="0.5"
+                          cy="0.5"
+                          r="0.5"
+                          transform="translate(188 239)"
+                          fill="#fff"
+                        ></circle>
+                      </g>
+                    </svg>
+                  </span>
+                )}
+              </span>
+              <span className="team" style={{
+                    wordBreak: 'break-all',
+                    lineHeight: '1.0'
+              }}>{getDictionary(userInfo.dept)}</span>
+              {userInfo.absenceInfo && getAbsenceInfo}
+            </div>
+          </div>
+
+          <div className="pro-infobox">
+            <dl>
+              <dt>{covi.getDic('Mobile')}</dt>
+              <dd>{userInfo.phoneNumber}</dd>
+            </dl>
+            <dl>
+              <dt>{covi.getDic('Phone')}</dt>
+              <dd>{userInfo.companyNumber}</dd>
+            </dl>
+            <dl>
+              <dt>{covi.getDic('Email')}</dt>
+              <dd>{userInfo.mailAddress}</dd>
+            </dl>
+            <dl>
+              <dt>{covi.getDic('Work')}</dt>
+              <dd>
+                <a>{userInfo.work}</a>
+              </dd>
+            </dl>
+          </div>
+        </div>
+        <div className="profile-link-btn">
+          {userInfo.id != myInfo.id && (
+            <ul>
+              <li className="link-btn-chat">
+                <a
+                  onClick={() => {
+                    const openChatRoomArgs = [
+                      dispatch,
+                      viewType,
+                      rooms,
+                      selectId,
+                      userInfo,
+                      myInfo
+                    ];
+                    confirm(dispatch, openChatRoomView, openChatRoomArgs);
+                    clearLayer(dispatch);
+                  }}
+                >
+                  <span>{covi.getDic('StartChat')}</span>
+                </a>
+              </li>
+            </ul>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProfilePopup;
