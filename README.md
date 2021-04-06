@@ -1,6 +1,15 @@
 # chatclient
 ## chatclient (PC)
 PC앱의 경우 react + electron을 기반으로 제작됨.
++ 작업 Process
+
+  1. 이슈 등록하기
+  2. 브랜치 만들기 (hotfix, feature, test)
+  3. 작업 후 commit, push
+  4. 작업 완료 후 테스트 진행
+  5. 테스트 완료 후 PR 요청 
+  6. PR 완료 후 develop에 등록
+  7. develop 적용 후 main 브랜치로 PR 요청
 ### Requirements
 Common
 + node 12.x
@@ -45,8 +54,3 @@ https://kangax.github.io/compat-table/es2016plus/
  npm run make:ia32              // windows ia32 (32비트) product 빌드
  npm run make:macos             // MacOS product 빌드
 ```
-
-
-
-## chatmobile (Mobile)
-### Installation
