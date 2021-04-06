@@ -1,0 +1,22 @@
+{
+  "presets": ["@babel/preset-env", "@babel/preset-react"],
+  "plugins": [
+    "transform-class-properties",
+    [
+      "module-resolver",
+      {
+        "alias": {
+          "@/*": "./src",
+          "@C/*": "./src/components",
+          "@COMMON/*": "./src/components/common",
+          "@STYLE/*": "./css/"
+        }
+      }
+    ],
+    ["@babel/plugin-transform-runtime",
+      {
+        "regenerator": true
+      }
+    ]
+  ]
+}
