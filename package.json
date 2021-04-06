@@ -193,8 +193,7 @@
     "webpack-dev-server": "^3.8.0",
     "webpack-manifest-plugin": "^2.2.0",
     "winston": "^3.2.1",
-    "winston-daily-rotate-file": "^4.4.0",
-    "pg": "^7.4.1"
+    "winston-daily-rotate-file": "^4.4.0"
   },
   "description": "",
   "dependencies": {
