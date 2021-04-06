@@ -208,6 +208,7 @@
     "knex": "file:lib/knex-0.20.4.tgz",
     "macaddress": "^0.5.1",
     "mobile-detect": "^1.4.4",
+    "preact": "^10.5.13",
     "react-helmet": "^6.1.0",
     "spectre.css": "^0.5.3",
     "webpack-node-externals": "^1.7.2"
