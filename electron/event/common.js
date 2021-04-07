@@ -28,16 +28,16 @@ export const checkRoomWinMap = (event, args) => {
 
 export const checkRoomWinLength = (event, args) => {
   event.returnValue = Object.keys(ROOM_WIN_MAP).length;
-}
+};
 
 export const checkMakeRoomWinLength = (event, args) => {
   event.returnValue = Object.keys(MAKE_WIN_MAP).length;
-}
+};
 
 export const RoomWinClosed = (event, args) => {
   ROOM_WIN_MAP[args.roomID] && delete ROOM_WIN_MAP[args.roomID];
   event.returnValue = true;
-}
+};
 
 export const reqMakeRoom = (event, args) => {
   // 새창 생성

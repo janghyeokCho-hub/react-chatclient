@@ -182,7 +182,7 @@ export const reqRoomForSync = async (event, args) => {
 
   if (loginInfo.getData()) {
     const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
-    const txProvider = dbCon.transactionProvider();
+    const txProvider = await dbCon.transactionProvider();
 
     dbCon
       .select('roomSyncDate')
@@ -455,7 +455,6 @@ export const reqMessagesForSync = async (event, args) => {
   const roomId = args.roomId;
   const isNotice = Boolean(args.isNotice);
   let syncDate = null;
-  let openFlag = false;
 
   if (loginInfo.getData()) {
     const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
@@ -473,21 +472,26 @@ export const reqMessagesForSync = async (event, args) => {
       isNotice,
     }).then(async response => {
       if (response.data.status == 'SUCCESS') {
-        const txProvider = dbCon.transactionProvider();
-        const tx = await txProvider();
-        try {
-          let messages = response.data.result;
+        let txProvider = null;
+        let tx = null;
+        let messages = response.data.result;
 
+        if (messages.length > 0) {
           const totalMessageIds = messages.map(item => item.messageId);
-          if (messages.length > 0) {
-            const syncDate = messages[messages.length - 1].sendDate;
+          const splitCnt = 50;
+
+          // 1. splitCnt개 만큼 먼저 로딩 후 채팅방을 오픈
+          txProvider = await dbCon.transactionProvider();
+          tx = await txProvider();
+
+          try {
             const notInMessages = await db.selectExecuter(param => {
               return tx
                 .select('messageId')
                 .from('message')
                 .whereIn('messageId', param);
             }, totalMessageIds);
-            console.log('messagesync appdata 6');
+
             messages = messages.filter(item => {
               if (
                 !notInMessages.find(
@@ -497,73 +501,49 @@ export const reqMessagesForSync = async (event, args) => {
                 return item;
             });
 
-            let insertArr = [];
-
             messages.reverse();
+            syncDate = messages[0].sendDate;
 
-            let messagesLen = messages.length;
-            logger.info('messages len =>>> ' + messagesLen);
+            const tempMessages = messages.splice(0, splitCnt);
 
-            if (messagesLen > 0) {
-              const splitCnt = 50; // INFO: message column cnt 14 ::: SQLITE LIMIT VARIABLE COUNT 999
-              const tempMessages = messages.splice(0, splitCnt);
-              //await tx('message').insert(tempMessages);
-              insertArr.push(tx('message').insert(tempMessages));
-              const updateFn = tx('room')
-                .update({
-                  syncDate: syncDate,
-                })
-                .where('roomId', roomId);
-              await updateFn;
+            await tx('message').insert(tempMessages);
 
-              logger.info('messages sync first 50');
-
-              openRoomList.pushRoom(roomId);
-              const response = await event.sender.send(
-                'onSyncMessageSuccess',
-                roomId,
-              );
-              openFlag = true;
-
-              logger.info('messages success sync > ' + response);
-
-              messagesLen = messages.length;
-              logger.info('message sync start! >>>> ' + messagesLen);
-
-              for (let i = 0; i < Math.ceil(messagesLen / splitCnt); i++) {
-                const tempMessages = messages.splice(0, splitCnt);
-                insertArr.push(tx('message').insert(tempMessages));
-              }
-              logger.info('message sync end! >>>> ');
-            }
-
-            // 동기화 시간 Update
             const updateFn = tx('room')
               .update({
                 syncDate: syncDate,
               })
               .where('roomId', roomId);
 
-            for (let i = 0; i < insertArr.length; i++) await insertArr[i];
-
+            // sync commit
             await updateFn;
-
             await tx.commit();
-          }
 
-          if (!openFlag) {
+            // room render
             openRoomList.pushRoom(roomId);
-            await tx.commit();
             await event.sender.send('onSyncMessageSuccess', roomId);
-            openFlag = true;
+          } catch (e) {
+            logger.error(e.stack);
+            await tx.rollback();
           }
 
-          // const winId = ROOM_WIN_MAP[roomId] || 1;
-          // const roomWin = BrowserWindow.fromId(winId);
-          // if (roomWin) roomWin.send('onSyncMessageSuccess', roomId);
-        } catch (e) {
-          logger.info(e.stack);
-          await tx.rollback();
+          // 2. 이후 작업은 비동기로 백그라운드 작업 진행
+          let insertArr = [];
+          txProvider = await dbCon.transactionProvider();
+          tx = await txProvider();
+          try {
+            for (let i = 0; i < Math.ceil(messages.length / splitCnt); i++) {
+              const tempMessages = messages.splice(0, splitCnt);
+              insertArr.push(tx('message').insert(tempMessages));
+            }
+            for (let i = 0; i < insertArr.length; i++) await insertArr[i];
+            await tx.commit();
+          } catch (e) {
+            logger.error(e.stack);
+            await tx.rollback();
+          }
+        } else {
+          openRoomList.pushRoom(roomId);
+          await event.sender.send('onSyncMessageSuccess', roomId);
         }
       }
     });
@@ -686,7 +666,7 @@ export const syncAllRoomsMessages = async (event, args) => {
 
               if (response.data.status == 'SUCCESS') {
                 try {
-                  const txProvider = dbCon.transactionProvider();
+                  const txProvider = await dbCon.transactionProvider();
                   const tx = await txProvider();
 
                   let messages = response.data.result;
@@ -726,6 +706,9 @@ export const syncAllRoomsMessages = async (event, args) => {
                       }
                     }
 
+                    for (let i = 0; i < insertArr.length; i++)
+                      await insertArr[i];
+
                     // 동기화 시간 Update
                     const updateFn = await tx('room')
                       .update({
@@ -733,8 +716,6 @@ export const syncAllRoomsMessages = async (event, args) => {
                       })
                       .where('roomId', roomId);
 
-                    for (let i = 0; i < insertArr.length; i++)
-                      await insertArr[i];
                     await updateFn;
                   }
 
@@ -782,7 +763,7 @@ export const reqUnreadCountForSync = async (event, args) => {
         isNotice: isNotice,
       }).then(async response => {
         if (response.data.status == 'SUCCESS') {
-          const txProvider = dbCon.transactionProvider();
+          const txProvider = await dbCon.transactionProvider();
           const tx = await txProvider();
 
           try {
@@ -1129,8 +1110,7 @@ export const reqGetRoomInfo = async (event, args) => {
         messages = await selectMessage;
 
         if (messages.length == 0) {
-          logger.info(`SELECT m.messageId AS messageID, m.context, m.sender, m.roomId AS roomID, m.roomType, m.messageType, m.unreadCnt, m.readYN, m.tempId, m.fileInfos, m.senderInfo, m.linkInfo
-          FROM message AS m WHERE roomId = ${roomId} ORDER BY m.messageId LIMIT ${maxCnt} OFFSET ${offset}`);
+          console.log('room ' + roomId + ' messages nothing..');
         }
 
         room.members = [];
@@ -1633,6 +1613,8 @@ export const reqGetMessages = async (event, args) => {
 
   let messages = [];
   const returnObj = {};
+
+  console.log(args);
 
   if (loginInfo.getData()) {
     try {

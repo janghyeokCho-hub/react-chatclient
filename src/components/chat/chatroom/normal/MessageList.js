@@ -170,11 +170,9 @@ const MessageList = ({ onExtension, viewExtension }) => {
       evalConnector({
         method: 'on',
         channel: 'onSyncMessageSuccess',
-        callback: (event, targetRoomID) => {
-          console.log(roomID, targetRoomID);
-          console.log('start syncmessagesuccess');
+        callback: async (event, targetRoomID) => {
           if (roomID == targetRoomID) {
-            const response = evalConnector({
+            const response = await evalConnector({
               method: 'sendSync',
               channel: 'req-get-messages',
               message: {
@@ -217,6 +215,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
           method: 'removeListener',
           channel: 'onSyncMessageSuccess',
         });
+        setMessageLoading(false);
       } else {
         setMessageLoading(true);
       }
@@ -266,8 +265,6 @@ const MessageList = ({ onExtension, viewExtension }) => {
   const getMenuData = useCallback(
     message => {
       const menus = [];
-      // console.log('message',message)
-      // console.log('message.messageType',message.messageType)
       if (message.messageType != 'S' && message.messageType != 'I') {
         let messageType = 'message';
         if (eumTalkRegularExp.test(message.context)) {
