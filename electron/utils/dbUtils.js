@@ -121,12 +121,8 @@ const makeLocalDatabaseFile = async (dbPath, openName) => {
         db.run(
           'CREATE UNIQUE INDEX room_member_roomid_userid_unique on room_member (roomId, userId)',
         );
-        db.run(
-          'CREATE INDEX message_roomid on message (roomId)',
-        );
-        db.run(
-          'CREATE INDEX room_member_roomId ON room_member(roomId)',
-        )
+        db.run('CREATE INDEX message_roomid on message (roomId)');
+        db.run('CREATE INDEX room_member_roomId ON room_member(roomId)');
 
         resolve(true);
       });

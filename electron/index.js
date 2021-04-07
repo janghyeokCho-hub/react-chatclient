@@ -29,7 +29,7 @@ import AutoLaunch from 'auto-launch';
 import * as window from './utils/window';
 import {
   connectRemoteHost,
-  connectRemoteViewer
+  connectRemoteViewer,
 } from './utils/remoteAssistanceUtil';
 
 /********** GLOBAL VARIABLE **********/
@@ -743,7 +743,7 @@ ipcMain.on('req-get-roomInfo', async (event, args) => {
       type: returnValue.room.roomType,
     };
     appDataEvt.reqUnreadCountForMessagesSync(event, param);
-    appDataEvt.reqUnreadCountForSync(event, param);
+    //appDataEvt.reqUnreadCountForSync(event, param);
   }
 });
 ipcMain.on('req-get-messages', async (event, args) => {

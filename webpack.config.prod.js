@@ -92,6 +92,8 @@ module.exports = (env, options) => {
         '@C': path.resolve(__dirname, 'src/components/'),
         '@COMMON': path.resolve(__dirname, 'src/components/common'),
         '@STYLE': path.resolve(__dirname, 'src/css'),
+        "react": "preact/compat",
+        "react-dom": "preact/compat"
       },
     },
   };

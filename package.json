@@ -148,7 +148,6 @@
     "babel-loader": "^8.0.6",
     "babel-plugin-module-resolver": "^3.2.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-polyfill": "^6.26.0",
     "cheerio": "^1.0.0-rc.3",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
@@ -170,6 +169,7 @@
     "mkdirp": "^0.5.1",
     "node-loader": "^0.6.0",
     "node-macaddress": "^0.2.4",
+    "pg": "^7.4.1",
     "qs": "^6.9.0",
     "react": "^16.9.0",
     "react-app-polyfill": "^1.0.6",
@@ -207,6 +207,7 @@
     "knex": "file:lib/knex-0.20.4.tgz",
     "macaddress": "^0.5.1",
     "mobile-detect": "^1.4.4",
+    "preact": "^10.5.13",
     "react-helmet": "^6.1.0",
     "spectre.css": "^0.5.3",
     "webpack-node-externals": "^1.7.2"
