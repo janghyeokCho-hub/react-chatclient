@@ -502,20 +502,26 @@ export const reqMessagesForSync = async (event, args) => {
             });
 
             messages.reverse();
-            syncDate = messages[0].sendDate;
+
+            if (messages[0] != undefined && messages[0].sendDate != undefined)
+              syncDate = messages[0].sendDate;
 
             const tempMessages = messages.splice(0, splitCnt);
 
             await tx('message').insert(tempMessages);
 
-            const updateFn = tx('room')
-              .update({
-                syncDate: syncDate,
-              })
-              .where('roomId', roomId);
+            // sync up-to-date
+            if (syncDate != null) {
+              const updateFn = tx('room')
+                .update({
+                  syncDate: syncDate,
+                })
+                .where('roomId', roomId);
 
-            // sync commit
-            await updateFn;
+              // sync commit
+              await updateFn;
+            }
+
             await tx.commit();
 
             // room render
