@@ -4,6 +4,7 @@ import { withRouter } from 'react-router-dom';
 import IconConxtMenu from '@COMMON/popup/IconConxtMenu';
 import * as common from '@/lib/common';
 import { logoutRequest } from '@/modules/login';
+
 import {
   quit,
   openSubPop,
@@ -399,56 +400,8 @@ const LeftMenu = ({ history }) => {
             />
           </svg>
         </li>*/}
-        <div
-          className="menu-ul-line"
-          style={{
-            borderBottom: 'solid',
-            borderBottomWidth: 1,
-            borderBottomColor: 'white',
-            width: '80%',
-          }}
-        ></div>
       </ul>
       <div className="menu-bottom-box">
-        <button
-          className={'extension-menu_'}
-          style={{ marginBottom: 7 }}
-          onClick={() => {
-            if (DEVICE_TYPE === 'd') {
-              openSubPop(
-                'extension',
-                '#/client/nw/extension',
-                {},
-                400,
-                600,
-                'sticky',
-                false,
-                { resize: false },
-              );
-            } else {
-              window.open('/client/nw/extension', '_blank');
-            }
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            x="0px"
-            y="0px"
-            viewBox="0 0 512 512"
-            style={{ width: 22, height: 22 }}
-          >
-            <g id="XMLID_4_">
-              <path
-                id="XMLID_6_"
-                style={{ fill: 'white' }}
-                d="M451,243.9h-36.8v-97.7c0-26.7-21.7-48.4-48.4-48.4h-97.7V61c0-33.4-27.6-61-61-61
-		s-61,27.6-61,61v36.8H49.3c-26.7,0-48.4,21.7-48.4,48.4v92.7h35.9c35.9,0,66,29.2,66,66s-29.2,66-66,66H0v92.7
-		C0,490.3,21.7,512,48.4,512h92.7v-36.8c0-35.9,29.2-66,66-66s66,29.2,66,66V512h92.7c26.7,0,48.4-21.7,48.4-48.4v-97.7H451
-		c33.4,0,61-27.6,61-61S484.4,243.9,451,243.9z"
-              />
-            </g>
-          </svg>
-        </button>
         <button
           className={['bell', isNoti ? 'active' : ''].join(' ')}
           onClick={() => {
