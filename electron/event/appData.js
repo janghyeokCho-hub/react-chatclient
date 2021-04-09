@@ -503,15 +503,16 @@ export const reqMessagesForSync = async (event, args) => {
 
             messages.reverse();
 
-            if (messages[0] != undefined && messages[0].sendDate != undefined)
+            if (messages[0] !== undefined && messages[0].sendDate !== undefined)
               syncDate = messages[0].sendDate;
 
             const tempMessages = messages.splice(0, splitCnt);
 
-            await tx('message').insert(tempMessages);
+            // 빈 배열을 insert할 경우 SQLite 에러(errno: 21, code: 'SQLITE_MISUSE') 발생
+            tempMessages.length !== 0 && await tx('message').insert(tempMessages);
 
             // sync up-to-date
-            if (syncDate != null) {
+            if (syncDate !== null) {
               const updateFn = tx('room')
                 .update({
                   syncDate: syncDate,
