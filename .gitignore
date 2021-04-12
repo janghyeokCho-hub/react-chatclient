@@ -7,3 +7,6 @@ yarn.lock
 build/
 dev-build/
 prod
+
+# MacOS finder env file
+.DS_Store
