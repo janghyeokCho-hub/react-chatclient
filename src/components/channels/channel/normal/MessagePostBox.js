@@ -24,6 +24,7 @@ const EmoticonLayer = loadable(() =>
 );
 
 import SuggestionLayer from '@C/channels/channel/layer/SuggestionLayer';
+import { clearEmoticon } from '@/modules/channel';
 
 const MessagePostBox = forwardRef(
   (
@@ -40,12 +41,12 @@ const MessagePostBox = forwardRef(
   ) => {
     const tempFiles = useSelector(({ message }) => message.tempFiles);
     const currentChannel = useSelector(({ channel }) => channel.currentChannel);
+    const selectEmoticon = useSelector(({ channel }) => channel.selectEmoticon);
 
     const [inputLock, setInputLock] = useState(isLock);
     const [useEmoji, setUseEmoji] = useState(false);
     const [history, setHistory] = useState([]);
     const [historyIndex, setHistoryIndex] = useState(-1); // max 5
-
     // const [viewExtension, setViewExtension] = useState('');
 
     const [context, setContext] = useState('');
@@ -59,6 +60,13 @@ const MessagePostBox = forwardRef(
       const fileCtrl = coviFile.getInstance();
       const files = fileCtrl.getFiles();
       const fileInfos = fileCtrl.getRealFileInfos();
+      var existEmoticon = '';
+      if (selectEmoticon !== null) {
+        existEmoticon = `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
+      }
+      if (selectEmoticon) handleEmoticon(existEmoticon);
+      dispatch(clearEmoticon());
+
       if (context != '' || files.length > 0) {
         let inputContext = context;
 
@@ -112,7 +120,6 @@ const MessagePostBox = forwardRef(
           hashtags ? hashtags : null,
           mentionArr.length > 0 ? mentionArr : null,
         );
-
         const historyArr = [context, ...history];
         historyArr.splice(5, historyArr.length - 5); // max 5
         setContext('');
@@ -121,7 +128,7 @@ const MessagePostBox = forwardRef(
         fileCtrl.clear();
         dispatch(clearFiles());
       }
-    }, [dispatch, context]);
+    }, [dispatch, context, selectEmoticon]);
 
     const handleEmojiControl = useCallback(() => {
       if (viewExtension == 'E') {
@@ -149,9 +156,13 @@ const MessagePostBox = forwardRef(
 
     const handleEmoticon = useCallback(
       emoticon => {
+        console.log('1111111', emoticon);
         // emoticon만 전송
         postAction(emoticon, null, null, null);
         // emoticon은 바로 발송
+
+        console.log('2222222', emoticon);
+        // dispatch(clearEmoticon());
         onExtension('');
       },
       [onExtension],
@@ -170,7 +181,6 @@ const MessagePostBox = forwardRef(
           method: 'getGlobal',
           name: 'APP_SETTING',
         });
-
         setUseEmoji(appConfig.get('useEmoji') ? true : false);
       }
 
@@ -180,13 +190,13 @@ const MessagePostBox = forwardRef(
          * unmount시점에 typing 플래그 false로 초기화
          * 플래그 초기화를 하지 않으면 웹에서 window 사이즈 변화로 채팅창이 사라졌을때 경고창이 계속 등장함 *
          */
-        dispatch(messageCurrentTyping({
-          typing: false
-        }));
-      }
-
+        dispatch(
+          messageCurrentTyping({
+            typing: false,
+          }),
+        );
+      };
     }, []);
-    
 
     useEffect(() => {
       const contextIdx = context.lastIndexOf(' ');
@@ -207,14 +217,20 @@ const MessagePostBox = forwardRef(
 
     useEffect(() => {
       // 채팅방 이동 경고창 flag 업데이트
-      dispatch(messageCurrentTyping({
-        typing: (ref.current.value.length > 0) || (tempFiles.length > 0)
-      }));
+      dispatch(
+        messageCurrentTyping({
+          typing: ref.current.value.length > 0 || tempFiles.length > 0,
+        }),
+      );
     }, [context, tempFiles]);
 
     useEffect(() => {
       setInputLock(isLock);
     }, [isLock]);
+
+    // const selectItem = (state) => {
+    //   console.log('state',state)
+    // }
 
     const handleFileChange = useCallback(
       e => {
@@ -322,12 +338,15 @@ const MessagePostBox = forwardRef(
             handleMention(suggestionMembers[0]);
           } else {
             sendBtn.current.click();
+            const existEmoticon = `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
+            if (selectEmoticon) handleEmoticon(existEmoticon);
           }
 
           e.preventDefault();
           e.stopPropagation();
           return false;
-        } else if (e.ctrlKey && (e.keyCode == 38 || e.keyCode == 40)) {   //위아래 화살표
+        } else if (e.ctrlKey && (e.keyCode == 38 || e.keyCode == 40)) {
+          //위아래 화살표
           if (history.length > 0) {
             const nextIndex = (historyIndex + 1) % history.length;
 
