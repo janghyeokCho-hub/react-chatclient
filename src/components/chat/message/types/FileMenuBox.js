@@ -12,7 +12,7 @@ const FileMenuBox = ({
   downloaded,
   onOpen,
 }) => {
-  console.log('downloaded',downloaded)
+  console.log('downloaded', downloaded);
   const handleOpenFile = useCallback(() => {
     onOpen(false);
   }, [onOpen]);
@@ -23,34 +23,48 @@ const FileMenuBox = ({
 
   return (
     <span className="file-func-list">
-      {!downloaded && fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Download === true && (
-        <>
-          {onPreview && typeof onPreview === 'function' && (
-            <span className="file-func-txt" onClick={onPreview}>
-              {covi.getDic('Preview')}
-            </span>
-          )}
-          {onDownload && typeof onDownload === 'function' && (
-            <>
-              {synapDocViewServer && fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Download === true && (
-              <span className="file-func-txt" onClick={onDownload}>
-                {covi.getDic('Save')}
+      {!downloaded &&
+        fileAttachViewMode &&
+        fileAttachViewMode[0].type === 'PC' &&
+        fileAttachViewMode[0].Download === true && (
+          <>
+            {onPreview && typeof onPreview === 'function' && (
+              <span className="file-func-txt" onClick={onPreview}>
+                {covi.getDic('Preview')}
               </span>
+            )}
+            {onDownload && typeof onDownload === 'function' && (
+              <>
+                {fileAttachViewMode &&
+                  fileAttachViewMode[0].type === 'PC' &&
+                  fileAttachViewMode[0].Download === true && (
+                    <span className="file-func-txt" onClick={onDownload}>
+                      {covi.getDic('Save')}
+                    </span>
+                  )}
+              </>
+            )}
+            {onDownloadWithOpen &&
+              typeof onDownloadWithOpen === 'function' &&
+              fileAttachViewMode &&
+              fileAttachViewMode[0].type === 'PC' &&
+              fileAttachViewMode[0].Download === true && (
+                <span className="file-func-txt" onClick={onDownloadWithOpen}>
+                  {covi.getDic('SaveAndOpen')}
+                </span>
               )}
-            </>
-          )}
-          {onDownloadWithOpen && typeof onDownloadWithOpen === 'function' && synapDocViewServer && fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Download === true && (
-            <span className="file-func-txt" onClick={onDownloadWithOpen}>
-              {covi.getDic('SaveAndOpen')}
-            </span>
-          )}
-        </>
-      )}
-      {!downloaded && DEVICE_TYPE === 'd' && synapDocViewServer && fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Viewer === true && (
-        <span className="file-func-txt" onClick={onViewer}>
-          {covi.getDic('RunViewer')}
-        </span>
-      )}
+          </>
+        )}
+      {!downloaded &&
+        DEVICE_TYPE === 'd' &&
+        synapDocViewServer &&
+        fileAttachViewMode &&
+        fileAttachViewMode[0].type === 'PC' &&
+        fileAttachViewMode[0].Viewer === true && (
+          <span className="file-func-txt" onClick={onViewer}>
+            {covi.getDic('RunViewer')}
+          </span>
+        )}
 
       {downloaded && DEVICE_TYPE === 'd' && (
         <>
