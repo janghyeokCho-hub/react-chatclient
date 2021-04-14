@@ -691,7 +691,35 @@ export const reqUnreadCountForMessagesSync = async (event, args) => {
         }
       }
     } else if (args.type && args.type === 'G') {
-      // TODO :: 그룹 채팅방 안읽음카운트 처리
+      // message 역순으로 읽어옴
+      let messages = await dbCon
+        .select(['messageId', 'unreadCnt'])
+        .from('message')
+        .where('roomId', roomId)
+        .andWhere('isMine', 'N')
+        .orderBy('messageId', 'desc');
+
+      if (messages.length > 0) {
+        console.log(messages);
+        let pivotUnreadCount = messages[0].unreadCnt;
+        await messages.forEach(async data => {
+          if (data.unreadCnt < pivotUnreadCount) {
+            pivotUnreadCount = data.unreadCnt;
+          } else if (data.unreadCnt > pivotUnreadCount) {
+            await dbCon('message')
+              .update({ unreadCnt: pivotUnreadCount, isSyncUnRead: 'Y' })
+              .where('messageId', data.messageId);
+          }
+        });
+
+        const winId = ROOM_WIN_MAP[roomId] || 1;
+        const roomWin = BrowserWindow.fromId(winId);
+
+        if (roomWin)
+          roomWin.send('onSyncUnreadCountMessages', {
+            messageIds: messages,
+          });
+      }
     }
   }
 };
