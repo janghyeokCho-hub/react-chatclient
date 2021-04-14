@@ -180,7 +180,6 @@ const Channel = ({ match, channelInfo }) => {
         mentionInfo: mentionArr,
         messageType: !!messageType ? messageType : 'N',
       };
-
       dispatch(sendChannelMessage(data));
 
       if (window.covi && window.covi.listBottomBtn) {

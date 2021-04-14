@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import * as emoticonApi from '@/lib/emoticon';
 import Config from '@/config/config';
 import Scrollbars from 'react-custom-scrollbars';
 import { getConfig } from '@/lib/util/configUtil';
+import { selectEmoticon } from '@/modules/channel';
 
 const EmoticonLayer = ({ onClick }) => {
   const { userInfo } = useSelector(({ login }) => ({
     userInfo: login.userInfo,
   }));
-
   const storagePrefix = getConfig('storePrefix', '/storage/');
 
   const [groupId, setGroupId] = useState('');
   const [groups, setGroups] = useState(null);
   const [emoticons, setEmoticons] = useState(null);
   const [selectItem, setSelectItem] = useState(null);
+
+  const dispatch = useDispatch();
 
   const IsSaaSClient = getConfig('IsSaaSClient', 'N');
 
@@ -76,6 +78,14 @@ const EmoticonLayer = ({ onClick }) => {
     }
   }, [groupId]);
 
+  useEffect(() => {
+    dispatch(
+      selectEmoticon({
+        selectEmoticon: selectItem,
+      }),
+    );
+  }, [selectItem]);
+
   const handleChangeGroup = gid => {
     if (groupId !== gid) {
       setEmoticons(null);
@@ -89,6 +99,7 @@ const EmoticonLayer = ({ onClick }) => {
 
   const handleSend = item => {
     const sendData = `eumtalk://emoticon.${item.GroupName}.${item.EmoticonName}.${item.EmoticonType}.${item.CompanyCode}`;
+    console.log(sendData);
     onClick(sendData);
     setSelectItem(null);
   };
@@ -151,6 +162,7 @@ const EmoticonLayer = ({ onClick }) => {
               cursor: 'pointer',
             }}
             onClick={e => {
+              console.log('selectItem', selectItem);
               handleSend(selectItem);
             }}
           >
@@ -174,7 +186,7 @@ const EmoticonLayer = ({ onClick }) => {
                 e.target.onerror = null;
               }}
             />
-            <span
+            {/* <span
               style={{
                 display: 'flex',
                 position: 'absolute',
@@ -187,33 +199,33 @@ const EmoticonLayer = ({ onClick }) => {
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
+            > */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20.066"
+              height="25.802"
+              viewBox="0 0 20.066 25.802"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20.066"
-                height="25.802"
-                viewBox="0 0 20.066 25.802"
-              >
-                <g transform="translate(7.704 -0.001) rotate(45)">
-                  <g transform="translate(-0.001 0.002)">
-                    <g transform="translate(0 0)">
-                      <path
-                        d="M.337,6.861A.537.537,0,0,0,.3,7.843l6.291,3.051L17.485,0Z"
-                        transform="translate(0.001 -0.002)"
-                        fill="#6d6d6d"
-                      ></path>
-                    </g>
-                  </g>
-                  <g transform="translate(7.352 0.761)">
+              <g transform="translate(7.704 -0.001) rotate(45)">
+                <g transform="translate(-0.001 0.002)">
+                  <g transform="translate(0 0)">
                     <path
-                      d="M206.344,32.2l3.051,6.291a.537.537,0,0,0,.483.3h.019a.537.537,0,0,0,.479-.337l6.859-17.148Z"
-                      transform="translate(-206.344 -21.306)"
+                      d="M.337,6.861A.537.537,0,0,0,.3,7.843l6.291,3.051L17.485,0Z"
+                      transform="translate(0.001 -0.002)"
                       fill="#6d6d6d"
                     ></path>
                   </g>
                 </g>
-              </svg>
-            </span>
+                <g transform="translate(7.352 0.761)">
+                  <path
+                    d="M206.344,32.2l3.051,6.291a.537.537,0,0,0,.483.3h.019a.537.537,0,0,0,.479-.337l6.859-17.148Z"
+                    transform="translate(-206.344 -21.306)"
+                    fill="#6d6d6d"
+                  ></path>
+                </g>
+              </g>
+            </svg>
+            {/* </span> */}
           </div>
         </div>
       )}
