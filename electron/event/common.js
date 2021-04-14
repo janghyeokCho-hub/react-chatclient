@@ -5,7 +5,8 @@ import { getSubPopupBound } from '../utils/commonUtils';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { updateLinkInfo } from './appData';
-import logger from '../utils/logger';
+import { detect as detectCharset } from 'jschardet'; 
+import iconv from 'iconv-lite';
 
 export const setRoomWinMap = (event, args) => {
   ROOM_WIN_MAP[args.roomID] = args.winID;
@@ -221,9 +222,23 @@ export const getUrlGraphData = (event, args) => {
       // response type 이 html 일 경우에만 link 해석
       if (headers['content-type'].indexOf('text/html') > -1) {
         axios
-          .get(args.url)
+          .get(args.url, {responseType: 'arraybuffer'})
           .then(response => {
-            const $ = cheerio.load(response.data);
+            // 원본 데이터의 charset 확인
+            const responseCharset = detectCharset(response.data);
+
+            /**
+             * charset이 없거나 / utf-8인 경우에 Decoding 생략
+             * charset이 확인 가능한 경우 decoding 수행
+             */
+            const needToDecode = responseCharset && responseCharset.encoding && responseCharset.encoding.toLowerCase() !== 'utf-8';
+            const decoded = needToDecode ?
+              iconv.decode(response.data, responseCharset.encoding) :
+              response.data.toString();
+            const data = iconv.encode(decoded, 'utf-8');
+
+            // 파싱(크롤링) 시작
+            const $ = cheerio.load(data);
             const hostPattern = /^((http[s]?):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/i;
             const graphData = $('head>meta[property^="og:"]');
             let returnObj = null;
