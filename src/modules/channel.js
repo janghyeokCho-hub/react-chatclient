@@ -141,6 +141,9 @@ const SET_BACKGROUND = 'channel/SET_BACKGROUND';
 
 const MESSAGE_CURRENT_TYPING = 'room/MESSAGE_CURRENT_TYPING';
 
+const SELECT_EMOTICON = 'channel/SELECT_EMOTICON';
+const CLEAR_EMOTICON = 'channel/CLEAR_EMOTICON';
+
 const [
   MODIFY_CHANNELSETTING,
   MODIFY_CHANNELSETTING_SUCCESS,
@@ -208,6 +211,9 @@ export const modifyChannelSetting = createAction(MODIFY_CHANNELSETTING);
 export const changeChannelAuth = createAction(CHANNEL_AUTH_CHANGED);
 
 export const messageCurrentTyping = createAction(MESSAGE_CURRENT_TYPING);
+
+export const selectEmoticon = createAction(SELECT_EMOTICON);
+export const clearEmoticon = createAction(CLEAR_EMOTICON);
 
 function createGetChannelsSaga() {
   return function* (action) {
@@ -798,6 +804,7 @@ const initialState = {
   makeChannel: false,
   makeInfo: null,
   typing: false,
+  selectEmoticon: '',
 };
 
 const channel = handleActions(
@@ -1686,6 +1693,18 @@ const channel = handleActions(
     [MESSAGE_CURRENT_TYPING]: (state, action) => {
       return produce(state, draft => {
         draft.typing = action.payload.typing;
+      });
+    },
+
+    [SELECT_EMOTICON]: (state, action) => {
+      return produce(state, draft => {
+        draft.selectEmoticon = action.payload.selectEmoticon;
+      });
+    },
+
+    [CLEAR_EMOTICON]: (state, action) => {
+      return produce(state, draft => {
+        draft.selectEmoticon = '';
       });
     },
 

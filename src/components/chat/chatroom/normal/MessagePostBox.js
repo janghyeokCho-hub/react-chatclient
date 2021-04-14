@@ -15,6 +15,7 @@ import * as commonApi from '@/lib/common';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { evalConnector, openSubPop, getEmitter } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
+import { clearEmoticon } from '@/modules/channel';
 
 const EmojiLayer = loadable(() =>
   import('@C/chat/chatroom/controls/emoji/EmojiLayer'),
@@ -42,6 +43,7 @@ const MessagePostBox = forwardRef(
     ref,
   ) => {
     const tempFiles = useSelector(({ message }) => message.tempFiles);
+    const selectEmoticon = useSelector(({ channel }) => channel.selectEmoticon);
 
     const useCapture = getConfig('UseCapture', 'N');
     const [inputLock, setInputLock] = useState(isLock);
@@ -61,6 +63,13 @@ const MessagePostBox = forwardRef(
       const fileCtrl = coviFile.getInstance();
       const files = fileCtrl.getFiles();
       const fileInfos = fileCtrl.getRealFileInfos();
+      var existEmoticon = '';
+      if (selectEmoticon !== null) {
+        existEmoticon = `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
+      }
+      if (selectEmoticon) handleEmoticon(existEmoticon);
+      dispatch(clearEmoticon());
+
       if (
         (context.replace(/\s*/, '') != '' && context != '') ||
         files.length > 0
@@ -94,7 +103,7 @@ const MessagePostBox = forwardRef(
         fileCtrl.clear();
         dispatch(clearFiles());
       }
-    }, [dispatch, context, postAction]);
+    }, [dispatch, context, postAction, selectEmoticon]);
 
     const handleEmojiControl = useCallback(() => {
       if (viewExtension == 'E') {
@@ -150,20 +159,24 @@ const MessagePostBox = forwardRef(
       return () => {
         /**
          * 2020.12.24
-         * unmount시점에 typing 플래그 false로 
+         * unmount시점에 typing 플래그 false로
          * 플래그 초기화를 하지 않으면 window 사이즈를 조절해서 채팅창이 사라졌을때 경고창이 계속 등장함 *
          */
-        dispatch(messageCurrentTyping({
-          typing: false
-        }));
-      }
+        dispatch(
+          messageCurrentTyping({
+            typing: false,
+          }),
+        );
+      };
     }, []);
 
     useEffect(() => {
       // 채팅방 이동 경고창 flag 업데이트
-      dispatch(messageCurrentTyping({
-        typing: (ref.current.value.length > 0) || (tempFiles.length > 0)
-      }));
+      dispatch(
+        messageCurrentTyping({
+          typing: ref.current.value.length > 0 || tempFiles.length > 0,
+        }),
+      );
     }, [context, tempFiles]);
 
     useEffect(() => {
@@ -175,8 +188,8 @@ const MessagePostBox = forwardRef(
         const target = e.target;
         const fileCtrl = coviFile.getInstance();
 
-        console.log(target)
-        console.log(target.files)
+        console.log(target);
+        console.log(target.files);
 
         if (target.files.length > 0) {
           const appendResult = fileCtrl.appendFiles(target.files);
@@ -222,12 +235,12 @@ const MessagePostBox = forwardRef(
               // 한개의 파일에 대해서만 처리
               // 이미지만 붙혀넣을 수 있음
               const pasteData = clipboardData.files[0];
-              console.log(pasteData)
+              console.log(pasteData);
               const fileCtrl = coviFile.getInstance();
               const appendFileInfo = fileCtrl.makeFileInfo(pasteData, true);
               if (appendFileInfo.image) {
                 const pasteResult = fileCtrl.pasteFiles(pasteData);
-                console.log('pasteResult',pasteResult)
+                console.log('pasteResult', pasteResult);
 
                 if (pasteResult.result == 'SUCCESS') {
                   dispatch(changeFiles({ files: fileCtrl.getFileInfos() }));
@@ -264,6 +277,8 @@ const MessagePostBox = forwardRef(
       e => {
         if (!e.shiftKey && e.keyCode == 13) {
           sendBtn.current.click();
+          const existEmoticon = `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
+          if (selectEmoticon) handleEmoticon(existEmoticon);
           e.preventDefault();
           e.stopPropagation();
           return false;
@@ -296,13 +311,13 @@ const MessagePostBox = forwardRef(
     }, [dispatch, liveMeet]);
 
     function fileCapture() {
-      getEmitter().once('imageData', (event, data) => { 
+      getEmitter().once('imageData', (event, data) => {
         var file = dataURLtoFile(data);
         var fileCtrl = coviFile.getInstance();
         const captureResult = fileCtrl.pasteFiles(file);
-        if(captureResult.result == 'SUCCESS'){
-          dispatch(changeFiles({ files:fileCtrl.getFileInfos() })) 
-        }else{
+        if (captureResult.result == 'SUCCESS') {
+          dispatch(changeFiles({ files: fileCtrl.getFileInfos() }));
+        } else {
           commonApi.openPopup(
             {
               type: 'Alert',
@@ -315,59 +330,61 @@ const MessagePostBox = forwardRef(
     }
 
     const dataURLtoFile = (dataurl, fileName) => {
- 
       var arr = dataurl.split(','),
-          mime = arr[0].match(/:(.*?);/)[1],
-          bstr = atob(arr[1]), 
-          n = bstr.length, 
-          u8arr = new Uint8Array(n),
-          fileName = 'capture.png';
-          
-      while(n--){
-          u8arr[n] = bstr.charCodeAt(n);
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n),
+        fileName = 'capture.png';
+
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
       }
-      return new File([u8arr], fileName, {type:mime});
-  }
+      return new File([u8arr], fileName, { type: mime });
+    };
 
-  const createSessionKey = () => {
-    return Math.floor(Math.random() * 1000000000);
-  }
+    const createSessionKey = () => {
+      return Math.floor(Math.random() * 1000000000);
+    };
 
-  const handleRemoteAssistance = async () => {
-    const sessionKey = createSessionKey();
+    const handleRemoteAssistance = async () => {
+      const sessionKey = createSessionKey();
 
-    callRemoteHost(sessionKey)
+      callRemoteHost(sessionKey);
 
-    evalConnector({
-      method:'removeListener',
-      channel:'onRemoteAssistance'
-    })
+      evalConnector({
+        method: 'removeListener',
+        channel: 'onRemoteAssistance',
+      });
 
-    const response = await evalConnector({
-      method: 'send',
-      channel: 'onRemoteAssistance',
-      message: {
-        sessionKey: sessionKey,
-        isViewer: 'N'
+      const response = await evalConnector({
+        method: 'send',
+        channel: 'onRemoteAssistance',
+        message: {
+          sessionKey: sessionKey,
+          isViewer: 'N',
+        },
+      });
+    };
+
+    const callRemoteHost = useCallback(
+      sessionKey => {
+        // commonApi.openPopup({
+        //   type: 'Confirm',
+        //   message: '원격지원요청 메세지가 발송됩니다. 발송하시겠습니까?',
+        //   callback: result => {
+        //     console.log('callback!!')
+        //     if (result) {
+        //       remoteHost(sessionKey)
+        //     }
+        //   }
+        // },
+        //   dispatch,
+        // )
+        remoteHost(sessionKey);
       },
-    });
-    }
-
-    const callRemoteHost = useCallback((sessionKey) => {
-      // commonApi.openPopup({
-      //   type: 'Confirm',
-      //   message: '원격지원요청 메세지가 발송됩니다. 발송하시겠습니까?',
-      //   callback: result => {
-      //     console.log('callback!!')
-      //     if (result) {
-      //       remoteHost(sessionKey)
-      //     }
-      //   }
-      // },
-      //   dispatch,
-      // )
-      remoteHost(sessionKey)
-    }, [dispatch, remoteAssistance, remoteHost])
+      [dispatch, remoteAssistance, remoteHost],
+    );
 
     const { myInfo } = useSelector(({ login }) => ({
       myInfo: login.userInfo,
@@ -375,30 +392,34 @@ const MessagePostBox = forwardRef(
     const callZoomMeet = useCallback(() => {
       const zoomToken = localStorage.getItem('covi_user_access_zoom_token');
       if (zoomToken === null) {
-        zoomSignup && commonApi.openPopup(
-          {
-            type: 'Confirm',
-            message: covi.getDic('Msg_ConnectZoom', 'Zoom 연동이 필요합니다. 확인 클릭시 Zoom 로그인으로 이동합니다.'),
-            callback(result) {
-              result === true && zoomSignup(result);
-            }
-          },
-          dispatch
-        );
-      }
-      else {
-        zoomMeet && commonApi.openPopup(
-          {
-            type: 'Confirm',
-            message: '화상회의(Zoom) 초대장이 발송됩니다. 발송하시겠습니까?',
-            callback: result => {
-              if (result) {
-                zoomMeet();
-              }
+        zoomSignup &&
+          commonApi.openPopup(
+            {
+              type: 'Confirm',
+              message: covi.getDic(
+                'Msg_ConnectZoom',
+                'Zoom 연동이 필요합니다. 확인 클릭시 Zoom 로그인으로 이동합니다.',
+              ),
+              callback(result) {
+                result === true && zoomSignup(result);
+              },
             },
-          },
-          dispatch,
-        );
+            dispatch,
+          );
+      } else {
+        zoomMeet &&
+          commonApi.openPopup(
+            {
+              type: 'Confirm',
+              message: '화상회의(Zoom) 초대장이 발송됩니다. 발송하시겠습니까?',
+              callback: result => {
+                if (result) {
+                  zoomMeet();
+                }
+              },
+            },
+            dispatch,
+          );
       }
     }, [dispatch, zoomMeet, zoomSignup]);
 
@@ -553,24 +574,23 @@ const MessagePostBox = forwardRef(
                   </button>
                 )}
 
-                {DEVICE_TYPE == 'd' && useCapture == 'Y' &&(
+                {DEVICE_TYPE == 'd' && useCapture == 'Y' && (
                   <button
                     type="button"
                     alt="Screen Shot"
                     title="Screen Shot"
-                    onClick={(e) => {
-                        openSubPop(
-                          'screenShot',
-                          '#/client/nw/snipper',
-                          {},
-                          400,
-                          200,
-                          'sticky',
-                          false,
-                          { resize: false },
-                        ),
+                    onClick={e => {
+                      openSubPop(
+                        'screenShot',
+                        '#/client/nw/snipper',
+                        {},
+                        400,
+                        200,
+                        'sticky',
+                        false,
+                        { resize: false },
+                      ),
                         fileCapture();
-                      
                     }}
                   >
                     <img
@@ -581,25 +601,24 @@ const MessagePostBox = forwardRef(
                   </button>
                 )}
 
-                {DEVICE_TYPE == 'd' && remoteAssistance && remoteAssistance.use && (
-                  <button
-                    type="button"
-                    alt="Remote Assistance"
-                    title="Remote Assistance"
-                    onClick={(e) => {
-                      handleRemoteAssistance();
-                    }}
-                  >
-                    <img
-                      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGQSURBVDhPrZPrjoJADIV5/4fzgnclIhpBokYwKipiN1+TktmM/tnsJCdlOu2hPZ0J6rqW/8BHoqZpPJ+LT+ce0ev1kv1+L9PpVGazmQf8x+PRI/tFBAl2PB5Lt9uVfr/vodPpyHw+94lIBs/nUx2Px0Mmk4mEYSiDwcADZBARSw4gP6iqSpbLpQyHQ62E0t0kKjOwx08scYCc1WolwWazkV6vJ0mSyGKx0G+qwVLZdruV3W4naZpqop1bq4B9sF6v9eN6vUqe5xpoxJTvLvb2Y6vaKtSKXD0IiqJIxXy/33K73aQoCtWOPUAKl6wlYgOZlXw6nbQCLGfoQ1voySrLstXLIzIynCRQEdOBhDPGjk6s+/0uo9Go7eQjEZZ2aAHxIcIPUZZlLRHJX4kAvR8OB004n886XtpANwhYtPxVIwNJjB1xWdjL5dJOEMtT8TRi/C4R4G/oAwEtsrBcEbtrbrwSceE4cMHf0IRvCOM4VgLzY914tAoonfYIRAcX+NyX/y2GYvTRMmp7vH9B0zTyA4j3ppt5v3daAAAAAElFTkSuQmCC"
-                      width="18"
-                      height="18"
-                    />
-                  </button>
-                )}
-
-
-
+                {DEVICE_TYPE == 'd' &&
+                  remoteAssistance &&
+                  remoteAssistance.use && (
+                    <button
+                      type="button"
+                      alt="Remote Assistance"
+                      title="Remote Assistance"
+                      onClick={e => {
+                        handleRemoteAssistance();
+                      }}
+                    >
+                      <img
+                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGQSURBVDhPrZPrjoJADIV5/4fzgnclIhpBokYwKipiN1+TktmM/tnsJCdlOu2hPZ0J6rqW/8BHoqZpPJ+LT+ce0ev1kv1+L9PpVGazmQf8x+PRI/tFBAl2PB5Lt9uVfr/vodPpyHw+94lIBs/nUx2Px0Mmk4mEYSiDwcADZBARSw4gP6iqSpbLpQyHQ62E0t0kKjOwx08scYCc1WolwWazkV6vJ0mSyGKx0G+qwVLZdruV3W4naZpqop1bq4B9sF6v9eN6vUqe5xpoxJTvLvb2Y6vaKtSKXD0IiqJIxXy/33K73aQoCtWOPUAKl6wlYgOZlXw6nbQCLGfoQ1voySrLstXLIzIynCRQEdOBhDPGjk6s+/0uo9Go7eQjEZZ2aAHxIcIPUZZlLRHJX4kAvR8OB004n886XtpANwhYtPxVIwNJjB1xWdjL5dJOEMtT8TRi/C4R4G/oAwEtsrBcEbtrbrwSceE4cMHf0IRvCOM4VgLzY914tAoonfYIRAcX+NyX/y2GYvTRMmp7vH9B0zTyA4j3ppt5v3daAAAAAElFTkSuQmCC"
+                        width="18"
+                        height="18"
+                      />
+                    </button>
+                  )}
               </div>
               {(inputLock && (
                 <button

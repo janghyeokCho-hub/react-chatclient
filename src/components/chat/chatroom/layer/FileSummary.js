@@ -8,7 +8,6 @@ import {
   getSysMsgFormatStr,
 } from '@/lib/common';
 import { getRoomFiles } from '@/lib/message';
-import { sendFunction } from '@/components/chat/message/types/File';
 import {
   downloadByToken,
   downloadByTokenAll,
