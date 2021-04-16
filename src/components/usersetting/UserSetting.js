@@ -807,12 +807,15 @@ const UserSetting = ({ history }) => {
               </li>
               <li className="ChatConfig-list">
                 <SelectBox
-                  items={[
-                    { name: covi.getDic('Hidden'), value: 'NN' },
-                    { name: covi.getDic('JobPosition'), value: 'PN' },
-                    { name: covi.getDic('JobLevel'), value: 'LN' },
-                    { name: covi.getDic('JobTitle'), value: 'TN' },
-                  ]}
+                  items={
+                    (getConfig('jobCode'),
+                    [
+                      { name: covi.getDic('Hidden'), value: 'NN' },
+                      { name: covi.getDic('JobPosition'), value: 'PN' },
+                      { name: covi.getDic('JobLevel'), value: 'LN' },
+                      { name: covi.getDic('JobTitle'), value: 'TN' },
+                    ])
+                  }
                   order={2}
                   defaultValue={jobInfo}
                   onChange={item => {

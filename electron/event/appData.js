@@ -472,19 +472,16 @@ export const reqMessagesForSync = async (event, args) => {
       isNotice,
     }).then(async response => {
       if (response.data.status == 'SUCCESS') {
-        let txProvider = null;
-        let tx = null;
-        let messages = response.data.result;
+        try {
+          const txProvider = await dbCon.transactionProvider();
+          const tx = await txProvider();
 
-        if (messages.length > 0) {
+          let messages = response.data.result;
+
           const totalMessageIds = messages.map(item => item.messageId);
-          const splitCnt = 50;
 
-          // 1. splitCnt개 만큼 먼저 로딩 후 채팅방을 오픈
-          txProvider = await dbCon.transactionProvider();
-          tx = await txProvider();
-
-          try {
+          if (messages.length > 0) {
+            const syncDate = messages[messages.length - 1].sendDate;
             const notInMessages = await db.selectExecuter(param => {
               return tx
                 .select('messageId')
@@ -501,56 +498,118 @@ export const reqMessagesForSync = async (event, args) => {
                 return item;
             });
 
-            messages.reverse();
-
-            if (messages[0] != undefined && messages[0].sendDate != undefined)
-              syncDate = messages[0].sendDate;
-
-            const tempMessages = messages.splice(0, splitCnt);
-
-            await tx('message').insert(tempMessages);
-
-            // sync up-to-date
-            if (syncDate != null) {
-              const updateFn = tx('room')
-                .update({
-                  syncDate: syncDate,
-                })
-                .where('roomId', roomId);
-
-              // sync commit
-              await updateFn;
+            let insertArr = [];
+            const messagesLen = messages.length;
+            if (messagesLen > 0) {
+              const splitCnt = 50; // INFO: message column cnt 14 ::: SQLITE LIMIT VARIABLE COUNT 999
+              for (let i = 0; i < Math.ceil(messagesLen / splitCnt); i++) {
+                const tempMessages = messages.splice(0, splitCnt);
+                //await tx('message').insert(tempMessages);
+                insertArr.push(tx('message').insert(tempMessages));
+              }
             }
 
-            await tx.commit();
-
-            // room render
-            openRoomList.pushRoom(roomId);
-            await event.sender.send('onSyncMessageSuccess', roomId);
-          } catch (e) {
-            logger.error(e.stack);
-            await tx.rollback();
-          }
-
-          // 2. 이후 작업은 비동기로 백그라운드 작업 진행
-          let insertArr = [];
-          txProvider = await dbCon.transactionProvider();
-          tx = await txProvider();
-          try {
-            for (let i = 0; i < Math.ceil(messages.length / splitCnt); i++) {
-              const tempMessages = messages.splice(0, splitCnt);
-              insertArr.push(tx('message').insert(tempMessages));
-            }
             for (let i = 0; i < insertArr.length; i++) await insertArr[i];
-            await tx.commit();
-          } catch (e) {
-            logger.error(e.stack);
-            await tx.rollback();
+
+            // 동기화 시간 Update
+            const updateFn = await tx('room')
+              .update({
+                syncDate: syncDate,
+              })
+              .where('roomId', roomId);
+
+            await updateFn;
           }
-        } else {
+
+          await tx.commit();
+
           openRoomList.pushRoom(roomId);
           await event.sender.send('onSyncMessageSuccess', roomId);
+        } catch (e) {
+          logger.info(e.stack);
+          await tx.rollback();
         }
+        // let txProvider = null;
+        // let tx = null;
+        // let messages = response.data.result;
+
+        // if (messages.length > 0) {
+        //   const totalMessageIds = messages.map(item => item.messageId);
+        //   const splitCnt = 50;
+
+        //   // 1. splitCnt개 만큼 먼저 로딩 후 채팅방을 오픈
+        //   txProvider = await dbCon.transactionProvider();
+        //   tx = await txProvider();
+
+        //   try {
+        //     const notInMessages = await db.selectExecuter(param => {
+        //       return tx
+        //         .select('messageId')
+        //         .from('message')
+        //         .whereIn('messageId', param);
+        //     }, totalMessageIds);
+
+        //     messages = messages.filter(item => {
+        //       if (
+        //         !notInMessages.find(
+        //           message => item.messageId == message.messageId,
+        //         )
+        //       )
+        //         return item;
+        //     });
+
+        //     messages.reverse();
+
+        //     if (messages[0] !== undefined && messages[0].sendDate !== undefined)
+        //       syncDate = messages[0].sendDate;
+
+        //     const tempMessages = messages.splice(0, splitCnt);
+
+        //     // 빈 배열을 insert할 경우 SQLite 에러(errno: 21, code: 'SQLITE_MISUSE') 발생
+        //     if (tempMessages.length !== 0)
+        //       await tx('message').insert(tempMessages);
+
+        //     // sync up-to-date
+        //     if (syncDate !== null) {
+        //       const updateFn = tx('room')
+        //         .update({
+        //           syncDate: syncDate,
+        //         })
+        //         .where('roomId', roomId);
+
+        //       // sync commit
+        //       await updateFn;
+        //     }
+
+        //     await tx.commit();
+
+        //     // room render
+        //     openRoomList.pushRoom(roomId);
+        //     await event.sender.send('onSyncMessageSuccess', roomId);
+        //   } catch (e) {
+        //     logger.error(e.stack);
+        //     await tx.rollback();
+        //   }
+
+        //   // 2. 이후 작업은 비동기로 백그라운드 작업 진행
+        //   let insertArr = [];
+        //   txProvider = await dbCon.transactionProvider();
+        //   tx = await txProvider();
+        //   try {
+        //     for (let i = 0; i < Math.ceil(messages.length / splitCnt); i++) {
+        //       const tempMessages = messages.splice(0, splitCnt);
+        //       insertArr.push(tx('message').insert(tempMessages));
+        //     }
+        //     for (let i = 0; i < insertArr.length; i++) await insertArr[i];
+        //     await tx.commit();
+        //   } catch (e) {
+        //     logger.error(e.stack);
+        //     await tx.rollback();
+        //   }
+        // } else {
+        //   openRoomList.pushRoom(roomId);
+        //   await event.sender.send('onSyncMessageSuccess', roomId);
+        // }
       }
     });
   }
@@ -632,7 +691,35 @@ export const reqUnreadCountForMessagesSync = async (event, args) => {
         }
       }
     } else if (args.type && args.type === 'G') {
-      // TODO :: 그룹 채팅방 안읽음카운트 처리
+      // message 역순으로 읽어옴
+      let messages = await dbCon
+        .select(['messageId', 'unreadCnt'])
+        .from('message')
+        .where('roomId', roomId)
+        .andWhere('isMine', 'N')
+        .orderBy('messageId', 'desc');
+
+      if (messages.length > 0) {
+        console.log(messages);
+        let pivotUnreadCount = messages[0].unreadCnt;
+        await messages.forEach(async data => {
+          if (data.unreadCnt < pivotUnreadCount) {
+            pivotUnreadCount = data.unreadCnt;
+          } else if (data.unreadCnt > pivotUnreadCount) {
+            await dbCon('message')
+              .update({ unreadCnt: pivotUnreadCount, isSyncUnRead: 'Y' })
+              .where('messageId', data.messageId);
+          }
+        });
+
+        const winId = ROOM_WIN_MAP[roomId] || 1;
+        const roomWin = BrowserWindow.fromId(winId);
+
+        if (roomWin)
+          roomWin.send('onSyncUnreadCountMessages', {
+            messageIds: messages,
+          });
+      }
     }
   }
 };
