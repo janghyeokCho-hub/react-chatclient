@@ -4,7 +4,7 @@ import axios from 'axios';
 //import jsonp from 'jsonp';
 
 // ================== 추후 수정예정 ==================
-export const sendConversionRequest = param => {
+export const sendConversionRequest = async (param) => {
   let method = 'get';
   // let VIEWER_SERVER = 'http://192.168.11.149/SynapDocViewServer/job/'; // 외부로 나갈시 서버URL 수정필요
   let VIEWER_SERVER = getConfig('SynapDocViewServer');
@@ -40,5 +40,13 @@ export const sendConversionRequest = param => {
       // ...headers,
     },
   };
-  return axios(reqOptions);
+  let result;
+  try {
+    result = await axios(reqOptions);
+  } catch(err) {
+    if(err && err.response && err.response.status === 500) {
+      result = await axios(reqOptions);
+    }
+  }
+  return result;
 };

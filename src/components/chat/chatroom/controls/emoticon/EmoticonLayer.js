@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import * as emoticonApi from '@/lib/emoticon';
 import Config from '@/config/config';
@@ -7,10 +7,14 @@ import { getConfig } from '@/lib/util/configUtil';
 import { selectEmoticon } from '@/modules/channel';
 
 const EmoticonLayer = ({ onClick }) => {
-  const { userInfo } = useSelector(({ login }) => ({
+  const { userInfo, selectedEmot } = useSelector(({ login, channel }) => ({
     userInfo: login.userInfo,
+    selectedEmot: channel.selectEmoticon,
   }));
+
   const storagePrefix = getConfig('storePrefix', '/storage/');
+
+  const emoticonRef = useRef(null);
 
   const [groupId, setGroupId] = useState('');
   const [groups, setGroups] = useState(null);
@@ -93,15 +97,21 @@ const EmoticonLayer = ({ onClick }) => {
     }
   };
 
-  const handleSelect = item => {
-    setSelectItem(item);
-  };
-
   const handleSend = item => {
     const sendData = `eumtalk://emoticon.${item.GroupName}.${item.EmoticonName}.${item.EmoticonType}.${item.CompanyCode}`;
-    console.log(sendData);
     onClick(sendData);
     setSelectItem(null);
+  };
+
+  const handleKeyDown = (e, item) => {
+    console.log(e);
+    console.log(item);
+    if (!e.shiftKey && e.keyCode == 13) {
+      console.log(item);
+      if (item != null) {
+        handleSend(item);
+      }
+    }
   };
 
   return (
@@ -157,13 +167,7 @@ const EmoticonLayer = ({ onClick }) => {
               margin: '0px auto',
               boxSizing: 'border-box',
               padding: '5px',
-
               position: 'relative',
-              cursor: 'pointer',
-            }}
-            onClick={e => {
-              console.log('selectItem', selectItem);
-              handleSend(selectItem);
             }}
           >
             <img
@@ -186,46 +190,6 @@ const EmoticonLayer = ({ onClick }) => {
                 e.target.onerror = null;
               }}
             />
-            {/* <span
-              style={{
-                display: 'flex',
-                position: 'absolute',
-                bottom: '5px',
-                right: '0px',
-                width: '34px',
-                height: '34px',
-                borderRadius: '50%',
-                background: '#ECECEC',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            > */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20.066"
-              height="25.802"
-              viewBox="0 0 20.066 25.802"
-            >
-              <g transform="translate(7.704 -0.001) rotate(45)">
-                <g transform="translate(-0.001 0.002)">
-                  <g transform="translate(0 0)">
-                    <path
-                      d="M.337,6.861A.537.537,0,0,0,.3,7.843l6.291,3.051L17.485,0Z"
-                      transform="translate(0.001 -0.002)"
-                      fill="#6d6d6d"
-                    ></path>
-                  </g>
-                </g>
-                <g transform="translate(7.352 0.761)">
-                  <path
-                    d="M206.344,32.2l3.051,6.291a.537.537,0,0,0,.483.3h.019a.537.537,0,0,0,.479-.337l6.859-17.148Z"
-                    transform="translate(-206.344 -21.306)"
-                    fill="#6d6d6d"
-                  ></path>
-                </g>
-              </g>
-            </svg>
-            {/* </span> */}
           </div>
         </div>
       )}
@@ -280,7 +244,11 @@ const EmoticonLayer = ({ onClick }) => {
                   <li key={item.EmoticonID}>
                     <a
                       onClick={e => {
-                        handleSelect(item);
+                        setSelectItem(item);
+                        emoticonRef.current.focus();
+                      }}
+                      onDoubleClick={e => {
+                        handleSend(item);
                       }}
                       className="stickerBtn"
                     >
@@ -302,6 +270,16 @@ const EmoticonLayer = ({ onClick }) => {
           </ul>
         </Scrollbars>
       </div>
+      <input
+        className="chat_focus"
+        type="text"
+        valiue=""
+        ref={emoticonRef}
+        onKeyDown={e => {
+          handleKeyDown(e, selectItem);
+        }}
+        style={{ height: 0, width: 0 }}
+      />
     </div>
   );
 };
