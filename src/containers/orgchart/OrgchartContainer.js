@@ -42,9 +42,10 @@ const OrgchartContainer = ({
     if (orgpathListLength < 2) {
       return;
     } else {
+      const { GroupCode, CompanyCode } = orgpathList[orgpathListLength - 2];
       handleDept(
-        orgpathList[orgpathListLength - 2].GroupCode,
-        userInfo.CompanyCode,
+        GroupCode,
+        CompanyCode,
       );
     }
   };

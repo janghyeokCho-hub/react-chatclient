@@ -30,6 +30,7 @@ import {
 } from '@/lib/deviceConnector';
 
 import Config from '@/config/config';
+import useTimestamp from '@/hooks/useTimestamp';
 
 const UserSetting = ({ history }) => {
   const { myInfo, syncDate } = useSelector(({ login }) => ({
@@ -425,6 +426,9 @@ const UserSetting = ({ history }) => {
     }
   };
 
+  // 프로필이미지 1시간 단위로 캐싱
+  const { timestamp } = useTimestamp({ option: 'yMdh', prefix: '?t=' });
+
   return (
     <div style={{ height: '100%' }}>
       <div className="modalheader">
@@ -494,7 +498,7 @@ const UserSetting = ({ history }) => {
                   <a style={{ cursor: 'default' }}>
                     <img
                       className="profile-photo"
-                      src={`${myInfo.photoPath}`}
+                      src={`${myInfo.photoPath}${timestamp}`}
                       onError={e => {
                         e.target.src = `${Config.ServerURL.HOST}/storage/no_image.jpg`;
                         e.target.onerror = null;
