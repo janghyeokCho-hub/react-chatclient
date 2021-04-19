@@ -1,9 +1,8 @@
-import 'react-app-polyfill/ie11';
-import 'react-app-polyfill/stable';
+import 'regenerator-runtime/runtime';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import App from '@C/App';
-import { BrowserRouter, HashRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import ErrorBoundary from '@C/ErrorBoundary';
 import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
