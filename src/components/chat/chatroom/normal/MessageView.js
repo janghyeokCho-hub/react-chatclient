@@ -5,31 +5,12 @@ import MessagePostBox from '@C/chat/chatroom/normal/MessagePostBox';
 import MessageList from '@/components/chat/chatroom/normal/MessageList';
 import FileUploadBox from '@C/chat/chatroom/normal/FileUploadBox';
 import { getConfig } from '@/lib/util/configUtil';
-import { openLinkNative } from '@/lib/deviceConnector';
 import { getDictionary, getSysMsgFormatStr } from '@/lib/common';
 import Config from '@/config/config';
 import useCopyWithSenderInfo from '@/hooks/useCopyWithSenderInfo';
-import { getUserInfo, signupUser, connectZoomUser, requestOAuth } from '@/lib/zoomService';
+import { getUserInfo, requestOAuth } from '@/lib/zoomService';
 import { openPopup } from '@/lib/common';
 import { clearZoomData } from '@/lib/util/localStorageUtil';
-
-const getFilterMember = (members, id) => {
-  if (members) {
-    const filterMember = members.filter(item => {
-      if (item.id === id) return false;
-
-      return true;
-    });
-
-    return filterMember;
-  }
-
-  return [];
-};
-
-const liveMeet = getConfig('LiveMeet');
-const zoomMeet = getConfig('ZoomMeet');
-const remoteAssistance = getConfig('UseRemoteView', 'N');
 
 const MessageView = ({
   roomInfo,
@@ -43,6 +24,24 @@ const MessageView = ({
   postAction,
   view,
 }) => {
+  const liveMeet = getConfig('LiveMeet');
+  const zoomMeet = getConfig('ZoomMeet');
+  const useMessageCopy = getConfig('UseMessageCopy', true);
+  const remoteAssistance = getConfig('UseRemoteView', 'N');
+
+  const getFilterMember = (members, id) => {
+    if (members) {
+      const filterMember = members.filter(item => {
+        if (item.id === id) return false;
+
+        return true;
+      });
+
+      return filterMember;
+    }
+    return [];
+  };
+
   const id = useSelector(({ login }) => login.id);
   const chatBox = useRef(null);
   const contentEditable = useRef(null);
@@ -64,24 +63,27 @@ const MessageView = ({
   );
 
   const callZoomMeet = useCallback(async () => {
-    // const data = await getUserInfo(userEmail);
-    // const data = await getUserInfo("me");
     const { data } = await getUserInfo();
     let message = null;
     if (data.status === 'FAIL') {
       // zoom api 요청이 실패한 경우
-      message = covi.getDic('Zoom_Meeting_Error', '초대 메시지를 발송할 수 없습니다.<br />다시 시도해주세요.');
-    }
-    else {
+      message = covi.getDic(
+        'Zoom_Meeting_Error',
+        '초대 메시지를 발송할 수 없습니다.<br />다시 시도해주세요.',
+      );
+    } else {
       console.log('Zoom UserInfo   ', data);
-      if(data.meeting_url === null) {
+      if (data.meeting_url === null) {
         // 토큰문제로 meeting_url 가져오지 못한 경우 (시간만료 or 다른 클라이언트에서 새 토큰 발급)
-        message = covi.getDic('Zoom_Meeting_TokenExpired', 'Zoom 계정 재연동이 필요합니다.');
+        message = covi.getDic(
+          'Zoom_Meeting_TokenExpired',
+          'Zoom 계정 재연동이 필요합니다.',
+        );
         clearZoomData();
-      } else if(data.meeting_url) {
+      } else if (data.meeting_url) {
         // meeting url에서 meeting id 파싱
         const match = data.meeting_url.match(/\/([0-9]*)\?/);
-        if(match[1]) {
+        if (match[1]) {
           const msgObj = {
             title: '화상회의(Zoom)',
             context: `Zoom 회의초대:Meeting ID ${match[1]}`,
@@ -90,70 +92,66 @@ const MessageView = ({
               type: 'link',
               data: {
                 baseURL: data.meeting_url,
-              }
-            }
+              },
+            },
           };
           postAction(JSON.stringify(msgObj), null, null, 'A');
         } else {
           // meeting_url에서 meeting id를 파싱할 수 없는 경우
-          message = covi.getDic('Zoom_Meeting_Error', '초대 메시지를 발송할 수 없습니다.<br />다시 시도해주세요.');
+          message = covi.getDic(
+            'Zoom_Meeting_Error',
+            '초대 메시지를 발송할 수 없습니다.<br />다시 시도해주세요.',
+          );
         }
       } else {
         // 이외의 에러 대응
-        message = covi.getDic('Zoom_Meeting_Error', '초대 메시지를 발송할 수 없습니다.<br />다시 시도해주세요.');
+        message = covi.getDic(
+          'Zoom_Meeting_Error',
+          '초대 메시지를 발송할 수 없습니다.<br />다시 시도해주세요.',
+        );
       }
 
-      message !== null && openPopup(
-        {
-          type: 'Alert',
-          message,
-          callback: () => { }
-        },
-        dispatch
-      );
+      message !== null &&
+        openPopup(
+          {
+            type: 'Alert',
+            message,
+            callback: () => {},
+          },
+          dispatch,
+        );
     }
   }, [roomInfo]);
 
-  // const callZoomSignup = useCallback(async (email) => {
-  //   let message = null;
-
-  //   const result = await connectZoomUser(email);
-  //   if(result === true) {
-  //     message = covi.getDic('Zoom_Signup_Success', 'Zoom 연동이 완료되었습니다.<br />다시 초대장을 발송해주세요.');
-  //   } else {
-  //     message = covi.getDic('Zoom_Signup_Error', 'Zoom 서비스와 연결할 수 없습니다.<br />다시 시도해주세요.');
-  //   }
-  //   message && openPopup(
-  //     {
-  //       type: 'Alert',
-  //       message
-  //     },
-  //     dispatch
-  //   );
-  // }, [roomInfo]);
   const callZoomSignup = useCallback(() => {
     requestOAuth(userInfo.id);
   });
   const messages = useSelector(({ room }) => room.messages);
   const { copyWithSenderInfo } = useCopyWithSenderInfo();
-  
-  useEffect(()=>{
+
+  useEffect(() => {
     // 채팅방 메시지 복사시 작성자+시간 포함기능을 사용하지 않을 경우 로직 통과
-    if(EXTENDED_COPY === false) {
+    if (EXTENDED_COPY === false) {
       return;
     }
-    const disableCopy = (e) => {
-      if((e.ctrlKey || e.metaKey) && e.keyCode == 67 ){
+
+    // 서버에서 포함기능을 껏으면 사용 x
+    if (useMessageCopy === false) {
+      return;
+    }
+
+    const disableCopy = e => {
+      if ((e.ctrlKey || e.metaKey) && e.keyCode == 67) {
         copyWithSenderInfo(messages);
-        e.returnValue = false; 
+        e.returnValue = false;
       }
     };
     window.addEventListener('keydown', disableCopy);
 
     return () => {
       window.removeEventListener('keydown', disableCopy);
-    }
-  }, [messages.length]);
+    };
+  }, []);
 
   useEffect(() => {
     window.onblur = e => {
@@ -288,7 +286,12 @@ const MessageView = ({
     // 2021.03.19
     // allowedUsers 설정에 현재 유저의 id가 해당될 경우만 Zoom 초대버튼 렌더링 (임시구현)
     // 정식배포시 allowedUsers 관련 로직 제거해야함
-    const allowed = zoomFlag && zoomMeet.allowedUsers !== undefined && Array.isArray(zoomMeet.allowedUsers) ? zoomMeet.allowedUsers.includes(userInfo.id) : false;
+    const allowed =
+      zoomFlag &&
+      zoomMeet.allowedUsers !== undefined &&
+      Array.isArray(zoomMeet.allowedUsers)
+        ? zoomMeet.allowedUsers.includes(userInfo.id)
+        : false;
     return allowed;
   }, [userInfo]);
 
