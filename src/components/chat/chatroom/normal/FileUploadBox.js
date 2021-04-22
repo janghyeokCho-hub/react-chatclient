@@ -2,12 +2,13 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { changeFiles, clearFiles } from '@/modules/message';
 import { openPopup } from '@/lib/common';
+import { getConfig } from '@/lib/util/configUtil';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 
 const FileUploadBox = ({ view, onView }) => {
   const fileUploadControl = useRef(null);
   const dispatch = useDispatch();
-
+  const fileAttachMode = getConfig('FileAttachMode');
   const handleFileChange = useCallback(
     e => {
       const target = e.target;
@@ -15,6 +16,16 @@ const FileUploadBox = ({ view, onView }) => {
       const files = target.files;
 
       if (files.length > 0) {
+        if (fileAttachMode && fileAttachMode.PC && fileAttachMode.PC.upload === false) {
+          openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic('Block_FileAttach', '파일 첨부가 금지되어 있습니다.')
+            },
+            dispatch,
+          );
+          return;
+        }
         const appendResult = fileCtrl.appendFiles(target.files);
 
         if (appendResult.result == 'SUCCESS') {

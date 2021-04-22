@@ -46,11 +46,11 @@ const MessagePostBox = forwardRef(
     const selectEmoticon = useSelector(({ channel }) => channel.selectEmoticon);
 
     const useCapture = getConfig('UseCapture', 'N');
+    const fileAttachMode = getConfig('FileAttachMode', '123');
     const [inputLock, setInputLock] = useState(isLock);
     const [useEmoji, setUseEmoji] = useState(false);
     const [history, setHistory] = useState([]);
     const [historyIndex, setHistoryIndex] = useState(-1); // max 5
-
     // const [viewExtension, setViewExtension] = useState('');
 
     const [context, setContext] = useState('');
@@ -188,10 +188,17 @@ const MessagePostBox = forwardRef(
         const target = e.target;
         const fileCtrl = coviFile.getInstance();
 
-        console.log(target);
-        console.log(target.files);
-
         if (target.files.length > 0) {
+          if (fileAttachMode && fileAttachMode.PC && fileAttachMode.PC.upload === false) {
+            commonApi.openPopup(
+              {
+                type: 'Alert',
+                message: covi.getDic('Block_FileAttach', '파일 첨부가 금지되어 있습니다.')
+              },
+              dispatch,
+            );
+            return;
+          }
           const appendResult = fileCtrl.appendFiles(target.files);
 
           if (appendResult.result == 'SUCCESS') {
@@ -225,12 +232,23 @@ const MessagePostBox = forwardRef(
     const handlePaste = useCallback(
       e => {
         const { clipboardData } = e;
+
         // 파일이 명백한경우
         try {
           if (
             clipboardData.types.length == 1 &&
             clipboardData.types[0] == 'Files'
           ) {
+            if (fileAttachMode && fileAttachMode.PC && fileAttachMode.PC.upload === false) {
+              commonApi.openPopup(
+                {
+                  type: 'Alert',
+                  message: covi.getDic('Block_FileAttach', '파일 첨부가 금지되어 있습니다.')
+                },
+                dispatch,
+              );
+              return;
+            }
             if (clipboardData.files.length > 0) {
               // 한개의 파일에 대해서만 처리
               // 이미지만 붙혀넣을 수 있음
