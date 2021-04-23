@@ -114,7 +114,7 @@ const appReady = async () => {
     // window 생성
     let isCreated = createWindow(true);
 
-    const setConfigAfter = count => {
+    const setConfigAfter = () => {
       SERVER_SETTING = getConfig('server.setting.json');
 
       let lang = APP_SETTING.get('lang');
@@ -150,15 +150,15 @@ const appReady = async () => {
         .catch(() => {
           logger.info('server config load error');
 
-          setTimeout(() => {
-            if (count !== 60) {
-              setConfigAfter(count + 1);
-            } else {
-              SERVER_SETTING.purge();
-              loadMainWindow();
-            }
-          }, 500);
+          // Alert 팝업 open
+          SERVER_SETTING.purge();
+          isCreated.then(() => {
+            loadMainWindow();
+          });
         });
+      // } else {
+      //  createWindow();
+      // }
 
       powerMonitor.on('lock-screen', lockScreenEvt);
       powerMonitor.on('unlock-screen', unlockScreenEvt);
@@ -176,7 +176,7 @@ const appReady = async () => {
     // index.html 파일 재생성
     fileUtil.checkIndexFile(domainInfo, () => {
       setConfig(domainInfo);
-      setConfigAfter(0);
+      setConfigAfter();
     });
   } else {
     createDomainRegistWindow();

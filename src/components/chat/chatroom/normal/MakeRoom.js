@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ChatRoomHeader from '@C/chat/chatroom/normal/ChatRoomHeader';
 import MessagePostBox from '@C/chat/chatroom/normal/MessagePostBox';
@@ -17,6 +17,7 @@ import {
   evalConnector,
 } from '@/lib/deviceConnector';
 import { sendMessage, uploadFile, getURLThumbnail } from '@/lib/message';
+import { getConfig } from '@/lib/util/configUtil';
 
 const getFilterMember = (members, id) => {
   if (members) {
@@ -31,7 +32,7 @@ const getFilterMember = (members, id) => {
 
   return [];
 };
-
+const remoteAssistance = getConfig('UseRemoteView','N');
 const MakeRoom = ({ history }) => {
   const isNewWin =
     window.opener != null ||
@@ -113,7 +114,9 @@ const MakeRoom = ({ history }) => {
     setViewFileUpload(visible);
   };
 
-  const remoteHost = sessionKey => {
+  const remoteHost = (sessionKey) => {
+    console.log(makeInfo);
+    console.log(sessionKey)
     const msgObj = {
       title: '원격지원',
       context: '원격지원 요청입니다.',
@@ -121,13 +124,14 @@ const MakeRoom = ({ history }) => {
         name: '원격지원 수락',
         type: 'remote',
         data: {
-          sessionKey: sessionKey,
+          sessionKey:sessionKey
         },
       },
     };
 
-    handleMessage(JSON.stringify(msgObj), null, null, 'A');
-  };
+    handleMessage(JSON.stringify(msgObj),null,null,'A');
+    // postAction(JSON.stringify(msgObj), null, null, 'A');
+  }
 
   const handleNewRoom = roomID => {
     dispatch(openRoom({ roomID: roomID }));
@@ -153,12 +157,13 @@ const MakeRoom = ({ history }) => {
   };
 
   // TODO: 메시지 전송 실패 여부 처리
-  const handleMessage = (message, filesObj, linkObj, messageType) => {
+  const handleMessage = (message, filesObj, linkObj ,messageType) => {
     // 방생성 api 호출
     // 호출 결과에 따라 ChatRoom으로 화면 전환
     // -- MultiView의 경우 dispatch
     // -- NewWindow의 경우 route 이동
     setDisabled(true);
+    console.log(messageType);
 
     let invites = [];
     makeInfo.members.forEach(item => invites.push(item.id));
@@ -176,7 +181,7 @@ const MakeRoom = ({ history }) => {
       messageType: messageType ? messageType : 'N',
     };
 
-    if (messageType == 'A') {
+    if(messageType == 'A'){
       createRoom(data).then(({ data }) => {
         if (data.status === 'SUCCESS') {
           console.log(data);
