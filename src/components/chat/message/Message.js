@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Plain, Link, Tag, Sticker, Mention } from '@C/chat/message/types';
 
 const getAttribute = tag => {
@@ -93,7 +93,13 @@ const Message = ({ children, className, eleId, marking, messageID }) => {
   }, [children]);
 
   return (
-    <div className={className} id={eleId ? eleId : undefined} data-messageid={messageID} >{drawText}</div>
+    <div
+      className={className}
+      id={eleId ? eleId : undefined}
+      data-messageid={messageID}
+    >
+      {drawText}
+    </div>
   );
 };
 
