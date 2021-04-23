@@ -9,7 +9,12 @@ import createRequestSaga, {
   exceptionHandler,
 } from '@/lib/createRequestSaga';
 
-import { evalConnector, closeSocket, syncAppData, getEmitter } from '@/lib/deviceConnector';
+import {
+  evalConnector,
+  closeSocket,
+  syncAppData,
+  getEmitter,
+} from '@/lib/deviceConnector';
 
 import * as loginApi from '@/lib/login';
 import * as presenceApi from '@/lib/presence';
@@ -25,7 +30,11 @@ import { setChannels } from '@/modules/channel';
 import * as channelApi from '@/lib/channel';
 
 import { clearZoomData } from '@/lib/util/localStorageUtil';
-import { refreshAccessToken, accessTokenExpired, startRefreshInterval } from '@/lib/zoomService';
+import {
+  refreshAccessToken,
+  accessTokenExpired,
+  startRefreshInterval,
+} from '@/lib/zoomService';
 
 const [
   LOGIN_REQUEST,
@@ -228,11 +237,11 @@ function createLoginRequestSaga(loginType, syncType) {
           /**
            * 2021.01.20
            * 로그인 실패시 FAILURE
-           * 
+           *
            * 로그인 실패 유형에 따른 response.data.result 값
            * 1. 서버 에러       '[EE-CRLAC1] Exception'
            * 2. id/pw 불일치    '[EF-CRLAC8] No User data'
-           * 
+           *
            * 에러코드 파싱
            * const match = /\[([a-zA-Z0-9]*\-[a-zA-Z0-9]*)/g.exec(err)[1];
            * getDic('Msg_wrongLoginInfo')
@@ -278,7 +287,10 @@ function createExtLoginRequestSaga(loginType, syncType) {
           if (response.data.result && response.data.token) {
             // localStorage에 token 세팅
             localStorage.setItem('covi_user_access_token', response.data.token);
-            localStorage.setItem('covi_user_access_id', response.data.result.id);
+            localStorage.setItem(
+              'covi_user_access_id',
+              response.data.result.id,
+            );
             // login 후처리 시작
             // 동기화 시작
             yield put(startLoading(syncType));
@@ -509,8 +521,7 @@ function createSyncTokenRequestSaga(type) {
             // Store 세팅 끝
             yield put(finishLoading(type));
           }
-        }
-        else {
+        } else {
           /// result.status === 'fail
         }
         yield put(loginTokenAuth(result));
@@ -589,21 +600,19 @@ const login = handleActions(
           draft.id = action.payload.result.id; //draft.id = action.payload.token.split('^')[0];
           draft.registDate = action.payload.createDate;
         } else {
-          console.log('Requesst Login Error ', action.payload);
           draft.authFail = true;
           draft.token = initialState.token;
         }
       });
     },
     [LOGIN_REQUEST_FAILURE]: (state, action) => {
-      console.log('Request Login Failure ', action);
       return {
         ...state,
         authFail: true,
         ...(action.errMessage && { errMessage: action.errMessage }),
         ...(action.errStatus && { errStatus: action.errStatus }),
         token: initialState.token,
-      }
+      };
     },
     [EXT_LOGIN_REQUEST_SUCCESS]: (state, action) => {
       return produce(state, draft => {
@@ -663,7 +672,7 @@ const login = handleActions(
       /**
        * 2020.12.31
        * SaaS 대응 패치
-       * 
+       *
        * state 업데이트 이외의 Side-Effect가 포함되어 있음
        * 추후 리팩토링 필요
        */
@@ -676,18 +685,24 @@ const login = handleActions(
       localStorage.setItem('covi_user_access_id', action.payload.result.id);
       localStorage.setItem('covi_user_access_token', action.payload.token);
 
-      if(action.payload.result.id !== localStorage.getItem('covi_user_access_zoom_user')) {
+      if (
+        action.payload.result.id !==
+        localStorage.getItem('covi_user_access_zoom_user')
+      ) {
         clearZoomData();
       } else {
         // 재로그인시 미리 refresh 수행
-        if(accessTokenExpired() === true) {
-          DEVICE_TYPE === 'd' && getEmitter().send('log-info', { message: `Refresh ZoomToken on login: user ${action.payload.result.id}`});
+        if (accessTokenExpired() === true) {
+          DEVICE_TYPE === 'd' &&
+            getEmitter().send('log-info', {
+              message: `Refresh ZoomToken on login: user ${action.payload.result.id}`,
+            });
           refreshAccessToken();
         }
         // 자동 refresh interval 시작
         startRefreshInterval();
       }
-  
+
       return state;
     },
     [CHANGE_SOCKETCONNECT]: (state, action) => {
