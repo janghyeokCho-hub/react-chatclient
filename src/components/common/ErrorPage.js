@@ -7,9 +7,7 @@ const ErrorPage = () => {
   const { object } = useSelector(({ error }) => ({
     object: error.object,
   }));
-  const [errMsg, setErrMsg] = useState(
-    covi.getDic('Msg_Error', '에러가 발생했습니다.'),
-  );
+  const [errMsg, setErrMsg] = useState(covi.getDic('Msg_Error', '에러가 발생했습니다.'));
   useEffect(() => {
     // desktop의 경우 오류 발생 시 해당 log 저장 처리 필요
     // browser의 경우 console에 표시
@@ -24,8 +22,6 @@ const ErrorPage = () => {
         message: (object && object.stack) || 'empty message',
       });
     }
-
-    location.reload();
   }, []);
 
   const handleClose = () => {
@@ -46,17 +42,11 @@ const ErrorPage = () => {
   };
 
   useEffect(() => {
-    if (object && object.response && object.response.status === 403) {
-      const newMsg = covi.getDic(
-        'Msg_Error_Denied',
-        '접속이 불가능합니다.<br />관리자에게 문의해주세요.',
-      );
+    if(object && object.response && object.response.status === 403) {
+      const newMsg = covi.getDic('Msg_Error_Denied', '접속이 불가능합니다.<br />관리자에게 문의해주세요.');
       setErrMsg(newMsg);
     } else {
-      const newMsg = covi.getDic(
-        'Msg_Error',
-        '에러가 발생했습니다.<br />관리자에게 문의해주세요.',
-      );
+      const newMsg = covi.getDic('Msg_Error', '에러가 발생했습니다.<br />관리자에게 문의해주세요.');
       setErrMsg(newMsg);
     }
   }, [object]);

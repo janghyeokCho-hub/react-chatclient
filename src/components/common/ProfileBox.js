@@ -4,7 +4,6 @@ import PresenceButton from '@COMMON/buttons/PresenceButton';
 import Config from '@/config/config';
 import { openProfilePopup } from '@/lib/profileUtil';
 import { getDictionary } from '@/lib/common';
-import useTimestamp from '@/hooks/useTimestamp';
 
 const ProfileBox = ({
   userId,
@@ -30,13 +29,11 @@ const ProfileBox = ({
     openProfilePopup(dispatch, userId);
   }, [userId, dispatch]);
 
-  const { timestamp } = useTimestamp({ option: 'yMdh', prefix: '?t=' });
-
   const profileBox = useMemo(() => {
     if (img && imgVisible) {
       return (
         <img
-          src={`${img}${timestamp}`}
+          src={`${img}`}
           onError={e => {
             setImgVisible(false);
             e.target.src = `${Config.ServerURL.HOST}/storage/no_image.jpg`;

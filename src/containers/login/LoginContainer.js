@@ -36,25 +36,12 @@ const LoginContainer = ({ history, location }) => {
     const AESUtil = getAesUtil();
     const encryptPassword = AESUtil.encrypt(password);
 
-    let data = null;
-
-    if (DEVICE_TYPE == 'd') {
-      data = {
-        id: userId,
-        pw: encryptPassword,
-        dp: process.platform,
-        da: process.arch,
-      };
-    } else if (DEVICE_TYPE == 'b') {
-      data = {
-        id: userId,
-        pw: encryptPassword,
-        dp: 'browser',
-        da: 'browser',
-      };
-    }
-
-    console.log(data);
+    const data = {
+      id: userId,
+      pw: encryptPassword,
+      dp: process.platform,
+      da: process.arch,
+    };
 
     if (isExtUser) {
       onExtLogin(data);
