@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { closeWindow } from '@/lib/deviceConnector';
+
 const Offline = () => {
+  useEffect(() => {
+    window.addEventListener('online', () => {
+      location.reload();
+    });
+    return () => {
+      // Clean up
+      window.removeEventListener('online');
+    };
+  }, []);
+
   return (
     <>
       {DEVICE_TYPE == 'd' && (
