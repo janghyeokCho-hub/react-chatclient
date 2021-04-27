@@ -54,8 +54,6 @@ const LoginContainer = ({ history, location }) => {
       };
     }
 
-    console.log(data);
-
     if (isExtUser) {
       onExtLogin(data);
     } else {
