@@ -535,7 +535,7 @@ const MessagePostBox = forwardRef(
                     </svg>
                   </button>
                 )}
-                {PC && PC.upload !== false && (
+                { (typeof PC === 'undefined' || PC.upload !== false) && (
                   <button
                     type="button"
                     alt="File"
