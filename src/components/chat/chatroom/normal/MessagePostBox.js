@@ -46,7 +46,7 @@ const MessagePostBox = forwardRef(
     const selectEmoticon = useSelector(({ channel }) => channel.selectEmoticon);
 
     const useCapture = getConfig('UseCapture', 'N');
-    const { PC } = getConfig('FileAttachMode');
+    const { PC } = getConfig('FileAttachMode') || {};
     const [inputLock, setInputLock] = useState(isLock);
     const [useEmoji, setUseEmoji] = useState(false);
     const [history, setHistory] = useState([]);
@@ -189,6 +189,7 @@ const MessagePostBox = forwardRef(
         const fileCtrl = coviFile.getInstance();
 
         if (target.files.length > 0) {
+          // 파일업로드 금지
           if (PC && PC.upload === false) {
             commonApi.openPopup(
               {
@@ -239,6 +240,7 @@ const MessagePostBox = forwardRef(
             clipboardData.types.length == 1 &&
             clipboardData.types[0] == 'Files'
           ) {
+            // 파일업로드 금지
             if (PC && PC.upload === false) {
               commonApi.openPopup(
                 {
