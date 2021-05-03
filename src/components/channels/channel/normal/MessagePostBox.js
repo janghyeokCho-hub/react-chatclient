@@ -245,7 +245,7 @@ const MessagePostBox = forwardRef(
             commonApi.openPopup(
               {
                 type: 'Alert',
-                message: covi.getDic('Block_FileAttach', '파일 첨부가 금지되어 있습니다.')
+                message: covi.getDic('Block_FileUpload', '파일 첨부가 금지되어 있습니다.')
               },
               dispatch,
             );
@@ -308,7 +308,7 @@ const MessagePostBox = forwardRef(
               commonApi.openPopup(
                 {
                   type: 'Alert',
-                  message: covi.getDic('Block_FileAttach', '파일 첨부가 금지되어 있습니다.')
+                  message: covi.getDic('Block_FileUpload', '파일 첨부가 금지되어 있습니다.')
                 },
                 dispatch,
               );
