@@ -24,8 +24,6 @@ const ErrorPage = () => {
         message: (object && object.stack) || 'empty message',
       });
     }
-
-    location.reload();
   }, []);
 
   const handleClose = () => {

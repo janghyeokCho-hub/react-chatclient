@@ -6,7 +6,7 @@ const plainTextConvert = (text = '') => {
 };
 
 const style = {
-  whiteSpace: 'pre-wrap'
+  whiteSpace: 'pre-wrap',
 };
 
 const Plain = ({ marking, text }) => {
@@ -26,11 +26,16 @@ const Plain = ({ marking, text }) => {
           .filter(part => part)
           .map((part, i) =>
             marking && part.toLowerCase() == marking.toLowerCase() ? (
-              <span key={i} style={{ backgroundColor: '#222', color: '#fff', ...style }}>
+              <span
+                key={i}
+                style={{ backgroundColor: '#222', color: '#fff', ...style }}
+              >
                 {plainTextConvert(part)}
               </span>
             ) : (
-              <span key={i} style={style}>{plainTextConvert(part)}</span>
+              <span key={i} style={style}>
+                {plainTextConvert(part)}
+              </span>
             ),
           )}
       </span>

@@ -11,6 +11,8 @@ import message, { messageSaga } from '@/modules/message';
 import presence, { presenceSaga } from '@/modules/presence';
 import mainlayer from '@/modules/mainlayer';
 import error from '@/modules/error';
+import util from '@/modules/util';
+
 import { clearUserData } from '@/lib/util/localStorageUtil';
 
 const appReducer = combineReducers({
@@ -25,6 +27,7 @@ const appReducer = combineReducers({
   presence,
   mainlayer,
   error,
+  util,
 });
 
 const rootReducer = (state, action) => {

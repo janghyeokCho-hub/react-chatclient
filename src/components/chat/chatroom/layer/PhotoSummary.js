@@ -10,7 +10,7 @@ import {
   openPopup,
   getSysMsgFormatStr,
 } from '@/lib/common';
-
+import { getConfig } from '@/lib/util/configUtil';
 import { getRoomFiles, getThumbnail } from '@/lib/message';
 import {
   downloadByToken,
@@ -21,6 +21,9 @@ import {
 import { setMoveView } from '@/modules/message';
 import LoadingWrap from '@/components/common/LoadingWrap';
 import { format } from 'date-fns';
+
+// [0] PC [1] MOBILE
+const downloadOption = getConfig('FileAttachViewMode') || [];
 
 const PhotoList = ({ photos, onSelect, selectMode }) => {
   return (
@@ -124,25 +127,29 @@ const Photo = ({ photo, onSelect, selectMode }) => {
             );
             clearLayer(dispatch);
           },
-        },
-        {
-          name: covi.getDic('Download'),
-          callback: () => {
-            downloadByToken(item.FileID, item.FileName, data => {
-              if (data.result != 'SUCCESS') {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: data.message,
-                  },
-                  dispatch,
-                );
-              }
-            });
-          },
-        },
+        }
       ];
-
+      // 파일 다운로드 허용일 경우에만 다운로드 옵션 노출
+      if(downloadOption.length === 0 || downloadOption[0].Download === true) {
+        buttonArrs.push(
+          {
+            name: covi.getDic('Download'),
+            callback: () => {
+              downloadByToken(item.FileID, item.FileName, data => {
+                if (data.result != 'SUCCESS') {
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: data.message,
+                    },
+                    dispatch,
+                  );
+                }
+              });
+            },
+          }
+        );
+      }
       openPopup(
         {
           type: 'Select',
@@ -222,9 +229,20 @@ const PhotoSummary = ({ roomId }) => {
       // 이전 상태가 선택모드였다면 변경시 cnt도 0으로 초기화
 
       if (selectItems.length > 0) {
+        // 다운로드가 금지되어 있는 경우
+        if (downloadOption.length !== 0 && downloadOption[0].Download === false) {
+          openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic('Block_FileDownload', '파일 다운로드가 금지되어 있습니다.')
+            },
+            dispatch,
+          );
+        }
         // TODO: 차후 멀티다운로드로 수정 필요
         // 만료처리 등 처리 필요
-        if (selectItems.length <= 15) {
+        // 다운로드 가능 && 선택개수 15개 미만
+        else if (selectItems.length <= 15) {
           const arrDownloadList = await downloadByTokenAll(selectItems);
           if (arrDownloadList) {
             Promise.all(arrDownloadList).then(values => {
