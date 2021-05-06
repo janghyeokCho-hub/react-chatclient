@@ -236,6 +236,14 @@ const MessageBox = ({
                 nameBoxVisible && index == 0 ? 'replies' : 'text-only replies'
               }
             >
+              <div
+                className="copyBox"
+                style={{
+                  backgroundColor: '#00000055',
+                  width: 150,
+                  height: '100%',
+                }}
+              ></div>
               <div className="chatinfo">
                 {timeBox && (
                   <span className="Sendtime">
@@ -366,6 +374,14 @@ const MessageBox = ({
           {drawText && (
             <>
               <li className={nameBoxVisible ? 'replies' : 'text-only replies'}>
+                <div
+                  className="copyBox"
+                  style={{
+                    backgroundColor: '#00000055',
+                    width: 150,
+                    height: '100%',
+                  }}
+                ></div>
                 {!fileInfoJSX && !urlInfoJSX && (
                   <div className="chatinfo">
                     {timeBox && (
@@ -407,4 +423,4 @@ MessageBox.defaultProps = {
   marking: '',
 };
 
-export default MessageBox;
+export default React.memo(MessageBox);
