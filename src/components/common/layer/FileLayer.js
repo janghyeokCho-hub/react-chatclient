@@ -14,6 +14,9 @@ import Config from '@/config/config';
 import { openPopup } from '@/lib/common';
 import { format } from 'date-fns';
 import LoadingWrap from '@COMMON/LoadingWrap';
+import { getConfig } from '@/lib/util/configUtil';
+
+const fileAttachViewMode = getConfig('FileAttachViewMode');
 
 let isDown = false;
 const FileLayer = () => {
@@ -567,13 +570,15 @@ const FileLayer = () => {
               disabled={loading}
               title={covi.getDic('ZoomOut')}
             ></button>
-            <button
-              type="button"
-              className="download"
-              onClick={handleSave}
-              disabled={loading}
-              title={covi.getDic('Save')}
-            ></button>
+            { fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Download === true && (
+              <button
+                type="button"
+                className="download"
+                onClick={handleSave}
+                disabled={loading}
+                title={covi.getDic('Save')}
+              ></button>
+            )}
             <button
               type="button"
               className="info"
