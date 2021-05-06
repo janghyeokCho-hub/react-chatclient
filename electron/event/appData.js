@@ -700,7 +700,6 @@ export const reqUnreadCountForMessagesSync = async (event, args) => {
         .orderBy('messageId', 'desc');
 
       if (messages.length > 0) {
-        console.log(messages);
         let pivotUnreadCount = messages[0].unreadCnt;
         await messages.forEach(async data => {
           if (data.unreadCnt < pivotUnreadCount) {
@@ -1225,8 +1224,6 @@ export const reqSaveMessage = async params => {
   if (loginInfo.getData()) {
     const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
 
-    console.log(params);
-
     try {
       dbCon('message')
         .insert({
@@ -1707,8 +1704,6 @@ export const reqGetMessages = async (event, args) => {
   let messages = [];
   const returnObj = {};
 
-  console.log(args);
-
   if (loginInfo.getData()) {
     try {
       if (args.dist == 'CENTER') {
@@ -1771,6 +1766,26 @@ const selectMessages = async params => {
     .from(subQuery.as('a'))
     .orderBy('a.messageId');
 
+  return messages;
+};
+
+export const selectBetweenMessagesByIDs = async params => {
+  const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
+
+  const selectMessage = dbCon
+    .select(
+      'messageId AS messageID',
+      'context',
+      'sender',
+      'sendDate',
+      'fileInfos',
+      'senderInfo',
+      'linkInfo',
+    )
+    .from('message')
+    .whereBetween('messageId', [params.startId, params.endId]);
+
+  const messages = await selectMessage;
   return messages;
 };
 

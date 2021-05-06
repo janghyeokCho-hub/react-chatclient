@@ -58,7 +58,6 @@ module.exports = (env, options) => {
       }),
       new webpack.DefinePlugin({
         DEF_MODE: JSON.stringify(options.mode),
-        EXTENDED_COPY: true, // 채팅방 메시지복사시 작성자+시간 포함여부
         APP_VERSION: JSON.stringify(version),
         APP_ID: JSON.stringify(appId),
       }),

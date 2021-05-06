@@ -763,6 +763,10 @@ ipcMain.on('req-get-messages', async (event, args) => {
     appDataEvt.reqUnreadCountForSync(event, param);
   }
 });
+ipcMain.on('req-get-messages-between', async (event, args) => {
+  const returnValue = await appDataEvt.selectBetweenMessagesByIDs(event, args);
+  event.returnValue = returnValue;
+});
 ipcMain.on('req-get-search-messages', async (event, args) => {
   event.returnValue = await appDataEvt.reqGetSearchMessages(event, args);
 });
