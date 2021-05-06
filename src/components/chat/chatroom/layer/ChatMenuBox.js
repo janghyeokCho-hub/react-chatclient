@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import InviteMember from '@/components/chat/chatroom/layer/InviteMember';
 import UserInfoBox from '@/components/common/UserInfoBox';
-import { clearLayer, appendLayer, openPopup } from '@/lib/common';
+import { clearLayer, appendLayer, openPopup, getDictionary } from '@/lib/common';
 import { Scrollbars } from 'react-custom-scrollbars';
 import PhotoSummary from '@/components/chat/chatroom/layer/PhotoSummary';
 import FileSummary from '@/components/chat/chatroom/layer/FileSummary';
@@ -214,12 +214,15 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
           if (result) {
             let fileName = roomInfo.roomName;
 
-            if (fileName == '')
-              if (roomInfo.roomType == 'G')
+            if (fileName == '') {
+              if (roomInfo.roomType == 'G') {
                 fileName = `groupchat_(${roomInfo.members.length})`;
-              else if (roomInfo.roomType == 'M')
-                fileName = roomInfo.members.find(item => item.id != id).name;
-
+              }
+              else if (roomInfo.roomType == 'M') {
+                const userName = roomInfo.members.find(item => item.id != id).name;
+                fileName = getDictionary(userName) || userName;
+              }
+            }
             fileName = fileName + '_chat.txt';
             downloadMessageData(roomInfo.roomID, fileName);
           }
