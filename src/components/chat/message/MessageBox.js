@@ -14,6 +14,9 @@ import { evalConnector } from '@/lib/deviceConnector';
 const MessageBox = ({
   message,
   isMine,
+  isCopy,
+  startMessage,
+  endMessage,
   nameBox,
   timeBox,
   id,
@@ -275,12 +278,35 @@ const MessageBox = ({
       menuId = `channelmessage_${message.messageID}`;
     }
 
+    let copy = false;
+    if (startMessage > 0 && endMessage > 0) {
+      if (
+        startMessage <= message.messageID &&
+        endMessage >= message.messageID
+      ) {
+        copy = true;
+      }
+    }
+
     if (!isMine) {
       return (
         <>
           {drawText && (
             <>
               <li className={nameBoxVisible ? 'sent' : 'text-only sent'}>
+                {copy && (
+                  <div
+                    className="copyBox"
+                    style={{
+                      position: 'absolute',
+                      display: 'inline-block',
+                      marginLeft: 'auto',
+                      backgroundColor: '#00000044',
+                      width: '150px',
+                      height: '100%',
+                    }}
+                  ></div>
+                )}
                 {nameBoxVisible && (
                   <>
                     <ProfileBox
@@ -334,6 +360,7 @@ const MessageBox = ({
                         ? 'msgtxt'
                         : `msgtxt ${messageType}`
                     }
+                    style={isCopy ? { userSelect: 'none' } : {}}
                     eleId={id}
                     marking={marking}
                     mentionInfo={mentionInfo}
@@ -367,6 +394,19 @@ const MessageBox = ({
           {drawText && (
             <>
               <li className={nameBoxVisible ? 'replies' : 'text-only replies'}>
+                {copy && (
+                  <div
+                    className="copyBox"
+                    style={{
+                      position: 'absolute',
+                      display: 'inline-block',
+                      marginLeft: 'auto',
+                      backgroundColor: '#00000044',
+                      width: '100%',
+                      height: '100%',
+                    }}
+                  ></div>
+                )}
                 {!fileInfoJSX && !urlInfoJSX && (
                   <div className="chatinfo">
                     {message.unreadCnt > 0 && (
@@ -386,6 +426,7 @@ const MessageBox = ({
                         ? 'msgtxt'
                         : `msgtxt ${messageType}`
                     }
+                    style={isCopy ? { userSelect: 'none' } : {}}
                     eleId={id}
                     marking={marking}
                     mentionInfo={mentionInfo}
@@ -402,7 +443,7 @@ const MessageBox = ({
         </>
       );
     }
-  }, [message, marking]);
+  }, [message, marking, startMessage, endMessage]);
 
   return drawMessage;
 };

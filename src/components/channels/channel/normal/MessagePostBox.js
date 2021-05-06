@@ -13,6 +13,7 @@ import { messageCurrentTyping } from '@/modules/room';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import * as commonApi from '@/lib/common';
 import { evalConnector } from '@/lib/deviceConnector';
+import { getConfig } from '@/lib/util/configUtil';
 
 import { Scrollbars } from 'react-custom-scrollbars';
 const EmojiLayer = loadable(() =>
@@ -42,6 +43,8 @@ const MessagePostBox = forwardRef(
     const tempFiles = useSelector(({ message }) => message.tempFiles);
     const currentChannel = useSelector(({ channel }) => channel.currentChannel);
     const selectEmoticon = useSelector(({ channel }) => channel.selectEmoticon);
+
+    const { PC } = getConfig('FileAttachMode') || {};
 
     const [inputLock, setInputLock] = useState(isLock);
     const [useEmoji, setUseEmoji] = useState(false);
@@ -238,6 +241,17 @@ const MessagePostBox = forwardRef(
         const fileCtrl = coviFile.getInstance();
 
         if (target.files.length > 0) {
+          if (PC && PC.upload === false) {
+            commonApi.openPopup(
+              {
+                type: 'Alert',
+                message: covi.getDic('Block_FileUpload', '파일 첨부가 금지되어 있습니다.')
+              },
+              dispatch,
+            );
+            return;
+          }
+
           const appendResult = fileCtrl.appendFiles(target.files);
 
           if (appendResult.result == 'SUCCESS') {
@@ -289,6 +303,18 @@ const MessagePostBox = forwardRef(
             clipboardData.types.length == 1 &&
             clipboardData.types[0] == 'Files'
           ) {
+            // 파일업로드 금지
+            if (PC && PC.upload === false) {
+              commonApi.openPopup(
+                {
+                  type: 'Alert',
+                  message: covi.getDic('Block_FileUpload', '파일 첨부가 금지되어 있습니다.')
+                },
+                dispatch,
+              );
+              return;
+            }
+
             if (clipboardData.files.length > 0) {
               // 한개의 파일에 대해서만 처리
               // 이미지만 붙혀넣을 수 있음
@@ -466,28 +492,30 @@ const MessagePostBox = forwardRef(
                     </svg>
                   </button>
                 )}
-                <button
-                  type="button"
-                  alt="File"
-                  title="File"
-                  onClick={e => {
-                    !inputLock && fileUploadControl.current.click();
-                    e.stopPropagation();
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16.882"
-                    height="18.798"
-                    viewBox="0 0 16.882 18.798"
+                {(typeof PC === 'undefined' || PC.upload !== false) && (
+                  <button
+                    type="button"
+                    alt="File"
+                    title="File"
+                    onClick={e => {
+                      !inputLock && fileUploadControl.current.click();
+                      e.stopPropagation();
+                    }}
                   >
-                    <path
-                      d="M36.374,5.613a.67.67,0,0,0-.947-.947l-7.011,7.011a2.152,2.152,0,0,0,3.043,3.043L38.8,7.374A1.046,1.046,0,0,0,39,7.24c.981-.981,3.589-3.589,1.081-6.1A3.483,3.483,0,0,0,36.764.085a6.371,6.371,0,0,0-3.043,1.872L25.763,9.915a4.9,4.9,0,0,0-1.393,3.7,5.535,5.535,0,0,0,1.572,3.656A5.327,5.327,0,0,0,29.564,18.8h.111a4.943,4.943,0,0,0,3.533-1.438l7.847-7.847a.67.67,0,0,0-.947-.947l-7.847,7.847a3.673,3.673,0,0,1-2.675,1.048,3.962,3.962,0,0,1-2.876-6.6L34.668,2.9a5.178,5.178,0,0,1,2.374-1.5,2.149,2.149,0,0,1,2.1.7,1.738,1.738,0,0,1,.58,1.906A4.92,4.92,0,0,1,38.6,5.736a1.394,1.394,0,0,0-.134.1l-7.947,7.947a.812.812,0,0,1-1.148-1.148Z"
-                      transform="translate(-24.365 0)"
-                      fill="#999"
-                    ></path>
-                  </svg>
-                </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16.882"
+                      height="18.798"
+                      viewBox="0 0 16.882 18.798"
+                    >
+                      <path
+                        d="M36.374,5.613a.67.67,0,0,0-.947-.947l-7.011,7.011a2.152,2.152,0,0,0,3.043,3.043L38.8,7.374A1.046,1.046,0,0,0,39,7.24c.981-.981,3.589-3.589,1.081-6.1A3.483,3.483,0,0,0,36.764.085a6.371,6.371,0,0,0-3.043,1.872L25.763,9.915a4.9,4.9,0,0,0-1.393,3.7,5.535,5.535,0,0,0,1.572,3.656A5.327,5.327,0,0,0,29.564,18.8h.111a4.943,4.943,0,0,0,3.533-1.438l7.847-7.847a.67.67,0,0,0-.947-.947l-7.847,7.847a3.673,3.673,0,0,1-2.675,1.048,3.962,3.962,0,0,1-2.876-6.6L34.668,2.9a5.178,5.178,0,0,1,2.374-1.5,2.149,2.149,0,0,1,2.1.7,1.738,1.738,0,0,1,.58,1.906A4.92,4.92,0,0,1,38.6,5.736a1.394,1.394,0,0,0-.134.1l-7.947,7.947a.812.812,0,0,1-1.148-1.148Z"
+                        transform="translate(-24.365 0)"
+                        fill="#999"
+                      ></path>
+                    </svg>
+                  </button>
+                )}
                 {liveMeet && (
                   <button
                     type="button"

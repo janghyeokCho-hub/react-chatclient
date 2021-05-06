@@ -12,7 +12,6 @@ const FileMenuBox = ({
   downloaded,
   onOpen,
 }) => {
-  console.log('downloaded', downloaded);
   const handleOpenFile = useCallback(() => {
     onOpen(false);
   }, [onOpen]);
