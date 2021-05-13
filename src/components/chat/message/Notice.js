@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Plain, Link, Tag, Sticker, Mention  } from '@C/chat/message/types';
+import { Plain, Link, Tag, Sticker, Mention } from '@C/chat/message/types';
 import {
   getDictionary,
   isJSONStr,
@@ -59,19 +59,24 @@ const Notice = ({ type, value, title, func }) => {
       );
     }
     let procValMsgMessage = procVal;
-    const pattern = new RegExp(/[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/, 'gi');
+    const pattern = new RegExp(
+      /[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/,
+      'gi',
+    );
 
     if (eumTalkRegularExp.test(procVal)) {
       const processMsg = convertEumTalkProtocol(procVal);
       procValMsgMessage = processMsg.message;
       mentionInfo = processMsg.mentionInfo;
-    }
-    else if(pattern.exec(procVal)){
+    } else if (pattern.exec(procVal)) {
       const processMsg = convertEumTalkProtocol(procVal);
       procValMsgMessage = processMsg.message;
     }
 
-    const pattern2 = new RegExp(/[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/, 'gi');
+    const pattern2 = new RegExp(
+      /[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/,
+      'gi',
+    );
     let returnJSX = [];
 
     let beforeLastIndex = 0;
@@ -88,11 +93,16 @@ const Notice = ({ type, value, title, func }) => {
       }
       var attrs = getAttribute(match[0]);
       if (match[1] == 'LINK') {
-        returnJSX.push(<Link key={returnJSX.length} text={procValMsgMessage.substring(beforeLastIndex, match.index)} {...attrs}></Link>);
+        returnJSX.push(
+          <Link
+            key={returnJSX.length}
+            text={procValMsgMessage.substring(beforeLastIndex, match.index)}
+            {...attrs}
+          ></Link>,
+        );
       } else if (match[1] == 'NEWLINE') {
         returnJSX.push(<br key={returnJSX.length} />);
-      } 
-      else if (match[1] == 'TAG') {
+      } else if (match[1] == 'TAG') {
         returnJSX.push(
           <Tag key={returnJSX.length} marking={marking} {...attrs}></Tag>,
         );
@@ -111,7 +121,7 @@ const Notice = ({ type, value, title, func }) => {
       beforeLastIndex = match.index + match[0].length;
     }
 
-    if (beforeLastIndex < procValMsgMessage.length){
+    if (beforeLastIndex < procValMsgMessage.length) {
       returnJSX.push(
         <Plain
           key={returnJSX.length}
@@ -119,7 +129,7 @@ const Notice = ({ type, value, title, func }) => {
         ></Plain>,
       );
     }
-  
+
     return returnJSX;
   }, [value]);
 
@@ -181,18 +191,18 @@ const Notice = ({ type, value, title, func }) => {
         return () => {
           evalConnector({
             method: 'removeListener',
-            channel: 'onRemoteAssistance'
-          })
+            channel: 'onRemoteAssistance',
+          });
 
           evalConnector({
             method: 'send',
             channel: 'onRemoteAssistance',
             message: {
               sessionKey: data.sessionKey,
-              isViewer: 'Y'
+              isViewer: 'Y',
             },
           });
-        }
+        };
       }
     },
     [dispatch, userInfo],

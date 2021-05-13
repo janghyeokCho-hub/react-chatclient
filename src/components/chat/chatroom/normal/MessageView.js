@@ -187,7 +187,14 @@ const MessageView = ({
     // TODO: 다국어 처리
     const msgObj = {
       title: '화상회의',
-      context: '회의에 참석해주세요',
+      context:
+        liveMeet.type == 'jitsi'
+          ? '화상회의( ' +
+            liveMeet.domain +
+            '/' +
+            roomInfo.roomID +
+            ' )에 참석해주세요'
+          : '화상회의에 참석해주세요',
       func: {
         name: '페이지로 이동',
         type: 'link',
