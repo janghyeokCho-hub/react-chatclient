@@ -33,6 +33,7 @@ import Config from '@/config/config';
 import useTimestamp from '@/hooks/useTimestamp';
 
 const UserSetting = ({ history }) => {
+  const useChannelConfig = covi.config && covi.config.UseChannel && covi.config.UseChannel === 'Y';
   const { myInfo, syncDate } = useSelector(({ login }) => ({
     myInfo: login.userInfo,
     syncDate: login.registDate,
@@ -829,7 +830,7 @@ const UserSetting = ({ history }) => {
                       items={[
                         { name: covi.getDic('Contact'), value: 'contactlist' },
                         { name: covi.getDic('Chat'), value: 'chatlist' },
-                        { name: covi.getDic('Channel'), value: 'channellist' },
+                        ...(useChannelConfig ? [{ name: covi.getDic('Channel'), value: 'channellist' }] : []),
                       ]}
                       order={1}
                       defaultValue={firstMenu}
