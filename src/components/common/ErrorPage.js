@@ -25,7 +25,9 @@ const ErrorPage = () => {
       });
     }
 
-    location.reload();
+    setTimeout(() => {
+      location.reload()
+    }, 10000);
   }, []);
 
   const handleClose = () => {

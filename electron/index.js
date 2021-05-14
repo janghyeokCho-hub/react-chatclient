@@ -157,7 +157,7 @@ const appReady = async () => {
               SERVER_SETTING.purge();
               loadMainWindow();
             }
-          }, 500);
+          }, 10000);
         });
 
       powerMonitor.on('lock-screen', lockScreenEvt);
