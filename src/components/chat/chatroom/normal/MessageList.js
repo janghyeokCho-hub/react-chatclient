@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import loadable from '@loadable/component';
 import MessageBox from '@C/chat/message/MessageBox';
@@ -23,6 +29,7 @@ import {
   readMessage,
   getRoomInfo,
 } from '@/modules/room';
+import { hasClass, messageCopy, getMsgElement } from '@/lib/util/domUtil';
 import { evalConnector } from '@/lib/deviceConnector';
 import { getMessage } from '@/lib/messageUtil';
 import LoadingWrap from '@COMMON/LoadingWrap';
@@ -41,10 +48,87 @@ const MessageList = ({ onExtension, viewExtension }) => {
   const [topEnd, setTopEnd] = useState(false);
   const [reload, setReload] = useState(false);
 
+  const [startSelectMessage, setStartSelectMessage] = useState(-1);
+  const [endSelectMessage, setEndSelectMessage] = useState(-1);
+
   const dispatch = useDispatch();
+
+  const disableCopy = async e => {
+    if ((e.ctrlKey || e.metaKey) && e.keyCode == 67) {
+      window.getelestartMessageID;
+
+      let start = document.getElementsByClassName('startMessageID').item(0)
+        .value;
+      let end = document.getElementsByClassName('endMessageID').item(0).value;
+
+      messageCopy(messages, start, end).then(success => {
+        if (success) {
+          document.removeEventListener('keydown', disableCopy);
+          setStartSelectMessage(-1);
+          setEndSelectMessage(-1);
+        }
+      });
+
+      e.returnValue = false;
+    }
+  };
+
+  const handleSelectionChange = e => {
+    const selectionValue = window.getSelection();
+
+    let startMessageId = -1;
+    let endMessageId = -1;
+
+    try {
+      const selectRange = selectionValue.getRangeAt(0);
+
+      const selectElementContainer = selectRange.commonAncestorContainer;
+
+      if (hasClass(selectElementContainer, 'messages-chat-list')) {
+        // 만약 메시지가 다중 선택일 경우에는 선택 메시지 추가
+        startMessageId = getMsgElement(selectRange.startContainer).getAttribute(
+          'data-messageid',
+        );
+        endMessageId = getMsgElement(
+          selectRange.endContainer,
+          true,
+        ).getAttribute('data-messageid');
+
+        if (startMessageId > endMessageId) {
+          let tempId = startMessageId;
+          startMessageId = endMessageId;
+          endMessageId = tempId;
+        }
+
+        if (startSelectMessage != startMessageId)
+          setStartSelectMessage(startMessageId);
+        if (endSelectMessage != endMessageId) setEndSelectMessage(endMessageId);
+
+        document.addEventListener('keydown', disableCopy);
+      }
+    } catch {
+      setStartSelectMessage(-1);
+      setEndSelectMessage(-1);
+    }
+  };
+
+  const handleMouseDown = e => {
+    setStartSelectMessage(-1);
+    setEndSelectMessage(-1);
+  };
+
+  const cbRef = useRef(handleSelectionChange);
+  useEffect(() => {
+    cbRef.current = handleSelectionChange;
+  });
 
   useEffect(() => {
     setMounted(true);
+
+    const cb = e => cbRef.current(e);
+
+    document.addEventListener('selectionchange', cb);
+    document.addEventListener('mousedown', handleMouseDown);
 
     evalConnector({
       method: 'on',
@@ -55,6 +139,8 @@ const MessageList = ({ onExtension, viewExtension }) => {
     });
 
     return () => {
+      document.removeEventListener('selectionchange', cb);
+      document.removeEventListener('mousedown', handleMouseDown);
       evalConnector({
         method: 'removeListener',
         channel: 'onReSyncMessage',
@@ -313,30 +399,6 @@ const MessageList = ({ onExtension, viewExtension }) => {
             // },
           );
         }
-
-        // if (message.isMine == 'Y') {
-        //   menus.push({
-        //     code: 'deleteMessage',
-        //     isline: false,
-        //     onClick: () => {
-        //       openPopup(
-        //         {
-        //           type: 'Confirm',
-        //           message: covi.getDic('Msg_DeleteMsg'),
-        //           callback: result => {
-        //             if (result) {
-        //               messageApi.deleteChannelMessage({
-        //                 messageId: message.messageID,
-        //               });
-        //             }
-        //           },
-        //         },
-        //         dispatch,
-        //       );
-        //     },
-        //     name: covi.getDic('Delete'),
-        //   });
-        // }
       }
       return menus;
     },
@@ -346,14 +408,6 @@ const MessageList = ({ onExtension, viewExtension }) => {
   const drawMessage = useMemo(() => {
     if (messages.length > 0) {
       let lastDate = '';
-      /*
-      if (messages[messages.length - 1].sendDate != null) {
-        lastDate = format(
-          new Date(messages[messages.length - 1].sendDate),
-          'yyyyMMdd',
-        );
-      }
-      */
       let currentSender = '';
 
       let currentTime = Math.floor(
@@ -405,6 +459,8 @@ const MessageList = ({ onExtension, viewExtension }) => {
               key={message.messageID}
               message={message}
               isMine={message.isMine == 'Y'}
+              startMessage={startSelectMessage}
+              endMessage={endSelectMessage}
               nameBox={nameBox}
               timeBox={timeBox}
               getMenuData={getMenuData}
@@ -433,7 +489,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
 
       return returnJSX;
     }
-  }, [messages]);
+  }, [messages, startSelectMessage, endSelectMessage]);
 
   const drawTempMessage = useMemo(() => {
     return tempMessage.map(message => {
@@ -467,6 +523,17 @@ const MessageList = ({ onExtension, viewExtension }) => {
 
   return (
     <>
+      <input
+        className="startMessageID"
+        style={{ display: 'none' }}
+        value={startSelectMessage}
+      />
+      <input
+        className="endMessageID"
+        style={{ display: 'none' }}
+        value={endSelectMessage}
+      />
+
       {messageLoading && (
         <LoadingWrap style={{ top: 60, height: 'calc(100% - 183px)' }} />
       )}

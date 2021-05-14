@@ -130,11 +130,6 @@ const MessageView = ({
   const { copyWithSenderInfo } = useCopyWithSenderInfo();
 
   useEffect(() => {
-    // 채팅방 메시지 복사시 작성자+시간 포함기능을 사용하지 않을 경우 로직 통과
-    if (EXTENDED_COPY === false) {
-      return;
-    }
-
     // 서버에서 포함기능을 껏으면 사용 x
     if (useMessageCopy === false) {
       return;
@@ -192,7 +187,14 @@ const MessageView = ({
     // TODO: 다국어 처리
     const msgObj = {
       title: '화상회의',
-      context: '회의에 참석해주세요',
+      context:
+        liveMeet.type == 'jitsi'
+          ? '화상회의( ' +
+            liveMeet.domain +
+            '/' +
+            roomInfo.roomID +
+            ' )에 참석해주세요'
+          : '화상회의에 참석해주세요',
       func: {
         name: '페이지로 이동',
         type: 'link',

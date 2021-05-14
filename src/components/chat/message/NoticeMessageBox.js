@@ -29,8 +29,6 @@ const NoticeMessageBox = ({ message, isMine, nameBox, timeBox }) => {
     }
 
     if (messageType == 'message') {
-      drawText = common.convertURLMessage(drawText);
-
       // NEW LINE 처리
       drawText = drawText.replace(/\n/gi, '<NEWLINE />');
     }

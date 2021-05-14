@@ -30,7 +30,7 @@ const getAttribute = tag => {
   return attrs;
 };
 
-const Message = ({ children, className, eleId, marking, messageID }) => {
+const Message = ({ children, style, className, eleId, marking, messageID }) => {
   const drawText = useMemo(() => {
     const pattern = new RegExp(
       /[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/,
@@ -83,6 +83,7 @@ const Message = ({ children, className, eleId, marking, messageID }) => {
     if (beforeLastIndex < children.length)
       returnJSX.push(
         <Plain
+          style={style}
           key={returnJSX.length}
           text={children.substr(beforeLastIndex)}
           marking={marking}

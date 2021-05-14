@@ -76,7 +76,6 @@ module.exports = (env, options) => {
           options.target ? (options.target == 'web' ? 'G' : 'N') : 'G',
         ),
         DEF_TARGET: JSON.stringify(options.target || 'web'),
-        EXTENDED_COPY: true, // 채팅방 메시지복사시 작성자+시간 포함여부
         DEF_MODE: JSON.stringify(options.mode),
         DEVICE_TYPE: JSON.stringify(
           options.target ? (options.target == 'web' ? 'b' : 'd') : 'b',
