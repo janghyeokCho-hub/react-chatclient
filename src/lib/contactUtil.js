@@ -1,4 +1,4 @@
-import { addContacts, deleteContacts } from '@/modules/contact';
+import { addContacts, deleteContacts, addCustomGroup } from '@/modules/contact';
 import { addFixedUsers } from '@/modules/presence';
 
 export const addFavorite = (dispatch, userInfo, orgFolderType) => {
@@ -43,6 +43,17 @@ export const addContactList = (dispatch, list) => {
   dispatch(addContacts(list));
 
   const presenceList = list.filter(item => {
+    if (item.targetType == 'U')
+      return { id: item.targetId, presence: item.presence };
+  });
+
+  dispatch(addFixedUsers(presenceList));
+};
+
+export const addGroupContactList = (dispatch, groupInfo) => {
+  dispatch(addCustomGroup(groupInfo));
+
+  const presenceList = groupInfo.sub.filter(item => {
     if (item.targetType == 'U')
       return { id: item.targetId, presence: item.presence };
   });

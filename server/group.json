@@ -1,0 +1,66 @@
+[
+    {
+    "id": "3",
+    "folderID": "3"
+    ,"folderName": "임의그룹;Custom Group;その他の連絡先;其他联络人;Другие контакты;;;;;;"
+    ,"folderSortKey": "0"
+    ,"folderType": "R"
+    ,"groupCode": ""
+    ,"pChat": "Y"
+    ,"groups":[
+      {
+        "id": "1"
+        ,"groupID": "1"
+        ,"groupName": "test01"
+        ,"groupSortKey": "0"
+        ,"groupCode": ""
+        ,"pChat": "Y"
+        ,"sub":[
+          {
+            "LN": "대표이사;;;;;;;;;"
+            ,"PN": "대표이사;;;;;;;;;"
+            ,"TN": "대표이사;;;;;;;;;"
+            ,"absenceInfo": null
+            ,"dept": "영업1팀;Sales 1 Team;営業1チーム;营业1组;;;;;;;"
+            ,"id": "superadmin"
+            ,"isContact": ""
+            ,"isMobile": "N"
+            ,"jobKey": "186"
+            ,"name": "강동원;Kang Dong-won;カンドンウォン;姜东元;;;;;;;"
+            ,"pChat": "Y"
+            ,"photoPath": "http://192.168.11.80//gwstorage/PhotoPath/superadmin.jpg"
+            ,"presence": "offline"
+            ,"type": "U"
+            ,"work": "영업본부의 대표이사"
+          }
+        ]
+      },
+      {
+        "id": "2"
+        ,"groupID": "2"
+        ,"groupName": "test02"
+        ,"groupSortKey": "0"
+        ,"groupCode": ""
+        ,"pChat": "Y"
+        ,"sub":[
+          {
+            "LN": "대표이사;;;;;;;;;"
+            ,"PN": "대표이사;;;;;;;;;"
+            ,"TN": "대표이사;;;;;;;;;"
+            ,"absenceInfo": null
+            ,"dept": "영업1팀;Sales 1 Team;営業1チーム;营业1组;;;;;;;"
+            ,"id": "superadmin"
+            ,"isContact": ""
+            ,"isMobile": "N"
+            ,"jobKey": "186"
+            ,"name": "강동원;Kang Dong-won;カンドンウォン;姜东元;;;;;;;"
+            ,"pChat": "Y"
+            ,"photoPath": "http://192.168.11.80//gwstorage/PhotoPath/superadmin.jpg"
+            ,"presence": "offline"
+            ,"type": "U"
+            ,"work": "영업본부의 대표이사"
+          }
+        ]
+      }
+    ]
+  }]

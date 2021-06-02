@@ -33,6 +33,12 @@ const [
   GET_ITEMGROUP_FAILURE,
 ] = createRequestActionTypes('contact/GET_ITEMGROUP');
 
+const [
+  ADD_CUSTOMGROUP,
+  ADD_CUSTOMGROUP_SUCCESS,
+  ADD_CUSTOMGROUP_FAILURE
+] = createRequestActionTypes('contact/ADD_CUSTOMGROUP');
+
 const SET_CONTACTS = 'contact/SET_CONTACTS';
 
 const MAPPING_USER_CHAT_ROOM = 'contact/MAPPING_USER_CHAT_ROOM';
@@ -45,6 +51,7 @@ export const deleteContacts = createAction(DELETE_CONTACTS);
 export const getItemGroup = createAction(GET_ITEMGROUP);
 export const mappingUserChatRoom = createAction(MAPPING_USER_CHAT_ROOM);
 export const setContacts = createAction(SET_CONTACTS);
+export const addCustomGroup = createAction(ADD_CUSTOMGROUP);
 export const init = createAction(INIT);
 
 const getContactsSaga = createRequestSaga(
@@ -99,6 +106,53 @@ function createAddContactsSaga(type) {
 
 const addContactsSaga = createAddContactsSaga(ADD_CONTACTS);
 
+function createAddCustomGroupSaga(type) {
+  const SUCCESS = `${type}_SUCCESS`;
+  const FAILURE = `${type}_FAILURE`;
+
+  return function* (action) {
+    if (!action.payload) return;
+
+    try {
+      const response = yield call(contactApi.addCustomGroup, action.payload);
+      //const success = response.data.status === 'SUCCESS';
+      let message = null;
+
+      // 대화상대 성공 추가
+      // if (success === true) {
+      //   message = covi.getDic("Msg_AddContacts_Success", "대화상대 추가에 성공했습니다.")
+      // } else {
+      //   // 대화상대 추가 실패
+      //   message = covi.getDic("Msg_AddContacts_Fail", "대화상대 추가에 실패했습니다.<br />잠시 후에 다시 시도해주세요.");
+      // }
+      message = covi.getDic("Msg_AddContacts_Success", "그룹 추가에 성공했습니다.")
+
+      yield put({
+        type: SUCCESS,
+        payload: action.payload
+      });
+
+      //대화상대 추가 피드백 (팝업창)
+      yield put(create({
+        type: 'Alert',
+        message,
+        callback: () => {
+        },
+      }));
+    } catch (err) {
+      // request 에러
+      yield put({
+        type: FAILURE,
+        payload: action.payload,
+        error: true,
+        errMessage: err
+      });
+    }
+  }
+}
+
+const addCustomGroupSaga = createAddCustomGroupSaga(ADD_CUSTOMGROUP);
+
 const deleteContactsSaga = createRequestSaga(
   DELETE_CONTACTS,
   contactApi.deleteContactList,
@@ -115,6 +169,7 @@ export function* contactSaga() {
   yield takeLatest(ADD_CONTACTS, addContactsSaga);
   yield takeLatest(DELETE_CONTACTS, deleteContactsSaga);
   yield takeLatest(GET_ITEMGROUP, getItemGroupSaga);
+  yield takeLatest(ADD_CUSTOMGROUP, addCustomGroupSaga);
 }
 
 const initialState = {
@@ -285,6 +340,13 @@ const contact = handleActions(
         }
       });
     },
+    [ADD_CUSTOMGROUP_SUCCESS]: (state, action) => {
+      return produce(state, draft =>{
+        const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R')
+        console.log(action.payload)
+        draft.contacts[groupIdx].groups = draft.contacts[groupIdx].groups.concat(action.payload);
+      });
+    }
   },
   initialState,
 );

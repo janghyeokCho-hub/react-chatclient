@@ -18,3 +18,7 @@ export const getItemGroupOneDepth = params => {
     `/user/contact/${params.folderID}/${params.folderType}`,
   );
 };
+
+export const addCustomGroup = params => {
+  return null;
+};

@@ -11,7 +11,9 @@ import UserInfoBox from '@COMMON/UserInfoBox';
 import { addFavorite, deleteContact } from '@/lib/contactUtil';
 import RightConxtMenu from '@COMMON/popup/RightConxtMenu';
 import { openChatRoomView } from '@/lib/roomUtil';
-import { openPopup, getDictionary } from '@/lib/common';
+import { openPopup, getDictionary, openLayer } from '@/lib/common';
+import GroupItem from './GroupItem';
+import AddGroup from './AddGroup';
 
 const ContactItem = React.memo(({ contact, subItem, isMine }) => {
   const viewType = useSelector(({ room }) => room.viewType);
@@ -140,7 +142,7 @@ const Contact = ({ contact, viewType, checkObj }) => {
     }
   }, [contact.sub]);
 
-  const handleIsOpen = useCallback(() => {
+  const handleIsOpen = useCallback((evt) => {
     setIsopen(!isopen);
     if (isopen) subDivEl.current.style.display = 'none';
     else {
@@ -216,23 +218,35 @@ const Contact = ({ contact, viewType, checkObj }) => {
 
     return returnMenu;
   }, [dispatch, contact, userID, myInfo, viewTypeChat, rooms, selectId]);
+  
+  const addGroupOpen = useCallback(()=>{
+    openLayer(
+      {
+        component: <AddGroup />,
+      },
+      dispatch,
+    );
+  }, [dispatch]);
 
   return (
     <>
       <RightConxtMenu menuId={`contactFD_${contact.folderID}`} menus={menus}>
-        <a
-          className={['ListDivisionLine', isopen ? 'show' : ''].join(' ')}
-          onClick={handleIsOpen}
-        >
-          <span>
-            {getDictionary(contact.folderName)}{' '}
-            {(contact.folderType == 'F' || contact.folderType == 'C') &&
-              (contact.sub ? `(${contact.sub.length})` : `(0)`)}
-          </span>
-        </a>
+        <div className={["contextArea", contact.folderType == 'R' ? 'group': ''].join(" ")}>
+          <a
+            className={['ListDivisionLine', isopen ? 'show' : '', contact.folderType == 'R' ? 'customGroup': ''].join(' ')}
+            onClick={handleIsOpen}
+          >
+            <span>
+              {getDictionary(contact.folderName)}{' '}
+              {(contact.folderType == 'F' || contact.folderType == 'C' || contact.folderType == 'R') &&
+                (contact.sub ? `(${contact.sub.length})` : contact.groups ?  `(${contact.groups.length})` : `(0)`)}
+            </span>
+          </a>
+        </div>
+        {contact.folderType == 'R' ?  <div className={['addGroupBtn'].join(' ')} onClick={addGroupOpen}></div>: null}
       </RightConxtMenu>
       <ul className="people" ref={subDivEl}>
-        {contact.sub &&
+        {contact.sub ? contact.sub &&
           contact.sub.map(sub => {
             if (viewType == 'list') {
               // 자기자신과 대화 허용 20200720 작업시작 - shpark1
@@ -256,6 +270,17 @@ const Contact = ({ contact, viewType, checkObj }) => {
                 />
               );
             }
+          }): 
+          contact.groups && contact.groups.map(group =>{           
+            console.log(contact.folderID, group.groupID)
+            return(
+              <GroupItem 
+                key={'group'+contact.folderID + '_' + group.groupID}
+                contact={contact}
+                groupItem={group}  
+                //isMine={sub.id == userID}//먼지파악필.
+              />
+            )
           })}
       </ul>
     </>

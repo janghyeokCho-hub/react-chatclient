@@ -36,6 +36,8 @@ import {
   startRefreshInterval,
 } from '@/lib/zoomService';
 
+import testJson from "../../server/group.json";
+
 const [
   LOGIN_REQUEST,
   LOGIN_REQUEST_SUCCESS,
@@ -99,7 +101,7 @@ export const reSync = createAction(RESYNC);
 function createLoginRequestSaga(loginType, syncType) {
   const SUCCESS = `${loginType}_SUCCESS`;
   const FAILURE = `${loginType}_FAILURE`;
-
+  console.log('loginReqSaga')
   return function* (action) {
     if (action.payload) {
       try {
@@ -200,6 +202,9 @@ function createLoginRequestSaga(loginType, syncType) {
               response.data.result.DeptCode,
             );
             if (contacts.data.status == 'SUCCESS') {
+              yield console.log(contacts.data.result)
+              //임시데이터
+              yield contacts.data.result.splice(2, 0, testJson[0])
               yield put(setContacts(contacts.data));
 
               const users = yield call(getFixedUserData, {
@@ -500,6 +505,8 @@ function createSyncTokenRequestSaga(type) {
               authData.DeptCode,
             );
             if (contacts.data.status == 'SUCCESS') {
+              yield contacts.data.result.splice(2, 0, testJson[0])
+
               yield put(setContacts(contacts.data));
 
               const users = yield call(getFixedUserData, {
