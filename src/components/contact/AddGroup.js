@@ -55,8 +55,8 @@ const AddGroup = () => {
   }, []);
 
   const handleAddBtn = useCallback(() => {
-    console.log(name)
-    var groupCnt = contacts[2].groups.length;
+    const groupIdx = contacts.findIndex((contact)=> contact.folderType == 'R');
+    var groupCnt = contacts[groupIdx].sub ? contacts[groupIdx].sub.length : 0;
     let groupInfo = {
       id: groupCnt+1,
       groupID: groupCnt+1

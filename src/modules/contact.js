@@ -8,6 +8,7 @@ import createRequestSaga, {
 } from '@/lib/createRequestSaga';
 import { getJobInfo } from '@/lib/common';
 import { create } from '@/modules/popup';
+import testJSON from "../../server/group.json";
 
 const [
   GET_CONTACTS,
@@ -343,8 +344,13 @@ const contact = handleActions(
     [ADD_CUSTOMGROUP_SUCCESS]: (state, action) => {
       return produce(state, draft =>{
         const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R')
-        console.log(action.payload)
-        draft.contacts[groupIdx].groups = draft.contacts[groupIdx].groups.concat(action.payload);
+        console.log(draft.contacts[groupIdx].sub)
+        if(!draft.contacts[groupIdx].sub){
+          draft.contacts[groupIdx].sub = []
+          draft.contacts[groupIdx].sub.push(action.payload);
+        }else{
+          draft.contacts[groupIdx].sub = draft.contacts[groupIdx].sub.concat(action.payload);
+        }
       });
     }
   },

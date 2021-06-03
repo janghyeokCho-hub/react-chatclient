@@ -239,14 +239,14 @@ const Contact = ({ contact, viewType, checkObj }) => {
             <span>
               {getDictionary(contact.folderName)}{' '}
               {(contact.folderType == 'F' || contact.folderType == 'C' || contact.folderType == 'R') &&
-                (contact.sub ? `(${contact.sub.length})` : contact.groups ?  `(${contact.groups.length})` : `(0)`)}
+                (contact.sub ? `(${contact.sub.length})` : `(0)`)}
             </span>
           </a>
         </div>
-        {contact.folderType == 'R' ?  <div className={['addGroupBtn'].join(' ')} onClick={addGroupOpen}></div>: null}
+        {viewType == 'list' && contact.folderType == 'R' ?  <div className={['addGroupBtn'].join(' ')} onClick={addGroupOpen}></div>: null}
       </RightConxtMenu>
       <ul className="people" ref={subDivEl}>
-        {contact.sub ? contact.sub &&
+        {contact.folderType != 'R' ? contact.sub &&
           contact.sub.map(sub => {
             if (viewType == 'list') {
               // 자기자신과 대화 허용 20200720 작업시작 - shpark1
@@ -271,14 +271,14 @@ const Contact = ({ contact, viewType, checkObj }) => {
               );
             }
           }): 
-          contact.groups && contact.groups.map(group =>{           
-            console.log(contact.folderID, group.groupID)
+          contact.sub && contact.sub.map(group =>{
             return(
               <GroupItem 
                 key={'group'+contact.folderID + '_' + group.groupID}
                 contact={contact}
-                groupItem={group}  
-                //isMine={sub.id == userID}//먼지파악필.
+                groupItem={group}
+                checkObj={checkObj}
+                viewType={viewType}
               />
             )
           })}

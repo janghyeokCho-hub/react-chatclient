@@ -14,6 +14,7 @@ const OrgchartContainer = ({
   searchGroup,
   handleGroup,
   searchCompanyCode,
+  group
 }) => {
   const { userInfo, userID } = useSelector(({ login }) => ({
     userInfo: login.userInfo,
@@ -27,6 +28,19 @@ const OrgchartContainer = ({
     getOrgChart({ deptID: deptCode }, { CompanyCode: companyCode }).then(
       ({ data }) => {
         if (data.status == 'SUCCESS') {
+          //임의그룹화면: 그룹멤버 제외하고 목록나오도록 수정.
+          if(group){
+            data.result.sub = data.result.sub.filter((contact)=>{
+                var flag = true;
+                group.sub.forEach(groupUser =>{
+                  if(groupUser.id === contact.id)
+                    flag = false;
+                });
+                return flag;
+            })
+          }
+
+
           setOrgpathList(data.result.path);
           setDeptProfileList(data.result.sub);
 

@@ -11,7 +11,11 @@ import InviteMember from '../chat/chatroom/layer/InviteMember';
 import useOffset from '@/hooks/useOffset';
 import { getRoomList } from '@/lib/room';
 
-const OrgChart = ({ viewType, checkObj }) => {
+/* 
+  group: 임의그룹 변경화면 그룹멤버추가 화면에서 그룹멤버는 목록에 나오지않도록 
+*/
+
+const OrgChart = ({ viewType, checkObj, group }) => {
   let searchTimer = null;
   const RENDER_UNIT = 10;
   const userID = useSelector(({ login }) => login.id);
@@ -89,8 +93,22 @@ const OrgChart = ({ viewType, checkObj }) => {
             value: encodeURIComponent(text),
             type: 'O',
           }).then(({ data }) => {
-            if (data.status == 'SUCCESS') setSearchResult(data.result);
-            else setSearchResult([]);
+            if (data.status == 'SUCCESS') {
+              //그룹 존재시 그룹멤버 제외하고 목록나오도록
+              if(group){
+                data.result = data.result.filter((contact)=>{
+                    var flag = true;
+                    group.sub.forEach(groupUser =>{
+                      if(groupUser.id === contact.id)
+                        flag = false;
+                    });
+                    return flag;
+                })
+              } 
+              setSearchResult(data.result);
+            }else{
+              setSearchResult([]);
+            }
           });
         }, 500);
       } else {
@@ -149,6 +167,7 @@ const OrgChart = ({ viewType, checkObj }) => {
             handleGroup={handleSearchGroup}
             searchResult={searchResult}
             searchCompanyCode={searchCompanyCode}
+            group={group}
           />
         </Scrollbars>
       )}
