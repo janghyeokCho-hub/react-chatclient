@@ -16,9 +16,9 @@ import {
   modifyUserPassword,
   modifyUserProfileImage,
   modifyUserInfo,
+  changeNotificationBlockOption,
 } from '@/lib/setting';
 import { openPopup, getJobInfo } from '@/lib/common';
-
 import { getAesUtil } from '@/lib/aesUtil';
 import {
   evalConnector,
@@ -28,86 +28,68 @@ import {
   getDownloadDefaultPath,
   openDirectoryDialog,
 } from '@/lib/deviceConnector';
-
 import Config from '@/config/config';
 import useTimestamp from '@/hooks/useTimestamp';
-
 const UserSetting = ({ history }) => {
-  const useChannelConfig = covi.config && covi.config.UseChannel && covi.config.UseChannel === 'Y';
   const { myInfo, syncDate } = useSelector(({ login }) => ({
     myInfo: login.userInfo,
     syncDate: login.registDate,
   }));
-
   const [activeSettingTab, setActiveSettingTab] = useState('');
   const [userProfileImage, setUserProfileImage] = useState(null);
-
   const [nowPassword, setNowPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [rePassword, setRePassword] = useState('');
-
   const [email, setEmail] = useState(myInfo.mailAddress);
   const [phoneNumber, setPhoneNumber] = useState(myInfo.phoneNumber);
   const [work, setWork] = useState(myInfo.work);
-
   // 일반
   const [autoLaunch, setAutoLaunch] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
   const [idleTime, setIdleTime] = useState(900);
   const [firstMenu, setFirstMenu] = useState('contactlist');
-
   // 알림
   const [customAlarm, setCustomAlarm] = useState(false);
   const [desktopNoti, setDesktopNoti] = useState(false);
   const [showNotiContent, setShowNotiContent] = useState(false);
-
+  const [workTiemNoti, setWorkTimeNoti] = useState(false);
+  const notificationBlock = getConfig('NotificationBlock');
   // 색상 선택
   const [useEmoji, setUseEmoji] = useState(false);
-
   // 직무표시
   const [jobInfo, setJobInfo] = useState(
     (covi.settings && covi.settings.jobInfo) || 'PN',
   );
-
   // 다국어
   const [lang, setLang] = useState(
     (covi.settings && covi.settings.lang) || 'ko',
   );
-
   // 글씨크기
   const [fontSize, setFontSize] = useState(
     (covi.settings && covi.settings.fontSize) || 'm',
   );
-
   // 첨부파일 다운로드
   const [downloadPathCheck, setDownloadPathCheck] = useState(false);
   const [defaultDownloadPath, setDefaultDownloadPath] = useState('');
-
   const fileUploadControl = useRef(null);
-
   // componentDidMount
   const dispatch = useDispatch();
-
   useEffect(() => {
     dispatch(bound({ name: '', type: '' }));
     dispatch(setTopButton(null));
     if (!activeSettingTab) {
       setActiveSettingTab('I');
     }
-
     if (DEVICE_TYPE == 'd') {
       const appConfig = evalConnector({
         method: 'getGlobal',
         name: 'APP_SETTING',
       });
-
       const userConfig = evalConnector({
         method: 'getGlobal',
         name: 'USER_SETTING',
       });
-
       const confFirstMenu = userConfig.get('firstMenu');
-
       setAutoLogin(appConfig.get('autoLogin') ? true : false);
       setAutoLaunch(appConfig.get('autoLaunch') ? true : false);
       setCustomAlarm(appConfig.get('customAlarm') ? true : false);
@@ -115,14 +97,12 @@ const UserSetting = ({ history }) => {
       setFirstMenu(confFirstMenu ? confFirstMenu : 'contactlist');
       setDesktopNoti(userConfig.get('desktopNoti'));
       setShowNotiContent(userConfig.get('showNotiContent'));
-
       setUseEmoji(appConfig.get('useEmoji') ? true : false);
-
+      setWorkTimeNoti(myInfo.notificationBlock == 'Y' ? true : false);
       // download 관련
       const downloadPath = getDownloadDefaultPath();
       setDefaultDownloadPath(downloadPath);
       setDownloadPathCheck(appConfig.get('downloadPathCheck') ? true : false);
-
       // alarm config 변경 시 호출
       evalConnector({
         method: 'on',
@@ -132,7 +112,6 @@ const UserSetting = ({ history }) => {
         },
       });
     }
-
     return () => {
       if (DEVICE_TYPE == 'd') {
         evalConnector({
@@ -142,11 +121,9 @@ const UserSetting = ({ history }) => {
       }
     };
   }, []);
-
   const getInitTheme = () => {
     return (window.covi.settings && window.covi.settings.theme) || 'blue';
   };
-
   const handleConfig = data => {
     const result = evalConnector({
       method: 'sendSync',
@@ -154,14 +131,12 @@ const UserSetting = ({ history }) => {
       message: data,
     });
   };
-
   const handleUserConfig = data => {
     const result = evalConnector({
       method: 'sendSync',
       channel: 'save-user-config',
       message: data,
     });
-
     // desktopNoti가 포함된경우 부모창에 전달
     if (data.desktopNoti !== undefined && data.desktopNoti !== null) {
       sendParent('onNotiConfigChange', 'usersetting', {
@@ -169,14 +144,11 @@ const UserSetting = ({ history }) => {
       });
     }
   };
-
   // 프로필 사진 변경
   const handleFileChange = e => {
     const target = e.target;
-
     if (target.files.length > 0) {
       const profileImage = target.files[0];
-
       // validation check
       if (
         !profileImage.type.startsWith('image/') ||
@@ -192,16 +164,13 @@ const UserSetting = ({ history }) => {
         );
         return;
       }
-
       setUserProfileImage(profileImage);
-
       const data = new FormData();
       data.append('file', profileImage);
       modifyUserProfileImage(data).then(({ data }) => {
         if (data.status === 'SUCCESS') {
           // 프로필 사진 등록 성공
           dispatch(changeMyPhotoPath(data.result));
-
           // desktopNoti가 포함된경우 부모창에 전달
           if (DEVICE_TYPE == 'd') {
             sendParent('onChangeUserInfo', 'usersetting', {
@@ -213,7 +182,6 @@ const UserSetting = ({ history }) => {
       });
     }
   };
-
   // 이메일, 연락처, 담당업무 변경
   const handleUserSettingSave = () => {
     if (
@@ -223,7 +191,6 @@ const UserSetting = ({ history }) => {
     ) {
       return;
     }
-
     const changeData = {
       mailAddress: email,
       phoneNumber: phoneNumber,
@@ -233,7 +200,6 @@ const UserSetting = ({ history }) => {
       if (data.status === 'SUCCESS') {
         // 정보 수정 성공
         dispatch(changeMyInfo(changeData));
-
         // desktopNoti가 포함된경우 부모창에 전달
         if (DEVICE_TYPE == 'd') {
           sendParent('onChangeUserInfo', 'usersetting', {
@@ -241,7 +207,6 @@ const UserSetting = ({ history }) => {
             data: changeData,
           });
         }
-
         openPopup(
           {
             type: 'Alert',
@@ -253,7 +218,6 @@ const UserSetting = ({ history }) => {
       }
     });
   };
-
   // 비밀번호 변경
   const handleUserPasswordSave = () => {
     if (nowPassword === '' || newPassword === '' || rePassword === '') {
@@ -267,7 +231,6 @@ const UserSetting = ({ history }) => {
       );
       return;
     }
-
     if (newPassword != rePassword) {
       openPopup(
         {
@@ -277,12 +240,10 @@ const UserSetting = ({ history }) => {
         },
         dispatch,
       );
-
       setNewPassword('');
       setRePassword('');
       return;
     }
-
     const AESUtil = getAesUtil();
     modifyUserPassword({
       nowPW: AESUtil.encrypt(nowPassword),
@@ -298,7 +259,6 @@ const UserSetting = ({ history }) => {
           },
           dispatch,
         );
-
         setNowPassword('');
         setNewPassword('');
         setRePassword('');
@@ -312,12 +272,18 @@ const UserSetting = ({ history }) => {
           },
           dispatch,
         );
-
         setNowPassword('');
       }
     });
   };
-  //
+
+  const setNotiBlock = option => {
+    changeNotificationBlockOption({ notificationBlock: option }).then(
+      response => {
+        setWorkTimeNoti(option == 'Y' ? true : false);
+      },
+    );
+  };
 
   const selectTheme = color => {
     // APP_SETTING 저장
@@ -326,15 +292,12 @@ const UserSetting = ({ history }) => {
     } else if (DEVICE_TYPE == 'b') {
       localStorage.setItem('covi_user_theme', color);
     }
-
     if (covi.settings) covi.settings.theme = color;
-
     dispatch(changeTheme(color));
     if (DEVICE_TYPE == 'd') {
       themeChange(color);
     }
   };
-
   const handleReSyncData = () => {
     openPopup(
       {
@@ -355,7 +318,6 @@ const UserSetting = ({ history }) => {
       dispatch,
     );
   };
-
   const handleDeleteTempData = () => {
     evalConnector({
       method: 'send',
@@ -363,7 +325,6 @@ const UserSetting = ({ history }) => {
       message: {},
     });
   };
-
   const handleResetDomain = () => {
     evalConnector({
       method: 'send',
@@ -371,7 +332,6 @@ const UserSetting = ({ history }) => {
       message: {},
     });
   };
-
   const handleChangeJobInfo = jobInfo => {
     openPopup(
       {
@@ -382,7 +342,6 @@ const UserSetting = ({ history }) => {
             handleConfig({ jobInfo });
             setJobInfo(jobInfo);
             localStorage.setItem('covi_user_jobInfo', jobInfo);
-
             // 앱 새로고침
             if (DEVICE_TYPE == 'd') {
               evalConnector({
@@ -400,16 +359,12 @@ const UserSetting = ({ history }) => {
       dispatch,
     );
   };
-
   const clientLangList = useMemo(() => {
     const langList = getConfig('ClientLangList');
-
     if (typeof langList == 'object') return langList;
     else return [{ name: '한국어', value: 'ko' }];
   }, []);
-
   const handleChangeFontSize = fontSize => {
-    console.log(fontSize);
     if (fontSize == 's' || fontSize == 'm' || fontSize == 'l') {
       // APP_SETTING 저장
       if (DEVICE_TYPE == 'd') {
@@ -417,19 +372,15 @@ const UserSetting = ({ history }) => {
       } else if (DEVICE_TYPE == 'b') {
         localStorage.setItem('covi_user_fontSize', fontSize);
       }
-
       if (covi.settings) covi.settings.fontSize = fontSize;
-
       dispatch(changeFontSize(fontSize));
       if (DEVICE_TYPE == 'd') {
         fontSizeChange(fontSize);
       }
     }
   };
-
   // 프로필이미지 1시간 단위로 캐싱
   const { timestamp } = useTimestamp({ option: 'yMdh', prefix: '?t=' });
-
   return (
     <div style={{ height: '100%' }}>
       <div className="modalheader">
@@ -460,7 +411,6 @@ const UserSetting = ({ history }) => {
               <a>{covi.getDic('Password')}</a>
             </li>
           )}
-
           <li
             className={activeSettingTab == 'G' ? 'active' : ''}
             onClick={e => setActiveSettingTab('G')}
@@ -768,7 +718,6 @@ const UserSetting = ({ history }) => {
                   </li>
                 </>
               )}
-
               <li className="ChatConfig-list">
                 <SelectBox
                   items={clientLangList}
@@ -782,7 +731,6 @@ const UserSetting = ({ history }) => {
                         callback: result => {
                           if (result) {
                             localStorage.setItem('covi_user_lang', item.value);
-
                             if (DEVICE_TYPE == 'd') {
                               handleConfig({ lang: item.value });
                               evalConnector({
@@ -830,7 +778,7 @@ const UserSetting = ({ history }) => {
                       items={[
                         { name: covi.getDic('Contact'), value: 'contactlist' },
                         { name: covi.getDic('Chat'), value: 'chatlist' },
-                        ...(useChannelConfig ? [{ name: covi.getDic('Channel'), value: 'channellist' }] : []),
+                        { name: covi.getDic('Channel'), value: 'channellist' },
                       ]}
                       order={1}
                       defaultValue={firstMenu}
@@ -944,7 +892,6 @@ const UserSetting = ({ history }) => {
                             if (result) {
                               handleConfig({ customAlarm: !customAlarm });
                               setCustomAlarm(!customAlarm);
-
                               // relaunch
                               evalConnector({
                                 method: 'send',
@@ -980,6 +927,26 @@ const UserSetting = ({ history }) => {
                   <span>{covi.getDic('ShowNoti')}</span>
                 </a>
               </li>
+              {notificationBlock && notificationBlock == 'Y' && (
+                <li className="ChatConfig-list">
+                  <div
+                    className={[
+                      'opt_setting',
+                      workTiemNoti === true ? 'on' : '',
+                    ].join(' ')}
+                  >
+                    <span className="ctrl"></span>
+                  </div>
+                  <a
+                    className="ChatConfig-menu"
+                    onClick={e => {
+                      setNotiBlock(!workTiemNoti ? 'Y' : 'N');
+                    }}
+                  >
+                    <span>{covi.getDic('SetWorkTimeNoti')}</span>
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -1006,7 +973,6 @@ const UserSetting = ({ history }) => {
                   <span>{covi.getDic('ChangeTheme')}</span>
                 </a>
               </li>
-
               <li className="ChatConfig-list">
                 <SelectBox
                   items={[
@@ -1024,7 +990,6 @@ const UserSetting = ({ history }) => {
                   <span>{covi.getDic('FontSize')}</span>
                 </span>
               </li>
-
               {DEVICE_TYPE == 'd' && (
                 <>
                   <li className="ChatConfig-list">
@@ -1086,5 +1051,4 @@ const UserSetting = ({ history }) => {
     </div>
   );
 };
-
 export default UserSetting;
