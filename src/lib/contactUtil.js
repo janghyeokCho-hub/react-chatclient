@@ -4,22 +4,24 @@ import { addFixedUsers } from '@/modules/presence';
 export const addFavorite = (dispatch, userInfo, orgFolderType) => {
   if (!userInfo.id) return;
 
-  userInfo.pChat = 'Y';
+  // prop 변경시도 오류 방지를 위한 object clone
+  const _userInfo = Object.assign({}, userInfo, { pChat: 'Y' });
 
   dispatch(
     addContacts([
       {
-        targetId: userInfo.id,
-        targetType: userInfo.type,
+        targetId: _userInfo.id,
+        targetType: _userInfo.type,
         folderType: 'F',
         orgFolderType: orgFolderType,
-        userInfo: userInfo,
+        userInfo: _userInfo,
       },
     ]),
   );
 
-  if (orgFolderType != 'C' && userInfo.type == 'U')
-    dispatch(addFixedUsers([{ id: userInfo.id, presence: userInfo.presence }]));
+  if (orgFolderType != 'C' && _userInfo.type == 'U') {
+    dispatch(addFixedUsers([{ id: _userInfo.id, presence: _userInfo.presence }]));
+  }
 };
 
 export const addContact = (dispatch, userInfo) => {
