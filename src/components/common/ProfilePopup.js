@@ -3,8 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { format } from 'date-fns';
-// import { modifyUserInfo } from '@/lib/setting';
-
 import { addFavorite, deleteFavorite } from '@/lib/contactUtil';
 
 import {
@@ -14,8 +12,7 @@ import {
   getDictionary,
 } from '@/lib/common';
 import useTyping from '@/hooks/useTyping';
-
-// const dispatch = useDispatch();
+import { sendMain, isMainWindow } from '@/lib/deviceConnector';
 
 const ProfilePopup = ({ userInfo }) => {
   const { viewType, rooms, selectId, myInfo, contact } = useSelector(
@@ -63,25 +60,39 @@ const ProfilePopup = ({ userInfo }) => {
 
   const handleFavorit = () => {
     if (userInfo.isFavorite === 'Y') {
-      deleteFavorite(dispatch, userInfo.id);
+      if (DEVICE_TYPE === 'd' && isMainWindow() === false) {
+        sendMain('sync-favorite', {
+          op: 'del',
+          userId: userInfo.id
+        });  
+      } else {
+        deleteFavorite(dispatch, userInfo.id);
+      }
       setIsFavorite('N');
       userInfo.isFavorite = 'N';
     } else if (userInfo.isFavorite === 'N') {
-      // 다른 연락처에 있는지 없는지 확인
-      if (contact[2].sub && contact[2].sub.length > 0) {
-        let flag = false;
-        contact[2].sub.map(data => {
-          if (userInfo.id == data.id) {
-            // 만약 다른 연락처에 사용자가 있다면....
-            addFavorite(dispatch, userInfo, contact[2].folderType);
-            flag = true;
-          }
+      if (DEVICE_TYPE === 'd' && isMainWindow() === false) {
+        sendMain('sync-favorite', {
+          op: 'add',
+          userInfo: userInfo
         });
-        if (!flag) {
+      } else {
+        // 다른 연락처에 있는지 없는지 확인
+        if (contact && contact[2] && contact[2].sub && contact[2].sub.length > 0) {
+          let flag = false;
+          contact[2].sub.map(data => {
+            if (userInfo.id == data.id) {
+              // 만약 다른 연락처에 사용자가 있다면....
+              addFavorite(dispatch, userInfo, contact[2].folderType);
+              flag = true;
+            }
+          });
+          if (!flag) {
+            addFavorite(dispatch, userInfo, '');
+          }
+        } else {
           addFavorite(dispatch, userInfo, '');
         }
-      } else {
-        addFavorite(dispatch, userInfo, '');
       }
       setIsFavorite('Y');
       userInfo.isFavorite = 'Y';

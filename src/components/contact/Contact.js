@@ -26,7 +26,7 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
 
   const menus = useMemo(() => {
     const returnMenu = [];
-    
+
     if (subItem.type != 'G' && !isMine) {
       if (contact.folderType != 'F' && subItem.isContact != 'F') {
         returnMenu.push({
@@ -75,7 +75,7 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
       returnMenu.push({
         code: 'line',
         isline: true,
-        onClick: () => {},
+        onClick: () => { },
         name: '',
       });
 
@@ -233,12 +233,12 @@ const Contact = ({ contact, viewType, checkObj }) => {
       </RightConxtMenu>
       <ul className="people" ref={subDivEl}>
         {contact.sub &&
-          contact.sub.map(sub => {
+          contact.sub.map((sub, idx) => {
             if (viewType == 'list') {
               // 자기자신과 대화 허용 20200720 작업시작 - shpark1
               return (
                 <ContactItem
-                  key={contact.folderID + '_' + sub.id}
+                  key={contact.folderID + '_' + sub.id + idx}
                   contact={contact}
                   subItem={sub}
                   isMine={sub.id == userID}
@@ -247,7 +247,7 @@ const Contact = ({ contact, viewType, checkObj }) => {
             } else if (viewType == 'checklist') {
               return (
                 <UserInfoBox
-                  key={contact.folderID + '_' + sub.id}
+                  key={contact.folderID + '_' + sub.id + idx}
                   userInfo={sub}
                   isInherit={false}
                   isClick={false}
