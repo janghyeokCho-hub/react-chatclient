@@ -159,12 +159,10 @@ const MessagePostBox = forwardRef(
 
     const handleEmoticon = useCallback(
       emoticon => {
-        console.log('1111111', emoticon);
         // emoticon만 전송
         postAction(emoticon, null, null, null);
         // emoticon은 바로 발송
 
-        console.log('2222222', emoticon);
         // dispatch(clearEmoticon());
         onExtension('');
       },
@@ -430,7 +428,7 @@ const MessagePostBox = forwardRef(
               value={disabled ? covi.getDic('Msg_CloseChannel') : context}
               style={{ backgroundColor: inputLock ? '#f9f9f9' : '' }}
             ></textarea>
-            <div className="input-bottombox">
+            {!disabled && (<div className="input-bottombox">
               <div className="input-icobox">
                 <button
                   className={(viewExtension == 'S' && 'active') || ''}
@@ -609,7 +607,7 @@ const MessagePostBox = forwardRef(
                   </svg>
                 </button>
               )}
-            </div>
+            </div>)}
             <div style={{ width: '0px', height: '0px' }}>
               <input
                 ref={fileUploadControl}

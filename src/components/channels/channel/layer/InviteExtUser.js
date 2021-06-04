@@ -1,13 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteLayer, openPopup } from '@/lib/common';
+import { deleteLayer, openPopup, getDictionary } from '@/lib/common';
 import * as channelApi from '@/lib/channel';
 import Scrollbars from 'react-custom-scrollbars';
+import { TailSpin } from '@agney/react-loading';
 
 let domainURL = window.covi.baseURL;
 if (domainURL == '') domainURL = window.location.origin;
 
 const joinURL = `${domainURL}/client/login/join`;
+const emailExpression = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
 const InviteExtUser = ({ headerName, roomId }) => {
   const userInfo = useSelector(({ login }) => login.userInfo);
@@ -15,7 +17,7 @@ const InviteExtUser = ({ headerName, roomId }) => {
   const [emailTxt, setEmailTxt] = useState('');
   const [oldList, setOldList] = useState([]);
   const [emailList, setEmailList] = useState([]);
-
+  const [inviting, setInviting] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -43,6 +45,18 @@ const InviteExtUser = ({ headerName, roomId }) => {
   }, [dispatch]);
 
   const addItem = useCallback(() => {
+    // Email format validation
+    if(emailExpression.test(emailTxt) === false) {
+      openPopup(
+        {
+          type: 'Alert',
+          message: covi.getDic('Msg_InvalidEmail', '유효하지 않은 이메일입니다.')
+        },
+        dispatch,
+      );
+      return;
+    }
+
     if (
       emailTxt != '' &&
       emailList.find(item => item == emailTxt) == undefined
@@ -116,7 +130,12 @@ const InviteExtUser = ({ headerName, roomId }) => {
   );
 
   const handleSendMail = useCallback(() => {
+    if(inviting === true) {
+      return;
+    }
+
     if (emailList.length > 0) {
+      setInviting(true);
       channelApi
         .sendExternalUser({
           roomId,
@@ -124,7 +143,7 @@ const InviteExtUser = ({ headerName, roomId }) => {
           joinURL,
           registerInfo: JSON.stringify({
             id: userInfo.id,
-            name: userInfo.name,
+            name: getDictionary(userInfo.name),
             email: userInfo.mailAddress,
           }),
         })
@@ -157,7 +176,7 @@ const InviteExtUser = ({ headerName, roomId }) => {
             },
             dispatch,
           );
-        });
+        }).finally(() => setInviting(false));
     } else {
       openPopup(
         {
@@ -167,7 +186,7 @@ const InviteExtUser = ({ headerName, roomId }) => {
         dispatch,
       );
     }
-  }, [emailList]);
+  }, [emailList, inviting]);
 
   return (
     <div className="Layer-AddUser" style={{ height: '100%' }}>
@@ -243,7 +262,7 @@ const InviteExtUser = ({ headerName, roomId }) => {
             </Scrollbars>
           )}
           <a className="Btn-pointcolor-full" onClick={handleSendMail}>
-            {covi.getDic('SendInviteMail')}
+            {inviting ? <TailSpin width="50" height="70%" style={{ verticalAlign: 'middle' }}/> : covi.getDic('SendInviteMail')}
           </a>
         </div>
       </div>

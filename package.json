@@ -197,6 +197,7 @@
   },
   "description": "",
   "dependencies": {
+    "@agney/react-loading": "^0.1.2",
     "@babel/runtime": "^7.7.7",
     "@journeyapps/sqlcipher": "^4.0.0",
     "auto-launch": "^5.0.5",

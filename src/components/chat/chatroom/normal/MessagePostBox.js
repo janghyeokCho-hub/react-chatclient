@@ -4,6 +4,7 @@ import React, {
   useRef,
   useEffect,
   useCallback,
+  useMemo
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import loadable from '@loadable/component';
@@ -58,17 +59,22 @@ const MessagePostBox = forwardRef(
     const fileUploadControl = useRef(null);
     const sendBtn = useRef(null);
     const dispatch = useDispatch();
+    const currentEmoticon = useMemo(() => {
+      if(selectEmoticon === '' || selectEmoticon === null) {
+        return null;
+      }
+      return `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
+    }, [selectEmoticon]);
 
     const handleSendMessage = useCallback(() => {
       const fileCtrl = coviFile.getInstance();
       const files = fileCtrl.getFiles();
       const fileInfos = fileCtrl.getRealFileInfos();
-      var existEmoticon = '';
-      if (selectEmoticon !== null) {
-        existEmoticon = `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
+
+      if(currentEmoticon) {
+        handleEmoticon(currentEmoticon);
+        dispatch(clearEmoticon());
       }
-      if (selectEmoticon) handleEmoticon(existEmoticon);
-      dispatch(clearEmoticon());
 
       if (
         (context.replace(/\s*/, '') != '' && context != '') ||
@@ -103,7 +109,7 @@ const MessagePostBox = forwardRef(
         fileCtrl.clear();
         dispatch(clearFiles());
       }
-    }, [dispatch, context, postAction, selectEmoticon]);
+    }, [dispatch, context, postAction, currentEmoticon]);
 
     const handleEmojiControl = useCallback(() => {
       if (viewExtension == 'E') {
@@ -297,8 +303,10 @@ const MessagePostBox = forwardRef(
       e => {
         if (!e.shiftKey && e.keyCode == 13) {
           sendBtn.current.click();
-          const existEmoticon = `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
-          if (selectEmoticon) handleEmoticon(existEmoticon);
+          if(currentEmoticon) {
+            handleEmoticon(currentEmoticon);
+            dispatch(clearEmoticon());
+          }
           e.preventDefault();
           e.stopPropagation();
           return false;
@@ -312,7 +320,7 @@ const MessagePostBox = forwardRef(
           }
         }
       },
-      [historyIndex, history],
+      [historyIndex, history, currentEmoticon],
     );
 
     const callLiveMeet = useCallback(() => {

@@ -829,7 +829,8 @@ const channel = handleActions(
     [SET_CHANNELS]: (state, action) => {
       return produce(state, draft => {
         // login 시에만 사용
-        draft.channels = action.payload.result;
+        // filter 로직: 메세지 만료된 채널방 제거
+        draft.channels = action.payload.result.filter(channel=> channel.lastMessageDate);
       });
     },
     [GET_CHANNELS_SUCCESS]: (state, action) => {
