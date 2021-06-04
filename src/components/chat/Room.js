@@ -295,50 +295,54 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent }) => {
 
   const menuId = useMemo(() => 'room_' + room.roomID, [room]);
 
-  return (
-    <RightConxtMenu menuId={menuId} menus={menus}>
-      <li
-        className={(isSelect && ['person', 'active'].join(' ')) || 'person'}
-        onClick={() => {
-          if (!isSelect) onRoomChange(room.roomID);
-        }}
-        onDoubleClick={handleDoubleClick}
-      >
-        <>
-          {((room.roomType === 'M' || filterMember.length == 1) &&
-            ((room.roomType === 'A' && (
-              <ProfileBox
-                userId={filterMember[0].id}
-                userName={filterMember[0].name}
-                presence={null}
-                isInherit={false}
-                img={filterMember[0].photoPath}
-                handleClick={false}
-              />
-            )) || (
-              <ProfileBox
-                userId={filterMember[0].id}
-                userName={filterMember[0].name}
-                isInherit={true}
-                img={filterMember[0].photoPath}
-              />
-            ))) || <RoomMemberBox type="G" data={filterMember}></RoomMemberBox>}
-        </>
+  if (room.lastMessageDate != null) {
+    return (
+      <RightConxtMenu menuId={menuId} menus={menus}>
+        <li
+          className={(isSelect && ['person', 'active'].join(' ')) || 'person'}
+          onClick={() => {
+            if (!isSelect) onRoomChange(room.roomID);
+          }}
+          onDoubleClick={handleDoubleClick}
+        >
+          <>
+            {((room.roomType === 'M' || filterMember.length == 1) &&
+              ((room.roomType === 'A' && (
+                <ProfileBox
+                  userId={filterMember[0].id}
+                  userName={filterMember[0].name}
+                  presence={null}
+                  isInherit={false}
+                  img={filterMember[0].photoPath}
+                  handleClick={false}
+                />
+              )) || (
+                <ProfileBox
+                  userId={filterMember[0].id}
+                  userName={filterMember[0].name}
+                  isInherit={true}
+                  img={filterMember[0].photoPath}
+                />
+              ))) || (
+              <RoomMemberBox type="G" data={filterMember}></RoomMemberBox>
+            )}
+          </>
 
-        <span className="name">{makeRoomName(filterMember)}</span>
-        <span className="time">{makeDateTime(room.lastMessageDate)}</span>
-        <span className="preview">
-          {room.lastMessage && makeMessageText(room.lastMessage)}
-        </span>
-
-        {room.unreadCnt > 0 && (
-          <span className="count">
-            {room.unreadCnt > 999 ? '999+' : room.unreadCnt}
+          <span className="name">{makeRoomName(filterMember)}</span>
+          <span className="time">{makeDateTime(room.lastMessageDate)}</span>
+          <span className="preview">
+            {room.lastMessage && makeMessageText(room.lastMessage)}
           </span>
-        )}
-      </li>
-    </RightConxtMenu>
-  );
+
+          {room.unreadCnt > 0 && (
+            <span className="count">
+              {room.unreadCnt > 999 ? '999+' : room.unreadCnt}
+            </span>
+          )}
+        </li>
+      </RightConxtMenu>
+    );
+  } else return null;
 };
 
 export default React.memo(Room);
