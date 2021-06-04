@@ -998,3 +998,11 @@ export const setWindowOpacity = deg => {
     console.log(e);
   }
 };
+
+export const logRenderer = (msg) => {
+  try {
+    getRemote().send('log-info', msg);
+  } catch(e) {
+    console.log(e);
+  }
+}

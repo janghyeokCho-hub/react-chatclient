@@ -45,7 +45,13 @@ export const sendConversionRequest = async (param) => {
     result = await axios(reqOptions);
   } catch(err) {
     if(err && err.response && err.response.status === 500) {
-      result = await axios(reqOptions);
+      try {
+        result = await axios(reqOptions);
+      } catch(retryErr) {
+        throw retryErr;
+      }
+    } else {
+      throw err;
     }
   }
   return result;

@@ -16,6 +16,7 @@ import { openPopup } from '@/lib/common';
 import { get, remove } from '@/lib/util/storageUtil';
 import { openFile, openPath } from '@/lib/deviceConnector';
 import { getDic } from '@/lib/util/configUtil';
+import { logRenderer } from '@/lib/deviceConnector';
 
 const File = ({ type, item, preview, id, isTemp }) => {
   const extension = getFileExtension(item.ext);
@@ -112,32 +113,59 @@ const File = ({ type, item, preview, id, isTemp }) => {
     viewerApi.sendConversionRequest({
       fileType, filePath, fid
     }).then(response => {
+      if (!response || !response.data) {
+
+      }
       let job = 'job';
       let key = response.data.key;
       let url = ''
       let view = 'view/'
       url = response.config.url.indexOf(job);
-      url = response.config.url.substring(0,url);
+      url = response.config.url.substring(0, url);
       url = url + view + key;
 
       if (DEVICE_TYPE == 'd') {
         window.openExternalPopup(url)
-      }else{
+      } else {
         window.open(url)
       }
-      // testFunc(key)
-    }).catch(response => {
-
-      if(response){
-        openPopup(
-          {
-            type: 'Alert',
-            message: getDic('Msg_FileExpired'),
-          },
-          dispatch,
-        );
+    }).catch(err => {
+      if (err && err.response) {
+        const errInfo = {
+          message: err.message,
+          status: err.response.status,
+          statusText: err.response.statusText,
+          url: err.response.config.url,
+          data: err.response.data,
+          requestBody: err.response.config.data,
+          headers: err.response.headers
+        };
+        console.log('Synap Error :  ', errInfo);
+        logRenderer('Synap Error :  ' + JSON.stringify(errInfo));
       }
-    })
+      let message;
+      if (!err) {
+        message = getDic('Msg_Error');
+      } else if (err.response.status === 500) {
+        // '파일이 만료되었거나 문서 변환 오류가 발생했습니다.;The file has already expired or failed to convert from the server'
+        message = getDic('Msg_SynapError', '파일이 만료되었거나 문서 변환 오류가 발생했습니다.');
+      } else if (err.response.status === 404) {
+        // '문서뷰어 서버를 찾을 수 없습니다. 관리자에게 문의해주세요.;Cannot find Viewer Server. Please contact the manager.'
+        message = getDic('Msg_SynapFailed', '문서뷰어 서버를 찾을 수 없습니다. 관리자에게 문의해주세요.');
+      } else {
+        message = "Synap Viewer failed to convert the file with errStatus " + err.response.status;
+      }
+
+      //getDic('Msg_FileExpired')
+      openPopup(
+        {
+          type: 'Alert',
+          message,
+        },
+        dispatch,
+      );
+      //
+    });
   });
 
   // const testFunc = useCallback(key => {
