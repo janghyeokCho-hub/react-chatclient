@@ -853,7 +853,7 @@ const channel = handleActions(
           });
         }
 
-        draft.channels = action.payload.result;
+        draft.channels = action.payload.result.filter(channel=> channel.lastMessageDate);
       });
     },
     [UPDATE_CHANNELS_SUCCESS]: (state, action) => {

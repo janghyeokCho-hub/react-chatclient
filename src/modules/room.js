@@ -726,7 +726,7 @@ const room = handleActions(
           });
         }
 
-        draft.rooms = action.payload.rooms;
+        draft.rooms = action.payload.rooms.filter(room => room.lastMessageDate);;
       });
     },
     [UPDATE_ROOMS_SUCCESS]: (state, action) => {
