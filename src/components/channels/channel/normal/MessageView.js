@@ -5,6 +5,7 @@ import MessageList from '@C/channels/channel/normal/MessageList';
 import FileUploadBox from '@C/chat/chatroom/normal/FileUploadBox'; // 그대로 사용
 import { getConfig } from '@/lib/util/configUtil';
 import Config from '@/config/config';
+import axios from 'axios';
 
 const liveMeet = getConfig('LiveMeet');
 
@@ -100,6 +101,15 @@ const MessageView = ({
         },
       },
     };
+
+    if (liveMeet.type == 'saeha') {
+      console.log('channelInfo: ', channelInfo);
+      // const seahaHostURL = 'http://seaha.example.com';
+      // const requestData = {
+      //   userId =
+      // };
+      // axios.post(seahaHostURL + '/api/conf/createRoom')
+    }
 
     postAction(JSON.stringify(msgObj), null, null, null, null, 'A');
   }, [channelInfo]);

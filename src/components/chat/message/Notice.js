@@ -1,4 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
+import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { Plain, Link, Tag, Sticker, Mention } from '@C/chat/message/types';
 import {
@@ -203,6 +204,57 @@ const Notice = ({ type, value, title, func }) => {
             },
           });
         };
+<<<<<<< src/components/chat/message/Notice.js
+      } else if (type == 'saeha') {
+        return () => {
+          const reqOptions = {
+            method: 'GET',
+            url: `${data.hostURL}/api/conf/room/${data.meetRoomId}`,
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+          };
+
+          // 1. 화상 채팅 방이 정상 적인지 확인
+          axios(reqOptions)
+            .then(response => {
+              const resData = response.data;
+              if (resData && resData.roomOpenStatusCd < 3) {
+                // 2. 정상이라면 inviteUsers에 내가 있는 지 확인
+                data.inviteUsers.map(user => {
+                  if (user.inviteId == loginId) {
+                    // 3. 있으면 화상 채팅방 연동
+                    if (DEVICE_TYPE == 'd') {
+                      window.openExternalPopup(user.inviteUrl);
+                    } else {
+                      window.open(user.inviteUrl, '_blank');
+                    }
+                  }
+                });
+              } else {
+                // 3. 비정상이라면 에러 문구 출력
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: '해당 화상 채팅 방은 종료 되었습니다.',
+                  },
+                  dispatch,
+                );
+              }
+            })
+            .catch(error => {
+              console.log(error);
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: '해당 화상 채팅 방은 종료 되었습니다.',
+                },
+                dispatch,
+              );
+            });
+        };
+=======
+>>>>>>> src/components/chat/message/Notice.js
       }
     },
     [dispatch, userInfo],
