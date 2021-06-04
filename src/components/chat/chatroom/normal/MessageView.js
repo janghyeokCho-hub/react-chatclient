@@ -186,7 +186,6 @@ const MessageView = ({
 
   const callLiveMeet = useCallback(() => {
     // TODO: 다국어 처리
-<<<<<<< src/components/chat/chatroom/normal/MessageView.js
     if (liveMeet.type == 'saeha') {
       let inviteUsers = [];
 
@@ -284,29 +283,6 @@ const MessageView = ({
                 plain: true,
                 enc: false,
               },
-=======
-    const msgObj = {
-      title: '화상회의',
-      context:
-        liveMeet.type == 'jitsi'
-          ? '화상회의( ' +
-            liveMeet.domain +
-            '/' +
-            roomInfo.roomID +
-            ' )에 참석해주세요'
-          : '화상회의에 참석해주세요',
-      func: {
-        name: '페이지로 이동',
-        type: 'link',
-        data: {
-          baseURL: `${Config.ServerURL.HOST}/manager/liveMeetGate.do?type=${liveMeet.type}&rKey=${roomInfo.roomID}&cu=${id}`,
-          params: {
-            tk: { param: 'toToken#', plain: false, enc: false },
-            dir: {
-              param: `${liveMeet.domain}`,
-              plain: true,
-              enc: false,
->>>>>>> src/components/chat/chatroom/normal/MessageView.js
             },
           },
         },
