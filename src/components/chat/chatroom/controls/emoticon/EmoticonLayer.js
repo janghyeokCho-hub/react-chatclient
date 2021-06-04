@@ -4,7 +4,7 @@ import * as emoticonApi from '@/lib/emoticon';
 import Config from '@/config/config';
 import Scrollbars from 'react-custom-scrollbars';
 import { getConfig } from '@/lib/util/configUtil';
-import { selectEmoticon } from '@/modules/channel';
+import { selectEmoticon, clearEmoticon } from '@/modules/channel';
 
 const EmoticonLayer = ({ onClick }) => {
   const { userInfo, selectedEmot } = useSelector(({ login, channel }) => ({
@@ -107,9 +107,10 @@ const EmoticonLayer = ({ onClick }) => {
     console.log(e);
     console.log(item);
     if (!e.shiftKey && e.keyCode == 13) {
-      console.log(item);
-      if (item != null) {
+      if (item !== null) {
         handleSend(item);
+        setSelectItem(null);
+        dispatch(clearEmoticon());
       }
     }
   };
@@ -249,6 +250,8 @@ const EmoticonLayer = ({ onClick }) => {
                       }}
                       onDoubleClick={e => {
                         handleSend(item);
+                        setSelectItem(null);
+                        dispatch(clearEmoticon());
                       }}
                       className="stickerBtn"
                     >

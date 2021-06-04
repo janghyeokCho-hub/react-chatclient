@@ -42,7 +42,7 @@ const JoinSuccess = ({ location, history }) => {
         <p className="JoinBox_tit welcome_title">
           {covi.getDic('JoinSuccess_welcomeTitle')}
         </p>
-        <div className="JoinBox_info">
+        <div className="JoinBox_info" style={{ userSelect: 'text' }}>
           <p
             className="JoinBox_info_p welcome_info_p1"
             dangerouslySetInnerHTML={{

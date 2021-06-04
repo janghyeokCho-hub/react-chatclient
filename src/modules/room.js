@@ -692,7 +692,8 @@ const room = handleActions(
       return produce(state, draft => {
         // login 시에만 사용
         if (!draft.rooms || draft.rooms.length == 0) {
-          draft.rooms = action.payload.rooms;
+          // filter 로직: 메세지 만료된 채팅방 제거
+          draft.rooms = action.payload.rooms.filter(room => room.lastMessageDate);
         } else {
           //newWin 관련 정보 merge
           const newWinRooms = draft.rooms.filter(item => item.newWin);

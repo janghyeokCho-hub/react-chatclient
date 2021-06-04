@@ -377,6 +377,8 @@ function createExtLoginRequestSaga(loginType, syncType) {
           yield put({
             type: FAILURE,
             payload: action.payload,
+            errMessage: response.data.result,
+            errStatus: response.data.status,
           });
         }
       } catch (e) {
@@ -611,7 +613,7 @@ const login = handleActions(
         authFail: true,
         ...(action.errMessage && { errMessage: action.errMessage }),
         ...(action.errStatus && { errStatus: action.errStatus }),
-        token: initialState.token,
+        token: initialState.token
       };
     },
     [EXT_LOGIN_REQUEST_SUCCESS]: (state, action) => {
@@ -629,11 +631,15 @@ const login = handleActions(
         }
       });
     },
-    [EXT_LOGIN_REQUEST_FAILURE]: (state, action) => ({
-      ...state,
-      authFail: true,
-      token: initialState.token,
-    }),
+    [EXT_LOGIN_REQUEST_FAILURE]: (state, action) => {
+      return {
+        ...state,
+        authFail: true,
+        ...(action.errMessage && { errMessage: action.errMessage }),
+        ...(action.errStatus && { errStatus: action.errStatus }),
+        token: initialState.token
+      };
+    },
     [LOGIN_INIT]: (state, action) => ({
       ...initialState,
     }),
