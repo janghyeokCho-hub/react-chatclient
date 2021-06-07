@@ -40,6 +40,18 @@ const [
   ADD_CUSTOMGROUP_FAILURE
 ] = createRequestActionTypes('contact/ADD_CUSTOMGROUP');
 
+const [
+  ADD_GROUPMEMBER,
+  ADD_GROUPMEMBER_SUCCESS,
+  ADD_GROUPMEMBER_FAILURE
+] = createRequestActionTypes('contact/ADD_GROUPMEMBER');
+
+const [
+  DELETE_GROUPMEMBER,
+  DELETE_GROUPMEMBER_SUCCESS,
+  DELETE_GROUPMEMBER_FAILURE
+] = createRequestActionTypes('contact/DELETE_GROUPMEMBER');
+
 const SET_CONTACTS = 'contact/SET_CONTACTS';
 
 const MAPPING_USER_CHAT_ROOM = 'contact/MAPPING_USER_CHAT_ROOM';
@@ -53,6 +65,8 @@ export const getItemGroup = createAction(GET_ITEMGROUP);
 export const mappingUserChatRoom = createAction(MAPPING_USER_CHAT_ROOM);
 export const setContacts = createAction(SET_CONTACTS);
 export const addCustomGroup = createAction(ADD_CUSTOMGROUP);
+export const addGroupMember = createAction(ADD_GROUPMEMBER);
+export const deleteGroupMember = createAction(DELETE_GROUPMEMBER);
 export const init = createAction(INIT);
 
 const getContactsSaga = createRequestSaga(
@@ -152,7 +166,65 @@ function createAddCustomGroupSaga(type) {
   }
 }
 
+function createAddGroupMemberSaga(type){
+  const SUCCESS = `${type}_SUCCESS`;
+  const FAILURE = `${type}_FAILURE`;
+
+  return function* (action){
+    if (!action.payload) return;
+
+    try {
+      const response = yield call(contactApi.addGroupMember, action.payload);
+      //const success = response.data.status === 'SUCCESS';
+
+      yield put({
+        type: SUCCESS,
+        payload: action.payload
+      });
+
+    } catch (err) {
+      // request 에러
+      yield put({
+        type: FAILURE,
+        payload: action.payload,
+        error: true,
+        errMessage: err
+      });
+    }
+  }
+}
+
+function createDeleteGroupMemberSaga(type){
+  const SUCCESS = `${type}_SUCCESS`;
+  const FAILURE = `${type}_FAILURE`;
+
+  return function* (action){
+    if (!action.payload) return;
+
+    try {
+      const response = yield call(contactApi.deleteGroupMember, action.payload);
+      //const success = response.data.status === 'SUCCESS';
+
+      yield put({
+        type: SUCCESS,
+        payload: action.payload
+      });
+
+    } catch (err) {
+      // request 에러
+      yield put({
+        type: FAILURE,
+        payload: action.payload,
+        error: true,
+        errMessage: err
+      });
+    }
+  }
+}
+
 const addCustomGroupSaga = createAddCustomGroupSaga(ADD_CUSTOMGROUP);
+const addGroupMemberSaga = createAddGroupMemberSaga(ADD_GROUPMEMBER);
+const deleteGroupMemberSaga = createDeleteGroupMemberSaga(DELETE_GROUPMEMBER);
 
 const deleteContactsSaga = createRequestSaga(
   DELETE_CONTACTS,
@@ -171,6 +243,8 @@ export function* contactSaga() {
   yield takeLatest(DELETE_CONTACTS, deleteContactsSaga);
   yield takeLatest(GET_ITEMGROUP, getItemGroupSaga);
   yield takeLatest(ADD_CUSTOMGROUP, addCustomGroupSaga);
+  yield takeLatest(ADD_GROUPMEMBER, addGroupMemberSaga);
+  yield takeLatest(DELETE_GROUPMEMBER, deleteGroupMemberSaga);
 }
 
 const initialState = {
@@ -344,7 +418,7 @@ const contact = handleActions(
     [ADD_CUSTOMGROUP_SUCCESS]: (state, action) => {
       return produce(state, draft =>{
         const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R')
-        console.log(draft.contacts[groupIdx].sub)
+
         if(!draft.contacts[groupIdx].sub){
           draft.contacts[groupIdx].sub = []
           draft.contacts[groupIdx].sub.push(action.payload);
@@ -352,7 +426,38 @@ const contact = handleActions(
           draft.contacts[groupIdx].sub = draft.contacts[groupIdx].sub.concat(action.payload);
         }
       });
-    }
+    },
+    [ADD_GROUPMEMBER_SUCCESS]: (state, action) => {
+      return produce(state, draft =>{
+        const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R')
+        draft.contacts[groupIdx].sub.map((group)=>{
+          if(group.id = action.payload.group.id){
+            group.sub = group.sub.concat(action.payload.members);
+          }
+          return group;
+        });
+      });
+    },
+    [DELETE_GROUPMEMBER_SUCCESS]: (state, action) => {
+      return produce(state, draft =>{
+        const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R');
+        draft.contacts[groupIdx].sub.map((group)=>{
+          if(group.id = action.payload.group.id){
+            group.sub = group.sub.filter((user)=>{
+              var flag = true;
+              action.payload.members.forEach((deleteUser)=>{
+                if(deleteUser.id === user.id)
+                  flag = false;
+              });
+              return flag
+            });
+          }
+          return group;
+        })
+      });
+    },
+    
+
   },
   initialState,
 );

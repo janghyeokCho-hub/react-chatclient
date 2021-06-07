@@ -22,3 +22,11 @@ export const getItemGroupOneDepth = params => {
 export const addCustomGroup = params => {
   return null;
 };
+
+export const addGroupMember = params => {
+  return null;
+};
+
+export const deleteGroupMember = params => {
+  return null;
+};

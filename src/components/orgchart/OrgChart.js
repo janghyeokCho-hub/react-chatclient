@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { bound, setTopButton } from '@/modules/menu';
 import SearchBar from '@COMMON/SearchBar';
@@ -99,12 +99,12 @@ const OrgChart = ({ viewType, checkObj, group }) => {
                 data.result = data.result.filter((contact)=>{
                     var flag = true;
                     group.sub.forEach(groupUser =>{
-                      if(groupUser.id === contact.id)
+                      if(groupUser.id === contact.id || contact.id === userID)
                         flag = false;
                     });
                     return flag;
                 })
-              } 
+              }
               setSearchResult(data.result);
             }else{
               setSearchResult([]);
@@ -129,6 +129,10 @@ const OrgChart = ({ viewType, checkObj, group }) => {
     threshold: 0.85
   });
 
+  const scrollHeight = useMemo(()=>{
+    return 'calc(100% - '+(group && checkObj.checkedList && checkObj.checkedList.length > 0 ? '220px': '124px') +')'
+  }, [checkObj]);
+
   return (
     <>
       <SearchBar
@@ -141,7 +145,7 @@ const OrgChart = ({ viewType, checkObj, group }) => {
           autoHide={true}
           className="PeopleList"
           onUpdate={handleUpdate}
-          style={{ height: 'calc(100% - 124px)' }}
+          style={{ height: scrollHeight }}
         >
           <SearchOrgChart
             viewType={type}
@@ -158,7 +162,7 @@ const OrgChart = ({ viewType, checkObj, group }) => {
         <Scrollbars
           autoHide={true}
           className="PeopleList"
-          style={{ height: 'calc(100% - 124px)' }}
+          style={{ height: scrollHeight }}
         >
           <OrgchartContainer
             viewType={type}

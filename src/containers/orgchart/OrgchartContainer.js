@@ -33,7 +33,7 @@ const OrgchartContainer = ({
             data.result.sub = data.result.sub.filter((contact)=>{
                 var flag = true;
                 group.sub.forEach(groupUser =>{
-                  if(groupUser.id === contact.id)
+                  if(groupUser.id === contact.id || contact.id === userID)
                     flag = false;
                 });
                 return flag;

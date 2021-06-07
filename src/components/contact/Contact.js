@@ -160,51 +160,66 @@ const Contact = ({ contact, viewType, checkObj }) => {
   }, [contact, isopen, isload, dispatch]);
 
   const menus = useMemo(() => {
-    const returnMenu = [
-      {
-        code: 'startChat',
+    const returnMenu = [];
+    /* 
+      임의그룹 헤더에는 대화생성 기능제외, 그룹생성기능추가 
+    */
+
+    if (contact.folderType === 'R') {
+      returnMenu.push({
+        code: 'createCustomGroup',
         isline: false,
-        onClick: () => {
-          if (contact.pChat == 'Y') {
-            let userInfos = { id: contact.groupCode, type: contact.folderType };
-
-            if (contact.folderType != 'G') {
-              userInfos.sub = contact.sub;
-            }
-
-            if (
-              contact.folderType != 'G' &&
-              (!userInfos.sub || userInfos.sub.length == 0)
-            ) {
+        onClick: () =>{
+          addGroupOpen();
+        },
+        name: covi.getDic('그룹 생성'),
+      });
+    }else{
+      returnMenu.push({
+          code: 'startChat',
+          isline: false,
+          onClick: () => {
+            if (contact.pChat == 'Y') {
+              let userInfos = { id: contact.groupCode, type: contact.folderType };
+  
+              if (contact.folderType != 'G') {
+                userInfos.sub = contact.sub;
+              }
+  
+              if (
+                contact.folderType != 'G' &&
+                (!userInfos.sub || userInfos.sub.length == 0)
+              ) {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: covi.getDic('Msg_EmptyChatMember'),
+                  },
+                  dispatch,
+                );
+              } else {
+                openChatRoomView(
+                  dispatch,
+                  viewTypeChat,
+                  rooms,
+                  selectId,
+                  userInfos,
+                  myInfo,
+                );
+              }
+            } else
               openPopup(
                 {
                   type: 'Alert',
-                  message: covi.getDic('Msg_EmptyChatMember'),
+                  message: covi.getDic('Msg_GroupInviteError'),
                 },
                 dispatch,
               );
-            } else {
-              openChatRoomView(
-                dispatch,
-                viewTypeChat,
-                rooms,
-                selectId,
-                userInfos,
-                myInfo,
-              );
-            }
-          } else
-            openPopup(
-              {
-                type: 'Alert',
-                message: covi.getDic('Msg_GroupInviteError'),
-              },
-              dispatch,
-            );
-        },
-        name: covi.getDic('StartChat'),
-      },
-    ];
+          },
+          name: covi.getDic('StartChat'),
+        });
+    }
+    
     if (contact.folderType == 'G') {
       returnMenu.push({
         code: 'deleteContact',
@@ -231,7 +246,7 @@ const Contact = ({ contact, viewType, checkObj }) => {
   return (
     <>
       <RightConxtMenu menuId={`contactFD_${contact.folderID}`} menus={menus}>
-        <div className={["contextArea", contact.folderType == 'R' ? 'group': ''].join(" ")}>
+        <div className={["contextArea"].join(" ")}>
           <a
             className={['ListDivisionLine', isopen ? 'show' : '', contact.folderType == 'R' ? 'customGroup': ''].join(' ')}
             onClick={handleIsOpen}
@@ -243,7 +258,6 @@ const Contact = ({ contact, viewType, checkObj }) => {
             </span>
           </a>
         </div>
-        {viewType == 'list' && contact.folderType == 'R' ?  <div className={['addGroupBtn'].join(' ')} onClick={addGroupOpen}></div>: null}
       </RightConxtMenu>
       <ul className="people" ref={subDivEl}>
         {contact.folderType != 'R' ? contact.sub &&
@@ -274,7 +288,7 @@ const Contact = ({ contact, viewType, checkObj }) => {
           contact.sub && contact.sub.map(group =>{
             return(
               <GroupItem 
-                key={'group'+contact.folderID + '_' + group.groupID}
+                key={'group_'+contact.folderID + '_' + group.id}
                 contact={contact}
                 groupItem={group}
                 checkObj={checkObj}

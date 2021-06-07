@@ -4,28 +4,19 @@ import ProfileBox from '@C/common/ProfileBox';
 import { deleteLayer, openPopup, getJobInfo } from '@/lib/common';
 import OrgChart from '@C/orgchart/OrgChart';
 import SearchOrgChart from '@C/orgchart/SearchOrgChart';
+import { searchOrgChart } from "@/lib/orgchart";
 import SearchBar from '@COMMON/SearchBar';
 import { Scrollbars } from 'react-custom-scrollbars';
 import useOffset from '@/hooks/useOffset';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
 import GroupContainer from '@/containers/contact/GroupContainer';
+import {deleteGroupMember, addGroupMember} from '@/modules/contact'
 
 const EditGroup = ({
   headerName,
-  roomId,
-  roomType,
-  isNewRoom,
-  oldMemberList,
   group
 }) => {
-  const { viewType, rooms, selectId, myInfo } = useSelector(
-    ({ room, login }) => ({
-      viewType: room.viewType,
-      rooms: room.rooms,
-      selectId: room.selectId,
-      myInfo: login.userInfo,
-    }),
-  );
+  const groupInfo = useSelector(({ contact }) => contact.contacts[3].sub).filter( groupInfo => groupInfo.id === group.id );
   const userID = useSelector(({ login }) => login.id);
   const [name, setName] = useState('');
   const [members, setMembers] = useState([]);
@@ -33,11 +24,8 @@ const EditGroup = ({
   const [searchResult, setSearchResult] = useState([]);
   const [selectTab, setSelectTab] = useState('GM');
   const [groupMembers, setGroupMembers] = useState([]);
-  const [InviteMembers, setInviteMembers] = useState([]);
-  const [selectors, setSelectors] = useState([]);
   const RENDER_UNIT = 10;
   const { renderOffset, handleScrollUpdate} = useOffset(searchResult, { renderPerBatch : RENDER_UNIT });
-  
   const searchListEl = useRef(null);
   const contactListEl = useRef(null);
   const {
@@ -46,37 +34,18 @@ const EditGroup = ({
   const dispatch = useDispatch();
 
   useEffect(() => {
+    console.log(group);
     if(group && group.groupName)
       setName(group.groupName)
+  }, [group]);
 
-    if (setGroupMembers) {
-      setGroupMembers(groupMembers);      
-
-    } else {
-      ////선택한 그룹의 초기 초대멤버 표시
-      setGroupMembers([
-        {
-          id: myInfo.id,
-          name: myInfo.name,
-          presence: myInfo.presence,
-          photoPath: myInfo.photoPath,
-          PN: myInfo.PN,
-          LN: myInfo.LN,
-          TN: myInfo.TN,
-          dept: myInfo.dept,
-          type: 'U',
-        },
-      ]);
-    }
-  }, []);
-
-  const removeMemberObj = useMemo(
+  const editMemberObj = useMemo(
     () => ({
       name: 'editgroup_',
       onChange: (e, userInfo) => {
         console.log('removeMem')
         if (e.target.checked) {
-          if (userInfo.pChat == 'Y') {
+          //if (userInfo.pChat == 'Y') {
             addInviteMember({
               id: userInfo.id,
               name: userInfo.name,
@@ -89,55 +58,7 @@ const EditGroup = ({
               type: userInfo.type,
               isShow: true,
             });
-          } else {
-            openPopup(
-              {
-                type: 'Alert',
-                message: covi.getDic('그룹 멤버제거를 성공하였습니다.'),
-              },
-              dispatch,
-            );
-          }
-        } else {
-          delInviteMember(userInfo.id);
-        }
-      },
-      disabledList: groupMembers,
-      disabledKey: 'id',
-      checkedList: [...members, ...groupMembers],
-      checkedKey: 'id',
-    }),
-    [groupMembers, members],
-  );
-
-  const addMemberObj = useMemo(
-    () => ({
-      name: 'editgroup_',
-      onChange: (e, userInfo) => {
-        console.log('addMember')
-        if (e.target.checked) {
-          if (userInfo.pChat == 'Y') {
-            addInviteMember({
-              id: userInfo.id,
-              name: userInfo.name,
-              presence: userInfo.presence,
-              photoPath: userInfo.photoPath,
-              PN: userInfo.PN,
-              LN: userInfo.LN,
-              TN: userInfo.TN,
-              dept: userInfo.dept,
-              type: userInfo.type,
-              isShow: true,
-            });
-          } else {
-            openPopup(
-              {
-                type: 'Alert',
-                message: covi.getDic('그룹 멤버추가를 성공하였습니다.'),
-              },
-              dispatch,
-            );
-          }
+          //}
         } else {
           delInviteMember(userInfo.id);
         }
@@ -162,17 +83,10 @@ const EditGroup = ({
     deleteLayer(dispatch);
   }, []);
 
-  const removeGrouphandleDelete = useCallback(userId => {
+  const groupMemberHandleDelete = useCallback(userId =>{
     delInviteMember(userId);
     document
-      .getElementsByName('removegroup_' + userId)
-      .forEach(item => (item.checked = false));
-  }, []);
-
-  const addGrouphandleDelete = useCallback(userId =>{
-    delInviteMember(userId);
-    document
-      .getElementsByName('addgroup_' + userId)
+      .getElementsByName('editgroup_' + userId)
       .forEach(item => (item.checked = false));
   }, []);
 
@@ -191,7 +105,6 @@ const EditGroup = ({
             value: encodeURIComponent(text),
             type: 'C',
           }).then(({ data }) => {
-            console.log(data);
             if (data.status == 'SUCCESS') setSearchResult(data.result);
             else setSearchResult([]);
           });
@@ -210,18 +123,41 @@ const EditGroup = ({
     [userID],
   );
 
-  const handleGroupEditBtn = useCallback(() => {
+  const handleGroupEditBtn = useCallback((activeTab) => {
     //탭 열린거 확인 후 추가삭제
     let paramList = [];
 
-  }, [selectors]);
+    //console.log(activeTab, members)
+    //그룹멤버 탭
+    if(activeTab == 'GM'){
+      //그룹멤버 제거
+      dispatch(deleteGroupMember({members, group}))
+    }else{
+      //그룹멤버 추가
+      dispatch(addGroupMember({members, group}))
+    }
 
-  
+    setMembers([])
+  }, [members]);
 
   const handleUpdate = handleScrollUpdate({
     threshold: 0.85
   });
-  console.log(members)
+  
+  const checkEditGroup = useCallback(() => {
+    if(members.length > 0){
+      openPopup(
+        {
+          type: 'Alert',
+          message: covi.getDic('멤버 추가/제거중에는 탭을 이동 할 수 없습니다.'),
+        },
+        dispatch,
+      );
+      return false;
+    }
+    return true;
+  }, [members]);
+
   return (
     <div className="Layer-AddGroup" style={{ height: '100%' }}>
       <div className="modalheader">
@@ -241,7 +177,7 @@ const EditGroup = ({
                       <a
                         className="ui-link"
                         onClick={() => {
-                          addGrouphandleDelete(item.id);
+                          groupMemberHandleDelete(item.id);
                         }}
                       >
                         <ProfileBox
@@ -282,7 +218,8 @@ const EditGroup = ({
           <li className={selectTab == 'GM' ? 'active' : ''} data-tab="tab1">
             <a
               onClick={() => {
-                setSelectTab('GM');
+                if(checkEditGroup())
+                  setSelectTab('GM');
               }}
             >
               {covi.getDic('그룹멤버')}
@@ -291,7 +228,8 @@ const EditGroup = ({
           <li className={selectTab == 'GA' ? 'active' : ''} data-tab="tab2">
             <a
               onClick={() => {
-                setSelectTab('GA');
+                if(checkEditGroup())
+                  setSelectTab('GA');
               }}
             >
               {covi.getDic('그룹원 추가')}
@@ -312,11 +250,11 @@ const EditGroup = ({
               autoHide={true}
               className="PeopleList"
               onUpdate={handleUpdate}
-              style={{  height: 'calc(100% - '+ (members.length > 0 ? '192px': '124px' )+')', display: 'none' }}
+              style={{  height: 'calc(100% - '+ (members.length > 0 ? '220px': '124px' )+')', display: 'none' }}
             >
             <SearchOrgChart
               viewType="checklist"
-              checkObj={removeMemberObj}
+              checkObj={editMemberObj}
               searchData={searchResult}
               offset = {{
                 renderOffset
@@ -328,9 +266,9 @@ const EditGroup = ({
               autoHide={true}
               className="PeopleList"
               onUpdate={handleUpdate}
-              style={{ height: 'calc(100% - '+ (members.length > 0 ? '192px': '124px' )+')'}}
+              style={{ height: 'calc(100% - '+ (members.length > 0 ? '220px': '124px' )+')'}}
             >
-              <GroupContainer viewType="checklist" checkObj={removeMemberObj} group={group}/>
+              <GroupContainer viewType="checklist" checkObj={editMemberObj} group={groupInfo[0]}/>
             </Scrollbars>
           </div>
         </div>
@@ -338,12 +276,12 @@ const EditGroup = ({
           className={['tabcontent', selectTab == 'GA' ? 'active' : ''].join(' ')}
         >
           <div className="AddUserCon">
-            <OrgChart viewType="checklist" checkObj={addMemberObj} group={group} />
+            <OrgChart viewType="checklist" checkObj={editMemberObj} group={groupInfo[0]} />
           </div>
         </div>
         {members.length > 0 && 
-          <div className={["groupEditBtn", theme].join(" ")} onClick={handleGroupEditBtn}>
-            <span className="groupBtnLabel">{selectTab == 'GM' ? covi.getDic('제거'): covi.getDic('추가')}</span>
+          <div className={["groupEditBtn", theme].join(" ")} onClick={()=> handleGroupEditBtn(selectTab)}>
+            <div className="groupBtnLabel">{selectTab == 'GM' ? covi.getDic('제거'): covi.getDic('추가')}</div>
           </div>
         }
       </div>
