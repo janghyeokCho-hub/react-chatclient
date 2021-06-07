@@ -57,6 +57,7 @@ const AddGroup = () => {
   const handleAddBtn = useCallback(() => {
     const groupIdx = contacts.findIndex((contact)=> contact.folderType == 'R');
     var groupCnt = contacts[groupIdx].sub ? contacts[groupIdx].sub.length : 0;
+
     let groupInfo = {
       id: groupCnt+1,
       groupID: groupCnt+1
@@ -137,6 +138,7 @@ const AddGroup = () => {
               <input
                 className="string optional"
                 placeholder={covi.getDic('그룹명을 입력하세요.')}
+                value={name}
                 type="text"
                 onChange={e => setName(e.target.value)}
               />
