@@ -2,7 +2,7 @@ import { createAction, handleActions } from 'redux-actions';
 import { takeLatest, call, put } from 'redux-saga/effects';
 import { startLoading, finishLoading } from '@/modules/loading';
 
-import { setContacts } from '@/modules/contact';
+import contact, { setContacts } from '@/modules/contact';
 import { setRooms } from '@/modules/room';
 import createRequestSaga, {
   createRequestActionTypes,
@@ -35,8 +35,6 @@ import {
   accessTokenExpired,
   startRefreshInterval,
 } from '@/lib/zoomService';
-
-import testJson from "../../server/group.json";
 
 const [
   LOGIN_REQUEST,
@@ -202,9 +200,7 @@ function createLoginRequestSaga(loginType, syncType) {
               response.data.result.DeptCode,
             );
             if (contacts.data.status == 'SUCCESS') {
-              yield console.log(contacts.data.result)
-              //임시데이터
-              yield contacts.data.result.splice(2, 0, testJson[0])
+              
               yield put(setContacts(contacts.data));
 
               const users = yield call(getFixedUserData, {
@@ -505,7 +501,6 @@ function createSyncTokenRequestSaga(type) {
               authData.DeptCode,
             );
             if (contacts.data.status == 'SUCCESS') {
-              yield contacts.data.result.splice(2, 0, testJson[0])
 
               yield put(setContacts(contacts.data));
 

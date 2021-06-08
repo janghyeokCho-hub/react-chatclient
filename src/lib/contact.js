@@ -23,6 +23,15 @@ export const addCustomGroup = params => {
   return null;
 };
 
+export const modiftyCustomGroupName = params => {
+  return managesvr('put', `/user/contact/name`, params);
+};
+
+export const deleteCustomGroup = params => {
+  //managesvr('delete', `/user/contact/`, params);
+  return null;
+};
+
 export const addGroupMember = params => {
   return null;
 };

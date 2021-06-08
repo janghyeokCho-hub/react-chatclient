@@ -8,7 +8,6 @@ import createRequestSaga, {
 } from '@/lib/createRequestSaga';
 import { getJobInfo } from '@/lib/common';
 import { create } from '@/modules/popup';
-import testJSON from "../../server/group.json";
 
 const [
   GET_CONTACTS,
@@ -41,6 +40,18 @@ const [
 ] = createRequestActionTypes('contact/ADD_CUSTOMGROUP');
 
 const [
+  MODIFY_CUSTOMGROUPNAME,
+  MODIFY_CUSTOMGROUPNAME_SUCCESS,
+  MODIFY_CUSTOMGROUPNAME_FAILURE
+] = createRequestActionTypes('contact/MODIFY_CUSTOMGROUPNAME');
+
+const [
+  REMOVE_CUSTOMGROUP,
+  REMOVE_CUSTOMGROUP_SUCCESS,
+  REMOVE_CUSTOMGROUP_FAILURE
+] = createRequestActionTypes('contact/REMOVE_CUSTOMGROUP');
+
+const [
   ADD_GROUPMEMBER,
   ADD_GROUPMEMBER_SUCCESS,
   ADD_GROUPMEMBER_FAILURE
@@ -65,6 +76,8 @@ export const getItemGroup = createAction(GET_ITEMGROUP);
 export const mappingUserChatRoom = createAction(MAPPING_USER_CHAT_ROOM);
 export const setContacts = createAction(SET_CONTACTS);
 export const addCustomGroup = createAction(ADD_CUSTOMGROUP);
+export const removeCustomGroup = createAction(REMOVE_CUSTOMGROUP);
+export const modifyCustomGroupName = createAction(MODIFY_CUSTOMGROUPNAME);
 export const addGroupMember = createAction(ADD_GROUPMEMBER);
 export const deleteGroupMember = createAction(DELETE_GROUPMEMBER);
 export const init = createAction(INIT);
@@ -122,6 +135,7 @@ function createAddContactsSaga(type) {
 const addContactsSaga = createAddContactsSaga(ADD_CONTACTS);
 
 function createAddCustomGroupSaga(type) {
+  const removeCustomGroupSaga = createRemoveCustomGroupSaga(REMOVE_CUSTOMGROUP);
   const SUCCESS = `${type}_SUCCESS`;
   const FAILURE = `${type}_FAILURE`;
 
@@ -154,6 +168,34 @@ function createAddCustomGroupSaga(type) {
         callback: () => {
         },
       }));
+    } catch (err) {
+      // request 에러
+      yield put({
+        type: FAILURE,
+        payload: action.payload,
+        error: true,
+        errMessage: err
+      });
+    }
+  }
+}
+
+function createRemoveCustomGroupSaga(type){
+  const SUCCESS = `${type}_SUCCESS`;
+  const FAILURE = `${type}_FAILURE`;
+
+  return function* (action){
+    if (!action.payload) return;
+
+    try {
+      const response = yield call(contactApi.deleteCustomGroup, action.payload);
+      //const success = response.data.status === 'SUCCESS';
+
+      yield put({
+        type: SUCCESS,
+        payload: action.payload
+      });
+
     } catch (err) {
       // request 에러
       yield put({
@@ -211,6 +253,7 @@ function createDeleteGroupMemberSaga(type){
       });
 
     } catch (err) {
+      yield console.log(err)
       // request 에러
       yield put({
         type: FAILURE,
@@ -223,8 +266,13 @@ function createDeleteGroupMemberSaga(type){
 }
 
 const addCustomGroupSaga = createAddCustomGroupSaga(ADD_CUSTOMGROUP);
+const removeCustomGroupSaga = createRemoveCustomGroupSaga(REMOVE_CUSTOMGROUP);
 const addGroupMemberSaga = createAddGroupMemberSaga(ADD_GROUPMEMBER);
 const deleteGroupMemberSaga = createDeleteGroupMemberSaga(DELETE_GROUPMEMBER);
+const modifyCustomGroupNameSaga = createRequestSaga(
+  MODIFY_CUSTOMGROUPNAME,
+  contactApi.modiftyCustomGroupName
+)
 
 const deleteContactsSaga = createRequestSaga(
   DELETE_CONTACTS,
@@ -243,8 +291,10 @@ export function* contactSaga() {
   yield takeLatest(DELETE_CONTACTS, deleteContactsSaga);
   yield takeLatest(GET_ITEMGROUP, getItemGroupSaga);
   yield takeLatest(ADD_CUSTOMGROUP, addCustomGroupSaga);
+  yield takeLatest(REMOVE_CUSTOMGROUP, removeCustomGroupSaga);
   yield takeLatest(ADD_GROUPMEMBER, addGroupMemberSaga);
   yield takeLatest(DELETE_GROUPMEMBER, deleteGroupMemberSaga);
+  yield takeLatest(MODIFY_CUSTOMGROUPNAME, modifyCustomGroupNameSaga);
 }
 
 const initialState = {
@@ -385,9 +435,32 @@ const contact = handleActions(
           sub: filteredSub
         };
       });
+
+      /* 
+        서버데이터 변환 작업 
+        contact 로 R - 하위그룹들이오면 - sub로 넣어줌.
+        contact 사용자그룹 R이면서 folderID 3
+          - contact R타입
+          - contact R타입
+      */
+      let data = [];
+      const customGroups = filteredContacts.filter((contact)=>{
+        if(contact.folderType != 'R' || contact.folderID === '3')
+          data.push(contact);
+        return contact.folderType === 'R' && contact.folderID != '3'
+      });
+
+      data.map((contact)=>{
+        if(contact.folderID === '3'){
+          contact.sub = [];
+          contact.sub = contact.sub.concat(customGroups)
+        }
+        return contact
+      });
+
       return {
         ...state,
-        contacts: filteredContacts,
+        contacts: data,
         //reload: false,
       };
     },
@@ -425,6 +498,21 @@ const contact = handleActions(
         }else{
           draft.contacts[groupIdx].sub = draft.contacts[groupIdx].sub.concat(action.payload);
         }
+      });
+    },
+    [MODIFY_CUSTOMGROUPNAME_SUCCESS]: (state, action) => {
+      return produce(state, draft =>{
+        const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R')
+        console.log(action.payload);
+        
+      });
+    },
+    [REMOVE_CUSTOMGROUP_SUCCESS]: (state, action) =>{
+      return produce(state, draft =>{
+        const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R')
+        draft.contacts[groupIdx].sub = draft.contacts[groupIdx].sub.filter((group)=>{
+          return action.payload.group.id != group.id
+        });
       });
     },
     [ADD_GROUPMEMBER_SUCCESS]: (state, action) => {

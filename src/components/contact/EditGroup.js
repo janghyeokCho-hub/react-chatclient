@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@C/common/ProfileBox';
-import { deleteLayer, openPopup, getJobInfo } from '@/lib/common';
+import { deleteLayer, openPopup, getJobInfo, getDictionary } from '@/lib/common';
 import OrgChart from '@C/orgchart/OrgChart';
 import SearchOrgChart from '@C/orgchart/SearchOrgChart';
 import { searchOrgChart } from "@/lib/orgchart";
@@ -10,13 +10,17 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import useOffset from '@/hooks/useOffset';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
 import GroupContainer from '@/containers/contact/GroupContainer';
-import {deleteGroupMember, addGroupMember} from '@/modules/contact'
+import {deleteGroupMember, addGroupMember, modifyCustomGroupName} from '@/modules/contact'
+import GroupItem from './GroupItem';
 
 const EditGroup = ({
   headerName,
   group
 }) => {
-  const groupInfo = useSelector(({ contact }) => contact.contacts[3].sub).filter( groupInfo => groupInfo.id === group.id );
+  const groupInfo = useSelector(({ contact }) => {
+    const groupIdx = contact.contacts.findIndex((contact)=> contact.folderType == 'R');
+    return contact.contacts[groupIdx].sub
+  }).filter( groupInfo => groupInfo.id === group.id );
   const userID = useSelector(({ login }) => login.id);
   const [name, setName] = useState('');
   const [members, setMembers] = useState([]);
@@ -34,9 +38,8 @@ const EditGroup = ({
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log(group);
-    if(group && group.groupName)
-      setName(group.groupName)
+    if(group && group.folderName)
+      setName(getDictionary(group.folderName))
   }, [group]);
 
   const editMemberObj = useMemo(
@@ -158,6 +161,21 @@ const EditGroup = ({
     return true;
   }, [members]);
 
+  const handleModidyCustomGroupName = useCallback(() => {
+    let data= {
+      displayName: (group.folderName).replace(/[^\;]/g, "").replace(/[\;]/g, name+";"),
+      folderId: group.folderID
+    }
+    dispatch(modifyCustomGroupName(data));
+    openPopup(
+      {
+        type: 'Alert',
+        message: covi.getDic('그룹명이 변경되었습니다.'),
+      },
+      dispatch,
+    );
+  }, [name]);
+
   return (
     <div className="Layer-AddGroup" style={{ height: '100%' }}>
       <div className="modalheader">
@@ -210,7 +228,7 @@ const EditGroup = ({
                     value={name}
                     onChange={e => setName(e.target.value)}
                 />
-                <div className="ChgBtn" >변경</div>
+                <div className="ChgBtn" onClick={handleModidyCustomGroupName} >변경</div>
               </div>
             </div>
         </div>
@@ -241,7 +259,7 @@ const EditGroup = ({
         >
           <div className="AddUserCon">
             <SearchBar
-              placeholder={group.groupName+" "+covi.getDic('멤버 검색')}
+              placeholder={getDictionary(group.folderName)+" "+covi.getDic('멤버 검색')}
               input={searchText}
               onChange={handleChange}
             />

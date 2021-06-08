@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import RightConxtMenu from '@COMMON/popup/RightConxtMenu';
 import UserInfoBox from '@COMMON/UserInfoBox';
 import { openPopup, getDictionary, openLayer} from '@/lib/common';
+import { openChatRoomView } from '@/lib/roomUtil';
+import { removeCustomGroup, deleteGroupMember } from "@/modules/contact";
 import EditGroup from "./EditGroup";
 
 /* 
@@ -26,7 +28,6 @@ const GroupUserItem = React.memo(({contact, groupItem, userInfo, checkObj}) => {
 
     const menus = useMemo(() => {
         const returnMenu = [];
-        console.log('유저쪽')
         /* 
             유저/조직 부분 contextMenu : 대화 생성, 유저/조직 삭제 메뉴
         */
@@ -34,7 +35,8 @@ const GroupUserItem = React.memo(({contact, groupItem, userInfo, checkObj}) => {
             code: 'deleteMember',
             isline: false,
             onClick: () =>{
-                console.log('해당 그룹멤버삭제 추가')
+                //그룹멤버 삭제
+                dispatch(deleteGroupMember({members:[{id: userInfo.id}], group: {id: groupItem.id}}));
             },
             name: covi.getDic('그룹멤버 삭제')
         });
@@ -71,7 +73,7 @@ const GroupUserItem = React.memo(({contact, groupItem, userInfo, checkObj}) => {
                 } else {
                     openChatRoomView(
                     dispatch,
-                    viewTypeChat,
+                    viewType,
                     rooms,
                     selectId,
                     userInfos,
@@ -90,10 +92,10 @@ const GroupUserItem = React.memo(({contact, groupItem, userInfo, checkObj}) => {
             name: covi.getDic('StartChat'),
         });
         return returnMenu;
-    }, [groupItem]);
+    }, [groupItem, userInfo, dispatch, viewType, rooms, selectId, myInfo]);
 
     return (
-        <RightConxtMenu menuId={`group_${groupItem.id}_${userInfo.id}_${contact.folderID}`} menus={menus}>
+        <RightConxtMenu menuId={`user_${groupItem.id}_${userInfo.id}_${contact.folderID}`} menus={menus}>
             <UserInfoBox 
                 userInfo={userInfo} 
                 isInherit={true} 
@@ -108,7 +110,6 @@ const GroupUserItem = React.memo(({contact, groupItem, userInfo, checkObj}) => {
     임의 그룹 하위 그룹 아이템 컴포넌트
 */
 const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
-    const userID = useSelector(({ login }) => login.id);
     const myInfo = useSelector(({ login }) => login.userInfo);
     const viewTypeChat = useSelector(({ room }) => room.viewType);
     const rooms = useSelector(
@@ -132,7 +133,6 @@ const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
 
     const menus = useMemo(() => {
         const returnMenu = [];
-        console.log('그룹')
     /*
         그룹 부분 cotextMenu : 그룹변경, 그룹삭제, 대화생성
     */
@@ -140,7 +140,6 @@ const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
             code: 'modifyCustomGroup',
             isline: false,
             onClick: () =>{
-                console.log('그룹 변경');
                 EditGroupOpen();
             },
             name: covi.getDic('그룹정보 변경'),
@@ -149,7 +148,8 @@ const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
             code: 'deleteCustomGroup',
             isline: false,
             onClick: () =>{
-                console.log('그룹 삭제');
+                //커스텀그룹 삭제 Action 정의
+                dispatch(removeCustomGroup({group:groupItem}));
             },
             name: covi.getDic('그룹 삭제'),
         });
@@ -205,7 +205,7 @@ const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
             name: covi.getDic('StartChat'),
         });
         return returnMenu; 
-    }, [dispatch, groupItem]);
+    }, [dispatch, groupItem, viewTypeChat, rooms, selectId, myInfo]);
 
     const EditGroupOpen = useCallback(()=>{
         openLayer(
@@ -228,7 +228,7 @@ const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
                     onClick={handleIsOpen}
                     >
                     <span>
-                        {"┗   "}{getDictionary(groupItem.groupName)}{' '}
+                        {"┗   "}{getDictionary(groupItem.folderName)}{' '}
                         {(groupItem.sub ? `(${groupItem.sub.length})` : `(0)`)}
                     </span>
                     </a>
