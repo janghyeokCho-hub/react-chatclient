@@ -50,10 +50,10 @@ export const addContactList = (dispatch, list) => {
   dispatch(addFixedUsers(presenceList));
 };
 
-export const addGroupContactList = (dispatch, groupInfo) => {
+export const addGroupContactList = (dispatch, groupInfo, addMemberList) => {
   dispatch(addCustomGroup(groupInfo));
 
-  const presenceList = groupInfo.sub.filter(item => {
+  const presenceList = addMemberList.sub.filter(item => {
     if (item.targetType == 'U')
       return { id: item.targetId, presence: item.presence };
   });

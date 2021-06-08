@@ -135,7 +135,6 @@ function createAddContactsSaga(type) {
 const addContactsSaga = createAddContactsSaga(ADD_CONTACTS);
 
 function createAddCustomGroupSaga(type) {
-  const removeCustomGroupSaga = createRemoveCustomGroupSaga(REMOVE_CUSTOMGROUP);
   const SUCCESS = `${type}_SUCCESS`;
   const FAILURE = `${type}_FAILURE`;
 
@@ -143,18 +142,17 @@ function createAddCustomGroupSaga(type) {
     if (!action.payload) return;
 
     try {
-      const response = yield call(contactApi.addCustomGroup, action.payload);
-      //const success = response.data.status === 'SUCCESS';
+      const response = yield call(contactApi.addContactList, action.payload);
+      const success = response.data.status === 'SUCCESS';
       let message = null;
 
       // 대화상대 성공 추가
-      // if (success === true) {
-      //   message = covi.getDic("Msg_AddContacts_Success", "대화상대 추가에 성공했습니다.")
-      // } else {
-      //   // 대화상대 추가 실패
-      //   message = covi.getDic("Msg_AddContacts_Fail", "대화상대 추가에 실패했습니다.<br />잠시 후에 다시 시도해주세요.");
-      // }
-      message = covi.getDic("Msg_AddContacts_Success", "그룹 추가에 성공했습니다.")
+      if (success === true) {
+        message = covi.getDic("사용자그룹 생성에 성공하였습니다.")
+      } else {
+        // 대화상대 추가 실패
+        message = covi.getDic("사용자그룹 생성에 실패했습니다.<br />잠시 후에 다시 시도해주세요.");
+      }
 
       yield put({
         type: SUCCESS,
@@ -445,19 +443,19 @@ const contact = handleActions(
       */
       let data = [];
       const customGroups = filteredContacts.filter((contact)=>{
-        if(contact.folderType != 'R' || contact.folderID === '3')
+        if(contact.folderType != 'R' || contact.ownerID === '')
           data.push(contact);
-        return contact.folderType === 'R' && contact.folderID != '3'
+        return contact.folderType === 'R' && (contact.ownerID && contact.ownerID != '')
       });
 
       data.map((contact)=>{
-        if(contact.folderID === '3'){
+        if(contact.ownerID === '' && contact.folderType === 'R'){
           contact.sub = [];
           contact.sub = contact.sub.concat(customGroups)
         }
         return contact
       });
-
+      console.log(data);
       return {
         ...state,
         contacts: data,
@@ -502,9 +500,9 @@ const contact = handleActions(
     },
     [MODIFY_CUSTOMGROUPNAME_SUCCESS]: (state, action) => {
       return produce(state, draft =>{
-        const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R')
-        console.log(action.payload);
-        
+        const folderIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R');
+        const groupIdx = draft.contacts[folderIdx].sub.findIndex((group) => Number(group.folderID) === action.payload.folderId);
+        draft.contacts[folderIdx].sub[groupIdx].folderName = action.payload.displayName;
       });
     },
     [REMOVE_CUSTOMGROUP_SUCCESS]: (state, action) =>{

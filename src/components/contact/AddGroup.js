@@ -1,19 +1,19 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteLayer, clearLayer, getJobInfo } from '@/lib/common';
+import { deleteLayer, clearLayer, getJobInfo, openPopup } from '@/lib/common';
 import OrgChart from '@C/orgchart/OrgChart';
 import ProfileBox from '../common/ProfileBox';
 import { addGroupContactList } from '@/lib/contactUtil';
+import { getAesUtil } from '@/lib/aesUtil';
 
 const AddGroup = () => {
-  const { userID, contacts } = useSelector(({ login, contact }) => ({
-    userID: login.id,
-    contacts: contact.contacts,
+  const { userID} = useSelector(({ login }) => ({
+    userID: login.id
   }));
   const [selectors, setSelectors] = useState([]);
   const [name, setName] = useState("");
-
   const dispatch = useDispatch();
+  const AESUtil = getAesUtil();
 
   let oldContactList = [{ id: userID }];
 
@@ -55,32 +55,35 @@ const AddGroup = () => {
   }, []);
 
   const handleAddBtn = useCallback(() => {
-    const groupIdx = contacts.findIndex((contact)=> contact.folderType == 'R');
-    var groupCnt = contacts[groupIdx].sub ? contacts[groupIdx].sub.length : 0;
-    /* 추후 변경필요 */
-    let groupInfo = {
-      id: groupCnt+1,
-      groupID: groupCnt+1
-      ,groupName: name
-      ,groupSortKey: groupCnt+1
-      ,groupCode: ""
-      ,pChat: "Y"
-      ,sub: selectors.map(item =>{
-        return {
-          ...item,
-          targetId: item.id,
-          targetType: item.type,
-          presence: item.presence,
-          folderType: item.type == 'G' ? 'G' : 'C',
-          companyCode: item.companyCode,
-        }
-      })
-    };
+    /* 그룹명 미입력시 */
+    if(name === ""){
+      openPopup(
+        {
+          type: 'Alert',
+          message: covi.getDic('그룹명을 입력해주세요.'),
+        },
+        dispatch,
+      );
 
-    addGroupContactList(dispatch, groupInfo)
+      return;
+    }
+
+    /* 사용자 그룹 생성 JSON */
+    const groupInfo = [{
+      displayName: ";;;;;;;;;".replace(/[\;]/g, name+";"),
+      folderType: 'R',
+      arrGroup: AESUtil.encrypt(selectors.filter((item)=> item.type == 'G').map((item)=>{
+        return item.id+"$$"+item.companyCode;
+      }).join(",")),
+      arrMember: AESUtil.encrypt(selectors.filter((item)=> item.type == 'U').map((item)=>{
+        return item.id;
+      }).join(","))
+    }]
+
+    addGroupContactList(dispatch, groupInfo, selectors)
 
     clearLayer(dispatch);
-  }, [selectors]);
+  }, [name, selectors]);
 
   const handleDelete = useCallback(userId => {
     delContact(userId);
@@ -94,7 +97,7 @@ const AddGroup = () => {
       <div className="modalheader">
         <a className="closebtn" onClick={handleClose}></a>
         <div className="modaltit">
-          <p>{covi.getDic('임의 그룹 생성')}</p>
+          <p>{covi.getDic('그룹 생성')}</p>
         </div>
         <a className="Okbtn" onClick={handleAddBtn}>
           <span className="colortxt-point mr5">{selectors.length}</span>

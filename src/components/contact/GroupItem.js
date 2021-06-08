@@ -36,7 +36,9 @@ const GroupUserItem = React.memo(({contact, groupItem, userInfo, checkObj}) => {
             isline: false,
             onClick: () =>{
                 //그룹멤버 삭제
-                dispatch(deleteGroupMember({members:[{id: userInfo.id}], group: {id: groupItem.id}}));
+                console.log("그룹멤버 삭제")
+                console.log(groupItem.folderID, userInfo.id)
+                //dispatch(deleteGroupMember({members:[{id: userInfo.id}], group: {id: groupItem.id}}));
             },
             name: covi.getDic('그룹멤버 삭제')
         });
@@ -53,33 +55,33 @@ const GroupUserItem = React.memo(({contact, groupItem, userInfo, checkObj}) => {
             isline: false,
             onClick: () => {
                 if (contact.pChat == 'Y') {
-                let userInfos = { id: contact.groupCode, type: contact.folderType };
+                    let userInfos = { id: contact.groupCode, type: contact.folderType };
+                    
+                    if (contact.folderType != 'G') {
+                        userInfos.sub = contact.sub;
+                    }
 
-                if (contact.folderType != 'G') {
-                    userInfos.sub = contact.sub;
-                }
-
-                if (
-                    contact.folderType != 'G' &&
-                    (!userInfos.sub || userInfos.sub.length == 0)
-                ) {
-                    openPopup(
-                    {
-                        type: 'Alert',
-                        message: covi.getDic('Msg_EmptyChatMember'),
-                    },
-                    dispatch,
-                    );
-                } else {
-                    openChatRoomView(
-                    dispatch,
-                    viewType,
-                    rooms,
-                    selectId,
-                    userInfos,
-                    myInfo,
-                    );
-                }
+                    if (
+                        contact.folderType != 'G' &&
+                        (!userInfos.sub || userInfos.sub.length == 0)
+                    ) {
+                        openPopup(
+                        {
+                            type: 'Alert',
+                            message: covi.getDic('Msg_EmptyChatMember'),
+                        },
+                        dispatch,
+                        );
+                    } else {
+                        openChatRoomView(
+                            dispatch,
+                            viewType,
+                            rooms,
+                            selectId,
+                            userInfos,
+                            myInfo,
+                        );
+                    }
                 } else
                 openPopup(
                     {
@@ -95,7 +97,7 @@ const GroupUserItem = React.memo(({contact, groupItem, userInfo, checkObj}) => {
     }, [groupItem, userInfo, dispatch, viewType, rooms, selectId, myInfo]);
 
     return (
-        <RightConxtMenu menuId={`user_${groupItem.id}_${userInfo.id}_${contact.folderID}`} menus={menus}>
+        <RightConxtMenu menuId={`user_${groupItem.folderID}_${userInfo.id}_${contact.folderID}`} menus={menus}>
             <UserInfoBox 
                 userInfo={userInfo} 
                 isInherit={true} 
@@ -109,7 +111,7 @@ const GroupUserItem = React.memo(({contact, groupItem, userInfo, checkObj}) => {
 /* 
     임의 그룹 하위 그룹 아이템 컴포넌트
 */
-const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
+const GroupItem = ({ contact, groupItem, checkObj }) => {
     const myInfo = useSelector(({ login }) => login.userInfo);
     const viewTypeChat = useSelector(({ room }) => room.viewType);
     const rooms = useSelector(
@@ -149,7 +151,8 @@ const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
             isline: false,
             onClick: () =>{
                 //커스텀그룹 삭제 Action 정의
-                dispatch(removeCustomGroup({group:groupItem}));
+                //console.log(groupItem);
+                //dispatch(removeCustomGroup({group:groupItem}));
             },
             name: covi.getDic('그룹 삭제'),
         });
@@ -168,38 +171,24 @@ const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
               if (contact.pChat == 'Y') {
                 let userInfos = { id: contact.groupCode, type: contact.folderType };
     
-                if (contact.folderType != 'G') {
-                  userInfos.sub = contact.sub;
-                }
-    
-                if (
-                  contact.folderType != 'G' &&
-                  (!userInfos.sub || userInfos.sub.length == 0)
-                ) {
-                  openPopup(
-                    {
-                      type: 'Alert',
-                      message: covi.getDic('Msg_EmptyChatMember'),
-                    },
-                    dispatch,
-                  );
-                } else {
-                  openChatRoomView(
+                userInfos.sub = groupItem.sub;
+                //userInfos.sub가 채팅방에 추가됨.
+                //sub에 그룹모두를 넣어주면될듯함.
+                openChatRoomView(
                     dispatch,
                     viewTypeChat,
                     rooms,
                     selectId,
                     userInfos,
                     myInfo,
-                  );
-                }
-              } else
+                );
+              }else
                 openPopup(
-                  {
+                {
                     type: 'Alert',
                     message: covi.getDic('Msg_GroupInviteError'),
-                  },
-                  dispatch,
+                },
+                dispatch,
                 );
             },
             name: covi.getDic('StartChat'),
@@ -221,7 +210,7 @@ const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
 
     return (
         <>
-            <RightConxtMenu menuId={`groupFD_${groupItem.id}_${contact.folderID}`} menus={menus}>
+            <RightConxtMenu menuId={`groupFD_${groupItem.folderID}_${contact.folderID}`} menus={menus}>
                 <div className={["contextArea"].join(" ")}>
                     <a
                     className={['ListDivisionLine', isopen ? 'show' : '','customGroup'].join(' ')}
@@ -238,7 +227,7 @@ const GroupItem = ({ contact, groupItem, viewType, checkObj }) => {
                 {groupItem.sub && groupItem.sub.map(userInfo =>{  
                     return(
                         <GroupUserItem
-                            key={`${groupItem.groupID}_${userInfo.id}`} 
+                            key={`${groupItem.folderID}_${userInfo.id}`} 
                             contact={contact}
                             groupItem={groupItem}
                             userInfo={userInfo}

@@ -162,7 +162,7 @@ const Contact = ({ contact, viewType, checkObj }) => {
   const menus = useMemo(() => {
     const returnMenu = [];
     /* 
-      임의그룹 헤더에는 대화생성 기능제외, 그룹생성기능추가 
+      사용자그룹 헤더에는 대화생성 기능제외, 그룹생성기능추가 
     */
 
     if (contact.folderType === 'R') {
@@ -288,7 +288,7 @@ const Contact = ({ contact, viewType, checkObj }) => {
           contact.sub && contact.sub.map(group =>{
             return(
               <GroupItem 
-                key={'group_'+contact.folderID + '_' + group.id}
+                key={'group_'+contact.folderID + '_' + group.folderID}
                 contact={contact}
                 groupItem={group}
                 checkObj={checkObj}

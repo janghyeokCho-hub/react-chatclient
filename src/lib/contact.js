@@ -19,10 +19,7 @@ export const getItemGroupOneDepth = params => {
   );
 };
 
-export const addCustomGroup = params => {
-  return null;
-};
-
+/* 사용자 그룹 명 변경 */
 export const modiftyCustomGroupName = params => {
   return managesvr('put', `/user/contact/name`, params);
 };
