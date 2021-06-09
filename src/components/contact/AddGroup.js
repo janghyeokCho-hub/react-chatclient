@@ -73,7 +73,7 @@ const AddGroup = () => {
       displayName: ";;;;;;;;;".replace(/[\;]/g, name+";"),
       folderType: 'R',
       arrGroup: AESUtil.encrypt(selectors.filter((item)=> item.type == 'G').map((item)=>{
-        return item.id+"$$"+item.companyCode;
+        return item.id+"|"+item.companyCode;
       }).join(",")),
       arrMember: AESUtil.encrypt(selectors.filter((item)=> item.type == 'U').map((item)=>{
         return item.id;
