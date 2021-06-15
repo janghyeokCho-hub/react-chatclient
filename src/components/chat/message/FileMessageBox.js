@@ -1,10 +1,19 @@
 import React, { useCallback } from 'react';
 import File from '@C/chat/message/types/file';
+import { convertFileSize } from '@/lib/fileUpload/coviFile';
+import { getDic } from '@/lib/util/configUtil';
 import { getFileExtension, openFilePreview } from '@/lib/fileUpload/coviFile';
 import { isAllImage } from '@/lib/fileUpload/coviFile';
 import FileThumbList from '@C/chat/message/types/FileThumbList';
 
-const FileMessageBox = ({ messageId, fileObj, id, isTemp }) => {
+const FileMessageBox = ({
+  messageId,
+  fileObj,
+  id,
+  isTemp,
+  inprogress,
+  total,
+}) => {
   const handleFileList = fileObj => {
     let isAllImg = isAllImage(fileObj);
     if (isAllImg) {
@@ -32,7 +41,6 @@ const FileMessageBox = ({ messageId, fileObj, id, isTemp }) => {
         </div>
       );
     } else {
-      console.log('isAllImgElse');
       return (
         <div className="file-message-list" id={id || ''}>
           <ul className="file-list">
@@ -49,6 +57,16 @@ const FileMessageBox = ({ messageId, fileObj, id, isTemp }) => {
               );
             })}
           </ul>
+          <p style={{ marginLeft: 15, padding: 10, color: '#999' }}>
+            {inprogress &&
+              total &&
+              getDic('Upload') +
+                ' (' +
+                convertFileSize(inprogress) +
+                ' / ' +
+                convertFileSize(total) +
+                ')'}
+          </p>
         </div>
       );
     }
@@ -87,6 +105,8 @@ const FileMessageBox = ({ messageId, fileObj, id, isTemp }) => {
         preview={handlePreview}
         id={id}
         isTemp={isTemp}
+        inprogress={inprogress}
+        total={total}
       />
     );
   }
