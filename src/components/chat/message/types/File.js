@@ -18,7 +18,7 @@ import { openFile, openPath } from '@/lib/deviceConnector';
 import { getDic } from '@/lib/util/configUtil';
 import { logRenderer } from '@/lib/deviceConnector';
 
-const File = ({ type, item, preview, id, isTemp }) => {
+const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
   const extension = getFileExtension(item.ext);
   const [progressData, setProgressData] = useState(null);
   const [downloaded, setDownloaded] = useState(false);
@@ -35,12 +35,12 @@ const File = ({ type, item, preview, id, isTemp }) => {
   }, []);
 
   const handlePreview = useCallback(() => {
-    console.log('click')
+    console.log('click');
     preview(item);
   }, [preview]);
 
   const handleDownload = useCallback(() => {
-    console.log('저장')
+    console.log('저장');
     downloadByToken(item.token, item.fileName, data => {
       if (data.result != 'SUCCESS') {
         openPopup(
@@ -94,96 +94,93 @@ const File = ({ type, item, preview, id, isTemp }) => {
   );
 
   const handleViewer = useCallback(() => {
-
-
     let fileType = 'URL';
-    let token = localStorage.getItem('covi_user_access_token')
+    let token = localStorage.getItem('covi_user_access_token');
 
-    console.log('item.token',item.token)
-    token = token.replace(/\^/gi,'-')
+    console.log('item.token', item.token);
+    token = token.replace(/\^/gi, '-');
 
-    //filePath 사이냅 서버가 문서를 변환하기 위해 다운받을 주소 
+    //filePath 사이냅 서버가 문서를 변환하기 위해 다운받을 주소
     let eumTalkfilePath = `${window.covi.baseURL}/restful/na/nf/synabDownload/${item.token}/${token}`;
     let filePath = `${eumTalkfilePath}`;
 
     //fid 사이냅 변환요청시 관리자 페이지에 표시되는 문서ID (다운로드 링크에 따라오는 파일토큰)
     let fid = `${item.token}`;
     // let waterMarkText = 'EumTalk';
-    
-    viewerApi.sendConversionRequest({
-      fileType, filePath, fid
-    }).then(response => {
-      if (!response || !response.data) {
 
-      }
-      let job = 'job';
-      let key = response.data.key;
-      let url = ''
-      let view = 'view/'
-      url = response.config.url.indexOf(job);
-      url = response.config.url.substring(0, url);
-      url = url + view + key;
+    viewerApi
+      .sendConversionRequest({
+        fileType,
+        filePath,
+        fid,
+      })
+      .then(response => {
+        if (!response || !response.data) {
+        }
+        let job = 'job';
+        let key = response.data.key;
+        let url = '';
+        let view = 'view/';
+        url = response.config.url.indexOf(job);
+        url = response.config.url.substring(0, url);
+        url = url + view + key;
 
-      if (DEVICE_TYPE == 'd') {
-        window.openExternalPopup(url)
-      } else {
-        window.open(url)
-      }
-    }).catch(err => {
-      if (err && err.response) {
-        const errInfo = {
-          message: err.message,
-          status: err.response.status,
-          statusText: err.response.statusText,
-          url: err.response.config.url,
-          data: err.response.data,
-          requestBody: err.response.config.data,
-          headers: err.response.headers
-        };
-        console.log('Synap Error :  ', errInfo);
-        logRenderer('Synap Error :  ' + JSON.stringify(errInfo));
-      }
-      let message;
-      if (!err) {
-        message = getDic('Msg_Error');
-      } else if (err.response.status === 500) {
-        // '파일이 만료되었거나 문서 변환 오류가 발생했습니다.;The file has already expired or failed to convert from the server'
-        message = getDic('Msg_SynapError', '파일이 만료되었거나 문서 변환 오류가 발생했습니다.');
-      } else if (err.response.status === 404) {
-        // '문서뷰어 서버를 찾을 수 없습니다. 관리자에게 문의해주세요.;Cannot find Viewer Server. Please contact the manager.'
-        message = getDic('Msg_SynapFailed', '문서뷰어 서버를 찾을 수 없습니다. 관리자에게 문의해주세요.');
-      } else {
-        message = "Synap Viewer failed to convert the file with errStatus " + err.response.status;
-      }
+        if (DEVICE_TYPE == 'd') {
+          window.openExternalPopup(url);
+        } else {
+          window.open(url);
+        }
+      })
+      .catch(err => {
+        if (err && err.response) {
+          const errInfo = {
+            message: err.message,
+            status: err.response.status,
+            statusText: err.response.statusText,
+            url: err.response.config.url,
+            data: err.response.data,
+            requestBody: err.response.config.data,
+            headers: err.response.headers,
+          };
+          console.log('Synap Error :  ', errInfo);
+          logRenderer('Synap Error :  ' + JSON.stringify(errInfo));
+        }
+        let message;
+        if (!err) {
+          message = getDic('Msg_Error');
+        } else if (err.response.status === 500) {
+          // '파일이 만료되었거나 문서 변환 오류가 발생했습니다.;The file has already expired or failed to convert from the server'
+          message = getDic(
+            'Msg_SynapError',
+            '파일이 만료되었거나 문서 변환 오류가 발생했습니다.',
+          );
+        } else if (err.response.status === 404) {
+          // '문서뷰어 서버를 찾을 수 없습니다. 관리자에게 문의해주세요.;Cannot find Viewer Server. Please contact the manager.'
+          message = getDic(
+            'Msg_SynapFailed',
+            '문서뷰어 서버를 찾을 수 없습니다. 관리자에게 문의해주세요.',
+          );
+        } else {
+          message =
+            'Synap Viewer failed to convert the file with errStatus ' +
+            err.response.status;
+        }
 
-      //getDic('Msg_FileExpired')
-      openPopup(
-        {
-          type: 'Alert',
-          message,
-        },
-        dispatch,
-      );
-      //
-    });
+        //getDic('Msg_FileExpired')
+        openPopup(
+          {
+            type: 'Alert',
+            message,
+          },
+          dispatch,
+        );
+        //
+      });
   });
-
-  // const testFunc = useCallback(key => {
-  //   console.log('key',key)
-  //   viewerApi.sendInquiryRequest({key}).then(response => {
-  //     console.log(response)
-  //     console.log('231',response.config.url);
-  //     if (DEVICE_TYPE == 'd') {
-  //       window.openExternalPopup(response.config.url)
-  //     }else{
-  //       window.open(response.config.url)
-  //     }
-  //   })
-  // });
 
   const handleOpenFile = useCallback(
     isFinder => {
-      console.log('isFinder',isFinder)
+      console.log('isFinder', isFinder);
       if (DEVICE_TYPE == 'd') {
         try {
           get('files', item.token, result => {
@@ -198,7 +195,7 @@ const File = ({ type, item, preview, id, isTemp }) => {
                 setDownloaded(false);
               }
             } catch (e) {
-              console.log('warning :::',e)
+              console.log('warning :::', e);
               setDownloaded(false);
               remove('files', item.token, () => {
                 console.log('file info delete');
@@ -206,7 +203,7 @@ const File = ({ type, item, preview, id, isTemp }) => {
             }
           });
         } catch (e) {
-          console.log('warning :::',e)
+          console.log('warning :::', e);
           setDownloaded(false);
           remove('files', item.token, () => {
             console.log('file info delete');
@@ -292,7 +289,7 @@ const File = ({ type, item, preview, id, isTemp }) => {
         )}
       </li>
     );
-  } else { 
+  } else {
     if (item.thumbnail) {
       messageApi
         .getThumbnail({
@@ -364,7 +361,11 @@ const File = ({ type, item, preview, id, isTemp }) => {
                 {isTemp ? item.fullName : item.fileName}
               </p>
               <p className="file-size">
-                {covi.getDic('FileSize')} {convertFileSize(item.size)}
+                {covi.getDic('FileSize')}{' '}
+                {!inprogress && convertFileSize(item.size)}{' '}
+                {inprogress &&
+                  total &&
+                  convertFileSize(inprogress) + ' / ' + convertFileSize(total)}
               </p>
             </div>
 

@@ -30,6 +30,8 @@ export const uploadFile = params => {
   let url = '';
   const formData = new FormData();
 
+  console.log(params);
+
   // url 및 formData 생성
   if (params.sendFileInfo.files.length == 1) {
     url = '/upload';
@@ -41,6 +43,8 @@ export const uploadFile = params => {
     });
   }
 
+  formData.append('tempId', params.tempId);
+
   formData.append('fileInfos', JSON.stringify(params.sendFileInfo.fileInfos));
 
   if (params.roomID) {
@@ -50,9 +54,16 @@ export const uploadFile = params => {
     formData.append('roomObj', JSON.stringify(params));
   }
 
-  return managesvr('post', url, formData, {
-    'Content-Type': 'multipart/form-data',
-  });
+  return managesvr(
+    'post',
+    url,
+    formData,
+    {
+      'Content-Type': 'multipart/form-data',
+    },
+    true,
+    params.onUploadHandler,
+  );
 };
 
 export const getThumbnail = params => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   evalConnector,
   openLink,
@@ -14,7 +14,7 @@ import {
 import { changeTheme, changeFontSize } from '@/modules/menu';
 import { openRoom, newWinRoom } from '@/modules/room';
 import { openChannel, newWinChannel } from '@/modules/channel';
-
+import { openPopup } from '@/lib/common';
 import Range from '@COMMON/buttons/Range';
 
 const Titlebar = () => {
@@ -23,6 +23,8 @@ const Titlebar = () => {
     `v${APP_VERSION}${DEF_MODE == 'development' ? ' ::: DEV ::: ' : ''}`,
   );
   const isNewWin = !isMainWindow();
+
+  const tempMessage = useSelector(({ message }) => message.tempMessage);
 
   const dispatch = useDispatch();
   // window객체에 global로 세팅해야하는 함수들을 미리 loading ( titlebar draw 시점 및 사용시점 파악 필요 )
@@ -183,7 +185,18 @@ const Titlebar = () => {
             title={covi.getDic('Close')}
             style={{ WebkitAppRegion: 'no-drag' }}
             onClick={e => {
-              closeWindow();
+              if (tempMessage && tempMessage.length > 0) {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: covi.getDic('Msg_FileSendingClose'),
+                    callback: result => {
+                      closeWindow();
+                    },
+                  },
+                  dispatch,
+                );
+              } else closeWindow();
             }}
           ></button>
         </div>

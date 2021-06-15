@@ -1,6 +1,9 @@
 import axios from 'axios';
 import Config from '@/config/config';
 
+import { useDispatch } from 'react-redux';
+import { updateTempMessage } from '@/modules/message';
+
 const CHAT_SERVER = Config.ServerURL.CHAT;
 const MANAGE_SERVER = Config.ServerURL.MANAGE;
 
@@ -41,7 +44,14 @@ export const chatsvr = (method, url, params, headers, userid = true) => {
   return axios(reqOptions);
 };
 
-export const managesvr = (method, url, params, headers, userid = true) => {
+export const managesvr = (
+  method,
+  url,
+  params,
+  headers,
+  userid = true,
+  onUploadHandler = null,
+) => {
   if (DEVICE_TYPE === 'b') {
     // IE Cache 정책 문제로 timestamp parameter 함께 전송
     if (method.toUpperCase() === 'GET') {
@@ -52,19 +62,46 @@ export const managesvr = (method, url, params, headers, userid = true) => {
       }
     }
   }
-  const reqOptions = {
-    method: method,
-    url: `${MANAGE_SERVER}${url}`,
-    data: params,
-    headers: {
-      'Cache-Control': 'no-cache',
-      'Content-Type': 'application/json; charset=utf-8',
-      'Covi-User-Access-Version': APP_VERSION,
-      'Covi-User-Device-Type':
-        DEVICE_TYPE == 'd' ? 'covision.desktop.app' : 'covision.web.app',
-      ...headers,
-    },
-  };
+
+  let reqOptions = null;
+
+  if (headers && 'Content-Type' in headers) {
+    if (headers['Content-Type'] === 'multipart/form-data') {
+      let cancelTokenSource = axios.CancelToken.source();
+      reqOptions = {
+        method: method,
+        url: `${MANAGE_SERVER}${url}`,
+        data: params,
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Content-Type': 'application/json; charset=utf-8',
+          'Covi-User-Access-Version': APP_VERSION,
+          'Covi-User-Device-Type':
+            DEVICE_TYPE == 'd' ? 'covision.desktop.app' : 'covision.web.app',
+          ...headers,
+        },
+        cancelToken: cancelTokenSource.token,
+        onUploadProgress: data => {
+          onUploadHandler(data, cancelTokenSource);
+        },
+      };
+    }
+  } else {
+    reqOptions = {
+      method: method,
+      url: `${MANAGE_SERVER}${url}`,
+      data: params,
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Covi-User-Access-Version': APP_VERSION,
+        'Covi-User-Device-Type':
+          DEVICE_TYPE == 'd' ? 'covision.desktop.app' : 'covision.web.app',
+        ...headers,
+      },
+    };
+  }
+
   const token = localStorage.getItem('covi_user_access_token');
   if (token !== null) {
     reqOptions.headers['Covi-User-Access-Token'] = token;
