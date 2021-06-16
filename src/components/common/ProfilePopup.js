@@ -125,7 +125,7 @@ const ProfilePopup = ({ userInfo }) => {
               isInherit={false}
               handleClick={false}
             />
-            <div className="txtbox">
+            <div className="txtbox" style={{ userSelect: 'text' }}>
               <span className="name" style={{
                     wordBreak: 'break-all',
                     lineHeight: '1.0'
