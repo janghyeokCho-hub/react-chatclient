@@ -527,11 +527,13 @@ const MessageList = ({ onExtension, viewExtension }) => {
         className="startMessageID"
         style={{ display: 'none' }}
         value={startSelectMessage}
+        readOnly
       />
       <input
         className="endMessageID"
         style={{ display: 'none' }}
         value={endSelectMessage}
+        readOnly
       />
 
       {messageLoading && (
