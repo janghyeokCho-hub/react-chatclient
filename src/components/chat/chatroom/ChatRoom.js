@@ -10,7 +10,7 @@ import {
   readMessage,
   checkRoomMove,
 } from '@/modules/room';
-import { sendMessage, clearFiles } from '@/modules/message';
+import { sendMessage, clearFiles, updateTempMessage } from '@/modules/message';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import { addTargetUserList, delTargetUserList } from '@/modules/presence';
 import { newChatRoom, evalConnector, focusWin } from '@/lib/deviceConnector';
@@ -41,6 +41,7 @@ const ChatRoom = ({ match, roomInfo }) => {
   const [viewFileUpload, setViewFileUpload] = useState(false);
 
   const [viewExtension, setViewExtension] = useState('');
+  const [cancelHandlerFn, setCancelHandlerFn] = useState(null);
 
   const dispatch = useDispatch();
 
@@ -93,6 +94,8 @@ const ChatRoom = ({ match, roomInfo }) => {
     return () => {
       covi.changeSearchText = null;
       covi.changeSearchView = null;
+
+      if (cancelHandlerFn) cancelHandlerFn.cancel();
 
       if (isNewWin) {
         window.onunload = null;
@@ -147,6 +150,18 @@ const ChatRoom = ({ match, roomInfo }) => {
         sendFileInfo: filesObj,
         linkInfo: linkObj,
         messageType: !!messageType ? messageType : 'N',
+        onUploadHandler: (data, cancelHandler) => {
+          if (filesObj.fileInfos.length) {
+            filesObj.fileInfos[0].tempId;
+            const payload = {
+              inprogress: data.loaded,
+              total: data.total,
+              tempId: filesObj.fileInfos[0].tempId,
+            };
+            setCancelHandlerFn(cancelHandler);
+            dispatch(updateTempMessage(payload));
+          }
+        },
       };
       // sendMessage 하기 전에 RoomType이 M인데 참가자가 자기자신밖에 없는경우 상대를 먼저 초대함.
       if (room.roomType === 'M' && room.realMemberCnt === 1) {

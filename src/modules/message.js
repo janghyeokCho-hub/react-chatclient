@@ -8,14 +8,12 @@ import createRequestSaga, {
 } from '@/lib/createRequestSaga';
 import produce from 'immer';
 
-const [
-  SEND_MESSAGE,
-  SEND_MESSAGE_SUCCESS,
-  SEND_MESSAGE_FAILURE,
-] = createRequestActionTypes('message/SEND_MESSAGE');
+const [SEND_MESSAGE, SEND_MESSAGE_SUCCESS, SEND_MESSAGE_FAILURE] =
+  createRequestActionTypes('message/SEND_MESSAGE');
 
 const RESEND_MESSAGE = 'message/RESEND_MESSAGE';
 
+const UPDATE_TEMPMESSAGE = 'message/UPDATE_TEMPMESSAGE';
 const REMOVE_TEMPMESSAGE = 'message/REMOVE_TEMPMESSAGE';
 
 // FILE 부분 시작
@@ -38,6 +36,7 @@ const REMOVE_CHANNEL_TEMPMESSAGE = 'message/REMOVE_CHANNEL_TEMPMESSAGE';
 export const init = createAction(INIT);
 export const sendMessage = createAction(SEND_MESSAGE);
 export const reSendMessage = createAction(RESEND_MESSAGE);
+export const updateTempMessage = createAction(UPDATE_TEMPMESSAGE);
 export const removeTempMessage = createAction(REMOVE_TEMPMESSAGE);
 export const changeFiles = createAction(CHANGE_FILES);
 export const clearFiles = createAction(CLEAR_FILES);
@@ -88,13 +87,6 @@ function createSendMessageSaga(request, fileRequest, linkRequest) {
       const response = yield call(request, messageParams);
 
       if (response.data.status == 'SUCCESS') {
-        /*
-        yield put({
-          type: SUCCESS,
-          payload: action.payload,
-        });
-        */
-
         if (action.payload.linkInfo && action.payload.linkInfo.url != '') {
           const linkParams = {
             roomId: action.payload.roomID,
@@ -244,6 +236,27 @@ const message = handleActions(
     [INIT]: (state, action) => ({
       ...initialState,
     }),
+    [UPDATE_TEMPMESSAGE]: (state, action) => {
+      return produce(state, draft => {
+        const currentTempMsgIndex = state.tempMessage.map((tempMsg, index) => {
+          const matched = tempMsg.sendFileInfo.files.map(item => {
+            if (item.tempId == action.payload.tempId) return true;
+          });
+          if (matched) return index;
+          // return tempMsg.sendFileInfo.fileInfos.map((currentTempMsg, index) => {
+          //   if (currentTempMsg.tempId == action.payload.tempId) {
+          //     console.log(currentTempMsg);
+          //     return index;
+          //   }
+          // });
+        });
+        draft.tempMessage[currentTempMsgIndex] = {
+          ...state.tempMessage[currentTempMsgIndex],
+          inprogress: action.payload.inprogress,
+          total: action.payload.total,
+        };
+      });
+    },
     [SEND_MESSAGE]: (state, action) => {
       return produce(state, draft => {
         // 해당 메시지를 tempMessage에 넣고 상태를 send으로 지정

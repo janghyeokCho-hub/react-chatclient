@@ -72,6 +72,8 @@ const TempMessageBox = ({ message }) => {
                 status: message.status,
                 handleFailMessage: handleFailMessage,
               }}
+              inprogress={message.inprogress}
+              total={message.total}
               isTemp={true}
             />
           </li>

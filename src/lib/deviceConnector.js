@@ -10,6 +10,7 @@ const {
   writeFile,
   getInitialBounds,
 } = require(`@/lib/${DEVICE_TYPE}/connector`);
+import { dialog } from 'electron';
 
 // 2020.12.21
 // for '@C/chat/chatroom/normal/MessagePostBox' Component
@@ -385,7 +386,10 @@ export const makeChatRoom = (winName, makeData, openURL) => {
     );
 
     window[winName] = {
-      getRoomInfo: (makeData => () => makeData)(makeData),
+      getRoomInfo: (
+        makeData => () =>
+          makeData
+      )(makeData),
     };
   } else if (DEVICE_TYPE == 'd') {
     // makeRoom의 경우 전달되어야 하는 창에 데이터 세팅이 되어야 하므로
@@ -999,10 +1003,10 @@ export const setWindowOpacity = deg => {
   }
 };
 
-export const logRenderer = (msg) => {
+export const logRenderer = msg => {
   try {
     getRemote().send('log-info', msg);
-  } catch(e) {
+  } catch (e) {
     console.log(e);
   }
-}
+};
