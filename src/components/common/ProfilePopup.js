@@ -172,7 +172,7 @@ const ProfilePopup = ({ userInfo }) => {
             </div>
           </div>
 
-          <div className="pro-infobox">
+          <div className="pro-infobox" style={{ userSelect: 'text' }}>
             <dl>
               <dt>{covi.getDic('Mobile')}</dt>
               <dd>{userInfo.phoneNumber}</dd>
@@ -187,9 +187,7 @@ const ProfilePopup = ({ userInfo }) => {
             </dl>
             <dl>
               <dt>{covi.getDic('Work')}</dt>
-              <dd>
-                <a>{userInfo.work}</a>
-              </dd>
+              <dd>{userInfo.work}</dd>
             </dl>
           </div>
         </div>
