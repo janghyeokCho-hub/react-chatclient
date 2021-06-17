@@ -102,6 +102,15 @@
       ],
       "icon": "resources/icons/main_dmg.png"
     },
+    "protocols": [
+      {
+        "name": "eumtalk",
+        "role": "Viewer",
+        "schemes": [
+          "eumtalk"
+        ]
+      }
+    ],
     "dmg": {
       "title": "eumtalk",
       "icon": "resources/icons/main_dmg.png"

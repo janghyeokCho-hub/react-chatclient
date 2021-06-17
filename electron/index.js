@@ -1,4 +1,11 @@
-import { app, BrowserWindow, Menu, ipcMain, powerMonitor } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  Menu,
+  ipcMain,
+  powerMonitor,
+  protocol,
+} from 'electron';
 import path from 'path';
 import os from 'os';
 import url from 'url';
@@ -345,6 +352,11 @@ const createWindow = async isLoading => {
     },
     frame: false,
     show: false,
+  });
+
+  protocol.registerHttpProtocol('eumtalk', (req, cb) => {
+    const fullURL = 'eumtalk://' + req.url;
+    console.log('open to ' + fullURL);
   });
 
   if (isLoading) {
