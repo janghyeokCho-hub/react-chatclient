@@ -10,7 +10,6 @@ const {
   writeFile,
   getInitialBounds,
 } = require(`@/lib/${DEVICE_TYPE}/connector`);
-import { dialog } from 'electron';
 
 // 2020.12.21
 // for '@C/chat/chatroom/normal/MessagePostBox' Component
