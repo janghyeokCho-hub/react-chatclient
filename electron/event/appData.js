@@ -923,8 +923,7 @@ export const reqGetRoom = async (event, args) => {
       dbPath,
       loginInfo.getData().id,
     );
-
-    let rooms = [];
+    const rooms = [];
 
     const response = await managesvr('get', '/sync/room/message');
     if (response.data.status == 'SUCCESS') {
@@ -1016,26 +1015,60 @@ export const reqGetRoom = async (event, args) => {
 
         const roomResult = await selectRoom;
         const members = await selectMember;
+        const outdatedRooms = [];
 
-        data.forEach(item => {
-          let room = roomResult.find(room => room.roomID == item.roomId);
-
+        //
+        for await (const item of data) {
+          const room = roomResult.find(room => room.roomID == item.roomId);
           if (room) {
             room.members = members.filter(
               member => member.roomId == item.roomId,
             );
-
-            room.lastMessage = JSON.parse(item.lastMessage);
-            room.lastMessageDate = item.lastMessageDate;
-            room.unreadCnt = item.unreadCnt;
-
-            rooms.push(room);
+            if (item.lastMessageDate === null) {
+              /**
+               * 2021.06.14
+               * lastMessageDate가 null인 경우: 서버 측에서 대화기록 사라짐(메시지 삭제 주기)
+               * => local db 조회하여 lastMessage / lastMessageDate 획득
+               * 
+               * Future work (TODO)
+               * 건당 select 대신 whereIn으로 쿼리 호출횟수 최적화 필요
+               */
+              try {
+                const lastMessage = await tx.select('m.context', 'm.fileInfos', 'm.sendDate').from('message as m').where('m.roomId', item.roomId).orderBy('m.sendDate', 'desc').limit(1);
+                if (lastMessage && lastMessage.length > 0) {
+                  const message = lastMessage[0];
+                  room.lastMessage = {
+                    Message: message.context || '',
+                    File: message.fileInfos || ''
+                  };
+                  room.lastMessageDate = message.sendDate;
+                  room.unreadCnt = item.unreadCnt;
+                  outdatedRooms.push(room);
+                }
+              } catch(err) {
+                logger.info(`An error occured when selecting lastMessage in outdated room(${item.roomId || 'UNKNOWN'}) `, err);
+              }
+            } else {
+              // lastMssageDate 값이 있을 경우 마지막 동기화된 값을 그대로 사용함
+              room.lastMessage = JSON.parse(item.lastMessage);
+              room.lastMessageDate = item.lastMessageDate;
+              room.unreadCnt = item.unreadCnt;
+              rooms.push(room);
+            }
           } else {
             throw { stack: `reqGetRoom - There is no room, '${item.roomId}'` };
           }
-        });
-
+        }
+        //
         await tx.commit();
+
+        /**
+         * 2021.06.14
+         * tx.select 비동기 호출이 먼저 끝난 순서대로 데이터가 push되므로 시간순 내림차순 정렬 처리
+         */
+        outdatedRooms.sort((a, b) => b.lastMessageDate - a.lastMessageDate);
+        rooms.push(...outdatedRooms);
+
       } catch (e) {
         logger.info(e.stack);
         await tx.rollback();
