@@ -9,6 +9,8 @@ import {
   showConnectInfo,
   getDictionary,
 } from './commonUtils';
+import { chatsvr } from './api';
+import { getData } from './loginInfo';
 
 let trayInstance = null;
 
@@ -87,7 +89,22 @@ export const setContextMenu = parentWin => {
     { type: 'separator' },
     {
       label: getDictionary('종료;Exit;Exit;Exit;Exit;Exit;Exit;Exit;Exit'),
-      click: () => {
+      click: async () => {
+        try {
+          const data = getData();
+          if(data && data.id) {
+            const response = await chatsvr('put', '/presence', {
+              userId: data.id,
+              state: 'offline',
+              type: 'A',
+            });
+            logger.info('[4] Exit program. update presence offline ', response.data);
+            console.log(response.data);
+          }
+        } catch (err) {
+          logger.info('Error when updating presnce offline', err);
+          console.log(err);
+        }
         parentWin.close();
         app.quit();
         app.exit();

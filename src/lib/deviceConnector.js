@@ -3,6 +3,8 @@ import url from 'url';
 import { insert } from '@/lib/util/storageUtil';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
 import { getConfig } from '@/lib/util/configUtil';
+import { chatsvr } from '@/lib/api';
+
 const {
   getEmitter,
   getRemote,
@@ -776,7 +778,20 @@ export const closeAllChildWindow = () => {
   }
 };
 
-export const quit = () => {
+export const quit = async (userId) => {
+  try {
+    if(userId) {
+      const response = await chatsvr('put', '/presence', {
+        userId: userId,
+        state: 'offline',
+        type: 'A',
+      });
+      getEmitter().sendSync('log-info', '[5] Exit program. update presence offline ');
+      console.log(response.data);
+    }
+  } catch (err) {
+    getEmitter().sendSync('log-info', 'Error when updating presnce offline');
+  }
   getRemote().app.quit();
   getRemote().app.exit();
 };

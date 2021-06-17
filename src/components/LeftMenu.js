@@ -4,7 +4,6 @@ import { withRouter } from 'react-router-dom';
 import IconConxtMenu from '@COMMON/popup/IconConxtMenu';
 import * as common from '@/lib/common';
 import { logoutRequest } from '@/modules/login';
-
 import {
   quit,
   openSubPop,
@@ -179,8 +178,8 @@ const LeftMenu = ({ history }) => {
       setMenus.push({
         code: 'exit',
         isline: false,
-        onClick: () => {
-          quit();
+        onClick: async () => {
+          quit(id);
         },
         name: covi.getDic('Quit'),
       });

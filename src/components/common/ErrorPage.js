@@ -7,6 +7,7 @@ const ErrorPage = () => {
   const { object } = useSelector(({ error }) => ({
     object: error.object,
   }));
+  const id = useSelector(({ login }) => login.id);
   const [errMsg, setErrMsg] = useState(
     covi.getDic('Msg_Error', '에러가 발생했습니다.'),
   );
@@ -43,7 +44,7 @@ const ErrorPage = () => {
     if (DEVICE_TYPE == 'b') {
       window.close();
     } else {
-      quit();
+      quit(id);
     }
   };
 
