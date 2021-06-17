@@ -170,10 +170,24 @@ const appReady = async () => {
       powerMonitor.on('lock-screen', lockScreenEvt);
       powerMonitor.on('unlock-screen', unlockScreenEvt);
 
-      powerMonitor.on('shutdown', e => {
+      powerMonitor.on('shutdown', async e => {
         if (process.platform === 'darwin') {
           // macOS shutdown cancle prevent (uncaughtException: Maximum call stack size exceeded 발생이슈 확인 필요)
           e.preventDefault();
+          try {
+            const data = loginInfo.getData();
+            if(data && data.id) {
+              const response = await chatsvr('put', '/presence', {
+                userId: data.id,
+                state: 'offline',
+                type: 'A',
+              });
+              logger.info('[1] Exit program. update presence offline ');
+              console.log(response.data);
+            }
+          } catch (err) {
+            logger.info('Error when updating presnce offline', err);
+          }
           app.quit();
           app.exit();
         }
@@ -203,7 +217,21 @@ const appReady = async () => {
           {
             label: 'Quit',
             accelerator: 'Command+Q',
-            click: function () {
+            click: async function () {
+              try {
+                const data = loginInfo.getData();
+                if(data && data.id) {
+                  const response = await chatsvr('put', '/presence', {
+                    userId: data.id,
+                    state: 'offline',
+                    type: 'A',
+                  });
+                  logger.info('[2] Exit program. update presence offline ');
+                  console.log(response.data);
+                }
+              } catch (err) {
+                logger.info('Error when updating presnce offline', err);
+              }
               app.quit();
             },
           },
@@ -499,10 +527,25 @@ const createDomainRegistWindow = () => {
 };
 
 // Quit when all windows are closed.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
+    try {
+      const data = loginInfo.getData();
+
+      if(data && data.id) {
+        const response = await chatsvr('put', '/presence', {
+          userId: data.id,
+          state: 'offline',
+          type: 'A',
+        });
+        logger.info('[3] Exit program. update presence offline ');
+        console.log(response.data);
+      }
+    } catch (err) {
+      logger.info('Error when updating presnce offline', err);
+    }
     app.quit();
   }
 });
@@ -926,6 +969,7 @@ ipcMain.on('relaunch-app', (e, args) => {
 
 ipcMain.on('log-info', (_, args) => {
   logger.info(args.message);
+  return;
 });
 
 ipcMain.on('log-error', (_, args) => {
