@@ -17,14 +17,15 @@ const ContactContainer = ({ viewType, checkObj }) => {
   const handleSync = useCallback((event, args) => {
     const { userInfo } = args;
     if (args.op === 'add') {
+      const otherContacts = contact && contact.find((_contact) =>  _contact.folderID === '2');
       // 다른 연락처에 있는지 없는지 확인
-      if (contactList && contactList[2] && contactList[2].sub && contactList[2].sub.length > 0) {
+      if (otherContacts?.sub && otherContacts.sub.length > 0) {
         let flag = false;
-        contactList[2].sub.map(data => {
+        otherContacts.sub.map(data => {
           console.log(`userInfo ${userInfo.id} data ${data.id}`);
           if (userInfo.id == data.id) {
             // 만약 다른 연락처에 사용자가 있다면....
-            addFavorite(dispatch, userInfo, contactList[2].folderType);
+            addFavorite(dispatch, userInfo, otherContacts.folderType);
             flag = true;
           }
         });
