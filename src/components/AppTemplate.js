@@ -28,10 +28,11 @@ import {
   leaveChannelUtilAfter,
   leaveChannelByAdminUtilAfter,
 } from '@/lib/channelUtil';
+import { addFavorite, deleteFavorite } from '@/lib/contactUtil';
 
 const AppTemplate = () => {
   const viewType = useSelector(({ room }) => room.viewType);
-
+  const contactList = useSelector(({ contact }) => contact.contacts);
   const dispatch = useDispatch();
 
   const windowSizeChange = useCallback(() => {
@@ -44,6 +45,31 @@ const AppTemplate = () => {
       dispatch(changeChannelViewType(true)); // 채널
     }
   }, [viewType, dispatch]);
+  
+  const handleSync = useCallback((event, args) => {
+    const { userInfo } = args;
+    if (args.op === 'add') {
+      const otherContacts = contactList && contactList.find((_contact) =>  _contact.folderID === '2');
+      // 다른 연락처에 있는지 없는지 확인
+      if (otherContacts?.sub && otherContacts.sub.length > 0) {
+        let flag = false;
+        otherContacts.sub.map(data => {
+          if (userInfo.id == data.id) {
+            // 만약 다른 연락처에 사용자가 있다면....
+            addFavorite(dispatch, userInfo, otherContacts.folderType);
+            flag = true;
+          }
+        });
+        if (!flag) {
+          addFavorite(dispatch, userInfo, '');
+        }
+      } else {
+        addFavorite(dispatch, userInfo, '');
+      }
+    } else if(args.op === 'del') {
+      deleteFavorite(dispatch, args.userId);
+    }
+  }, [contactList]);
 
   useEffect(() => {
     // static 함수 등록
@@ -179,8 +205,27 @@ const AppTemplate = () => {
         method: 'removeListener',
         channel: 'onReSync',
       });
+      evalConnector({
+        method: 'removeListener',
+        channel: 'sync-favorite',
+      });
     };
+    
   }, []);
+
+  useEffect(() => {
+    // 이전에 등록된 listener 삭제하고 재등록(contactList 데이터 갱신 이슈)
+    evalConnector({
+      method: 'removeListener',
+      channel: 'sync-favorite',
+    });
+    // BrowserWindow 서브윈도우에서 유저 즐겨찾기 추가시 메인윈도우로 이벤트 위임
+    evalConnector({
+      method: 'on',
+      channel: 'sync-favorite',
+      callback: handleSync
+    });
+  }, [contactList]);
 
   useEffect(() => {
     window.onresize = null;
