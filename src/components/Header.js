@@ -117,7 +117,7 @@ const Header = () => {
 
   return (
     <>
-      {menu && (
+      {menu && menu != 'Extension' && (
         <div className="Topheader">
           {profileBox}
           <span className="TopTitle">{menu}</span>

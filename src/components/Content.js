@@ -8,7 +8,8 @@ import {
   ChannelList,
   ExternalUserList,
   UserSetting,
-  ZoomOAuthSuccess
+  ExtensionViewer,
+  ZoomOAuthSuccess,
 } from '@C/route/contents/index.async';
 
 const Content = () => {
@@ -18,7 +19,11 @@ const Content = () => {
       <Route path="/client/main/chatlist" component={ChatList} />
       <Route path="/client/main/orgchart" component={OrgChart} />
       <Route path="/client/main/channellist" component={ChannelList} />
-      <Route path="/client/main/oauth2/zoom/success" component={ZoomOAuthSuccess} />
+      <Route path="/client/main/extension" component={ExtensionViewer} />
+      <Route
+        path="/client/main/oauth2/zoom/success"
+        component={ZoomOAuthSuccess}
+      />
       <Route
         path="/client/main/externaluserlist"
         component={ExternalUserList}

@@ -370,36 +370,91 @@ const LeftMenu = ({ history }) => {
         {(!isExtUser || isExtUser == 'N') && (
           <ExternalLeft paramObj={userInfo}></ExternalLeft>
         )}
-
-        {/*
-        TODO: 아래 기능 구현되면 표시
-        <li
-          className={[
-            'menu-li',
-            active == 'externaluserlist' ? 'active' : '',
-          ].join(' ')}
-          onClick={e => {
-            handleClickMenu('/client/main/externaluserlist');
-          }}
+      </ul>
+      {DEVICE_TYPE == 'd' && (
+        <div
+          className="menu-extension-box"
+          style={{ display: 'flex', flexDirection: 'column', width: '100%' }}
         >
+          <div
+            className="menu-extension-line"
+            style={{
+              borderBottomColor: 'white',
+              borderBottomWidth: 2.5,
+              borderBottomStyle: 'solid',
+              width: '80%',
+              margin: 'auto',
+              marginBottom: 8,
+            }}
+          ></div>
           <svg
-            className="menu-li-svg"
+            height="16"
+            viewBox="0 0 48 48"
+            width="16"
             xmlns="http://www.w3.org/2000/svg"
-            width="35.127"
-            height="39.812"
-            viewBox="0 0 141 157"
+            style={{ marginLeft: 3 }}
           >
-            <g fill="none" stroke="#fff" strokeWidth="10">
-              <rect width="141" height="157" rx="17" stroke="none" />
-              <rect x="5" y="5" width="131" height="147" rx="12" />
-            </g>
+            <path d="M0 0h48v48h-48z" fill="none" />
             <path
-              d="M32 114a6 6 0 001 1l3 2h1a37 37 0 0015 3c9 0 17-3 22-9l29-29c9-9 11-24 6-37a2 2 0 00-1-1l-2-3-5-5a9 9 0 00-6-3 8 8 0 00-6 2L74 51a8 8 0 000 11l6 6-20 20-6-6a8 8 0 00-6-2 8 8 0 00-5 2L27 97a9 9 0 00-2 6 8 8 0 002 6zm0-12l15-15a1 1 0 012 0l9 8a3 3 0 004 0l25-24a3 3 0 001-3 3 3 0 00-1-2l-8-9a2 2 0 010-2l15-15a1 1 0 011 0 2 2 0 011 0l5 5 2 3c5 12 1 24-5 29l-29 30c-4 4-10 6-17 6a30 30 0 01-12-2l-3-2-5-5a1 1 0 010-1 3 3 0 010-1z"
-              fill="#fff"
+              d="M41 22h-3v-8c0-2.21-1.79-4-4-4h-8v-3c0-2.76-2.24-5-5-5s-5 2.24-5 5v3h-8c-2.21 0-3.98 1.79-3.98 4l-.01 7.6h2.99c2.98 0 5.4 2.42 5.4 5.4s-2.42 5.4-5.4 5.4h-2.99l-.01 7.6c0 2.21 1.79 4 4 4h7.6v-3c0-2.98 2.42-5.4 5.4-5.4 2.98 0 5.4 2.42 5.4 5.4v3h7.6c2.21 0 4-1.79 4-4v-8h3c2.76 0 5-2.24 5-5s-2.24-5-5-5z"
+              fill="white"
             />
           </svg>
-        </li>*/}
-      </ul>
+          <button
+            className="extension-add"
+            onClick={() => {
+              alert('test now');
+            }}
+            style={{ marginTop: 5 }}
+          >
+            <svg
+              fill="none"
+              height="24"
+              stroke="#fff"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" x2="12" y1="8" y2="16" />
+              <line x1="8" x2="16" y1="12" y2="12" />
+            </svg>
+          </button>
+          <ul className="menu-extension-list" style={{ marginTop: 17 }}>
+            <li className="menu-extension-item">
+              <button
+                className="extension-1"
+                className={[
+                  'extension-1',
+                  active == 'extension-1' ? 'active' : '',
+                ].join(' ')}
+                style={{ width: '100%', margin: 'auto' }}
+                onClick={() => {
+                  handleClickMenu('/client/main/extension');
+                }}
+              >
+                <svg
+                  viewBox="0 0 32 32"
+                  stroke="none"
+                  fill="white"
+                  stroke-width="1.5"
+                  width="28"
+                  height="28"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M30,15a1,1,0,0,1-.58-.19L16,5.23,2.58,14.81a1,1,0,0,1-1.16-1.62l14-10a1,1,0,0,1,1.16,0l14,10A1,1,0,0,1,30,15Z" />
+                  <path d="M5,9A1,1,0,0,1,4,8V4A1,1,0,0,1,5,3H9A1,1,0,0,1,9,5H6V8A1,1,0,0,1,5,9Z" />
+                  <path d="M25,29H20a1,1,0,0,1-1-1V21H13v7a1,1,0,0,1-1,1H7a3,3,0,0,1-3-3V16a1,1,0,0,1,2,0V26a1,1,0,0,0,1,1h4V20a1,1,0,0,1,1-1h8a1,1,0,0,1,1,1v7h4a1,1,0,0,0,1-1V16a1,1,0,0,1,2,0V26A3,3,0,0,1,25,29Z" />
+                </svg>
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
+
       <div className="menu-bottom-box">
         <button
           className={['bell', isNoti ? 'active' : ''].join(' ')}

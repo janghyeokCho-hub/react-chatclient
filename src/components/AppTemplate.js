@@ -31,6 +31,7 @@ import {
 
 const AppTemplate = () => {
   const viewType = useSelector(({ room }) => room.viewType);
+  const menu = useSelector(({ menu }) => menu.menu);
 
   const dispatch = useDispatch();
 
@@ -252,7 +253,10 @@ const AppTemplate = () => {
           <LeftMenu />
         </nav>
         <div className="Content">
-          <div className="ListCont">
+          <div
+            className="ListCont"
+            style={{ width: menu == 'Extension' ? '100%' : '' }}
+          >
             <Header />
             <Content />
           </div>
