@@ -115,6 +115,11 @@ const LoginContainer = ({ history, location }) => {
             'Msg_Fail_LoginAccessDenied',
             '접근이 제한된 계정입니다',
           );
+        } else if (errStatus === 'ACCOUNT_LOCK ') {
+          message = covi.getDic(
+            'Msg_Fail_Account_Lock',
+            '보안상의 이유로 계정이 비활성화되었으므로 로그인할 수 없습니다',
+          );
         }
       }
 
