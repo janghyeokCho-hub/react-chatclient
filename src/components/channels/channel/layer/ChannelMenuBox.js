@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { clearLayer, appendLayer, openPopup } from '@/lib/common';
@@ -372,6 +372,16 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
     threshold: 0.9
   });
 
+  /* 
+    채널권한 존재시
+    - 외부사용자초대, 대화상대추가 버튼에 따른 높이조정
+   */
+  const scrollHeight = useMemo(()=>{
+    let useInviteExtUser = enabledExtUser === 'Y' && SMTPConfig === 'Y';
+    let addLayoutHeight = channelAuth ? (useInviteExtUser ? 180 : 120) : 70;
+    return 'calc(100% - ' + String(addLayoutHeight) + 'px)'
+  }, [channelAuth, enabledExtUser, SMTPConfig])
+
   return (
     <div className="innerbox">
       <div className="modalheader">
@@ -554,7 +564,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
             )}
             <Scrollbars
               style={{
-                height: channelAuth ? 'calc(100% - 60px)' : 'calc(100%)',
+                height: scrollHeight,
                 boxSizing: 'border-box',
               }}
               autoHide={true}
