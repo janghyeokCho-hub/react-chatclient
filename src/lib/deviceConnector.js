@@ -786,11 +786,11 @@ export const quit = async (userId) => {
         state: 'offline',
         type: 'A',
       });
-      getEmitter().sendSync('log-info', '[5] Exit program. update presence offline ');
+      getEmitter().sendSync('log-info', {message: '[5] Exit program. update presence offline'});
       console.log(response.data);
     }
   } catch (err) {
-    getEmitter().sendSync('log-info', 'Error when updating presnce offline');
+    getEmitter().sendSync('log-info', {message: 'Error when updating presnce offline'});
   }
   getRemote().app.quit();
   getRemote().app.exit();
