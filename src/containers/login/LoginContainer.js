@@ -144,7 +144,7 @@ const LoginContainer = ({ history, location }) => {
         dispatch,
       );
     } else if (token) {
-      let defaultMenu = 'contactlist';
+      let defaultMenu = isExtUser ? 'channellist' : 'contactlist';
 
       if (DEVICE_TYPE == 'd') {
         const AESUtil = getAesUtil();
@@ -154,6 +154,7 @@ const LoginContainer = ({ history, location }) => {
           autoLoginId: userId,
           autoLoginPw: encryptPassword,
           tk: token,
+          isExtUser: isExtUser
         };
         evalConnector({
           method: 'send',
@@ -170,8 +171,7 @@ const LoginContainer = ({ history, location }) => {
         if (firstMenu) defaultMenu = firstMenu;
       }
 
-      if (!isExtUser) history.push(`/client/main/${defaultMenu}`);
-      else history.push('/client/main/channellist');
+      history.push(`/client/main/${defaultMenu}`);
     }
   }, [authFail, token]);
 

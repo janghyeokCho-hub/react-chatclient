@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { evalConnector } from '@/lib/deviceConnector';
 import { withRouter } from 'react-router-dom';
 import * as common from '@/lib/common';
 import SyncWrap from '@C/login/SyncWrap';
 import { useSelector, useDispatch } from 'react-redux';
 import useActions from '@/lib/useActions';
-import { loginRequest } from '@/modules/login';
+import { loginRequest, extLoginRequest } from '@/modules/login';
 import LoadingWrap from '@COMMON/LoadingWrap';
 
 const AutoLogin = ({ history }) => {
@@ -20,6 +20,8 @@ const AutoLogin = ({ history }) => {
   const dispatch = useDispatch();
 
   const [onLogin] = useActions([loginRequest], []);
+  const [onExtLogin] = useActions([extLoginRequest], []);
+  const [isExtUser,setIsExtUser] = useState(false);
 
   useEffect(() => {
     if (DEVICE_TYPE == 'd') {
@@ -35,7 +37,13 @@ const AutoLogin = ({ history }) => {
         da: process.arch,
       };
 
-      onLogin(data);
+      setIsExtUser(appConfig.get('isExtUser'));
+
+      if(appConfig.get('isExtUser')){
+        onExtLogin(data)
+      }else{
+        onLogin(data);
+      }
     } else {
       history.push('/client/login');
     }
@@ -45,7 +53,7 @@ const AutoLogin = ({ history }) => {
     if (authFail) {
       history.push('/client/login');
     } else if (token) {
-      let defaultMenu = 'contactlist';
+      let defaultMenu = isExtUser ? 'channellist':'contactlist';
       if (DEVICE_TYPE == 'd') {
         const data = {
           tk: token,
