@@ -157,46 +157,48 @@ const MessageList = ({ onExtension, viewExtension }) => {
           messageType = processMsg.type;
         }
         if (messageType == 'message') {
-          menus.push(
-            {
-              code: 'copyClipboardMessage',
-              isline: false,
-              onClick: () => {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_Copy'),
-                    callback: result => {
-                      navigator.clipboard.writeText(message.context);
+          if (!message.fileInfos) {
+            menus.push(
+              {
+                code: 'copyClipboardMessage',
+                isline: false,
+                onClick: () => {
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: covi.getDic('Msg_Copy'),
+                      callback: result => {
+                        navigator.clipboard.writeText(message.context);
+                      },
                     },
-                  },
-                  dispatch,
-                );
+                    dispatch,
+                  );
+                },
+                name: covi.getDic('Copy'),
               },
-              name: covi.getDic('Copy'),
-            },
-            {
-              code: 'setNoticeMessage',
-              isline: false,
-              onClick: () => {
-                openPopup(
-                  {
-                    type: 'Confirm',
-                    message: covi.getDic('Msg_RegNotice'),
-                    callback: result => {
-                      if (result) {
-                        setChannelNotice({
-                          messageID: message.messageID,
-                        });
-                      }
+              {
+                code: 'setNoticeMessage',
+                isline: false,
+                onClick: () => {
+                  openPopup(
+                    {
+                      type: 'Confirm',
+                      message: covi.getDic('Msg_RegNotice'),
+                      callback: result => {
+                        if (result) {
+                          setChannelNotice({
+                            messageID: message.messageID,
+                          });
+                        }
+                      },
                     },
-                  },
-                  dispatch,
-                );
+                    dispatch,
+                  );
+                },
+                name: covi.getDic('Notice'),
               },
-              name: covi.getDic('Notice'),
-            },
-          );
+            );
+          }
         }
 
         if (message.isMine == 'Y') {
@@ -210,8 +212,17 @@ const MessageList = ({ onExtension, viewExtension }) => {
                   message: covi.getDic('Msg_DeleteMsg'),
                   callback: result => {
                     if (result) {
+                      let token = [];
+                      if(message.fileInfos){
+                        if(Array.isArray(JSON.parse(message.fileInfos))){
+                          token = JSON.parse(message.fileInfos).map(f => f.token);
+                        }else{
+                          token.push(JSON.parse(message.fileInfos).token);
+                        }
+                      }
                       messageApi.deleteChannelMessage({
-                        messageId: message.messageID,
+                          token,
+                          messageId: message.messageID,
                       });
                     }
                   },
