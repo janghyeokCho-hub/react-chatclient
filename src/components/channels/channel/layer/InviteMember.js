@@ -86,7 +86,7 @@ const InviteMember = ({
       },
       disabledList: oldMembers,
       disabledKey: 'id',
-      checkedList: members,
+      checkedList: [...members, ...oldMembers],
       checkedKey: 'id',
     }),
     [oldMembers, members],
