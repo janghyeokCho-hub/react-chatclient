@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import { openChatRoomView } from '@/lib/roomUtil';
@@ -60,7 +60,7 @@ const ProfilePopup = ({ userInfo }) => {
 
   const handleFavorit = () => {
     if (userInfo.isFavorite === 'Y') {
-      if (DEVICE_TYPE === 'd' && isMainWindow() === false) {
+      if (DEVICE_TYPE === 'd' && (isMainWindow() === false)) {
         sendMain('sync-favorite', {
           op: 'del',
           userId: userInfo.id
@@ -77,13 +77,14 @@ const ProfilePopup = ({ userInfo }) => {
           userInfo: userInfo
         });
       } else {
+        const otherContacts = contact && contact.find((_contact) =>  _contact.folderID === '2');
         // 다른 연락처에 있는지 없는지 확인
-        if (contact && contact[2] && contact[2].sub && contact[2].sub.length > 0) {
+        if (otherContacts?.sub && otherContacts.sub.length > 0) {
           let flag = false;
-          contact[2].sub.map(data => {
+          otherContacts.sub.map(data => {
             if (userInfo.id == data.id) {
               // 만약 다른 연락처에 사용자가 있다면....
-              addFavorite(dispatch, userInfo, contact[2].folderType);
+              addFavorite(dispatch, userInfo, otherContacts.folderType);
               flag = true;
             }
           });
