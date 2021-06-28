@@ -262,7 +262,7 @@ const message = handleActions(
         // 해당 메시지를 tempMessage에 넣고 상태를 send으로 지정
         const sendData = action.payload;
         sendData.status = 'send';
-        sendData.tempId = tempId++;
+        sendData.tempId = (action.payload.roomID*10000) + tempId++;//id명명방식도논의
         draft.tempMessage.push(sendData);
       });
     },
@@ -291,10 +291,13 @@ const message = handleActions(
         //     console.dir(pair[1]);
         //   }
         // }
-        draft.tempMessage.splice(
-          draft.tempMessage.findIndex(m => m.tempId === action.payload),
-          1,
-        );
+        
+        draft.tempMessage = draft.tempMessage.filter( m => m.tempId !== action.payload);
+
+        // draft.tempMessage.splice(
+        //   draft.tempMessage.findIndex(m => m.tempId === action.payload),
+        //   1,
+        // );
       });
     },
     [RESEND_MESSAGE]: (state, action) => {
