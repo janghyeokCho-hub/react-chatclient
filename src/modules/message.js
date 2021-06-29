@@ -12,6 +12,7 @@ const [SEND_MESSAGE, SEND_MESSAGE_SUCCESS, SEND_MESSAGE_FAILURE] =
   createRequestActionTypes('message/SEND_MESSAGE');
 
 const RESEND_MESSAGE = 'message/RESEND_MESSAGE';
+const RESEND_CHANNEL_MESSAGE = 'message/RESEND_CHANNEL_MESSAGE';
 
 const UPDATE_TEMPMESSAGE = 'message/UPDATE_TEMPMESSAGE';
 const REMOVE_TEMPMESSAGE = 'message/REMOVE_TEMPMESSAGE';
@@ -45,6 +46,7 @@ export const setMoveView = createAction(SET_MOVE_VIEW);
 
 // 채널
 export const sendChannelMessage = createAction(SEND_CHANNEL_MESSAGE);
+export const reSendChannelMessage = createAction(RESEND_CHANNEL_MESSAGE);
 export const removeChannelTempMessage = createAction(
   REMOVE_CHANNEL_TEMPMESSAGE,
 );
@@ -116,8 +118,8 @@ function createSendMessageSaga(request, fileRequest, linkRequest) {
 
 // 채널
 function createSendChannelMessageSaga(request, fileRequest, linkRequest) {
-  const SUCCESS = `message/SEND_MESSAGE_SUCCESS`;
-  const FAILURE = `message/SEND_MESSAGE_FAILURE`;
+  const SUCCESS = `message/SEND_CHANNEL_MESSAGE_SUCCESS`;
+  const FAILURE = `message/SEND_CHANNEL_MESSAGE_FAILURE`;
 
   return function* (action) {
     try {
@@ -211,12 +213,19 @@ const sendChannelMessageSaga = createSendChannelMessageSaga(
   messageApi.getURLThumbnail,
 );
 
+const reSendChannelMessageSaga = createSendChannelMessageSaga(
+  messageApi.sendChannelMessage,
+  messageApi.uploadFile,
+  messageApi.getURLThumbnail,
+);
+
 export function* messageSaga() {
   yield takeEvery(SEND_MESSAGE, sendMessageSaga);
   yield takeLatest(RESEND_MESSAGE, reSendMessageSaga);
 
   // 채널
   yield takeEvery(SEND_CHANNEL_MESSAGE, sendChannelMessageSaga);
+  yield takeLatest(RESEND_CHANNEL_MESSAGE, reSendChannelMessageSaga);
 }
 
 const initialState = {
@@ -362,6 +371,16 @@ const message = handleActions(
         );
 
         sendData.status = 'fail';
+      });
+    },
+    [RESEND_CHANNEL_MESSAGE]: (state, action) => {
+      return produce(state, draft => {
+        // 해당 메시지를 tempChannelMessage에 넣고 상태를 send으로 지정
+        const sendData = draft.tempChannelMessage.find(
+          m => m.tempId === action.payload.tempId,
+        );
+
+        sendData.status = 'send';
       });
     },
     [REMOVE_CHANNEL_TEMPMESSAGE]: (state, action) => {
