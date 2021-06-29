@@ -27,8 +27,7 @@ import {
   setMessagesForSync,
   setUnreadCountForSync,
   readMessage,
-  getRoomInfo,
-  setNotice,
+  getRoomInfo
 } from '@/modules/room';
 import { hasClass, messageCopy, getMsgElement } from '@/lib/util/domUtil';
 import { evalConnector } from '@/lib/deviceConnector';
@@ -376,28 +375,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
                 );
               },
               name: covi.getDic('Copy'),
-            },
-            {
-              code: 'setNoticeMessage',
-              isline: false,
-              onClick: () => {
-                openPopup(
-                  {
-                    type: 'Confirm',
-                    message: covi.getDic('Msg_RegNotice'),
-                    callback: result => {
-                      if (result) {
-                        setNotice({
-                          messageID: message.messageID,
-                        });
-                      }
-                    },
-                  },
-                  dispatch,
-                );
-              },
-              name: covi.getDic('Notice'),
-            },
+            }
           );
         }
       }

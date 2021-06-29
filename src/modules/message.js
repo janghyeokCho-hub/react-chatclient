@@ -1,4 +1,4 @@
-import { createAction, handleActions } from 'redux-actions';
+﻿import { createAction, handleActions } from 'redux-actions';
 import { takeLatest, call, put, takeEvery } from 'redux-saga/effects';
 import * as messageApi from '@/lib/message';
 
@@ -32,6 +32,7 @@ const [
   SEND_CHANNEL_MESSAGE_FAILURE,
 ] = createRequestActionTypes('message/SEND_CHANNEL_MESSAGE');
 
+const UPDATE_CHANNEL_TEMPMESSAGE = 'message/UPDATE_CHANNEL_TEMPMESSAGE';
 const REMOVE_CHANNEL_TEMPMESSAGE = 'message/REMOVE_CHANNEL_TEMPMESSAGE';
 
 export const init = createAction(INIT);
@@ -46,6 +47,9 @@ export const setMoveView = createAction(SET_MOVE_VIEW);
 
 // 채널
 export const sendChannelMessage = createAction(SEND_CHANNEL_MESSAGE);
+export const updateChannelTempMessage = createAction(
+  UPDATE_CHANNEL_TEMPMESSAGE,
+);
 export const reSendChannelMessage = createAction(RESEND_CHANNEL_MESSAGE);
 export const removeChannelTempMessage = createAction(
   REMOVE_CHANNEL_TEMPMESSAGE,
@@ -252,15 +256,26 @@ const message = handleActions(
             if (item.tempId == action.payload.tempId) return true;
           });
           if (matched) return index;
-          // return tempMsg.sendFileInfo.fileInfos.map((currentTempMsg, index) => {
-          //   if (currentTempMsg.tempId == action.payload.tempId) {
-          //     console.log(currentTempMsg);
-          //     return index;
-          //   }
-          // });
         });
         draft.tempMessage[currentTempMsgIndex] = {
           ...state.tempMessage[currentTempMsgIndex],
+          inprogress: action.payload.inprogress,
+          total: action.payload.total,
+        };
+      });
+    },
+    [UPDATE_CHANNEL_TEMPMESSAGE]: (state, action) => {
+      return produce(state, draft => {
+        const currentTempMsgIndex = state.tempChannelMessage.map(
+          (tempMsg, index) => {
+            const matched = tempMsg.sendFileInfo.files.map(item => {
+              if (item.tempId == action.payload.tempId) return true;
+            });
+            if (matched) return index;
+          },
+        );
+        draft.tempChannelMessage[currentTempMsgIndex] = {
+          ...state.tempChannelMessage[currentTempMsgIndex],
           inprogress: action.payload.inprogress,
           total: action.payload.total,
         };

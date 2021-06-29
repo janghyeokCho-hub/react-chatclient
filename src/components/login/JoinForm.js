@@ -204,14 +204,18 @@ const JoinForm = ({ location, history }) => {
               onChange={e => setPasswordChk(e.target.value)}
             />
           </div>
+          {/* 2021.06.29
+            * '이름'필드의 제목을 커스터마이징 할 경우가 아니라면
+            * InviteExtUser_Name 다국어를 추가하지 않는다.
+           */}
           <div className="input full">
             <label className="string optional" for="name">
-              {covi.getDic('Name')}
+              {covi.getDic('InviteExtUser_Name', covi.getDic('Name'))}
               <span className="tx_must">*</span>
             </label>
             <input
               className="string optional"
-              placeholder={covi.getDic('Name')}
+              placeholder={covi.getDic('InviteExtUser_Name', covi.getDic('Name'))}
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
