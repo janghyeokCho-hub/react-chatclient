@@ -26,7 +26,7 @@ import { scrollIntoView } from '@/lib/util/domUtil';
 import { delay } from 'redux-saga/effects';
 
 const MessageList = ({ onExtension, viewExtension }) => {
-  const tempMessage = useSelector(({ message }) => message.tempMessage);
+  const tempMessage = useSelector(({ message }) => message.tempChannelMessage);
   const tempFiles = useSelector(({ message }) => message.tempFiles);
   const messages = useSelector(({ channel }) => channel.messages);
   const currentChannel = useSelector(({ channel }) => channel.currentChannel);
@@ -40,9 +40,8 @@ const MessageList = ({ onExtension, viewExtension }) => {
 
   const [newMessageSeperator, setNewMessageSeperator] = useState(null);
   const [showNewMessageSeperator, setShowNewMessageSeperator] = useState(false);
-  const [clickNewMessageSeperator, setClickNewMessageSeperator] = useState(
-    false,
-  );
+  const [clickNewMessageSeperator, setClickNewMessageSeperator] =
+    useState(false);
 
   const dispatch = useDispatch();
 
@@ -213,16 +212,18 @@ const MessageList = ({ onExtension, viewExtension }) => {
                   callback: result => {
                     if (result) {
                       let token = [];
-                      if(message.fileInfos){
-                        if(Array.isArray(JSON.parse(message.fileInfos))){
-                          token = JSON.parse(message.fileInfos).map(f => f.token);
-                        }else{
+                      if (message.fileInfos) {
+                        if (Array.isArray(JSON.parse(message.fileInfos))) {
+                          token = JSON.parse(message.fileInfos).map(
+                            f => f.token,
+                          );
+                        } else {
                           token.push(JSON.parse(message.fileInfos).token);
                         }
                       }
                       messageApi.deleteChannelMessage({
-                          token,
-                          messageId: message.messageID,
+                        token,
+                        messageId: message.messageID,
                       });
                     }
                   },
