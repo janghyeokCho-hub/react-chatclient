@@ -289,7 +289,7 @@ const MessageBox = ({
     if (!isMine) {
       return (
         <>
-          {drawText &&
+          {drawText && (
             <>
               <li className={nameBoxVisible ? 'sent' : 'text-only sent'}>
                 {nameBoxVisible && (
@@ -364,7 +364,7 @@ const MessageBox = ({
               </li>
               {urlInfoJSX && urlInfoJSX}
             </>
-          }
+          )}
           {fileInfoJSX && fileInfoJSX}
         </>
       );
@@ -390,7 +390,7 @@ const MessageBox = ({
               </div>
             )}
             <RightConxtMenu menuId={menuId} menus={menus}>
-              {drawText ?
+              {drawText ? (
                 <Message
                   className={
                     messageType == 'message'
@@ -402,10 +402,14 @@ const MessageBox = ({
                   mentionInfo={mentionInfo}
                 >
                   {drawText}
-                </Message> : fileInfoJSX}
+                </Message>
+              ) : (
+                fileInfoJSX
+              )}
             </RightConxtMenu>
           </li>
           {urlInfoJSX && urlInfoJSX}
+          {message.context && fileInfoJSX && fileInfoJSX}
         </>
       );
     }
