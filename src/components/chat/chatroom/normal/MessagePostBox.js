@@ -303,10 +303,6 @@ const MessagePostBox = forwardRef(
       e => {
         if (!e.shiftKey && e.keyCode == 13) {
           sendBtn.current.click();
-          if(currentEmoticon) {
-            handleEmoticon(currentEmoticon);
-            dispatch(clearEmoticon());
-          }
           e.preventDefault();
           e.stopPropagation();
           return false;
