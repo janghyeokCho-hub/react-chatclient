@@ -967,9 +967,9 @@ ipcMain.on('relaunch-app', (e, args) => {
   app.exit();
 });
 
-ipcMain.on('log-info', (_, args) => {
+ipcMain.on('log-info', (event, args) => {
   logger.info(args.message);
-  return;
+  event.returnValue = '';
 });
 
 ipcMain.on('log-error', (_, args) => {

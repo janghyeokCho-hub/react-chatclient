@@ -102,15 +102,6 @@
       ],
       "icon": "resources/icons/main_dmg.png"
     },
-    "protocols": [
-      {
-        "name": "eumtalk",
-        "role": "Viewer",
-        "schemes": [
-          "eumtalk"
-        ]
-      }
-    ],
     "dmg": {
       "title": "eumtalk",
       "icon": "resources/icons/main_dmg.png"
@@ -164,9 +155,9 @@
     "css-loader": "^3.2.0",
     "date-fns": "^2.9.0",
     "electron": "^4.2.12",
-    "electron-builder": "^22.11.3",
+    "electron-builder": "22.9.1",
     "electron-devtools-installer": "^3.1.1",
-    "electron-updater": "^4.2.0",
+    "electron-updater": "4.2.0",
     "file-loader": "^4.2.0",
     "hard-source-webpack-plugin": "^0.13.1",
     "html-loader": "^0.5.5",
@@ -208,7 +199,7 @@
   "dependencies": {
     "@agney/react-loading": "^0.1.2",
     "@babel/runtime": "^7.7.7",
-    "@journeyapps/sqlcipher": "^4.0.0",
+    "@journeyapps/sqlcipher": "4.0.0",
     "auto-launch": "^5.0.5",
     "electron-windows-notifications": "file:lib/electron-windows-notifications-3.0.6.tgz",
     "exif-js": "^2.3.0",

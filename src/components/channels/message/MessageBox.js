@@ -371,45 +371,45 @@ const MessageBox = ({
     } else {
       return (
         <>
-          {drawText && (
-            <>
-              <li className={nameBoxVisible ? 'replies' : 'text-only replies'}>
-                <div
-                  className="copyBox"
-                  style={{
-                    backgroundColor: '#00000055',
-                    width: 150,
-                    height: '100%',
-                  }}
-                ></div>
-                {!fileInfoJSX && !urlInfoJSX && (
-                  <div className="chatinfo">
-                    {timeBox && (
-                      <span className="Sendtime">
-                        {format(new Date(message.sendDate), 'HH:mm')}
-                      </span>
-                    )}
-                  </div>
+          <li className={nameBoxVisible ? 'replies' : 'text-only replies'}>
+            <div
+              className="copyBox"
+              style={{
+                backgroundColor: '#00000055',
+                width: 150,
+                height: '100%',
+              }}
+            ></div>
+            {!fileInfoJSX && !urlInfoJSX && (
+              <div className="chatinfo">
+                {timeBox && (
+                  <span className="Sendtime">
+                    {format(new Date(message.sendDate), 'HH:mm')}
+                  </span>
                 )}
-                <RightConxtMenu menuId={menuId} menus={menus}>
-                  <Message
-                    className={
-                      messageType == 'message'
-                        ? 'msgtxt'
-                        : `msgtxt ${messageType}`
-                    }
-                    eleId={id}
-                    marking={marking}
-                    mentionInfo={mentionInfo}
-                  >
-                    {drawText}
-                  </Message>
-                </RightConxtMenu>
-              </li>
-              {urlInfoJSX && urlInfoJSX}
-            </>
-          )}
-          {fileInfoJSX && fileInfoJSX}
+              </div>
+            )}
+            <RightConxtMenu menuId={menuId} menus={menus}>
+              {drawText ? (
+                <Message
+                  className={
+                    messageType == 'message'
+                      ? 'msgtxt'
+                      : `msgtxt ${messageType}`
+                  }
+                  eleId={id}
+                  marking={marking}
+                  mentionInfo={mentionInfo}
+                >
+                  {drawText}
+                </Message>
+              ) : (
+                fileInfoJSX
+              )}
+            </RightConxtMenu>
+          </li>
+          {urlInfoJSX && urlInfoJSX}
+          {message.context && fileInfoJSX && fileInfoJSX}
         </>
       );
     }
