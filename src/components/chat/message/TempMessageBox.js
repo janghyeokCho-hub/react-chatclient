@@ -1,6 +1,11 @@
 import React, { useMemo, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { reSendMessage, removeTempMessage } from '@/modules/message';
+import { 
+  reSendMessage, 
+  removeTempMessage,
+  reSendChannelMessage,
+  removeChannelTempMessage
+} from '@/modules/message';
 import Message from '@/components/chat/message/Message';
 import {
   openPopup,
@@ -20,14 +25,14 @@ const TempMessageBox = ({ message }) => {
         buttons: [
           {
             name: covi.getDic('ReSend'),
-            callback: () => {
-              dispatch(reSendMessage(message));
+            callback: () => {              
+              dispatch(message.roomType === "C" ? reSendChannelMessage(message): reSendMessage(message));
             },
           },
           {
             name: covi.getDic('Delete'),
             callback: () => {
-              dispatch(removeTempMessage(message.tempId));
+              dispatch(message.roomType === 'C' ?  removeChannelTempMessage(message.tempId):removeTempMessage(message.tempId));
             },
           },
         ],
