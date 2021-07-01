@@ -12,7 +12,7 @@ export const getInitialBounds = boundKey => {
       const { x, y, width, height, display } = initialBounds;
 
       // 디스플레이 구성이 달라졌을 경우 저장된 좌표를 사용하지 않음 (화면 밖으로 나가는 현상 방지)
-      if (targetScreen.id !== display.id) {
+      if (display && targetScreen && targetScreen.id !== display.id) {
         throw new Error("Display changed. use default bounds");
       }
       /**

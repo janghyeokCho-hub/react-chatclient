@@ -1217,6 +1217,7 @@ const channel = handleActions(
           channel.newWin = true;
           channel.winObj = action.payload.obj;
           channel.winName = action.payload.name;
+          draft.currentChannel = channel;
         } else {
           draft.channels.push({
             roomId: action.payload.id,

@@ -12,7 +12,11 @@ import {
   readMessage,
   resetUnreadCount,
 } from '@/modules/channel';
-import { sendChannelMessage, clearFiles } from '@/modules/message';
+import {
+  sendChannelMessage,
+  clearFiles,
+  updateChannelTempMessage,
+} from '@/modules/message';
 import * as messageApi from '@/lib/message';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import * as common from '@/lib/common';
@@ -54,6 +58,7 @@ const Channel = ({ match, channelInfo }) => {
   const [viewFileUpload, setViewFileUpload] = useState(false);
 
   const [viewExtension, setViewExtension] = useState('');
+  const [cancelHandlerFn, setCancelHandlerFn] = useState(null);
 
   const dispatch = useDispatch();
 
@@ -179,7 +184,20 @@ const Channel = ({ match, channelInfo }) => {
         tagInfo: tagArr,
         mentionInfo: mentionArr,
         messageType: !!messageType ? messageType : 'N',
+        onUploadHandler: (data, cancelHandler) => {
+          if (filesObj.fileInfos.length) {
+            filesObj.fileInfos[0].tempId;
+            const payload = {
+              inprogress: data.loaded,
+              total: data.total,
+              tempId: filesObj.fileInfos[0].tempId,
+            };
+            setCancelHandlerFn(cancelHandler);
+            dispatch(updateChannelTempMessage(payload));
+          }
+        },
       };
+
       dispatch(sendChannelMessage(data));
 
       if (window.covi && window.covi.listBottomBtn) {

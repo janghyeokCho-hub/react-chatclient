@@ -133,7 +133,9 @@ const LoginBox = forwardRef(
               className="LoginBtn Type1"
               disabled={loading}
             >
-              {covi.getDic('Login')}
+              {
+                isExtUser ? ovi.getDic('ExternalLogin') : covi.getDic('EmployeeLogin')
+              }
             </button>
           </div>
           <SelectBox

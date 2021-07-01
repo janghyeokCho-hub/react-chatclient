@@ -362,10 +362,7 @@ const MessagePostBox = forwardRef(
             handleMention(suggestionMembers[0]);
           } else {
             sendBtn.current.click();
-            const existEmoticon = `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
-            if (selectEmoticon) handleEmoticon(existEmoticon);
           }
-
           e.preventDefault();
           e.stopPropagation();
           return false;
