@@ -116,7 +116,7 @@
     },
     "nsis": {
       "oneClick": false,
-      "perMachine": true,
+      "perMachine": false,
       "allowToChangeInstallationDirectory": false,
       "language": 1042,
       "shortcutName": "eumtalk",
