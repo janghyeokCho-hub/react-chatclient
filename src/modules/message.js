@@ -286,7 +286,7 @@ const message = handleActions(
         // 해당 메시지를 tempMessage에 넣고 상태를 send으로 지정
         const sendData = action.payload;
         sendData.status = 'send';
-        sendData.tempId = (action.payload.roomID*10000) + tempId++;//id명명방식도논의
+        sendData.tempId = (action.payload.roomID*10000) + tempId++; //임시 메세지 고유키
         draft.tempMessage.push(sendData);
       });
     },
@@ -365,7 +365,7 @@ const message = handleActions(
         // 해당 채널 메시지를 tempMessage에 넣고 상태를 send으로 지정
         const sendData = action.payload;
         sendData.status = 'send';
-        sendData.tempId = tempId++;
+        sendData.tempId = (action.payload.roomID*10000) + tempId++;
         draft.tempChannelMessage.push(sendData);
       });
     },
@@ -414,10 +414,7 @@ const message = handleActions(
         //     console.dir(pair[1]);
         //   }
         // }
-        draft.tempChannelMessage.splice(
-          draft.tempChannelMessage.findIndex(m => m.tempId === action.payload),
-          1,
-        );
+        draft.tempChannelMessage = draft.tempChannelMessage.filter( m => m.tempId !== action.payload);
       });
     },
   },
