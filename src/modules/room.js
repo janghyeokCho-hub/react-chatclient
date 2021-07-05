@@ -244,12 +244,20 @@ function createGetRoomInfoSaga() {
       });
 
       // desktop의 경우 unread cnt sync 이후 read message 처리 수행
-      if (data.messages.length > 0) {
+
+      /**
+       * 2021.07.02
+       * (DEVICE_TYPE === 'b' || data.room.roomType !== 'A')
+       * 데스크탑 && 알림메시지일 경우에 : createGetRoomInfoSaga 와 createReadMessageSaga 에서 메시지 읽음(/server/message) 요청이 중복 발생
+       * => createReadMessageSaga에서 unread count state가 업데이트 되지 않음
+       * => 위 경우에는 createGetRoomInfoSaga의 unread sync 과정을 생략하도록 함
+       */
+      if ((DEVICE_TYPE === 'b' || data.room.roomType !== 'A') && data.messages.length > 0) {
         yield put(
           readMessage({
             roomID: action.payload.roomID,
             messageID: data.messages[data.messages.length - 1].messageID,
-            isNotice: data.room.roomType == 'A',
+            isNotice: data.room.roomType === 'A',
           }),
         );
       }
