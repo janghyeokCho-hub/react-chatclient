@@ -29,6 +29,7 @@ import {
   reloadApp,
   makeCustomAlarmPop,
   getMacAddr,
+  getPublicIPAddr,
 } from './utils/commonUtils';
 import { getInitialBounds } from '../src/lib/d/bound';
 
@@ -1072,4 +1073,9 @@ ipcMain.on('onRemoteAssistance', (event, args) => {
     console.log(args.isViewer);
     connectRemoteHost(args.sessionKey);
   }
+});
+
+ipcMain.on('req-get-remote-info', async (event, args) => {
+  const ipAddr = await getPublicIPAddr();
+  event.returnValue = ipAddr;
 });

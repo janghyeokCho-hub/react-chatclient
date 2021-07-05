@@ -306,7 +306,6 @@ const MessageView = ({
           },
         },
       };
-
       postAction(JSON.stringify(msgObj), null, null, 'A');
     },
     [roomInfo],
