@@ -1,10 +1,11 @@
-import React, { useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { openPopup, getJobInfo, getDictionary } from '@/lib/common';
 import { format } from 'date-fns';
 import useTyping from '@/hooks/useTyping';
+import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
 
 const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
   const viewType = useSelector(({ room }) => room.viewType);
@@ -12,12 +13,41 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
   const selectId = useSelector(({ room }) => room.selectId);
   const myInfo = useSelector(({ login }) => login.userInfo);
   const checkRef = useRef(null);
+  const personEl = useRef(null);
+  const nameEl = useRef(null);
+  const [picAreaWidth, setPicAreaWidth] = useState('calc(100% - 250px)')
+  const [picMaxWidth, setPicMaxWidth] = useState(0);
   const dispatch = useDispatch();
   const { confirm } = useTyping();
 
   const info = isMine
   ? { ...myInfo, absenceInfo: userInfo.absenceInfo }
   : userInfo;
+
+  useEffect(()=>{
+    const debounceTimer = createTakeLatestTimer(100);
+
+    /* 여기서 길이계산 */
+    const setPicWidth = e => {
+      const personWidth = personEl.current?.getBoundingClientRect()
+      const nameWidth = nameEl.current?.getBoundingClientRect()
+      const picWidth = personWidth ? personWidth.width - 30 - 52 - nameWidth.width - 20 - 20 : 0;
+      //personEl - personEl 30(padding) - profileArea(42+10(marign)) - nameArea - picArea Padding(20) - 20(자체 여유 너비)
+
+      if(picWidth > picMaxWidth)
+        setPicAreaWidth(picWidth)
+    };
+
+    window.addEventListener('resize', () => {
+      debounceTimer.takeLatest(setPicWidth);
+    })
+    
+    setPicWidth();
+
+    return () => {
+      window.removeEventListener('resize', setPicWidth);
+    };
+  },[])
 
   const getDeptName = useCallback(
     ()=>{
@@ -119,7 +149,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
                 className="pic"
                 title={info.work}
                 style={{
-                  maxWidth: 'calc(100% - 250px)',
+                  maxWidth: picAreaWidth,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
@@ -143,7 +173,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
             img={info.photoPath}
             isInherit={isInherit}
           />
-          <span className="name">{getJobInfo(info)}</span>
+          <span ref={nameEl} className="name" title={getJobInfo(info)} >{getJobInfo(info)}</span>
           {info.channelAuth && info.channelAuth === 'Y' && (
             <span className="admintag">{covi.getDic('Admin')}</span>
           )}
@@ -153,10 +183,11 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
         </a>
       );
     }
-  }, [userInfo, myInfo, isMine]);
+  }, [userInfo, myInfo, isMine, picAreaWidth]);
 
   return (
     <li
+      ref={personEl}
       className={['person', info.type == 'G' && info.dept == '' ?'group' : '' ].join(' ')}
       onClick={() => handleClick(false)}
       onDoubleClick={() => handleClick(true)}
