@@ -31,7 +31,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
     const setPicWidth = e => {
       const personWidth = personEl.current?.getBoundingClientRect()
       const nameWidth = nameEl.current?.getBoundingClientRect()
-      const picWidth = personWidth ? personWidth.width - 30 - 52 - nameWidth.width - 20 - 20 : 0;
+      const picWidth = personWidth ? personWidth.width - 30 - 52 - nameWidth?.width - 20 - 20 : 0;
       //personEl - personEl 30(padding) - profileArea(42+10(marign)) - nameArea - picArea Padding(20) - 20(자체 여유 너비)
 
       if(picWidth > picMaxWidth)
