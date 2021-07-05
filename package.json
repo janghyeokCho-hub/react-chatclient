@@ -1,6 +1,6 @@
 {
   "name": "eumtalk",
-  "version": "1.10.4",
+  "version": "1.11.0",
   "main": "build/electron/main.js",
   "appId": "com.covision.eumtalk",
   "browserslist": [
@@ -123,7 +123,7 @@
     },
     "nsis": {
       "oneClick": false,
-      "perMachine": false,
+      "perMachine": true,
       "allowToChangeInstallationDirectory": false,
       "language": 1042,
       "shortcutName": "eumtalk",
