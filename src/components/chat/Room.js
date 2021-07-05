@@ -176,7 +176,7 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent }) => {
           return (
             <>
               <span>{room.roomName}</span>
-              <span>{room.members && `(${room.members.length})`}</span>
+              <span className="roomMemberCtn">{room.members && `(${room.members.length})`}</span>
             </>
           );
         }
@@ -194,7 +194,7 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent }) => {
               })}
             </span>
             {room.roomType != 'A' && room.members && (
-              <span>({room.members.length})</span>
+              <span className="roomMemberCtn">({room.members.length})</span>
             )}
           </>
         );
