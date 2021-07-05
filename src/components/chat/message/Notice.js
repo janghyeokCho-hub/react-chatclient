@@ -205,7 +205,6 @@ const Notice = ({ type, value, title, func }) => {
             },
           });
         };
-<<<<<<< src/components/chat/message/Notice.js
       } else if (type == 'remotevnc') {
         return () => {
           const execSync = window.require('child_process').exec;
@@ -223,7 +222,7 @@ const Notice = ({ type, value, title, func }) => {
             );
             console.log(ex);
           }
-=======
+        }
       } else if (type == 'saeha') {
         return () => {
           const reqOptions = {
@@ -271,7 +270,6 @@ const Notice = ({ type, value, title, func }) => {
                 dispatch,
               );
             });
->>>>>>> src/components/chat/message/Notice.js
         };
       }
     },
