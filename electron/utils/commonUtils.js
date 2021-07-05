@@ -7,6 +7,8 @@ import * as window from './window';
 import { managesvr } from '../utils/api';
 import { removeLocalDatabaseDir } from '../utils/fileUtils';
 import * as netUtils from 'node-macaddress';
+import ip from 'ip';
+import { networkInterfaces } from 'os';
 
 /*
 const appId =
@@ -229,13 +231,11 @@ export const getSubPopupBound = (parentBounds, subSize, option) => {
     x: parentOffsetX,
     y: parentOffsetY,
   };
-  const {
-    x: screenOffsetX,
-    width: screenWidth,
-  } = screen.getDisplayNearestPoint({
-    x: parentOffsetX,
-    y: parentOffsetY,
-  }).workArea;
+  const { x: screenOffsetX, width: screenWidth } =
+    screen.getDisplayNearestPoint({
+      x: parentOffsetX,
+      y: parentOffsetY,
+    }).workArea;
 
   if (option == 'sticky') {
     retPos.x =
@@ -533,4 +533,19 @@ export const getMacAddr = () => {
   return new Promise((resolve, reject) => {
     netUtils.all((error, mac) => (error ? reject(error) : resolve(mac)));
   });
+};
+
+export const getPublicIPAddr = () => {
+  const nets = networkInterfaces();
+  let addressList = [];
+
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        addressList.push(net.address);
+      }
+    }
+  }
+
+  return addressList;
 };

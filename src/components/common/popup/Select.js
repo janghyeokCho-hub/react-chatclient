@@ -21,7 +21,12 @@ const Select = ({ popObj }) => {
     <>
       <div className="popup-layer-wrap">
         <div className="popup-layer type05">
-          <ul className="menulist">
+          {popObj.title && (
+            <p className="tittxt" style={{ marginTop: 5 }}>
+              {popObj.title}
+            </p>
+          )}
+          <ul className="menulist" style={{ marginTop: 2 }}>
             {popObj &&
               popObj.buttons.map((item, index) => {
                 return (

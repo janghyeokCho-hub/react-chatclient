@@ -33,6 +33,8 @@ const NoticeMessageBox = ({ message, isMine, nameBox, timeBox }) => {
       drawText = drawText.replace(/\n/gi, '<NEWLINE />');
     }
 
+    console.log(drawData);
+
     if (!isMine) {
       return (
         <>
