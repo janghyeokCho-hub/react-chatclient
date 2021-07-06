@@ -46,13 +46,15 @@ const makeMessageText = lastMessage => {
     if (!msgObj) return returnText;
 
     if (msgObj.Message !== '' && msgObj.Message !== null) {
-      // returnText = commonApi.getPlainText(msgObj.Message);
       let drawText = (msgObj.Message && msgObj.Message) || '';
       if (common.isJSONStr(msgObj.Message)) {
         const drawData = JSON.parse(msgObj.Message);
 
+        console.log('drawData=>', drawData);
         if (drawData.msgType == 'C') {
           drawText = common.getDictionary(drawData.title);
+        } else if (typeof drawData == 'object') {
+          drawText = JSON.stringify(drawData);
         } else {
           drawText = drawData.context;
         }
@@ -176,7 +178,9 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent }) => {
           return (
             <>
               <span>{room.roomName}</span>
-              <span className="roomMemberCtn">{room.members && `(${room.members.length})`}</span>
+              <span className="roomMemberCtn">
+                {room.members && `(${room.members.length})`}
+              </span>
             </>
           );
         }
