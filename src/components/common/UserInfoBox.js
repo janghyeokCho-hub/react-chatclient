@@ -6,6 +6,7 @@ import { openPopup, getJobInfo, getDictionary } from '@/lib/common';
 import { format } from 'date-fns';
 import useTyping from '@/hooks/useTyping';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
+import { getConfig } from '@/lib/util/configUtil';
 
 const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
   const viewType = useSelector(({ room }) => room.viewType);
@@ -19,6 +20,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
   const [picMaxWidth, setPicMaxWidth] = useState(0);
   const dispatch = useDispatch();
   const { confirm } = useTyping();
+  const useMobileIcon = getConfig('UseMobileIcon', 'Y');
 
   const info = isMine
   ? { ...myInfo, absenceInfo: userInfo.absenceInfo }
@@ -177,7 +179,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
           {info.channelAuth && info.channelAuth === 'Y' && (
             <span className="admintag">{covi.getDic('Admin')}</span>
           )}
-          {info.isMobile === 'Y' && <span className="mobileico ml5"></span>}
+          {useMobileIcon === 'Y' && info.isMobile === 'Y' && <span className="mobileico ml5"></span>}
           <span className="team">{getDeptName()}</span>
           {!checkObj && isClick && getAdditionalInfoBox(info)}
         </a>
