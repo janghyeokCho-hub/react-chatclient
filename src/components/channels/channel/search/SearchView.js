@@ -6,6 +6,7 @@ import SearchHeader from '@C/channels/channel/search/SearchHeader';
 import LoadingWrap from '@/components/common/LoadingWrap';
 import * as messageApi from '@/lib/message';
 import * as common from '@/lib/common';
+import { specialCharFilter } from '@/modules/util';
 
 const SearchView = ({ onSearchBox }) => {
   const roomID = useSelector(({ channel }) => channel.currentChannel.roomId);
@@ -121,7 +122,7 @@ const SearchView = ({ onSearchBox }) => {
   );
 
   const handleSearchText = text => {
-    setSearchText(text);
+    setSearchText(specialCharFilter(text));
   };
 
   return (

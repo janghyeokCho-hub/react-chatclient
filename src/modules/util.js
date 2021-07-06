@@ -34,4 +34,11 @@ const util = handleActions(
   initialState,
 );
 
+export const specialCharFilter = (text)=>{
+  const regExp = /[(\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi;//특수문자 제거 정규표현식
+  if(regExp.test(text))
+    text = text.replace(regExp, "");
+  return text;
+};
+
 export default util;

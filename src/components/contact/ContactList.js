@@ -11,6 +11,7 @@ import AddContact from './AddContact';
 import InviteMember from '../chat/chatroom/layer/InviteMember';
 import useOffset from '@/hooks/useOffset';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
+import { specialCharFilter } from '@/modules/util';
 
 const ContactList = ({ viewType, checkObj }) => {
   const userID = useSelector(({ login }) => login.id);
@@ -114,14 +115,14 @@ const ContactList = ({ viewType, checkObj }) => {
 
   const handleChange = useCallback(
     e => {
-      const text = e.target.value;
+      const text = specialCharFilter(e.target.value);
       setSearchText(text);
 
       if (text !== '') {
         debounceTimer.takeLatest(() => {
           searchOrgChart({
             userID: userID,
-            value: encodeURIComponent(text),
+            value: text,
             type: 'C',
           }).then(({ data }) => {
             if (data.status == 'SUCCESS') setSearchResult(data.result);

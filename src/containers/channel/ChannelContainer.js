@@ -10,6 +10,7 @@ import SearchBar from '@COMMON/SearchBar';
 import ChannelItems from '@C/channels/ChannelItems';
 import { getConfig } from '@/lib/util/configUtil';
 import useTyping from '@/hooks/useTyping';
+import { specialCharFilter } from '@/modules/util';
 
 const ChannelContainer = () => {
   const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
@@ -46,7 +47,7 @@ const ChannelContainer = () => {
 
   const handleSearchChange = useCallback(
     e => {
-      const changeVal = e.target.value;
+      const changeVal = specialCharFilter(e.target.value);
       setSearchText(changeVal);
 
       if (changeVal == '') {
