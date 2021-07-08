@@ -5,7 +5,7 @@ import { getSubPopupBound } from '../utils/commonUtils';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { updateLinkInfo } from './appData';
-import { detect as detectCharset } from 'jschardet'; 
+import { detect as detectCharset } from 'jschardet';
 import iconv from 'iconv-lite';
 
 export const setRoomWinMap = (event, args) => {
@@ -60,13 +60,40 @@ export const reqMakeRoom = (event, args) => {
     y: bounds.y,
   });
 
+  let defaultSize = {
+    width: 450,
+    height: 600,
+    offset: {
+      width: {
+        min: 100,
+        max: 100,
+      },
+      height: {
+        min: 50,
+        max: 100,
+      },
+    },
+  };
+
+  const config = SERVER_SETTING.get('config');
+
+  if (config?.clientDefaultSize) {
+    defaultSize = {
+      width: config.clientDefaultSize.width,
+      height: config.clientDefaultSize.height,
+      offset: config.clientDefaultSize.offset,
+    };
+  }
+
   const initial = {
-    width: 500,
-    height: 700,
+    width: defaultSize.width,
+    height: defaultSize.height,
     x: display.workArea.x + (display.workArea.width / 2 - 250),
     y: display.workArea.y + (display.workArea.height / 2 - 350),
-    minWidth: 400,
-    minHeight: 600,
+    minWidth: defaultSize.width - defaultSize.offset.width.min,
+    minHeight: defaultSize.height - defaultSize.offset.height.min,
+    maxWidth: defaultSize.width + defaultSize.offset.width.max,
+    maxHeight: defaultSize.height + defaultSize.offset.height.max,
   };
 
   let makeWin = new BrowserWindow({
@@ -222,7 +249,7 @@ export const getUrlGraphData = (event, args) => {
       // response type 이 html 일 경우에만 link 해석
       if (headers['content-type'].indexOf('text/html') > -1) {
         axios
-          .get(args.url, {responseType: 'arraybuffer'})
+          .get(args.url, { responseType: 'arraybuffer' })
           .then(response => {
             // 원본 데이터의 charset 확인
             const responseCharset = detectCharset(response.data);
@@ -231,15 +258,19 @@ export const getUrlGraphData = (event, args) => {
              * charset이 없거나 / utf-8인 경우에 Decoding 생략
              * charset이 확인 가능한 경우 decoding 수행
              */
-            const needToDecode = responseCharset && responseCharset.encoding && responseCharset.encoding.toLowerCase() !== 'utf-8';
-            const decoded = needToDecode ?
-              iconv.decode(response.data, responseCharset.encoding) :
-              response.data.toString();
+            const needToDecode =
+              responseCharset &&
+              responseCharset.encoding &&
+              responseCharset.encoding.toLowerCase() !== 'utf-8';
+            const decoded = needToDecode
+              ? iconv.decode(response.data, responseCharset.encoding)
+              : response.data.toString();
             const data = iconv.encode(decoded, 'utf-8');
 
             // 파싱(크롤링) 시작
             const $ = cheerio.load(data);
-            const hostPattern = /^((http[s]?):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/i;
+            const hostPattern =
+              /^((http[s]?):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$/i;
             const graphData = $('head>meta[property^="og:"]');
             let returnObj = null;
             let graphObj = {};

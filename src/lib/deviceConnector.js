@@ -194,16 +194,42 @@ export const newChatRoom = (winName, id, openURL) => {
       const roomInfo = /(chatroom)\/([0-9]*)/g.exec(openURL);
       let initial = null;
 
+      const configSetting = remote.getGlobal('SERVER_SETTING');
+      const config = configSetting.get('config');
+
+      let defaultSize = {
+        width: 450,
+        height: 600,
+        offset: {
+          width: {
+            min: 100,
+            max: 100,
+          },
+          height: {
+            min: 50,
+            max: 100,
+          },
+        },
+      };
+
+      if (config?.clientDefaultSize) {
+        defaultSize = {
+          width: config.clientDefaultSize.width,
+          height: config.clientDefaultSize.height,
+          offset: config.clientDefaultSize.offset,
+        };
+      }
+
       if (roomInfo && roomInfo[0]) {
-        const bounds = getInitialBounds(roomInfo[0]);
+        const bounds = getInitialBounds(roomInfo[0], defaultSize);
         // APP_SETTING에 저장된 bounds가 있는 경우
         if (!!bounds) {
           initial = {
             ...bounds,
-            // x: display.workArea.x + (display.workArea.width / 2 - 250),
-            // y: display.workArea.y + (display.workArea.height / 2 - 350),
-            minWidth: 400,
-            minHeight: 600,
+            minWidth: defaultSize.width - defaultSize.offset.width.min,
+            minHeight: defaultSize.height - defaultSize.offset.height.min,
+            maxWidth: defaultSize.width + defaultSize.offset.width.max,
+            maxHeight: defaultSize.height + defaultSize.offset.height.max,
           };
         } else {
           //
@@ -221,12 +247,14 @@ export const newChatRoom = (winName, id, openURL) => {
         });
 
         initial = {
-          width: 500,
-          height: 700,
+          width: defaultSize.width,
+          height: defaultSize.height,
           x: display.workArea.x + (display.workArea.width / 2 - 250),
           y: display.workArea.y + (display.workArea.height / 2 - 350),
-          minWidth: 400,
-          minHeight: 600,
+          minWidth: defaultSize.width - defaultSize.offset.width.min,
+          minHeight: defaultSize.height - defaultSize.offset.height.min,
+          maxWidth: defaultSize.width + defaultSize.offset.width.max,
+          maxHeight: defaultSize.height + defaultSize.offset.height.max,
         };
       }
 
@@ -778,19 +806,23 @@ export const closeAllChildWindow = () => {
   }
 };
 
-export const quit = async (userId) => {
+export const quit = async userId => {
   try {
-    if(userId) {
+    if (userId) {
       const response = await chatsvr('put', '/presence', {
         userId: userId,
         state: 'offline',
         type: 'A',
       });
-      getEmitter().sendSync('log-info', {message: '[5] Exit program. update presence offline'});
+      getEmitter().sendSync('log-info', {
+        message: '[5] Exit program. update presence offline',
+      });
       console.log(response.data);
     }
   } catch (err) {
-    getEmitter().sendSync('log-info', {message: 'Error when updating presnce offline'});
+    getEmitter().sendSync('log-info', {
+      message: 'Error when updating presnce offline',
+    });
   }
   getRemote().app.quit();
   getRemote().app.exit();
@@ -903,21 +935,47 @@ export const newChannel = (winName, id, openURL) => {
     const emitter = getEmitter();
     const openWinID = emitter.sendSync('check-room-win-map', { roomID: id });
 
+    const configSetting = remote.getGlobal('SERVER_SETTING');
+    const config = configSetting.get('config');
+
+    let defaultSize = {
+      width: 450,
+      height: 600,
+      offset: {
+        width: {
+          min: 100,
+          max: 100,
+        },
+        height: {
+          min: 50,
+          max: 100,
+        },
+      },
+    };
+
+    if (config?.clientDefaultSize) {
+      defaultSize = {
+        width: config.clientDefaultSize.width,
+        height: config.clientDefaultSize.height,
+        offset: config.clientDefaultSize.offset,
+      };
+    }
+
     if (openWinID == null) {
       const dirName = remote.getGlobal('RESOURCE_PATH');
       const roomInfo = /(channel)\/([0-9]*)/g.exec(openURL);
       let initial = null;
 
       if (roomInfo && roomInfo[0]) {
-        const bounds = getInitialBounds(roomInfo[0]);
+        const bounds = getInitialBounds(roomInfo[0], defaultSize);
         // APP_SETTING에 저장된 bounds가 있는 경우
         if (!!bounds) {
           initial = {
             ...bounds,
-            // x: display.workArea.x + (display.workArea.width / 2 - 250),
-            // y: display.workArea.y + (display.workArea.height / 2 - 350),
-            minWidth: 400,
-            minHeight: 600,
+            minWidth: defaultSize.width - defaultSize.offset.width.min,
+            minHeight: defaultSize.height - defaultSize.offset.height.min,
+            maxWidth: defaultSize.width + defaultSize.offset.width.max,
+            maxHeight: defaultSize.height + defaultSize.offset.height.max,
           };
         } else {
           //
@@ -935,12 +993,14 @@ export const newChannel = (winName, id, openURL) => {
         });
 
         initial = {
-          width: 500,
-          height: 700,
+          width: defaultSize.width,
+          height: defaultSize.height,
           x: display.workArea.x + (display.workArea.width / 2 - 250),
           y: display.workArea.y + (display.workArea.height / 2 - 350),
-          minWidth: 400,
-          minHeight: 600,
+          minWidth: defaultSize.width - defaultSize.offset.width.min,
+          minHeight: defaultSize.height - defaultSize.offset.height.min,
+          maxWidth: defaultSize.width + defaultSize.offset.width.max,
+          maxHeight: defaultSize.height + defaultSize.offset.height.max,
         };
       }
 

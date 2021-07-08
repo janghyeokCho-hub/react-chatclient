@@ -1,11 +1,15 @@
 import { screen, remote } from 'electron';
 import { deepEqual } from '../util/objectUtil';
 
-export const getInitialBounds = boundKey => {
+export const getInitialBounds = (boundKey, defaultSize) => {
   try {
-    // electron main thread     =>  remote.getGlobal undefined    
-    // eletron renderer thread  =>  global.APP_SETTING undefined 
-    const APP_SETTING = (remote && remote.getGlobal) ? remote.getGlobal('APP_SETTING') : global.APP_SETTING;
+    // electron main thread     =>  remote.getGlobal undefined
+    // eletron renderer thread  =>  global.APP_SETTING undefined
+    const APP_SETTING =
+      remote && remote.getGlobal
+        ? remote.getGlobal('APP_SETTING')
+        : global.APP_SETTING;
+
     const initialBounds = APP_SETTING.get(boundKey);
     if (initialBounds) {
       const targetScreen = screen.getDisplayMatching(initialBounds);
@@ -13,7 +17,7 @@ export const getInitialBounds = boundKey => {
 
       // 디스플레이 구성이 달라졌을 경우 저장된 좌표를 사용하지 않음 (화면 밖으로 나가는 현상 방지)
       if (display && targetScreen && targetScreen.id !== display.id) {
-        throw new Error("Display changed. use default bounds");
+        throw new Error('Display changed. use default bounds');
       }
       /**
        * 2021.01.25
@@ -86,10 +90,16 @@ export const getInitialBounds = boundKey => {
       }
     } else {
       console.log('No initialBounds');
-      return { width: 500, height: 800 };
+      return {
+        width: defaultSize.width,
+        height: defaultSize.height,
+      };
     }
   } catch (e) {
     console.log('Error  ', e);
-    return { width: 500, height: 800 };
+    return {
+      width: defaultSize.width,
+      height: defaultSize.height,
+    };
   }
 };
