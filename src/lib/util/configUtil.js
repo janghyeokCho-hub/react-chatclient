@@ -24,7 +24,7 @@ export const setInitConfig = callback => {
       {
         'Cache-Control': 'public, max-age=86400',
       },
-      false
+      false,
     )
       .then(({ data }) => {
         if (data.status == 'SUCCESS') {

@@ -39,6 +39,7 @@ import {
   connectRemoteHost,
   connectRemoteViewer,
 } from './utils/remoteAssistanceUtil';
+import axios from 'axios';
 
 /********** GLOBAL VARIABLE **********/
 // dirName
@@ -120,7 +121,7 @@ const appReady = async () => {
   // 설정된 도메인이 존재하는 경우
   if (domainInfo) {
     // window 생성
-    let isCreated = createWindow(true);
+    let isCreated = createWindow(true, domainInfo);
 
     const setConfigAfter = count => {
       SERVER_SETTING = getConfig('server.setting.json');
@@ -177,7 +178,7 @@ const appReady = async () => {
           e.preventDefault();
           try {
             const data = loginInfo.getData();
-            if(data && data.id) {
+            if (data && data.id) {
               const response = await chatsvr('put', '/presence', {
                 userId: data.id,
                 state: 'offline',
@@ -221,7 +222,7 @@ const appReady = async () => {
             click: async function () {
               try {
                 const data = loginInfo.getData();
-                if(data && data.id) {
+                if (data && data.id) {
                   const response = await chatsvr('put', '/presence', {
                     userId: data.id,
                     state: 'offline',
@@ -345,7 +346,7 @@ const unlockScreenEvt = () => {
   }
 };
 
-const createWindow = async isLoading => {
+const createWindow = async (isLoading, domainInfo) => {
   // redux 개발자 도구 세팅
   // if (exportProps.isDev) {
   //   const reduxExt = 'lmhkpmbekcpmknklioeibfkpmmfibljd';
@@ -368,14 +369,57 @@ const createWindow = async isLoading => {
   //   if (pathExtension != '') BrowserWindow.addDevToolsExtension(pathExtension);
   // }
 
+  let defaultSize = {
+    width: 450,
+    height: 600,
+    offset: {
+      width: {
+        min: 100,
+        max: 100,
+      },
+      height: {
+        min: 50,
+        max: 100,
+      },
+    },
+  };
+
+  if (domainInfo) {
+    const lang = APP_SETTING.get('lang');
+    const reqOptions = {
+      method: 'get',
+      url: `${domainInfo}/restful/na/nf/config?lang=${lang}`,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+    };
+
+    const res = await axios(reqOptions);
+
+    if (res?.data?.result?.config) {
+      const config = res.data.result.config;
+
+      if (config.clientDefaultSize) {
+        defaultSize = {
+          width: config.clientDefaultSize.width,
+          height: config.clientDefaultSize.height,
+          offset: config.clientDefaultSize.offset,
+        };
+      }
+    }
+  }
+
   //NOTE: electron-window-state 대체 검토 필요
-  const bounds = getInitialBounds('latestAppBounds');
+  const bounds = getInitialBounds('latestAppBounds', defaultSize);
 
   // Create the browser window.
   win = new BrowserWindow({
     ...bounds,
-    minWidth: 400,
-    minHeight: 600,
+    width: defaultSize.width,
+    height: defaultSize.height,
+    minWidth: defaultSize.width - defaultSize.offset.width.min,
+    minHeight: defaultSize.height - defaultSize.offset.height.min,
+
     webPreferences: {
       nodeIntegration: true,
     },
@@ -482,11 +526,14 @@ const loadMainWindow = () => {
 
 const createDomainRegistWindow = () => {
   // Create the browser window.
+  console.log(SERVER_SETTING);
   win = new BrowserWindow({
-    width: 500,
-    height: 800,
-    minWidth: 400,
-    minHeight: 600,
+    width: 450,
+    height: 600,
+    minWidth: 350,
+    minHeight: 550,
+    maxHeight: 650,
+    maxWidth: 550,
     webPreferences: {
       nodeIntegration: true,
     },
@@ -535,7 +582,7 @@ app.on('window-all-closed', async () => {
     try {
       const data = loginInfo.getData();
 
-      if(data && data.id) {
+      if (data && data.id) {
         const response = await chatsvr('put', '/presence', {
           userId: data.id,
           state: 'offline',
