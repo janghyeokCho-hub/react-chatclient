@@ -209,7 +209,8 @@ const Notice = ({ type, value, title, func }) => {
         return () => {
           const execSync = window.require('child_process').exec;
           try {
-            const command = `java -jar /Users/ldh/Desktop/VncViewer.jar -Xmx 2048m HOST ${data.hostAddr} PORT 5900 PASSWORD Covi@2020`;
+            const command = `cd vncremote && vncviewer.exe /IP ${data.hostAddr} /PASSWORD Covi@2020`;
+            console.log(command);
             // const command = `java -jar /Users/ldh/Desktop/VncViewer.jar -Xmx 2048m HOST 10.10.31.89 PORT 5900 PASSWORD Covi@2020`;
             execSync(command, { shell: true });
           } catch (ex) {
@@ -222,7 +223,7 @@ const Notice = ({ type, value, title, func }) => {
             );
             console.log(ex);
           }
-        }
+        };
       } else if (type == 'saeha') {
         return () => {
           const reqOptions = {
