@@ -10,6 +10,7 @@ import {
   eumTalkRegularExp,
   convertEumTalkProtocol,
 } from '@/lib/common';
+import { openPopup } from '@/lib/common';
 import ParamUtil, { encryptText } from '@/lib/util/paramUtil';
 import { evalConnector } from '@/lib/deviceConnector';
 
@@ -204,6 +205,24 @@ const Notice = ({ type, value, title, func }) => {
             },
           });
         };
+      } else if (type == 'remotevnc') {
+        return () => {
+          const execSync = window.require('child_process').exec;
+          try {
+            const command = `java -jar /Users/ldh/Desktop/VncViewer.jar -Xmx 2048m HOST ${data.hostAddr} PORT 5900 PASSWORD Covi@2020`;
+            // const command = `java -jar /Users/ldh/Desktop/VncViewer.jar -Xmx 2048m HOST 10.10.31.89 PORT 5900 PASSWORD Covi@2020`;
+            execSync(command, { shell: true });
+          } catch (ex) {
+            openPopup(
+              {
+                type: 'Alert',
+                message: '원격 지원이 종료 되었습니다.',
+              },
+              dispatch,
+            );
+            console.log(ex);
+          }
+        }
       } else if (type == 'saeha') {
         return () => {
           const reqOptions = {
@@ -259,6 +278,9 @@ const Notice = ({ type, value, title, func }) => {
 
   const drawFunc = useMemo(() => {
     if (func) {
+      if (func.data.hostId && func.data.hostId.id == loginId) {
+        return;
+      }
       const handlerFunc = actionHandler(func.type, func.data);
 
       if (type == 'C') {

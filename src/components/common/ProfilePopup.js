@@ -3,7 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { format } from 'date-fns';
+import { getProfileInfo } from '@/lib/profile';
 import { addFavorite, deleteFavorite } from '@/lib/contactUtil';
+import { getConfig } from '@/lib/util/configUtil';
+import axios from 'axios';
 
 import {
   deleteLayer,
@@ -28,6 +31,8 @@ const ProfilePopup = ({ userInfo }) => {
   const [isFavorite, setIsFavorite] = useState(userInfo.isFavorite);
   const { confirm } = useTyping();
   const dispatch = useDispatch();
+
+  const makeCall = getConfig('makeCall', null);
 
   const getAbsenceInfo = useMemo(() => {
     try {
@@ -60,11 +65,11 @@ const ProfilePopup = ({ userInfo }) => {
 
   const handleFavorit = () => {
     if (userInfo.isFavorite === 'Y') {
-      if (DEVICE_TYPE === 'd' && (isMainWindow() === false)) {
+      if (DEVICE_TYPE === 'd' && isMainWindow() === false) {
         sendMain('sync-favorite', {
           op: 'del',
-          userId: userInfo.id
-        });  
+          userId: userInfo.id,
+        });
       } else {
         deleteFavorite(dispatch, userInfo.id);
       }
@@ -74,10 +79,11 @@ const ProfilePopup = ({ userInfo }) => {
       if (DEVICE_TYPE === 'd' && isMainWindow() === false) {
         sendMain('sync-favorite', {
           op: 'add',
-          userInfo: userInfo
+          userInfo: userInfo,
         });
       } else {
-        const otherContacts = contact && contact.find((_contact) =>  _contact.folderID === '2');
+        const otherContacts =
+          contact && contact.find(_contact => _contact.folderID === '2');
         // 다른 연락처에 있는지 없는지 확인
         if (otherContacts?.sub && otherContacts.sub.length > 0) {
           let flag = false;
@@ -127,10 +133,13 @@ const ProfilePopup = ({ userInfo }) => {
               handleClick={false}
             />
             <div className="txtbox">
-              <span className="name" style={{
-                    wordBreak: 'break-all',
-                    lineHeight: '1.0'
-              }}>
+              <span
+                className="name"
+                style={{
+                  wordBreak: 'break-all',
+                  lineHeight: '1.0',
+                }}
+              >
                 {getJobInfo(userInfo)}
                 {userInfo.isMobile === 'Y' && (
                   <span style={{ padding: '0px 5px' }}>
@@ -165,10 +174,15 @@ const ProfilePopup = ({ userInfo }) => {
                   </span>
                 )}
               </span>
-              <span className="team" style={{
-                    wordBreak: 'break-all',
-                    lineHeight: '1.0'
-              }}>{getDictionary(userInfo.dept)}</span>
+              <span
+                className="team"
+                style={{
+                  wordBreak: 'break-all',
+                  lineHeight: '1.0',
+                }}
+              >
+                {getDictionary(userInfo.dept)}
+              </span>
               {userInfo.absenceInfo && getAbsenceInfo}
             </div>
           </div>
@@ -176,11 +190,108 @@ const ProfilePopup = ({ userInfo }) => {
           <div className="pro-infobox">
             <dl>
               <dt>{covi.getDic('Mobile')}</dt>
-              <dd>{userInfo.phoneNumber}</dd>
+              <dd>
+                {userInfo.phoneNumber}
+                {'  '}
+                {makeCall?.isUse && userInfo.phoneNumber.length > 0 && (
+                  <button
+                    onClick={() => {
+                      // make call
+                      getProfileInfo(myInfo.id).then(({ data }) => {
+                        if (data.result) {
+                          const requestData = {
+                            command: 'make',
+                            caller: data.result.companyNumber,
+                            callee: '9' + userInfo.phoneNumber,
+                          };
+                          console.log(requestData);
+                          const reqOptions = {
+                            method: 'POST',
+                            url: makeCall.hostURL,
+                            data: requestData,
+                            headers: {
+                              'Content-Type': 'application/json; charset=utf-8',
+                            },
+                          };
+                          axios(reqOptions)
+                            .then(data => {
+                              console.log('request success >> ', data);
+                            })
+                            .catch(error => {
+                              console.log('request error >> ', error);
+                            });
+                        }
+                      });
+                    }}
+                  >
+                    <svg
+                      fill="none"
+                      height="16"
+                      stroke="#000"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                  </button>
+                )}
+              </dd>
             </dl>
             <dl>
               <dt>{covi.getDic('Phone')}</dt>
-              <dd>{userInfo.companyNumber}</dd>
+              <dd>
+                {userInfo.companyNumber}
+                {'  '}
+                {makeCall?.isUse && userInfo.companyNumber.length > 0 && (
+                  <button
+                    onClick={() => {
+                      // make call
+                      getProfileInfo(myInfo.id).then(({ data }) => {
+                        if (data.result) {
+                          const requestData = {
+                            command: 'make',
+                            caller: data.result.companyNumber,
+                            callee: userInfo.companyNumber,
+                          };
+                          const reqOptions = {
+                            method: 'POST',
+                            url: makeCall.hostURL,
+                            data: requestData,
+                            headers: {
+                              'Content-Type': 'application/json; charset=utf-8',
+                            },
+                          };
+                          axios(reqOptions)
+                            .then(data => {
+                              console.log('request success >> ', data);
+                            })
+                            .catch(error => {
+                              console.log('request error >> ', error);
+                            });
+                        }
+                      });
+                    }}
+                  >
+                    <svg
+                      fill="none"
+                      height="16"
+                      stroke="#000"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      width="16"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                  </button>
+                )}
+              </dd>
             </dl>
             <dl>
               <dt>{covi.getDic('Email')}</dt>
@@ -206,7 +317,7 @@ const ProfilePopup = ({ userInfo }) => {
                       rooms,
                       selectId,
                       userInfo,
-                      myInfo
+                      myInfo,
                     ];
                     confirm(dispatch, openChatRoomView, openChatRoomArgs);
                     clearLayer(dispatch);

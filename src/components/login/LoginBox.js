@@ -134,7 +134,7 @@ const LoginBox = forwardRef(
               disabled={loading}
             >
               {
-                isExtUser ? ovi.getDic('ExternalLogin') : covi.getDic('EmployeeLogin')
+                isExtUser ? covi.getDic('ExternalLogin') : covi.getDic('EmployeeLogin')
               }
             </button>
           </div>

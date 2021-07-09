@@ -18,17 +18,26 @@ const SuggestionLayer = ({
   const RENDER_INIT = 10;
   const RENDER_UNIT = 8;
   const [suggestionList, setSuggestionList] = useState([]);
+  const [mensionHeight, setMensionHeight] = useState('240px');
+  const [suggestionMembersCount, setSuggestionMembersCount] = useState(0);
   const { renderOffset, setRenderOffset, handleScrollUpdate, list, filter } = useOffset(suggestionList, { initialNumToRender: RENDER_INIT, renderPerBatch: RENDER_UNIT });
 
   const handleUpdate = handleScrollUpdate({
     threshold: 0.9
   });
 
+  const resizeMensionHeight = useCallback( suggestionMembersCount => {
+    if((suggestionMembersCount * 60) <= 240)
+      return (suggestionMembersCount * 60);
+    return 240;
+  }, [suggestionMembersCount]);
+
   useEffect(() => {
     // 멘션 키워드("@") 입력시 SuggestionLayer 노출
     if (messageContext[messageContext.length - 1] == '@') {
       // 새로운 request 없이 props로 넘겨받은 currMember로 멘션 리스트에 노출
       const suggestionMembers = currMember.filter((member) => member.id !== loginId);
+      setMensionHeight(String(resizeMensionHeight(suggestionMembers.length) + 'px'));
       onSuggestionMembers(suggestionMembers);
       setSuggestionList(suggestionMembers);
     }
@@ -59,6 +68,7 @@ const SuggestionLayer = ({
                   id: member.userID,
                 }
               });
+              setMensionHeight(String(resizeMensionHeight(suggestionMembers.length) + 'px'));
               onSuggestionMembers(suggestionMembers);
               setSuggestionList(suggestionMembers);
             } else {
@@ -74,7 +84,7 @@ const SuggestionLayer = ({
 
   return (
     <>
-      <div className="chat_sticker">
+      <div className="chat_sticker" style={{height: mensionHeight}}>
         <Scrollbars
           style={{ position: 'absolute', color: '#FF0000' }}
           className="MessageList"

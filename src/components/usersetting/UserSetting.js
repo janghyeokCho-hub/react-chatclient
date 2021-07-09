@@ -94,7 +94,7 @@ const UserSetting = ({ history }) => {
       setAutoLaunch(appConfig.get('autoLaunch') ? true : false);
       setCustomAlarm(appConfig.get('customAlarm') ? true : false);
       setIdleTime(userConfig.get('idleTime'));
-      setFirstMenu(confFirstMenu ? confFirstMenu : 'contactlist');
+      setFirstMenu(confFirstMenu ? confFirstMenu : (myInfo.isExtUser? 'channellist' : 'contactlist'));
       setDesktopNoti(userConfig.get('desktopNoti'));
       setShowNotiContent(userConfig.get('showNotiContent'));
       setUseEmoji(appConfig.get('useEmoji') ? true : false);
@@ -381,6 +381,15 @@ const UserSetting = ({ history }) => {
   };
   // 프로필이미지 1시간 단위로 캐싱
   const { timestamp } = useTimestamp({ option: 'yMdh', prefix: '?t=' });
+
+  const menuItems = useMemo(()=>{
+    const firstItem = myInfo.isExtUser ? [] : [{ name: covi.getDic('Contact'), value: 'contactlist' }]
+    return firstItem.concat([
+      { name: covi.getDic('Chat'), value: 'chatlist' },
+      { name: covi.getDic('Channel'), value: 'channellist' },
+    ])
+  }, [myInfo]);
+
   return (
     <div style={{ height: '100%' }}>
       <div className="modalheader">
@@ -775,11 +784,7 @@ const UserSetting = ({ history }) => {
                 <>
                   <li className="ChatConfig-list">
                     <SelectBox
-                      items={[
-                        { name: covi.getDic('Contact'), value: 'contactlist' },
-                        { name: covi.getDic('Chat'), value: 'chatlist' },
-                        { name: covi.getDic('Channel'), value: 'channellist' },
-                      ]}
+                      items={menuItems}
                       order={1}
                       defaultValue={firstMenu}
                       onChange={item => {

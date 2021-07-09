@@ -198,8 +198,8 @@ export const reqSubPop = (event, args) => {
         subWin.show();
       }
 
-      // 창의 크기는 변경하지 않음 ( 기존 창과 용도가 같다고 판단)
-      subWin.setBounds(bounds);
+      // 이미 윈도우가 떠 있는 경우에는 bounds 재설정하지 않도록 함
+      // subWin.setBounds(bounds);
 
       subWin.focus();
     }
