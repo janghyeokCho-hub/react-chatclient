@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+import { evalConnector } from '@/lib/deviceConnector';
 
 const Range = ({ min, max, init, onChange, onInput, size, style }) => {
+  const appConfig = evalConnector({
+    method: 'getGlobal',
+    name: 'APP_SETTING',
+  });
   const [deg, setDeg] = useState(
-    init ? Math.round(((init - min) / (max - min)) * 100) : 0,
+    appConfig.get('opacityRange') || (init ? Math.round(((init - min) / (max - min)) * 100) : 0),
   );
   return (
     <div
@@ -30,6 +35,11 @@ const Range = ({ min, max, init, onChange, onInput, size, style }) => {
           setDeg(e.target.value);
           if (typeof onChange === 'function') {
             const val = Math.round((e.target.value / 100) * (max - min) + min);
+            evalConnector({
+              method: 'send',
+              channel: 'save-static-config',
+              message: {opacityRange: val},
+            });
             onChange(val);
           }
         }}
