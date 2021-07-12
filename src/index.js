@@ -10,6 +10,8 @@ import { Provider } from 'react-redux';
 import rootReducer, { rootSaga } from '@/modules';
 import createSagaMiddleware from 'redux-saga';
 import { composeWithDevTools } from 'redux-devtools-extension';
+import SWRDevtools from '@jjordy/swr-devtools';
+import { cache, mutate } from 'swr';
 import { setInitConfig, getInitSettings } from '@/lib/util/configUtil';
 
 const sagaMiddleware = createSagaMiddleware();
@@ -35,13 +37,16 @@ setInitConfig(result => {
   window.covi.settings = getInitSettings();
 
   ReactDOM.render(
-    <Provider store={store}>
-      <ErrorBoundary>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ErrorBoundary>
-    </Provider>,
+    <>
+      {DEF_MODE === 'development' && <SWRDevtools cache={cache} mutate={mutate} /> }
+      <Provider store={store}>
+        <ErrorBoundary>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ErrorBoundary>
+      </Provider>
+    </>,
     document.getElementById('root'),
   );
 });

@@ -39,6 +39,7 @@ import {
   connectRemoteHost,
   connectRemoteViewer,
 } from './utils/remoteAssistanceUtil';
+import { openNoteWindow } from './utils/note';
 import axios from 'axios';
 
 /********** GLOBAL VARIABLE **********/
@@ -57,6 +58,9 @@ global.SUB_POP_DATA = {};
 global.BEFORE_PRESENCE = '';
 global.ROOM_WIN_MAP = {};
 global.MAKE_WIN_MAP = {};
+
+// Note Window
+global.NOTE_WIN_MAP = {};
 
 // global config
 global.SERVER_SETTING = null;
@@ -766,6 +770,8 @@ ipcMain.on('check-make-win-map', commonEvt.checkMakeWinMap);
 
 ipcMain.on('check-make-room-win-len', commonEvt.checkMakeRoomWinLength);
 
+ipcMain.on('check-note-win-len', commonEvt.checkNoteWinLength);
+
 // 소켓연결 요청
 ipcMain.on('req-socket-connect', socketEvt.reqSocketConnect);
 
@@ -1120,6 +1126,11 @@ ipcMain.on('onRemoteAssistance', (event, args) => {
     console.log(args.isViewer);
     connectRemoteHost(args.sessionKey);
   }
+});
+
+// 쪽지용 BrowserWindow 핸들러
+ipcMain.on('open-note-window', (event, args) => {
+  openNoteWindow(args);
 });
 
 ipcMain.on('req-get-remote-info', async (event, args) => {

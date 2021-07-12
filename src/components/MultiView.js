@@ -8,6 +8,11 @@ import { closeWinRoom, makeRoomView } from '@/modules/room';
 import { closeWinChannel } from '@/modules/channel';
 import Channel from '@C/channels/channel/Channel';
 
+// 노트
+import { useNoteState, useViewState } from '@/lib/note';
+import NewNote from '@/pages/note/NewNote';
+import NoteView from '@/pages/note/NoteView';
+
 // FIXME: Route 형태로 변형???
 const MultiView = () => {
   const currentRoom = useSelector(({ room }) => room.currentRoom);
@@ -16,6 +21,8 @@ const MultiView = () => {
   const currentChannel = useSelector(({ channel }) => channel.currentChannel);
   const makeChannel = useSelector(({ channel }) => channel.makeChannel);
   const makeChannelInfo = useSelector(({ channel }) => channel.makeInfo);
+  const { data: noteInfo } = useNoteState();
+  const [noteViewState] = useViewState();
 
   const dispatch = useDispatch();
 
@@ -71,37 +78,49 @@ const MultiView = () => {
         return <Channel channelInfo={currentChannel}></Channel>;
       }
     }
-    //
 
-    if (currentRoom === null || currentRoom === {}) {
-      return (
-        <div className="start-chat-wrap">
-          <div className="posi-center">
-            <div className="start-chat-img"></div>
-            <p className="infotxt mt10">{covi.getDic('Msg_startChat')}</p>
+    // 채팅방
+    if (currentRoom) {
+      if (currentRoom.newRoom) {
+        return <MakeRoom></MakeRoom>;
+      } else if(currentRoom.newWin) {
+        return (
+          <div className="start-chat-wrap">
+            <div className="posi-center">
+              <div className="start-chat-img"></div>
+              <p className="infotxt mt10">
+                {covi.getDic('Msg_newWindow')}
+                <button className="loading-newwindow" onClick={handleLoadWindow}>
+                  {covi.getDic('Msg_loadWindow')}
+                </button>
+              </p>
+            </div>
           </div>
-        </div>
-      );
-    } else if (currentRoom.newRoom) {
-      return <MakeRoom></MakeRoom>;
-    } else if (currentRoom.newWin) {
-      return (
-        <div className="start-chat-wrap">
-          <div className="posi-center">
-            <div className="start-chat-img"></div>
-            <p className="infotxt mt10">
-              {covi.getDic('Msg_newWindow')}
-              <button className="loading-newwindow" onClick={handleLoadWindow}>
-                {covi.getDic('Msg_loadWindow')}
-              </button>
-            </p>
-          </div>
-        </div>
-      );
-    } else {
-      return <ChatRoom roomInfo={currentRoom}></ChatRoom>;
+        );
+      } else {
+        return <ChatRoom roomInfo={currentRoom}></ChatRoom>;
+      }
     }
-  }, [currentRoom, makeRoom, currentChannel]); // mjseo currentChannel 추가
+
+    if( noteViewState.type !== null) {
+      return <NewNote />;
+    } 
+
+    // 쪽지
+    if (noteInfo) {
+      return <NoteView />;
+    }
+
+    // 채팅/채널/쪽지에 모두 해당 안될 때 기본화면
+    return (
+      <div className="start-chat-wrap">
+        <div className="posi-center">
+          <div className="start-chat-img"></div>
+          <p className="infotxt mt10">{covi.getDic('Msg_startChat')}</p>
+        </div>
+      </div>
+    );
+  }, [currentRoom, makeRoom, currentChannel, noteInfo, noteViewState]); // mjseo currentChannel 추가
 
   return drawMultiView;
 };

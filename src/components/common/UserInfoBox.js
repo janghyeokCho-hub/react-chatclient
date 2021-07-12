@@ -185,6 +185,17 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
     }
   }, [userInfo, myInfo, isMine, picAreaWidth]);
 
+  const checkedValue = useMemo(() => {
+    if(typeof checkObj === 'undefined') {
+      return;
+    }
+    // userInfo[checkedKey] 값이 비어있으면 checkedSubKey 참조
+    if(typeof checkObj.checkedSubKey !== 'undefined') {
+      return userInfo[checkObj.checkedKey] || userInfo[checkObj.checkedSubKey];  
+    }
+    return userInfo[checkObj.checkedKey];
+  }, [userInfo, checkObj]);
+
   return (
     <li
       ref={personEl}
@@ -199,8 +210,10 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
             <input
               ref={checkRef}
               type="checkbox"
-              id={checkObj.name + userInfo.id}
-              name={checkObj.name + userInfo.id}
+              // id={checkObj.name + userInfo.id}
+              // name={checkObj.name + userInfo.id}
+              id={checkObj.name + checkedValue}
+              name={checkObj.name + checkedValue}
               onClick={e => {
                 e.stopPropagation();
               }}
@@ -216,13 +229,13 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
               }
               checked={
                 checkObj.checkedList.find(
-                  item =>
-                    item[checkObj.checkedKey] === userInfo[checkObj.checkedKey],
-                ) != undefined
+                  item => (item[checkObj.checkedKey] || item[checkObj.checkedSubKey]) === checkedValue
+                ) !== undefined
               }
             />
             <label
-              htmlFor={checkObj.name + userInfo.id}
+              // htmlFor={checkObj.name + userInfo.id}
+              htmlFor={checkObj.name + checkedValue}
               onClick={e => {
                 e.stopPropagation();
               }}

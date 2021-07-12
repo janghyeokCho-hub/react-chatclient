@@ -1,34 +1,40 @@
-import { useState, useEffect, useCallback } from 'react';
+import LRU from 'lru-cache';
 import { useSelector } from 'react-redux';
 import { getProfileInfo } from '@/lib/profile';
+import { searchOrgChart } from '@/lib/orgchart';
 
-// 캐시클리어 3분
-// const CLEAR_TIMEOUT = 180000;
-// const cachedData = {};
-// const clearCache = {};
+export function useMemberCache(opts = {}) {
+    const default_options = {
+        max: 30,
+        length: (n, key) => n*2 + key.length,
+        maxAge: 5000
+    };
+    const cache = new LRU({
+        ...default_options,
+        ...opts
+    });
 
-// async function readProfileInfo(targetId) {
-//     const cache = cachedData[targetId];
-//     if(!cache) {
-//         // fetch profile data from backend
-//         const data = await getProfileInfo(targetId);
-//         if(data && cachedData[targetId]) {
-//             cachedData[targetId] = data;
-//             clearCache[targetId] = setTimeout(() => {
-//                 cachedData[targetId] && delete cachedData[targetId];
-//             }, CLEAR_TIMEOUT);
-//         }
-//         return data;
-//     } else {
-//         // update timer
-//         clearTimeout(clearCache[targetId]);
-//         clearCache[targetId] = setTimeout(() => {
-//             cachedData[targetId] && delete cachedData[targetId];
-//         }, CLEAR_TIMEOUT);
-//         // cache hit
-//         return cache;
-//     }
-// }
+    return async (userID, targetName, forceUpdate = false) => {
+        let cachedTarget = cache.get(targetName); 
+        if(cachedTarget && forceUpdate === false) {
+            return cachedTarget;
+        } else {
+            try {
+                // const tmp = await getProfileInfo(targetId);
+                const tmp = await searchOrgChart({ userID, value: targetName, type: 'O' });
+                if (tmp.data.status === 'SUCCESS') {
+                    cache.set(targetName, tmp.data.result);
+                    return tmp.data.result;
+                } else {
+                    return null;
+                }
+            } catch(err) {
+                console.log(`SearchOrgChart(${userID}, ${targetName}, O) Error :: `, err);
+                return null;
+            }
+        }
+    }
+}
 
 export default function useMemberInfo() {
     const { members } = useSelector(({ room, channel }) => {

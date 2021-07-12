@@ -163,8 +163,24 @@ export const newExtensionWindow = (winName, id, openURL) => {
   return roomObj;
 };
 
-export const newChatRoom = (winName, id, openURL) => {
+export const isExceededMaxWindow = () => {
   const maxWindow = getConfig('maxWindow', null);
+  const emitter = getEmitter();
+
+  // maxWindow 설정이 안되어 있거나 음수인 경우 로직 생략
+  if(!maxWindow || maxWindow < 0) {
+    return false;
+  }
+
+  const roomLength = emitter.sendSync('check-room-win-len');
+  const newRoomLength = emitter.sendSync('check-make-room-win-len');
+  const noteLength = emitter.sendSync('check-note-win-len');
+  const len = roomLength + newRoomLength + noteLength;
+
+  return (len > maxWindow -1);
+}
+
+export const newChatRoom = (winName, id, openURL) => {
   let roomObj = null;
   if (DEVICE_TYPE == 'b') {
     roomObj = window.open(
@@ -176,16 +192,8 @@ export const newChatRoom = (winName, id, openURL) => {
     const remote = getRemote();
     const emitter = getEmitter();
 
-    const roomLength = emitter.sendSync('check-room-win-len');
-    const newRoomLength = emitter.sendSync('check-make-room-win-len');
-    const len = roomLength + newRoomLength;
-
-    if (maxWindow !== null) {
-      if (maxWindow !== 0) {
-        if (len > maxWindow - 1) {
-          return null;
-        }
-      }
+    if (isExceededMaxWindow() === true) {
+      return null;
     }
 
     const openWinID = emitter.sendSync('check-room-win-map', { roomID: id });
@@ -406,7 +414,6 @@ export const sendMain = (channel, data) => {
 };
 
 export const makeChatRoom = (winName, makeData, openURL) => {
-  const maxWindow = getConfig('maxWindow', null);
   if (DEVICE_TYPE == 'b') {
     window.open(
       openURL,
@@ -426,16 +433,8 @@ export const makeChatRoom = (winName, makeData, openURL) => {
     const emitter = getEmitter();
     const remote = getRemote();
 
-    const roomLength = emitter.sendSync('check-room-win-len');
-    const newRoomLength = emitter.sendSync('check-make-room-win-len');
-    const len = roomLength + newRoomLength;
-
-    if (maxWindow !== null) {
-      if (maxWindow !== 0) {
-        if (len > maxWindow - 1) {
-          return null;
-        }
-      }
+    if (isExceededMaxWindow() === true) {
+      return null;
     }
 
     const openWinID = emitter.sendSync('check-make-win-map', {
@@ -790,7 +789,7 @@ export const restoreMainWindow = () => {
       // tray
       mainWindow.showInactive();
     }
-  } catch (e) {}
+  } catch (e) { }
 };
 
 export const closeAllChildWindow = () => {
@@ -1057,7 +1056,7 @@ export const getWindowAlwaysTop = () => {
   try {
     const win = getRemote().getCurrentWindow();
     return win.isAlwaysOnTop();
-  } catch (e) {}
+  } catch (e) { }
   return false;
 };
 
@@ -1065,7 +1064,7 @@ export const setWindowAlwaysTop = flag => {
   try {
     const win = getRemote().getCurrentWindow();
     win.setAlwaysOnTop(flag);
-  } catch (e) {}
+  } catch (e) { }
 };
 
 export const setWindowOpacity = deg => {
@@ -1077,7 +1076,19 @@ export const setWindowOpacity = deg => {
   }
 };
 
-export const logRenderer = msg => {
+export function openNote({ type, viewType, noteId }) {
+  if (DEVICE_TYPE !== 'd' || isExceededMaxWindow() === true) {
+    return;
+  }
+  const emitter = getEmitter();
+  emitter.send('open-note-window', {
+    type,
+    noteId,
+    viewType
+  });
+}
+
+export const logRenderer = (msg) => {
   try {
     getRemote().send('log-info', msg);
   } catch (e) {

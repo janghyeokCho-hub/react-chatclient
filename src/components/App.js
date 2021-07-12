@@ -24,6 +24,9 @@ import {
   JoinSuccess,
   Snipper,
   Extension,
+  NoteSend,
+  NoteReceive,
+  NoteReadList
 } from '@C/route/main/index.async';
 
 import SimplePopup from '@COMMON/popup/SimplePopup';
@@ -185,6 +188,7 @@ class App extends Component {
                           path="/client/nw/channel/:roomId"
                           component={Channel}
                         />
+
                         <Route
                           component={props => (
                             <URLChecker {...props} gotoURL={gotoURL} />
@@ -272,6 +276,22 @@ class App extends Component {
                           path="/client/nw/channel/:roomId"
                           component={Channel}
                         />
+
+                        {/* 쪽지 */}
+                        <Route
+                          path="/client/nw/note/send"
+                          component={NoteSend}
+                        />
+                        <Route
+                          path="/client/nw/note/readlist/:noteId/"
+                          component={NoteReadList}
+                        />
+                        <Route
+                          path="/client/nw/note/:noteId/:viewType"
+                          component={NoteReceive}
+                        />
+                        {/* */}
+
                         <Route
                           component={props => (
                             <URLChecker {...props} gotoURL={gotoURL} />

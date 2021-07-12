@@ -61,6 +61,10 @@ module.exports = (env, options) => {
             },
           ],
         },
+        {
+          test: /\.css$/i,
+          use: ["style-loader", "css-loader"],
+        }
       ],
     },
     plugins: [

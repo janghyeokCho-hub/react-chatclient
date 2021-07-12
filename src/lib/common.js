@@ -260,10 +260,14 @@ export const convertInputValue = str => {
   });
 };
 
+export function defaultJobInfo() {
+  return (window.covi.settings && window.covi.settings.jobInfo) || 'PN';
+}
+
 // TODO: 다국어 (이름 다국어, JobInfo 다국어)
+// { name, [jobInfo] }
 export const getJobInfo = (userInfo, isEmptySpace) => {
-  const jobInfo =
-    (window.covi.settings && window.covi.settings.jobInfo) || 'PN';
+  const jobInfo = defaultJobInfo();
 
   const userName = userInfo.name;
   const jobInfoLabel = userInfo[jobInfo];
