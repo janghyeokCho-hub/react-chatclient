@@ -1,3 +1,5 @@
+import produce from 'immer';
+
 import {
   receiveMessage,
   roomInviteMessageAdd,
@@ -64,6 +66,69 @@ export const handleNewMessage = (dispatch, userInfo) => {
 
     // dispatch(roomMessageAdd(json_data));
     dispatch(receiveMessage(json_data));
+  };
+};
+
+// 쪽지 도착
+export const handleNewNoteMessage = (dispatch, userInfo, setNoteList) => {
+  return data => {
+    try {
+      const json_data = JSON.parse(data);
+      console.log('Note Received   ', json_data);
+
+      // Noti 알림 표기용 데이터
+      const senderInfo = {
+        id: json_data.userId,
+        name: json_data.multiDisplayName,
+        photoPath: json_data.photoPath,
+        deptName: json_data.multiDeptName,
+        LN: json_data.multiJobLevelName,
+        PN: json_data.multiJobPositionName,
+        TN: json_data.multiJobTitleName
+      };
+
+      if (DEVICE_TYPE === 'b') {
+        // 브라우저 noti
+        if (Notification.permission !== 'granted') {
+          Notification.requestPermission();
+          return;
+        }
+        const notification = new Notification(covi.getDic('NewNoteMessage', '새 쪽지'), {
+          icon: '',
+          body: `${covi.getDic('NewNoteMessage', '새 쪽지')}: ${getJobInfo(senderInfo)}`
+        });
+        setTimeout(notification.close.bind(notification), 2000);
+      } else if (DEVICE_TYPE === 'd') {
+        // PC noti
+      }
+
+      setNoteList((prevState) => {
+        // 쪽지 리스트에 추가할 데이터 (쪽지 조회시 sender 구조와 동일해야 함)
+        const receivedInfo = {
+          noteId: json_data.noteId,
+          senderUserId: json_data.userId,
+          senderDisplayName: json_data.multiDisplayName,
+          senderJobPositionName: json_data.multiJobPositionName,
+          senderPhotoPath: json_data.photoPath,
+          senderPresence: json_data.state,
+          fileFlag: json_data.fileFlag,
+          subject: json_data.subject,
+          sendDate: Date.now(),
+          readFlag: 'N',  //새로 발송된 쪽지는 기본적으로 읽지 않은 상태임
+          favorites: '2', //새로 발송된 쪽지는 기본적으로 즐겨찾기되어 있지 않음
+        };
+
+        if(typeof prevState === 'undefined') {
+          return [receivedInfo];
+        }
+        return produce(prevState, draft => {
+          const insertPoint = prevState.findIndex(i => i.favorites === '2');
+          draft?.splice(insertPoint, 0, receivedInfo);
+        });
+      }, false);
+    } catch (err) {
+      console.log('Note Error   ', err);
+    }
   };
 };
 

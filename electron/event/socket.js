@@ -8,6 +8,7 @@ export const reqSocketConnect = (event, args) => {
   logger.info('socket connection : ' + args.token);
   const preFuncs = {
     onNewMessage: socketAction.onNewMessage,
+    onNewNoteMessage: socketAction.onNewNoteMessage,
     onPresenceChanged: socketAction.onPresenceChanged,
     onChatRoomInvitation: socketAction.onChatRoomInvitation,
     onChatRoomExit: socketAction.onChatRoomExit,
@@ -15,7 +16,7 @@ export const reqSocketConnect = (event, args) => {
     onReadCountChanged: socketAction.onReadCountChanged,
     onNewNotice: socketAction.onNewNotice,
     onNewChannelMessage: socketAction.onNewChannelMessage,
-    onNewChannelNotice: socketAction.onNewChannelMessage,
+    onNewChannelNotice: socketAction.onNewChannelMessage
   };
 
   if (CONN_SOCKET == null || CONN_SOCKET.disconnect) {

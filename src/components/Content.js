@@ -6,6 +6,7 @@ import {
   ChatList,
   OrgChart,
   ChannelList,
+  NoteList,
   ExternalUserList,
   UserSetting,
   ZoomOAuthSuccess
@@ -18,6 +19,7 @@ const Content = () => {
       <Route path="/client/main/chatlist" component={ChatList} />
       <Route path="/client/main/orgchart" component={OrgChart} />
       <Route path="/client/main/channellist" component={ChannelList} />
+      <Route path="/client/main/notelist" component={NoteList} />
       <Route path="/client/main/oauth2/zoom/success" component={ZoomOAuthSuccess} />
       <Route
         path="/client/main/externaluserlist"

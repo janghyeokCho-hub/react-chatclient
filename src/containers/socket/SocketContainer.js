@@ -7,6 +7,7 @@ import { openPopup } from '@/lib/common';
 import { withRouter } from 'react-router-dom';
 import { logout } from '@/modules/login';
 import { clearUserData } from '@/lib/util/localStorageUtil';
+import useSWR from 'swr';
 
 const socketConnector = require(`@/lib/socket/socketConnect.${DEVICE_TYPE}`);
 
@@ -15,6 +16,7 @@ const SocketContainer = ({ history }) => {
   const userid = useSelector(({ login }) => login.id);
   const userInfo = useSelector(({ login }) => login.userInfo);
   const connected = useSelector(({ login }) => login.socketConnect);
+  const { mutate: setNoteList } = useSWR('/note/list/receive', null);
 
   const dispatch = useDispatch();
 
@@ -30,6 +32,7 @@ const SocketContainer = ({ history }) => {
           },
           {
             onNewMessage: socketActions.handleNewMessage(dispatch, userInfo),
+            onNewNoteMessage: socketActions.handleNewNoteMessage(dispatch, userInfo, setNoteList),
             onChatRoomInvitation: socketActions.handleChatRoomInvite(dispatch),
             onChatRoomExit: socketActions.handleChatRoomExit(
               dispatch,
@@ -75,6 +78,7 @@ const SocketContainer = ({ history }) => {
           },
           {
             onNewMessage: socketActions.handleNewMessage(dispatch, userInfo),
+            onNewNoteMessage: socketActions.handleNewNoteMessage(dispatch, userInfo, setNoteList),
             onChatRoomInvitation: socketActions.handleChatRoomInvite(dispatch),
             onChatRoomExit: socketActions.handleChatRoomExit(dispatch, userInfo),
             onReadCountChanged: socketActions.handleReadCountChanged(

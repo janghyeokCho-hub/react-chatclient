@@ -7,6 +7,7 @@ import * as window from './window';
 import { managesvr } from '../utils/api';
 import { removeLocalDatabaseDir } from '../utils/fileUtils';
 import * as netUtils from 'node-macaddress';
+import { openNoteWindow } from './note';
 import ip from 'ip';
 import { networkInterfaces } from 'os';
 
@@ -206,6 +207,64 @@ const openFocusRoom = (roomID, isChannel) => {
   focusWin.flashFrame(false);
   focusWin.focus();
 };
+
+/** 쪽지 push알림 */
+export const notifyNoteMessage = ({ noteId, senderInfo, isEmergency = false, title = '', message = '' }) => {
+  const localIconImage = path.join(
+    exportProps.resourcePath,
+    'icons',
+    'alarm.png',
+  );
+
+  if (exportProps.isWin) {
+    // Windows Noti
+    if (global.CUSTOM_ALARM) {
+      // Custon Noti
+      showCustomAlarm({
+        title,
+        message,
+        photoPath: senderInfo.photoPath,
+        iconPath: senderInfo.photoPath,
+      });
+      return;
+    }
+    // WIndow Native Noti
+    const noti = new ToastNotification({
+      appId: exportProps.appId,
+      template: `<toast><visual><binding template="ToastGeneric"><image placement="appLogoOverride" hint-crop="circle" id="1" src="%s"/><text id="1" hint-maxLines="1">%s</text><text id="2">%s</text></binding></visual></toast>`,
+      strings: [localIconImage, title, message],
+      group: 'Note',
+      noteId: noteId
+    });
+    const windowParams = { type: 'receive', viewType: 'receive', noteId: noteId, isEmergency };
+    noti.on('activated', (t) => {
+      history.removeGroup({
+        group: t.group,
+        appId: exportProps.appId
+      });
+      openNoteWindow(windowParams);
+    });
+    noti.show();
+    if (isEmergency === true) {
+      openNoteWindow(windowParams);
+    }
+  } else {
+    const noti = new Notification({
+      title: title,
+      icon: localIconImage,
+      body: message,
+    });
+    const windowParams = { type: 'receive', viewType: 'receive', noteId: noteId, isEmergency };
+
+    noti.on('click', (e) => {
+      openNoteWindow(windowParams);
+    });
+    noti.show();
+    if (isEmergency === true) {
+      openNoteWindow(windowParams);
+    }
+  }
+}
 
 /*
 부모창 기준 창 위치 지정 

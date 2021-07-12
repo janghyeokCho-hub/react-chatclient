@@ -37,3 +37,6 @@ export const Extension = asyncRoute(() => import('@C/extension/Extension'));
 export const ChatRoom = asyncRoute(() => import('@C/chat/chatroom/ChatRoom'));
 export const Channel = asyncRoute(() => import('@C/channels/channel/Channel'));
 export const Versions = asyncRoute(() => import('@COMMON/layer/Versions'));
+export const NoteSend = asyncRoute(() => import('@/pages/note/NoteSend'));
+export const NoteReceive = asyncRoute(() => import('@/pages/note/NoteView'));
+export const NoteReadList = asyncRoute(() => import('@/pages/note/NoteReadList'));

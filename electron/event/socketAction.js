@@ -8,7 +8,6 @@ import logger from '../utils/logger';
 export const onNewMessage = payload => {
   // 자기자신 메세지 확인
   payload.sender == loginInfo.getData().id && (payload.isMine = 'Y');
-
   // flashFrame evt 발생 ( 자기자신에게 발생한 메세지 처리 안함 )
   if (payload.isMine != 'Y' && payload.roomID) {
     // 선택된 id가 없으면 무조건 부모창
@@ -224,3 +223,25 @@ export const onNewChannelMessage = payload => {
     setHot(true);
   }
 };
+
+export const onNewNoteMessage = (payload) => {
+  try {
+    const title = common.getDictionary(payload.multiDisplayName);
+    const message = common.getDictionary('새 쪽지;New note;新笔记;新しいメモ');
+    const noteId = parseInt(payload.noteId);
+    const isEmergency = payload.emergency === 'Y';
+
+    console.log('OnNewNoteMessage:  ', noteId, isEmergency);
+
+    common.notifyNoteMessage({
+      noteId,
+      title,
+      message,
+      isEmergency
+    });
+  } catch (err) {
+    console.log('onNewNoteMessage Err : ', err);
+    // log error
+  }
+
+}

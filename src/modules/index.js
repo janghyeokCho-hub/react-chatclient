@@ -9,6 +9,8 @@ import contact, { contactSaga } from '@/modules/contact';
 import menu from '@/modules/menu';
 import message, { messageSaga } from '@/modules/message';
 import presence, { presenceSaga } from '@/modules/presence';
+import { noteSaga } from '@/modules/note';
+
 import mainlayer from '@/modules/mainlayer';
 import error from '@/modules/error';
 import util from '@/modules/util';
@@ -48,6 +50,7 @@ export function* rootSaga() {
     contactSaga(),
     messageSaga(),
     presenceSaga(),
+    noteSaga()
   ]);
 }
 

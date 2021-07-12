@@ -9,6 +9,8 @@ import { Provider } from 'react-redux';
 import rootReducer, { rootSaga } from '@/modules';
 import createSagaMiddleware from 'redux-saga';
 import { composeWithDevTools } from 'redux-devtools-extension';
+import SWRDevtools from '@jjordy/swr-devtools';
+import { cache, mutate } from 'swr';
 import { setInitConfig, getInitSettings } from '@/lib/util/configUtil';
 import { createStorage } from '@/lib/util/storageUtil';
 import { closeWindow, evalConnector } from '@/lib/deviceConnector';
@@ -44,13 +46,16 @@ setInitConfig(result => {
   window.covi.settings = getInitSettings();
 
   ReactDOM.render(
-    <Provider store={store}>
-      <ErrorBoundary>
-        <HashRouter>
-          <App />
-        </HashRouter>
-      </ErrorBoundary>
-    </Provider>,
+    <>
+      {DEF_MODE === 'development' && <SWRDevtools cache={cache} mutate={mutate} /> }
+      <Provider store={store}>
+        <ErrorBoundary>
+          <HashRouter>
+            <App />
+          </HashRouter>
+        </ErrorBoundary>
+      </Provider>
+    </>,
     document.getElementById('root'),
   );
 });
