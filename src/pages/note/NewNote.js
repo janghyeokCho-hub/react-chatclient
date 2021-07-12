@@ -352,7 +352,7 @@ export default function NewNote({ match, location }) {
                         <div className="Profile-info-input" style={{ textAlign: 'start' }}>
                             <div className="input full">
                                 <label className="string optional" htmlFor="user-name" style={{ cursor: 'inherit' }}>
-                                    제목 
+                                    { covi.getDic('Title', '제목') }
                                     { covi?.config?.UseNote?.emergency === 'Y' && <a style={{ fontSize: '16px' }} onClick={() => setIsEmergency((prev) => !prev)}>{isEmergency ? emergencyMark : nonEmergencyMark }</a> }
                                 </label>
                                 <input className="string optional" placeholder="제목을 입력하세요." type="" ref={title} style={{ cursor: 'text' }} />
