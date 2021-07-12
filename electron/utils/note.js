@@ -41,11 +41,17 @@ export function openNoteWindow({ type, noteId, viewType, isEmergency = false }) 
     const currentCursor = screen.getCursorScreenPoint();
     const currentDisplay = screen.getDisplayNearestPoint(currentCursor);
 
+    const minWidth = 400;
+    const minHeight = 500;
+
+    const defaultWidth = currentDisplay.workAreaSize.width / 4;
+    const defaultHeight = currentDisplay.workAreaSize.height / 4;
+
     const newWindow = new BrowserWindow({
-        width: currentDisplay.workAreaSize.width / 4,
-        height: currentDisplay.workAreaSize.height / 4,
-        minWidth: 400,
-        minHeight: 500,
+        width: defaultWidth < minWidth ? minWidth : defaultWidth,
+        height: defaultHeight < minHeight ? minHeight : defaultHeight,
+        minWidth,
+        minHeight,
         webPrefereces: {
             nodeIntegration: true
         },
