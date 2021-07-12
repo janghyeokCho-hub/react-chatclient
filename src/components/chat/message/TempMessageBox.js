@@ -65,8 +65,20 @@ const TempMessageBox = ({ message }) => {
               {message.status === 'send' && <div className="sending"></div>}
               {message.status === 'fail' && (
                 <a className="resend-delete" onClick={handleFailMessage}>
-                  <span className="resend"></span>
-                  <span className="delete"></span>
+                  <span className="resend">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="23" height="22" viewBox="-6 -6 23 22">
+                      <path d="M12.794,8.064h-1.5v-.13a5.172,5.172,0,1,0-1.983,4.215L8.423,11.2A3.891,3.891,0,1,1,10,7.934v.13H8.313l2.209,2.462,2.272-2.462Z" transform="translate(-0.961 -2.878)" fill="#fff"/>
+                    </svg>
+                  </span>
+                  <span className="delete">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="23" height="22" viewBox="-6 -6 23 22">
+                      <g transform="translate(0 0)">
+                        <g transform="translate(0 0)">
+                          <path d="M128.471,136.971a.621.621,0,0,0,.441.189.6.6,0,0,0,.441-.189l3.42-3.42,3.42,3.42a.621.621,0,0,0,.441.189.6.6,0,0,0,.441-.189.64.64,0,0,0,0-.892l-3.41-3.41,3.41-3.42a.64.64,0,0,0,0-.892.63.63,0,0,0-.892,0l-3.41,3.42-3.42-3.41a.631.631,0,0,0-.892.892l3.42,3.41-3.41,3.42A.608.608,0,0,0,128.471,136.971Z" transform="translate(-128.279 -128.173)" fill="#fff"/>
+                        </g>
+                      </g>
+                    </svg>
+                  </span>
                 </a>
               )}
             </div>
@@ -121,8 +133,20 @@ const TempMessageBox = ({ message }) => {
                 {message.status === 'send' && <div className="sending"></div>}
                 {message.status === 'fail' && (
                   <a className="resend-delete" onClick={handleFailMessage}>
-                    <span className="resend"></span>
-                    <span className="delete"></span>
+                    <span className="resend">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="23" height="22" viewBox="-6 -6 23 22">
+                        <path d="M12.794,8.064h-1.5v-.13a5.172,5.172,0,1,0-1.983,4.215L8.423,11.2A3.891,3.891,0,1,1,10,7.934v.13H8.313l2.209,2.462,2.272-2.462Z" transform="translate(-0.961 -2.878)" fill="#fff"/>
+                      </svg>
+                    </span>
+                    <span className="delete">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="23" height="22" viewBox="-6 -6 23 22">
+                        <g transform="translate(0 0)">
+                          <g transform="translate(0 0)">
+                            <path d="M128.471,136.971a.621.621,0,0,0,.441.189.6.6,0,0,0,.441-.189l3.42-3.42,3.42,3.42a.621.621,0,0,0,.441.189.6.6,0,0,0,.441-.189.64.64,0,0,0,0-.892l-3.41-3.41,3.41-3.42a.64.64,0,0,0,0-.892.63.63,0,0,0-.892,0l-3.41,3.42-3.42-3.41a.631.631,0,0,0-.892.892l3.42,3.41-3.41,3.42A.608.608,0,0,0,128.471,136.971Z" transform="translate(-128.279 -128.173)" fill="#fff"/>
+                          </g>
+                        </g>
+                      </svg>
+                    </span>
                   </a>
                 )}
               </div>
