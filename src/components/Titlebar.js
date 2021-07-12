@@ -27,8 +27,16 @@ const Titlebar = () => {
   const tempMessage = useSelector(({ message }) => message.tempMessage);
 
   const dispatch = useDispatch();
+
   // window객체에 global로 세팅해야하는 함수들을 미리 loading ( titlebar draw 시점 및 사용시점 파악 필요 )
   useEffect(() => {
+    const appConfig = evalConnector({
+      method: 'getGlobal',
+      name: 'APP_SETTING',
+    });
+    if(isNewWin)
+      setWindowOpacity(appConfig.get('opacityRange')/100 || 1);
+
     if (typeof window.openExternalPopup !== 'function') {
       // Link를 OS Default Browser로 실행 ( 미처리시 Electron에서 직접 열게됨 )
       window.openExternalPopup = openLink;
