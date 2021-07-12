@@ -7,7 +7,7 @@ import {
 import { openPopup } from '@/lib/common';
 import { mappingUserChatRoom } from '@/modules/contact';
 import { newChatRoom, makeChatRoom } from '@/lib/deviceConnector';
-import { getAllUserWithGroup } from '@/lib/room';
+import { getAllUserWithGroup, getAllUserWithCustomGroup } from '@/lib/room';
 
 export const openChatRoomView = (
   dispatch,
@@ -82,6 +82,34 @@ export const openChatRoomView = (
       members,
       isDoubleClick,
     );
+  } else if(userInfo.type == 'R'){
+    getAllUserWithCustomGroup({folderId: userInfo.id}).then(({data}) =>{
+      if(data.status == 'SUCCESS'){
+        members = members.concat(data.result);
+
+        if (members.length == 0) {
+          openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic('Msg_EmptyChatMember'),
+            },
+            dispatch,
+          );
+        } else {
+          openChatRoomViewCallback(
+            dispatch,
+            myInfo.id,
+            viewType,
+            rooms,
+            selectId,
+            userInfo.id,
+            userInfo.type,
+            members,
+            isDoubleClick,
+          );
+        }
+      }
+    });
   } else {
     members.push({
       id: userInfo.id,

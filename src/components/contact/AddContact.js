@@ -3,27 +3,36 @@ import { useSelector, useDispatch } from 'react-redux';
 import { deleteLayer, clearLayer, getJobInfo } from '@/lib/common';
 import OrgChart from '@C/orgchart/OrgChart';
 import ProfileBox from '../common/ProfileBox';
-import { addContactList } from '@/lib/contactUtil';
+import { 
+  addContactList,
+  editGroupContactList, 
+  getApplyGroupInfo
+} from '@/lib/contactUtil';
+import { addCustomGroup } from '@/modules/contact';
+import { openPopup } from '@/lib/common';
 
-const AddContact = () => {
+const AddContact = ({useGroup}) => {
   const { userID, contacts } = useSelector(({ login, contact }) => ({
     userID: login.id,
     contacts: contact.contacts,
   }));
   const [selectors, setSelectors] = useState([]);
-
+  const [name, setName] = useState("");
   const dispatch = useDispatch();
 
   let oldContactList = [{ id: userID }];
-  contacts.forEach(item => {
-    if ((item.folderType == 'F' || item.folderType == 'C') && item.sub)
-      item.sub.forEach(itemSub => {
-        oldContactList.push(itemSub);
-      });
-    else if (item.folderType == 'G' || item.folderType == 'M') {
-      oldContactList.push({ id: item.groupCode });
-    }
-  });
+
+  if(!useGroup){
+    contacts.forEach(item => {
+      if ((item.folderType == 'F' || item.folderType == 'C') && item.sub)
+        item.sub.forEach(itemSub => {
+          oldContactList.push(itemSub);
+        });
+      else if (item.folderType == 'G' || item.folderType == 'M') {
+        oldContactList.push({ id: item.groupCode });
+      }
+    });
+  }
 
   const addContact = selector => {
     setSelectors(prevState => prevState.concat(selector));
@@ -81,6 +90,29 @@ const AddContact = () => {
     clearLayer(dispatch);
   }, [selectors]);
 
+  const handleAddGroupBtn = useCallback(() => {
+    /* 그룹명 미 입력시 Alert Msg*/
+    if(name === ""){
+      openPopup(
+        {
+          type: 'Alert',
+          message: covi.getDic('그룹명을 입력해주세요.'),
+        },
+        dispatch,
+      );
+      return;
+    }
+    /* 그룹 생성 */
+    editGroupContactList(
+      dispatch, 
+      addCustomGroup, 
+      getApplyGroupInfo(selectors, name), 
+      selectors
+    );
+
+    clearLayer(dispatch);
+  }, [name, selectors]);
+
   const handleDelete = useCallback(userId => {
     delContact(userId);
     document
@@ -95,7 +127,7 @@ const AddContact = () => {
         <div className="modaltit">
           <p>{covi.getDic('AddContact')}</p>
         </div>
-        <a className="Okbtn" onClick={handleAddBtn}>
+        <a className="Okbtn" onClick={useGroup ? handleAddGroupBtn : handleAddBtn}>
           <span className="colortxt-point mr5">{selectors.length}</span>
           {covi.getDic('Ok')}
         </a>
@@ -129,6 +161,22 @@ const AddContact = () => {
               })}
           </ul>
         </div>
+        {useGroup ? 
+          <div className="Profile-info-input">
+              <div className="input full">
+                <label style={{ cursor: 'default' }} className="string optional">
+                  {covi.getDic('Group_Name','그룹 이름')}
+                </label>
+                <input
+                  className="string optional"
+                  placeholder={covi.getDic('Input_Group_Name', '그룹명을 입력하세요.')}
+                  value={name}
+                  type="text"
+                  onChange={e => setName(e.target.value)}
+                />
+              </div>
+          </div>: null
+        }
         <div className="tabcontent active">
           <div className="AddUserCon">
             <OrgChart viewType="checklist" checkObj={checkObj} />

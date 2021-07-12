@@ -33,6 +33,30 @@ const [
   GET_ITEMGROUP_FAILURE,
 ] = createRequestActionTypes('contact/GET_ITEMGROUP');
 
+const [
+  ADD_CUSTOMGROUP,
+  ADD_CUSTOMGROUP_SUCCESS,
+  ADD_CUSTOMGROUP_FAILURE
+] = createRequestActionTypes('contact/ADD_CUSTOMGROUP');
+
+const [
+  MODIFY_CUSTOMGROUPNAME,
+  MODIFY_CUSTOMGROUPNAME_SUCCESS,
+  MODIFY_CUSTOMGROUPNAME_FAILURE
+] = createRequestActionTypes('contact/MODIFY_CUSTOMGROUPNAME');
+
+const [
+  REMOVE_CUSTOMGROUP,
+  REMOVE_CUSTOMGROUP_SUCCESS,
+  REMOVE_CUSTOMGROUP_FAILURE
+] = createRequestActionTypes('contact/REMOVE_CUSTOMGROUP');
+
+const [
+  MODIFY_GROUPMEMBER,
+  MODIFY_GROUPMEMBER_SUCCESS,
+  MODIFY_GROUPMEMBER_FAILURE
+] = createRequestActionTypes('contact/MODIFY_GROUPMEMBER');
+
 const SET_CONTACTS = 'contact/SET_CONTACTS';
 
 const MAPPING_USER_CHAT_ROOM = 'contact/MAPPING_USER_CHAT_ROOM';
@@ -45,6 +69,10 @@ export const deleteContacts = createAction(DELETE_CONTACTS);
 export const getItemGroup = createAction(GET_ITEMGROUP);
 export const mappingUserChatRoom = createAction(MAPPING_USER_CHAT_ROOM);
 export const setContacts = createAction(SET_CONTACTS);
+export const addCustomGroup = createAction(ADD_CUSTOMGROUP);
+export const removeCustomGroup = createAction(REMOVE_CUSTOMGROUP);
+export const modifyCustomGroupName = createAction(MODIFY_CUSTOMGROUPNAME);
+export const modifyGroupMember = createAction(MODIFY_GROUPMEMBER);
 export const init = createAction(INIT);
 
 const getContactsSaga = createRequestSaga(
@@ -99,6 +127,109 @@ function createAddContactsSaga(type) {
 
 const addContactsSaga = createAddContactsSaga(ADD_CONTACTS);
 
+function createAddCustomGroupSaga(type) {
+  const SUCCESS = `${type}_SUCCESS`;
+  const FAILURE = `${type}_FAILURE`;
+
+  return function* (action) {
+    if (!action.payload) return;
+
+    try {
+      const response = yield call(contactApi.addContactList, action.payload);
+      const success = response.data.status === 'SUCCESS';
+      let message = null;
+
+      // 대화상대 성공 추가
+      if (success === true) {
+        const group = response.data.result[0];
+        message = covi.getDic("Msg_Add_Group_Success", '사용자그룹 생성에 성공하였습니다.')
+        
+        /* 추가한 그룹 사용자 불러오기 */
+        const data = yield call(contactApi.getItemGroupOneDepth, {
+          folderID: group.folderId,
+          folderType: group.folderType
+        });
+
+        yield put({
+          type: SUCCESS,
+          payload: data.data.result[0]
+        });
+      } else {
+        // 대화상대 추가 실패
+        message = covi.getDic("Msg_Add_Group_Failure", '사용자그룹 생성에 실패했습니다.<br />잠시 후에 다시 시도해주세요.');
+      }
+
+      //대화상대 추가 피드백 (팝업창)
+      yield put(create({
+        type: 'Alert',
+        message,
+        callback: () => {
+        },
+      }));
+    } catch (err) {
+      // request 에러
+      yield put({
+        type: FAILURE,
+        payload: action.payload,
+        error: true,
+        errMessage: err
+      });
+    }
+  }
+}
+
+const addCustomGroupSaga = createAddCustomGroupSaga(ADD_CUSTOMGROUP);
+
+function createModifyGroupMemberSaga(type){
+  const SUCCESS = `${type}_SUCCESS`;
+  const FAILURE = `${type}_FAILURE`;
+
+  return function* (action){
+    if (!action.payload) return;
+
+    try {
+      const response = yield call(contactApi.modifyContactList, action.payload);
+      const success = response.data.status === 'SUCCESS';
+      
+      // 대화상대 성공 추가
+      if (success === true) {
+        const group = response.data.result[0];
+
+        /* 추가한 그룹 사용자 불러오기 */
+        const data = yield call(contactApi.getItemGroupOneDepth, {
+          folderID: group.folderId,
+          folderType: group.folderType
+        });
+
+        yield put({
+          type: SUCCESS,
+          payload: data.data.result[0]
+        });
+      }
+
+    } catch (err) {
+      // request 에러
+      yield put({
+        type: FAILURE,
+        payload: action.payload,
+        error: true,
+        errMessage: err
+      });
+    }
+  }
+}
+
+const modifyGroupMemberSaga = createModifyGroupMemberSaga(MODIFY_GROUPMEMBER);
+
+const removeCustomGroupSaga = createRequestSaga(
+  REMOVE_CUSTOMGROUP,
+  contactApi.deleteContactList
+);
+const modifyCustomGroupNameSaga = createRequestSaga(
+  MODIFY_CUSTOMGROUPNAME,
+  contactApi.modiftyCustomGroupName
+)
+
 const deleteContactsSaga = createRequestSaga(
   DELETE_CONTACTS,
   contactApi.deleteContactList,
@@ -115,6 +246,10 @@ export function* contactSaga() {
   yield takeLatest(ADD_CONTACTS, addContactsSaga);
   yield takeLatest(DELETE_CONTACTS, deleteContactsSaga);
   yield takeLatest(GET_ITEMGROUP, getItemGroupSaga);
+  yield takeLatest(ADD_CUSTOMGROUP, addCustomGroupSaga);
+  yield takeLatest(REMOVE_CUSTOMGROUP, removeCustomGroupSaga);
+  yield takeLatest(MODIFY_GROUPMEMBER, modifyGroupMemberSaga);
+  yield takeLatest(MODIFY_CUSTOMGROUPNAME, modifyCustomGroupNameSaga);
 }
 
 const initialState = {
@@ -255,9 +390,32 @@ const contact = handleActions(
           sub: filteredSub
         };
       });
+
+      /* 
+        서버데이터 변환 작업 
+        contact 로 R - 하위그룹들이오면 - sub로 넣어줌.
+        contact 사용자그룹 R이면서 folderID 3
+          - contact R타입
+          - contact R타입
+      */
+      let data = [];
+      const customGroups = filteredContacts.filter((contact)=>{
+        if(contact.folderType != 'R' || contact.ownerID === '')
+          data.push(contact);
+        return contact.folderType === 'R' && (contact.ownerID && contact.ownerID != '')
+      });
+
+      data.map((contact)=>{
+        if(contact.ownerID === '' && contact.folderType === 'R'){
+          contact.sub = [];
+          contact.sub = contact.sub.concat(customGroups)
+        }
+        return contact
+      });
+
       return {
         ...state,
-        contacts: filteredContacts,
+        contacts: data,
         //reload: false,
       };
     },
@@ -285,6 +443,63 @@ const contact = handleActions(
         }
       });
     },
+    [ADD_CUSTOMGROUP_SUCCESS]: (state, action) => {
+      return produce(state, draft =>{
+        const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R')
+        const sub = action.payload.sub ? JSON.parse(action.payload.sub) : [];
+        action.payload.sub = [];
+        if(!draft.contacts[groupIdx].sub){
+          draft.contacts[groupIdx].sub = []
+          draft.contacts[groupIdx].sub.push({
+            ...action.payload,
+            sub: sub
+          });
+        }else{
+          draft.contacts[groupIdx].sub = draft.contacts[groupIdx].sub.concat({
+            ...action.payload,
+            sub: sub
+          });
+        }
+      });
+    },
+    [MODIFY_CUSTOMGROUPNAME_SUCCESS]: (state, action) => {
+      return produce(state, draft =>{
+        const folderIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R');
+        const groupIdx = draft.contacts[folderIdx].sub.findIndex((group) => Number(group.folderID) === action.payload.folderId);
+        draft.contacts[folderIdx].sub[groupIdx].folderName = action.payload.displayName;
+      });
+    },
+    [REMOVE_CUSTOMGROUP_SUCCESS]: (state, action) =>{
+      return produce(state, draft =>{
+        const data = action.payload.result;
+        const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R');
+        //멤버/조직 삭제
+        if(data.contactId || data.companyCode){
+          const delInfo = data.contactId || data.companyCode
+          const delgroupIdx = draft.contacts[groupIdx].sub.findIndex((group)=> data.folderId === group.folderID);
+          draft.contacts[groupIdx].sub[delgroupIdx].sub = draft.contacts[groupIdx].sub[delgroupIdx].sub.filter((member)=>{
+            return member.id != delInfo
+          });
+        }else{
+          //그룹삭제
+          draft.contacts[groupIdx].sub = draft.contacts[groupIdx].sub.filter((group)=>{
+            return data.folderId != group.folderID
+          });
+        }
+      });
+    },
+    [MODIFY_GROUPMEMBER_SUCCESS]: (state, action) => {
+      return produce(state, draft =>{
+        const groupIdx = draft.contacts.findIndex((contact)=> contact.folderType == 'R');
+        draft.contacts[groupIdx].sub.map((group)=>{
+          if(group.folderID == action.payload.folderID){
+            group.sub = [];//그냥 overwrite
+            group.sub = action.payload.sub ? JSON.parse(action.payload.sub) : [];
+          }
+          return group;
+        });
+      });
+    }
   },
   initialState,
 );
