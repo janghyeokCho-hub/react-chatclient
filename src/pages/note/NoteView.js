@@ -260,7 +260,7 @@ export default function NoteView({ match }) {
                 noteId: noteInfo.noteId
             });
         }
-    }, [noteInfo, error, isValidating]);
+    }, [noteInfo, error, isValidating, viewType]);
 
     const handleClose = useCallback(() => {
         mutate(null, false);
@@ -290,7 +290,7 @@ export default function NoteView({ match }) {
         } else {
             _popupResult(dispatch, covi.getDic('Msg_Note_DeleteFail', '쪽지를 삭제하지 못했습니다. 다시 시도해 주세요'));
         }
-    }, [noteInfo, viewType]);
+    }, [noteInfo, viewType, viewType]);
 
     const openProfile = useCallback((userId, type) => {
         // 그룹이름 클릭시 프로필열기 X

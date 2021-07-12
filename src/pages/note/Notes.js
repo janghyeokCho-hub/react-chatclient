@@ -48,7 +48,7 @@ function _NoteItem({ note, viewType, history }) {
             }
         } else {
             // 데스크탑 - 새 윈도우 생성
-            openNote({ type, noteId: noteInfo.noteId });
+            openNote({ type, noteId: noteInfo.noteId, viewType });
         }
     }
 
