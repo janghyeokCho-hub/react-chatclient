@@ -88,7 +88,7 @@ const ContactList = ({ viewType, checkObj }) => {
         debounceTimer.takeLatest(() => {
           searchOrgChart({
             userID: userID,
-            value: encodeURIComponent(text),
+            value: text,
             type: 'C',
           }).then(({ data }) => {
             if (data.status == 'SUCCESS') setSearchResult(data.result);

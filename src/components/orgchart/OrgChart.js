@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { bound, setTopButton } from '@/modules/menu';
 import SearchBar from '@COMMON/SearchBar';
@@ -9,11 +9,15 @@ import { searchOrgChart } from '@/lib/orgchart';
 import { openLayer } from '@/lib/common';
 import InviteMember from '../chat/chatroom/layer/InviteMember';
 import useOffset from '@/hooks/useOffset';
+import { filterSearchGroupMember } from '@/lib/contactUtil';
 import { getRoomList } from '@/lib/room';
 
 import AddChatIcon from '@/icons/svg/AddChat';
+/* 
+  group: 임의그룹 변경화면 그룹멤버추가 화면에서 그룹멤버는 목록에 나오지않도록 
+*/
 
-const OrgChart = ({ viewType, checkObj }) => {
+const OrgChart = ({ viewType, checkObj, group }) => {
   let searchTimer = null;
   const RENDER_UNIT = 10;
   const userID = useSelector(({ login }) => login.id);
@@ -70,11 +74,18 @@ const OrgChart = ({ viewType, checkObj }) => {
         searchTimer = setTimeout(() => {
           searchOrgChart({
             userID: userID,
-            value: encodeURIComponent(text),
+            value: text,
             type: 'O',
           }).then(({ data }) => {
-            if (data.status == 'SUCCESS') setSearchResult(data.result);
-            else setSearchResult([]);
+            if (data.status == 'SUCCESS') {
+              //그룹 존재시 그룹멤버 제외하고 목록나오도록
+              if(group)
+                data.result = filterSearchGroupMember(data.result, group, userID);
+
+              setSearchResult(data.result);
+            }else{
+              setSearchResult([]);
+            }
           });
         }, 500);
       } else {
@@ -82,7 +93,7 @@ const OrgChart = ({ viewType, checkObj }) => {
         setSearchResult([]);
       }
     },
-    [userID],
+    [userID, group],
   );
 
   const handleSearchGroup = (groupCode, companyCode) => {
@@ -94,6 +105,10 @@ const OrgChart = ({ viewType, checkObj }) => {
   const handleUpdate = handleScrollUpdate({
     threshold: 0.85
   });
+
+  const scrollHeight = useMemo(()=>{
+    return 'calc(100% - '+(group && checkObj?.checkedList?.length > 0 ? '220px': '124px') +')'
+  }, [checkObj]);
 
   return (
     <>
@@ -107,7 +122,7 @@ const OrgChart = ({ viewType, checkObj }) => {
           autoHide={true}
           className="PeopleList"
           onUpdate={handleUpdate}
-          style={{ height: 'calc(100% - 124px)' }}
+          style={{ height: scrollHeight }}
         >
           <SearchOrgChart
             viewType={type}
@@ -124,7 +139,7 @@ const OrgChart = ({ viewType, checkObj }) => {
         <Scrollbars
           autoHide={true}
           className="PeopleList"
-          style={{ height: 'calc(100% - 124px)' }}
+          style={{ height: scrollHeight }}
         >
           <OrgchartContainer
             viewType={type}
@@ -133,6 +148,7 @@ const OrgChart = ({ viewType, checkObj }) => {
             handleGroup={handleSearchGroup}
             searchResult={searchResult}
             searchCompanyCode={searchCompanyCode}
+            group={group}
           />
         </Scrollbars>
       )}

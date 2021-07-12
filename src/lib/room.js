@@ -44,6 +44,10 @@ export const getAllUserWithGroupList = params => {
   return managesvr('post', `/org/all`, params);
 };
 
+export const getAllUserWithCustomGroup = params => {
+  return managesvr('get', `/org/user/contact/all/${params.folderId}`);
+};
+
 export const modifyRoomSetting = params => {
   return managesvr('post', `/room/setting/${params.roomID}`, params);
 };
