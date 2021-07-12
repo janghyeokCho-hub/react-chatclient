@@ -4,6 +4,10 @@ import * as AES from 'crypto-js/aes';
 import { getConfig } from '@/lib/util/configUtil';
 
 let instance;
+const encryptInfo = {
+  iv: '4d0d24303f389be9f90be4493c8e1abc',
+  salt: '18b00b2fc5f0e0ee40447bba4dabc952'
+}
 
 class AesUtil {
   constructor(keySize, iterationCount, salt, iv, passPhrase) {
@@ -16,29 +20,29 @@ class AesUtil {
     instance = this;
   }
 
-  generateKey = () => {
-    const key = PBKDF2(this.passPhrase, enc.Hex.parse(this.salt), {
+  generateKey = (salt, passPhrase, useAl) => {
+    const key = PBKDF2(this.passPhrase, enc.Hex.parse(useAl ? encryptInfo.salt: this.salt), {
       keySize: this.keySize,
       iterations: this.iterationCount,
     });
     return key;
   };
 
-  encrypt = plainText => {
-    const key = this.generateKey(this.salt, this.passPhrase);
+  encrypt = (plainText, useAl) => {
+    const key = this.generateKey(useAl ? encryptInfo.salt : this.salt, this.passPhrase, useAl);
     const encrypted = AES.encrypt(plainText, key, {
-      iv: enc.Hex.parse(this.iv),
+      iv: enc.Hex.parse(useAl ? encryptInfo.iv : this.iv),
     });
     return encrypted.ciphertext.toString(enc.Base64);
   };
 
-  decrypt = cipherText => {
-    const key = this.generateKey(this.salt, this.passPhrase);
+  decrypt = (cipherText, useAl)=> {
+    const key = this.generateKey(useAl ? encryptInfo.salt: this.salt, this.passPhrase, useAl);
     const cipherParams = lib.CipherParams.create({
       ciphertext: enc.Base64.parse(cipherText),
     });
     const decrypted = AES.decrypt(cipherParams, key, {
-      iv: enc.Hex.parse(this.iv),
+      iv: enc.Hex.parse(useAl? encryptInfo.iv: this.iv),
     });
     return decrypted.toString(enc.Utf8);
   };

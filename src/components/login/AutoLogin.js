@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import useActions from '@/lib/useActions';
 import { loginRequest, extLoginRequest } from '@/modules/login';
 import LoadingWrap from '@COMMON/LoadingWrap';
+import { getAesUtil } from '@/lib/aesUtil';
 
 const AutoLogin = ({ history }) => {
   const { loading, authFail, token, sync } = useSelector(
@@ -22,6 +23,7 @@ const AutoLogin = ({ history }) => {
   const [onLogin] = useActions([loginRequest], []);
   const [onExtLogin] = useActions([extLoginRequest], []);
   const [isExtUser,setIsExtUser] = useState(false);
+  const AESUtil = getAesUtil();
 
   useEffect(() => {
     if (DEVICE_TYPE == 'd') {
@@ -35,8 +37,10 @@ const AutoLogin = ({ history }) => {
         pw: appConfig.get('autoLoginPw'),
         dp: process.platform,
         da: process.arch,
+        al: appConfig.get('autoLogin') ? 'Y' : 'N',
+        isAuto: true
       };
-
+      
       setIsExtUser(appConfig.get('isExtUser'));
 
       if(appConfig.get('isExtUser')){

@@ -11,7 +11,9 @@ const { _loginRequest } = require(`@/lib/${DEVICE_TYPE}/login`);
  */
 
 export const loginRequest = params => {
-  return _loginRequest('post', '/na/m/login', params, {
+  const url = params?.isAuto ? '/na/r/m/login' : '/na/m/login'
+  delete params.isAuto;
+  return _loginRequest('post', url, params, {
     /**
      * 2021.01.21
      * MAC Address 전송 활성화시 true로 변경하기
@@ -22,7 +24,9 @@ export const loginRequest = params => {
 };
 
 export const extLoginRequest = params => {
-  return _loginRequest('post', '/na/m/extlogin', params, {
+  const url = params?.isAuto ? '/na/r/m/extlogin' : '/na/m/extlogin'
+  delete params.isAuto;
+  return _loginRequest('post', url, params, {
     // useMACAddress 비활성화시 useMACEncryption 사용 안함
     useMACAddress: true,
     useMACEncryption: true,
