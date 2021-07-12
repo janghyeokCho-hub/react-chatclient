@@ -39,11 +39,17 @@ const LoginContainer = ({ history, location }) => {
     let data = null;
 
     if (DEVICE_TYPE == 'd') {
+      const appConfig = evalConnector({
+        method: 'getGlobal',
+        name: 'APP_SETTING',
+      });
+
       data = {
         id: userId,
         pw: encryptPassword,
         dp: process.platform,
         da: process.arch,
+        al: appConfig.get('autoLogin') ? 'Y' : 'N'
       };
     } else if (DEVICE_TYPE == 'b') {
       data = {
@@ -148,7 +154,7 @@ const LoginContainer = ({ history, location }) => {
 
       if (DEVICE_TYPE == 'd') {
         const AESUtil = getAesUtil();
-        const encryptPassword = AESUtil.encrypt(password);
+        const encryptPassword = AESUtil.encrypt(password, true);
 
         const data = {
           autoLoginId: userId,
