@@ -64,9 +64,9 @@ export const notifyMessage = (payload, focusWin) => {
             console.log('arrMsgData::::::::::::::', arrMsgData);
             if (arrMsgData[0] == 'emoticon') {
               // emoticon 처리
-              message = SERVER_SETTING.getDic('Emoticon', '이모티콘');
+              message = SERVER_SECURITY_SETTING.getDic('Emoticon', '이모티콘');
             } else {
-              message = SERVER_SETTING.getDic(
+              message = SERVER_SECURITY_SETTING.getDic(
                 'Msg_ReceiveMsg1',
                 `멘션메시지 도착`, // 추가 수정 필요
               );
@@ -79,7 +79,7 @@ export const notifyMessage = (payload, focusWin) => {
           } else if (jObjMessage.hasOwnProperty('title')) {
             message = title;
           } else {
-            message = SERVER_SETTING.getDic(
+            message = SERVER_SECURITY_SETTING.getDic(
               'Msg_ReceiveMsg',
               '새로운 메시지가 도착했습니다.',
             );
@@ -93,7 +93,7 @@ export const notifyMessage = (payload, focusWin) => {
           message = message.replace(/&#39;/gi, "'");
 
           if (!message)
-            message = SERVER_SETTING.getDic(
+            message = SERVER_SECURITY_SETTING.getDic(
               'Msg_ReceiveMsg',
               '새로운 메시지가 도착했습니다.',
             );
@@ -105,10 +105,10 @@ export const notifyMessage = (payload, focusWin) => {
         }
       } else {
         // 파일, 이미지 등 메시지 내용없이 파일만 전송한 경우
-        message = SERVER_SETTING.getDic('AttachFile', '첨부파일');
+        message = SERVER_SECURITY_SETTING.getDic('AttachFile', '첨부파일');
       }
     } else {
-      message = SERVER_SETTING.getDic(
+      message = SERVER_SECURITY_SETTING.getDic(
         'Msg_ReceiveMsg',
         '새로운 메시지가 도착했습니다.',
       );
@@ -209,7 +209,13 @@ const openFocusRoom = (roomID, isChannel) => {
 };
 
 /** 쪽지 push알림 */
-export const notifyNoteMessage = ({ noteId, senderInfo, isEmergency = false, title = '', message = '' }) => {
+export const notifyNoteMessage = ({
+  noteId,
+  senderInfo,
+  isEmergency = false,
+  title = '',
+  message = '',
+}) => {
   const localIconImage = path.join(
     exportProps.resourcePath,
     'icons',
@@ -234,13 +240,18 @@ export const notifyNoteMessage = ({ noteId, senderInfo, isEmergency = false, tit
       template: `<toast><visual><binding template="ToastGeneric"><image placement="appLogoOverride" hint-crop="circle" id="1" src="%s"/><text id="1" hint-maxLines="1">%s</text><text id="2">%s</text></binding></visual></toast>`,
       strings: [localIconImage, title, message],
       group: 'Note',
-      noteId: noteId
+      noteId: noteId,
     });
-    const windowParams = { type: 'receive', viewType: 'receive', noteId: noteId, isEmergency };
-    noti.on('activated', (t) => {
+    const windowParams = {
+      type: 'receive',
+      viewType: 'receive',
+      noteId: noteId,
+      isEmergency,
+    };
+    noti.on('activated', t => {
       history.removeGroup({
         group: t.group,
-        appId: exportProps.appId
+        appId: exportProps.appId,
       });
       openNoteWindow(windowParams);
     });
@@ -254,9 +265,14 @@ export const notifyNoteMessage = ({ noteId, senderInfo, isEmergency = false, tit
       icon: localIconImage,
       body: message,
     });
-    const windowParams = { type: 'receive', viewType: 'receive', noteId: noteId, isEmergency };
+    const windowParams = {
+      type: 'receive',
+      viewType: 'receive',
+      noteId: noteId,
+      isEmergency,
+    };
 
-    noti.on('click', (e) => {
+    noti.on('click', e => {
       openNoteWindow(windowParams);
     });
     noti.show();
@@ -264,7 +280,7 @@ export const notifyNoteMessage = ({ noteId, senderInfo, isEmergency = false, tit
       openNoteWindow(windowParams);
     }
   }
-}
+};
 
 /*
 부모창 기준 창 위치 지정 
@@ -326,7 +342,7 @@ export const clearCache = () => {
     type: 'confirm',
     width: 300,
     height: 120,
-    message: SERVER_SETTING.getDic(
+    message: SERVER_SECURITY_SETTING.getDic(
       'Msg_ApplyAndRefresh',
       '사용자 임시 데이터를 삭제합니다.<br/>확인 시 열려있는 모든 창이 닫힙니다.',
     ),
@@ -346,7 +362,7 @@ export const initApp = () => {
     type: 'confirm',
     width: 300,
     height: 120,
-    message: SERVER_SETTING.getDic(
+    message: SERVER_SECURITY_SETTING.getDic(
       'Msg_InitApp',
       '앱 내 모든 설정 및 데이터가 초기화 됩니다.<br/>앱을 초기화 하시겠습니까?',
     ),
@@ -364,8 +380,9 @@ export const initApp = () => {
         // 로컬 데이터 삭제
         await removeLocalDatabaseDir();
 
-        APP_SETTING.purge();
-        SERVER_SETTING.purge();
+        // app data 삭제
+        APP_SECURITY_SETTING.purge();
+        SERVER_SECURITY_SETTING.purge();
 
         app.relaunch();
         app.exit();
@@ -395,11 +412,12 @@ export const reloadApp = clearConfig => {
   });
 
   if (clearConfig) {
-    let lang = APP_SETTING.get('lang');
+    let lang = APP_SECURITY_SETTING.get('lang');
+
     lang = lang ? lang : '';
 
     // SERVER SETTING 삭제
-    SERVER_SETTING.purge();
+    SERVER_SECURITY_SETTING.purge();
 
     managesvr(
       'get',
@@ -413,7 +431,7 @@ export const reloadApp = clearConfig => {
       .then(({ data }) => {
         if (data.status == 'SUCCESS') {
           logger.info('server config load success');
-          SERVER_SETTING.setBulk(data.result);
+          SERVER_SECURITY_SETTING.setBulk(data.result);
         }
 
         win.webContents.reloadIgnoringCache();
@@ -518,9 +536,11 @@ export const getDictionary = (multiDic, lang) => {
   let defaultIdx = 0;
   const arrDics = dictionary.split(';');
 
-  let findLang = lang ? lang : APP_SETTING.get('lang') || 'ko';
+  // let findLang = lang ? lang : APP_SETTING.get('lang') || 'ko';
+  let findLang = lang ? lang : APP_SECURITY_SETTING.get('lang') || 'ko';
 
-  let defaultLang = SERVER_SETTING.get('config.DefaultClientLang') || 'ko';
+  let defaultLang =
+    SERVER_SECURITY_SETTING.get('config.DefaultClientLang') || 'ko';
 
   try {
     if (arrDics.length > 0) {

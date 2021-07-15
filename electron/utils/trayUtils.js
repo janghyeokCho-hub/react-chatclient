@@ -92,13 +92,16 @@ export const setContextMenu = parentWin => {
       click: async () => {
         try {
           const data = getData();
-          if(data && data.id) {
+          if (data && data.id) {
             const response = await chatsvr('put', '/presence', {
               userId: data.id,
               state: 'offline',
               type: 'A',
             });
-            logger.info('[4] Exit program. update presence offline ', response.data);
+            logger.info(
+              '[4] Exit program. update presence offline ',
+              response.data,
+            );
             console.log(response.data);
           }
         } catch (err) {

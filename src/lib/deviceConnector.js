@@ -168,7 +168,7 @@ export const isExceededMaxWindow = () => {
   const emitter = getEmitter();
 
   // maxWindow 설정이 안되어 있거나 음수인 경우 로직 생략
-  if(!maxWindow || maxWindow < 0) {
+  if (!maxWindow || maxWindow < 0) {
     return false;
   }
 
@@ -177,8 +177,8 @@ export const isExceededMaxWindow = () => {
   const noteLength = emitter.sendSync('check-note-win-len');
   const len = roomLength + newRoomLength + noteLength;
 
-  return (len > maxWindow -1);
-}
+  return len > maxWindow - 1;
+};
 
 export const newChatRoom = (winName, id, openURL) => {
   let roomObj = null;
@@ -202,7 +202,7 @@ export const newChatRoom = (winName, id, openURL) => {
       const roomInfo = /(chatroom)\/([0-9]*)/g.exec(openURL);
       let initial = null;
 
-      const configSetting = remote.getGlobal('SERVER_SETTING');
+      const configSetting = remote.getGlobal('SERVER_SECURITY_SETTING');
       const config = configSetting.get('config');
 
       let defaultSize = {
@@ -315,7 +315,7 @@ const bindChatRoomDefaultEvent = (id, roomObj, isChannel) => {
   const parentWin = remote.BrowserWindow.fromId(1);
 
   emitter.send('set-room-win-map', { roomID: id, winID: roomObj.id });
-  const APP_SETTING = remote.getGlobal('APP_SETTING');
+  const APP_SETTING = remote.getGlobal('APP_SECURITY_SETTING');
 
   // 이벤트 핸들러에 debounce 적용
   const debounceTimer = createTakeLatestTimer(100);
@@ -668,7 +668,7 @@ export const getDownloadDefaultPath = () => {
   const remote = getRemote();
   if (remote) {
     const osDownloadPath = remote.app.getPath('downloads');
-    const appSetting = remote.getGlobal('APP_SETTING');
+    const appSetting = remote.getGlobal('APP_SECURITY_SETTING');
     const appDownloadPath = appSetting.get('defaultDownloadPath');
 
     if (appDownloadPath) {
@@ -690,7 +690,7 @@ export const getDownloadPath = async () => {
   const remote = getRemote();
   if (remote) {
     const downloadPathCheck = remote
-      .getGlobal('APP_SETTING')
+      .getGlobal('APP_SECURITY_SETTING')
       .get('downloadPathCheck');
     const defaultDownloadPath = getDownloadDefaultPath();
     if (downloadPathCheck) {
@@ -789,7 +789,7 @@ export const restoreMainWindow = () => {
       // tray
       mainWindow.showInactive();
     }
-  } catch (e) { }
+  } catch (e) {}
 };
 
 export const closeAllChildWindow = () => {
@@ -934,7 +934,7 @@ export const newChannel = (winName, id, openURL) => {
     const emitter = getEmitter();
     const openWinID = emitter.sendSync('check-room-win-map', { roomID: id });
 
-    const configSetting = remote.getGlobal('SERVER_SETTING');
+    const configSetting = remote.getGlobal('SERVER_SECURITY_SETTING');
     const config = configSetting.get('config');
 
     let defaultSize = {
@@ -1056,7 +1056,7 @@ export const getWindowAlwaysTop = () => {
   try {
     const win = getRemote().getCurrentWindow();
     return win.isAlwaysOnTop();
-  } catch (e) { }
+  } catch (e) {}
   return false;
 };
 
@@ -1064,7 +1064,7 @@ export const setWindowAlwaysTop = flag => {
   try {
     const win = getRemote().getCurrentWindow();
     win.setAlwaysOnTop(flag);
-  } catch (e) { }
+  } catch (e) {}
 };
 
 export const setWindowOpacity = deg => {
@@ -1084,11 +1084,11 @@ export function openNote({ type, viewType, noteId }) {
   emitter.send('open-note-window', {
     type,
     noteId,
-    viewType
+    viewType,
   });
 }
 
-export const logRenderer = (msg) => {
+export const logRenderer = msg => {
   try {
     getRemote().send('log-info', msg);
   } catch (e) {

@@ -37,7 +37,7 @@ export const checkMakeRoomWinLength = (event, args) => {
 
 export const checkNoteWinLength = (event, args) => {
   event.returnValue = Object.keys(NOTE_WIN_MAP).length;
-}
+};
 
 export const RoomWinClosed = (event, args) => {
   ROOM_WIN_MAP[args.roomID] && delete ROOM_WIN_MAP[args.roomID];
@@ -79,7 +79,7 @@ export const reqMakeRoom = (event, args) => {
     },
   };
 
-  const config = SERVER_SETTING.get('config');
+  const config = SERVER_SECURITY_SETTING.get('config');
 
   if (config?.clientDefaultSize) {
     defaultSize = {

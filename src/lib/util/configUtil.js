@@ -42,7 +42,7 @@ export const setInitConfig = callback => {
   } else {
     const globalConfigs = evalConnector({
       method: 'getGlobal',
-      name: 'SERVER_SETTING',
+      name: 'SERVER_SECURITY_SETTING',
     });
 
     if (globalConfigs.has('config')) {
@@ -96,7 +96,7 @@ export const getInitSettings = () => {
   } else {
     const appConfig = evalConnector({
       method: 'getGlobal',
-      name: 'APP_SETTING',
+      name: 'APP_SECURITY_SETTING',
     });
 
     setLang = appConfig.get('lang');

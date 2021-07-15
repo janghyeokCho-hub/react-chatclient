@@ -31,7 +31,7 @@ const LoginBox = forwardRef(
       if (DEVICE_TYPE == 'd') {
         const appConfig = evalConnector({
           method: 'getGlobal',
-          name: 'APP_SETTING',
+          name: 'APP_SECURITY_SETTING',
         });
 
         setAutoLogin(appConfig.get('autoLogin') ? true : false);
@@ -133,9 +133,9 @@ const LoginBox = forwardRef(
               className="LoginBtn Type1"
               disabled={loading}
             >
-              {
-                isExtUser ? covi.getDic('ExternalLogin') : covi.getDic('EmployeeLogin')
-              }
+              {isExtUser
+                ? covi.getDic('ExternalLogin')
+                : covi.getDic('EmployeeLogin')}
             </button>
           </div>
           <SelectBox

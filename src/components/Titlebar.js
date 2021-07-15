@@ -32,10 +32,9 @@ const Titlebar = () => {
   useEffect(() => {
     const appConfig = evalConnector({
       method: 'getGlobal',
-      name: 'APP_SETTING',
+      name: 'APP_SECURITY_SETTING',
     });
-    if(isNewWin)
-      setWindowOpacity(appConfig.get('opacityRange')/100 || 1);
+    if (isNewWin) setWindowOpacity(appConfig.get('opacityRange') / 100 || 1);
 
     if (typeof window.openExternalPopup !== 'function') {
       // Link를 OS Default Browser로 실행 ( 미처리시 Electron에서 직접 열게됨 )

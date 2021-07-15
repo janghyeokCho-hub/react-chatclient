@@ -55,11 +55,11 @@ const TokenChecker = ({ history, returnURL }) => {
         if (DEVICE_TYPE == 'd') {
           const appConfig = evalConnector({
             method: 'getGlobal',
-            name: 'APP_SETTING',
+            name: 'APP_SECURITY_SETTING',
           });
           if (
             appConfig.get('autoLogin') &&
-            appConfig.get("tk") &&
+            appConfig.get('tk') &&
             appConfig.get('autoLoginId') &&
             appConfig.get('autoLoginPw') // 자동로그인 설정일 경우,
           ) {
