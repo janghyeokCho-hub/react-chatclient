@@ -5,10 +5,10 @@ export const getInitialBounds = (boundKey, defaultSize) => {
   try {
     // electron main thread     =>  remote.getGlobal undefined
     // eletron renderer thread  =>  global.APP_SETTING undefined
-    const APP_SETTING =
-      remote && remote.getGlobal
-        ? remote.getGlobal('APP_SETTING')
-        : global.APP_SETTING;
+
+    const APP_SETTING = remote?.getGlobal
+      ? remote.getGlobal('APP_SECURITY_SETTING')
+      : global.APP_SECURITY_SETTING;
 
     const initialBounds = APP_SETTING.get(boundKey);
     if (initialBounds) {

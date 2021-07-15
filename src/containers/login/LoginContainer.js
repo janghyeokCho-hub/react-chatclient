@@ -41,7 +41,7 @@ const LoginContainer = ({ history, location }) => {
     if (DEVICE_TYPE == 'd') {
       const appConfig = evalConnector({
         method: 'getGlobal',
-        name: 'APP_SETTING',
+        name: 'APP_SECURITY_SETTING',
       });
 
       data = {
@@ -49,7 +49,7 @@ const LoginContainer = ({ history, location }) => {
         pw: encryptPassword,
         dp: process.platform,
         da: process.arch,
-        al: appConfig.get('autoLogin') ? 'Y' : 'N'
+        al: appConfig.get('autoLogin') ? 'Y' : 'N',
       };
     } else if (DEVICE_TYPE == 'b') {
       data = {
@@ -160,7 +160,7 @@ const LoginContainer = ({ history, location }) => {
           autoLoginId: userId,
           autoLoginPw: encryptPassword,
           tk: token,
-          isExtUser: isExtUser
+          isExtUser: isExtUser,
         };
         evalConnector({
           method: 'send',

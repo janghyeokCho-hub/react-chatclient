@@ -47,8 +47,8 @@ class Updater {
       logger.info('A new update is available');
       const message =
         this.updateInfo.forceUpdate == 'Y'
-          ? SERVER_SETTING.getDic('Msg_UpdateForceConfirm')
-          : SERVER_SETTING.getDic('Msg_UpdateConfirm');
+          ? SERVER_SECURITY_SETTING.getDic('Msg_UpdateForceConfirm')
+          : SERVER_SECURITY_SETTING.getDic('Msg_UpdateConfirm');
 
       window.showModalDialog(this.win, {
         type: 'confirm',
@@ -94,12 +94,15 @@ class Updater {
 
       this.downloadModal.webContents.send(
         'modal-change-message',
-        SERVER_SETTING.getDic('Msg_ReInstallApp', '잠시후 앱이 재설치 됩니다.'),
+        SERVER_SECURITY_SETTING.getDic(
+          'Msg_ReInstallApp',
+          '잠시후 앱이 재설치 됩니다.',
+        ),
       );
 
       if (this.updateInfo.deleteLocalData == 'Y') {
         // local database 초기화 여부 적용
-        APP_SETTING.set('clearLocalData', true);
+        APP_SECURITY_SETTING.set('clearLocalData', true);
       }
 
       setTimeout(() => {
@@ -124,7 +127,7 @@ class Updater {
   download = () => {
     // 앱 update 다운로드 수행
     this.downloadModal = window.showModalProgress(this.win, {
-      message: SERVER_SETTING.getDic('Msg_DownloadInstaller'),
+      message: SERVER_SECURITY_SETTING.getDic('Msg_DownloadInstaller'),
     });
 
     this.downloadModal.once('show', () => {

@@ -4,10 +4,11 @@ import { evalConnector } from '@/lib/deviceConnector';
 const Range = ({ min, max, init, onChange, onInput, size, style }) => {
   const appConfig = evalConnector({
     method: 'getGlobal',
-    name: 'APP_SETTING',
+    name: 'APP_SECURITY_SETTING',
   });
   const [deg, setDeg] = useState(
-    appConfig.get('opacityRange') || (init ? Math.round(((init - min) / (max - min)) * 100) : 0),
+    appConfig.get('opacityRange') ||
+      (init ? Math.round(((init - min) / (max - min)) * 100) : 0),
   );
   return (
     <div
@@ -38,7 +39,7 @@ const Range = ({ min, max, init, onChange, onInput, size, style }) => {
             evalConnector({
               method: 'send',
               channel: 'save-static-config',
-              message: {opacityRange: val},
+              message: { opacityRange: val },
             });
             onChange(val);
           }

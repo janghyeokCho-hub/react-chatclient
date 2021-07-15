@@ -123,7 +123,8 @@
           hideCustomAlarm(args);
         });
 
-        const appConfigs = remote.getGlobal('APP_SETTING');
+        const appConfigs = remote.getGlobal('APP_SECURITY_SETTING');
+
         HOST = appConfigs.get('domain');
 
         const img = document.querySelector('#toastImg');
@@ -203,7 +204,7 @@
         const img = document.querySelector('#toastImg');
         const title = document.querySelector('#toastTitle');
         const message = document.querySelector('#toastMessage');
-        
+
         if (data.photoPath) {
           // img.src = `${HOST}/${data.photoPath}`;
           img.src = data.photoPath;

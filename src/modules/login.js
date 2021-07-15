@@ -36,11 +36,8 @@ import {
   startRefreshInterval,
 } from '@/lib/zoomService';
 
-const [
-  LOGIN_REQUEST,
-  LOGIN_REQUEST_SUCCESS,
-  LOGIN_REQUEST_FAILURE,
-] = createRequestActionTypes('login/REQUEST');
+const [LOGIN_REQUEST, LOGIN_REQUEST_SUCCESS, LOGIN_REQUEST_FAILURE] =
+  createRequestActionTypes('login/REQUEST');
 
 const [
   EXT_LOGIN_REQUEST,
@@ -48,11 +45,8 @@ const [
   EXT_LOGIN_REQUEST_FAILURE,
 ] = createRequestActionTypes('login/EXT_REQUEST');
 
-const [
-  LOGOUT_REQUEST,
-  LOGOUT_REQUEST_SUCCESS,
-  LOGOUT_REQUEST_FAILURE,
-] = createRequestActionTypes('login/LOGOUT_REQUEST');
+const [LOGOUT_REQUEST, LOGOUT_REQUEST_SUCCESS, LOGOUT_REQUEST_FAILURE] =
+  createRequestActionTypes('login/LOGOUT_REQUEST');
 
 const LOGOUT = 'login/LOGOUT';
 
@@ -173,16 +167,20 @@ function createLoginRequestSaga(loginType, syncType) {
                 channel: 'req-get-room',
                 message: {},
               });
+
               yield put(setRooms(rooms));
 
               const users = yield call(getFixedUserData, {
                 array: rooms.rooms,
                 key: 'members',
               });
+
               yield put(setFixedUsers(users));
             } else {
               // 2-1 채팅방 정보 불러오기
+
               const rooms = yield call(roomApi.getRoomList, {});
+
               if (rooms.data.status == 'SUCCESS') {
                 yield put(setRooms(rooms.data));
 
@@ -190,6 +188,7 @@ function createLoginRequestSaga(loginType, syncType) {
                   array: rooms.data.rooms,
                   key: 'members',
                 });
+
                 yield put(setFixedUsers(users));
               }
             }
@@ -199,6 +198,7 @@ function createLoginRequestSaga(loginType, syncType) {
               contactApi.getContactList,
               response.data.result.DeptCode,
             );
+
             if (contacts.data.status == 'SUCCESS') {
               yield put(setContacts(contacts.data));
 
@@ -206,6 +206,7 @@ function createLoginRequestSaga(loginType, syncType) {
                 array: contacts.data.result,
                 key: 'sub',
               });
+
               yield put(setFixedUsers(users));
             }
 
@@ -214,6 +215,7 @@ function createLoginRequestSaga(loginType, syncType) {
               userId: response.data.result.id,
               members: [response.data.result.id],
             });
+
             if (channels.data.status == 'SUCCESS') {
               yield put(setChannels(channels.data));
             }
@@ -613,7 +615,7 @@ const login = handleActions(
         authFail: true,
         ...(action.errMessage && { errMessage: action.errMessage }),
         ...(action.errStatus && { errStatus: action.errStatus }),
-        token: initialState.token
+        token: initialState.token,
       };
     },
     [EXT_LOGIN_REQUEST_SUCCESS]: (state, action) => {
@@ -637,7 +639,7 @@ const login = handleActions(
         authFail: true,
         ...(action.errMessage && { errMessage: action.errMessage }),
         ...(action.errStatus && { errStatus: action.errStatus }),
-        token: initialState.token
+        token: initialState.token,
       };
     },
     [LOGIN_INIT]: (state, action) => ({

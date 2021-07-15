@@ -23,6 +23,7 @@ import * as notReadList from './utils/notReadList';
 import { getUpdater } from './utils/updater';
 import { setConfig } from './config/config';
 import { getConfig } from './config/configLoader';
+import { getSecureConfig } from './config/secureConfigLoader';
 import installExtension, { REDUX_DEVTOOLS } from 'electron-devtools-installer';
 import {
   clearCache,
@@ -63,8 +64,8 @@ global.MAKE_WIN_MAP = {};
 global.NOTE_WIN_MAP = {};
 
 // global config
-global.SERVER_SETTING = null;
-global.APP_SETTING = null;
+global.APP_SECURITY_SETTING = null;
+global.SERVER_SECURITY_SETTING = null;
 global.USER_SETTING = null;
 
 global.CUSTOM_ALARM = false;
@@ -95,45 +96,47 @@ app.whenReady().then(() => {
 });
 
 const appReady = async () => {
-  logger.info(JSON.stringify(exportProps, null, 2));
+  let showInfo = `
+  ============================== EUMTALK INFORMATION ==============================
+  platform: ${exportProps.platform}
+  archiecture: ${exportProps.arch}
+  os_version: ${exportProps.osversion}
+  application_name: ${exportProps.appName}
+  application_id: ${exportProps.appId}
+  application_version: ${exportProps.version}
+  =================================================================================
+  `;
+  logger.info(showInfo);
 
-  APP_SETTING = getConfig('app.setting.json');
+  // 암호화 세팅 파일 생성 (또는 읽어 오기)
+  APP_SECURITY_SETTING = getSecureConfig('app.setting.eumsecure');
 
-  if (APP_SETTING.initFile) {
-    // nsis 설치할때 생성할 수 있을지 확인 필요
-
-    APP_SETTING.setBulk({
-      // COVISION 운영 전용 하드코딩 START
-      // domain: 'http://192.168.11.231',
-      // COVISION 운영 전용 하드코딩 END
+  if (APP_SECURITY_SETTING.initFile) {
+    APP_SECURITY_SETTING.setBulk({
+      // 초기 값 설정
+      // domain: 'http://192.168.11.80'
     });
-
-    logger.info('create app setting file');
   } else {
-    // COVISION 운영 전용 하드코딩 START
-    // APP_SETTING.set('domain', 'http://192.168.11.231');
-    // COVISION 운영 전용 하드코딩 END
-
     // update 이후 clearLocalData 호출 시
-    if (APP_SETTING.get('clearLocalData')) {
+    if (APP_SECURITY_SETTING.get('clearLocalData')) {
       await fileUtil.removeLocalDatabaseDir();
-      APP_SETTING.delete('clearLocalData');
+      APP_SECURITY_SETTING.delete('clearLocalData');
     }
   }
 
-  const domainInfo = APP_SETTING.get('domain');
+  const domainInfo = APP_SECURITY_SETTING.get('domain');
+
   // 설정된 도메인이 존재하는 경우
   if (domainInfo) {
     // window 생성
     let isCreated = createWindow(true, domainInfo);
 
     const setConfigAfter = count => {
-      SERVER_SETTING = getConfig('server.setting.json');
+      SERVER_SECURITY_SETTING = getSecureConfig('server.setting.eumsecure');
 
-      let lang = APP_SETTING.get('lang');
+      let lang = APP_SECURITY_SETTING.get('lang');
       lang = lang ? lang : '';
-      // if (SERVER_SETTING.initFile || SERVER_SETTING.config == {}) {
-      // APP 재실행 시 무조건 새로 load
+
       managesvr(
         'get',
         `/na/nf/config?lang=${lang}`,
@@ -146,7 +149,7 @@ const appReady = async () => {
         .then(({ data }) => {
           if (data.status == 'SUCCESS') {
             logger.info('server config load success');
-            SERVER_SETTING.setBulk(data.result);
+            SERVER_SECURITY_SETTING.setBulk(data.result);
             // app_setting에 설정되지 않은 내용들 server_config의 default config로 초기화
             if (data.result.config) initializeDefaultConfig(data.result.config);
             isCreated.then(() => {
@@ -154,7 +157,7 @@ const appReady = async () => {
             });
           } else {
             logger.info('server config load failure');
-            SERVER_SETTING.purge();
+            SERVER_SECURITY_SETTING.purge();
             isCreated.then(() => {
               loadMainWindow();
             });
@@ -167,7 +170,7 @@ const appReady = async () => {
             if (count !== 60) {
               setConfigAfter(count + 1);
             } else {
-              SERVER_SETTING.purge();
+              SERVER_SECURITY_SETTING.purge();
               loadMainWindow();
             }
           }, 10000);
@@ -389,7 +392,7 @@ const createWindow = async (isLoading, domainInfo) => {
   };
 
   if (domainInfo) {
-    const lang = APP_SETTING.get('lang');
+    const lang = APP_SECURITY_SETTING.get('lang');
     const reqOptions = {
       method: 'get',
       url: `${domainInfo}/restful/na/nf/config?lang=${lang}`,
@@ -456,7 +459,7 @@ const createWindow = async (isLoading, domainInfo) => {
   });
 
   win.on('close', e => {
-    APP_SETTING.set('latestAppBounds', win.getBounds());
+    APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
   });
 
   // Emitted when the window is closed.
@@ -468,7 +471,7 @@ const createWindow = async (isLoading, domainInfo) => {
   // win.webContents.session.clearStorageData({ storages: ['localstorage'] });
   // logger.info('old storage data remove');
 
-  CUSTOM_ALARM = APP_SETTING.get('customAlarm');
+  // CUSTOM_ALARM = APP_SETTING.get('customAlarm');
 
   // win8 이하 버전은 강제로 customAlarm 세팅
   if (exportProps.platform === 'win32') {
@@ -479,7 +482,7 @@ const createWindow = async (isLoading, domainInfo) => {
         /^6.1.*/.test(exportProps.osversion)
       ) {
         logger.info('windows7 :: use custom alarm');
-        APP_SETTING.set('customAlarm', true);
+        APP_SECURITY_SETTING.set('customAlarm', true);
         CUSTOM_ALARM = true;
       }
     } catch (e) {
@@ -503,10 +506,10 @@ const loadMainWindow = () => {
 
   // 자동로그인 여부가 true고 자동로그인 관련 데이터가 모두 있을경우에만 자동로그인 실행
   if (
-    (APP_SETTING.config.autoLogin || exportProps.isAutoLogin) &&
-    APP_SETTING.config.tk &&
-    APP_SETTING.config.autoLoginId &&
-    APP_SETTING.config.autoLoginPw
+    (APP_SECURITY_SETTING.config.autoLogin || exportProps.isAutoLogin) &&
+    APP_SECURITY_SETTING.config.tk &&
+    APP_SECURITY_SETTING.config.autoLoginId &&
+    APP_SECURITY_SETTING.config.autoLoginPw
   ) {
     firstPage = '#/client/autoLogin';
   }
@@ -530,7 +533,6 @@ const loadMainWindow = () => {
 
 const createDomainRegistWindow = () => {
   // Create the browser window.
-  console.log(SERVER_SETTING);
   win = new BrowserWindow({
     width: 450,
     height: 600,
@@ -547,19 +549,15 @@ const createDomainRegistWindow = () => {
 
   win.once('ready-to-show', () => {
     ipcMain.once('req-regist-domain', (event, args) => {
-      APP_SETTING.set('domain', args);
+      APP_SECURITY_SETTING.set('domain', args);
       fileUtil.makeIndexFile(args, () => {
         setConfig(args);
-        // 기존 LocalDatabase 파일이 존재할경우 삭제
-        // fileUtil.removeLocalDatabaseDir();
-        // app 재실행
         app.relaunch();
         app.exit();
       });
     });
 
     win.show();
-    // idle checker
 
     exportProps.isDev && win.webContents.openDevTools();
   });
@@ -572,7 +570,6 @@ const createDomainRegistWindow = () => {
 
   win.loadURL(loadURL);
 
-  // Emitted when the window is closed.
   win.on('closed', () => {
     win = null;
   });
@@ -742,9 +739,9 @@ ipcMain.on('req-logout', (event, args) => {
 
   setHot(false);
 
-  APP_SETTING.delete('tk');
-  APP_SETTING.delete('autoLoginId');
-  APP_SETTING.delete('autoLoginPw');
+  APP_SECURITY_SETTING.delete('tk');
+  APP_SECURITY_SETTING.delete('autoLoginId');
+  APP_SECURITY_SETTING.delete('autoLoginPw');
 
   USER_SETTING = null;
 
@@ -901,7 +898,7 @@ ipcMain.on('remove-localdata-dir', (event, args) => {
 ipcMain.on('save-static-config', (event, data) => {
   // global 변수값도 변경
   Object.keys(data).forEach(key => {
-    APP_SETTING.set(key, data[key]);
+    APP_SECURITY_SETTING.set(key, data[key]);
   });
 
   if (data['autoLaunch'] !== undefined && data['autoLaunch'] !== null) {
@@ -966,12 +963,12 @@ ipcMain.on('clear-domain', e => {
     type: 'confirm',
     width: 310,
     height: 130,
-    message: SERVER_SETTING.getDic('Msg_InitDomain'), //'설정된 도메인 정보를 초기화합니다.<br/>확인 시 앱 데이터가 초기화 됩니다.'
+    message: SERVER_SECURITY_SETTING.getDic('Msg_InitDomain'), //'설정된 도메인 정보를 초기화합니다.<br/>확인 시 앱 데이터가 초기화 됩니다.'
     confirm: () => {
       // 저장된 캐시데이터 삭제
       ses.clearCache(() => {
         // Domain 정보 제거 후 앱 재시작
-        APP_SETTING.purge();
+        APP_SECURITY_SETTING.purge();
         app.relaunch();
         app.exit();
       });
@@ -982,7 +979,7 @@ ipcMain.on('clear-domain', e => {
 
 ipcMain.on('get-server-configs', async (event, args) => {
   try {
-    let lang = APP_SETTING.get('lang');
+    let lang = APP_SECURITY_ASETTING.get('lang');
     lang = lang ? lang : '';
 
     const response = await managesvr(
@@ -998,16 +995,16 @@ ipcMain.on('get-server-configs', async (event, args) => {
     const data = response.data;
     if (data.status == 'SUCCESS') {
       logger.info('server config load success');
-      SERVER_SETTING.setBulk(data.result);
+      SERVER_SECURITY_SETTING.setBulk(data.result);
     } else {
       logger.info('server config load failure');
-      SERVER_SETTING.purge();
+      SERVER_SECURITY_SETTING.purge();
     }
   } catch (e) {
     logger.info('server config load failure');
   }
 
-  event.returnValue = SERVER_SETTING;
+  event.returnValue = SERVER_SECURITY_SETTING;
 });
 
 ipcMain.on('reload-app', (e, args) => {
@@ -1032,18 +1029,18 @@ ipcMain.on('log-error', (_, args) => {
 
 const initializeDefaultConfig = config => {
   // lang 값이 없는경우
-  const lang = APP_SETTING.get('lang');
-  const theme = APP_SETTING.get('theme');
-  const jobInfo = APP_SETTING.get('jobInfo');
+  const lang = APP_SECURITY_SETTING.get('lang');
+  const theme = APP_SECURITY_SETTING.get('theme');
+  const jobInfo = APP_SECURITY_SETTING.get('jobInfo');
 
   if (!lang) {
     const defaultLang = config.DefaultClientLang;
     const languageList = config.ClientLangList;
 
     if (languageList && languageList[defaultLang]) {
-      APP_SETTING.set('lang', defaultLang);
+      APP_SECURITY_SETTING.set('lang', defaultLang);
     } else {
-      APP_SETTING.set('lang', 'ko'); // default "ko"
+      APP_SECURITY_SETTING.set('lang', 'ko'); // default "ko"
     }
   }
 
@@ -1051,9 +1048,9 @@ const initializeDefaultConfig = config => {
     const defaultTheme = config.DefaultTheme;
 
     if (defaultTheme) {
-      APP_SETTING.set('theme', defaultTheme);
+      APP_SECURITY_SETTING.set('theme', defaultTheme);
     } else {
-      APP_SETTING.set('theme', 'blue');
+      APP_SECURITY_SETTING.set('theme', 'blue');
     }
   }
 
@@ -1061,9 +1058,9 @@ const initializeDefaultConfig = config => {
     const defaultJobInfo = config.DefaultClientJobInfo;
 
     if (defaultJobInfo) {
-      APP_SETTING.set('jobInfo', defaultJobInfo);
+      APP_SECURITY_SETTING.set('jobInfo', defaultJobInfo);
     } else {
-      APP_SETTING.set('jobInfo', 'PN');
+      APP_SECURITY_SETTING.set('jobInfo', 'PN');
     }
   }
 };

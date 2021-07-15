@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useCallback,
   useImperativeHandle,
-  useMemo
+  useMemo,
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import loadable from '@loadable/component';
@@ -73,7 +73,7 @@ const MessagePostBox = forwardRef(
 
     const dispatch = useDispatch();
     const currentEmoticon = useMemo(() => {
-      if(selectEmoticon === '' || selectEmoticon === null) {
+      if (selectEmoticon === '' || selectEmoticon === null) {
         return null;
       }
       return `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
@@ -84,7 +84,7 @@ const MessagePostBox = forwardRef(
       const files = fileCtrl.getFiles();
       const fileInfos = fileCtrl.getRealFileInfos();
 
-      if(currentEmoticon) {
+      if (currentEmoticon) {
         handleEmoticon(currentEmoticon);
         dispatch(clearEmoticon());
       }
@@ -169,7 +169,7 @@ const MessagePostBox = forwardRef(
       if (DEVICE_TYPE == 'd') {
         const appConfig = evalConnector({
           method: 'getGlobal',
-          name: 'APP_SETTING',
+          name: 'APP_SECURITY_SETTING',
         });
 
         setUseEmoji(appConfig.get('useEmoji') ? true : false);

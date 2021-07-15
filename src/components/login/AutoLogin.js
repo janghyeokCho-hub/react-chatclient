@@ -22,14 +22,14 @@ const AutoLogin = ({ history }) => {
 
   const [onLogin] = useActions([loginRequest], []);
   const [onExtLogin] = useActions([extLoginRequest], []);
-  const [isExtUser,setIsExtUser] = useState(false);
+  const [isExtUser, setIsExtUser] = useState(false);
   const AESUtil = getAesUtil();
 
   useEffect(() => {
     if (DEVICE_TYPE == 'd') {
       const appConfig = evalConnector({
         method: 'getGlobal',
-        name: 'APP_SETTING',
+        name: 'APP_SECURITY_SETTING',
       });
 
       const data = {
@@ -38,14 +38,14 @@ const AutoLogin = ({ history }) => {
         dp: process.platform,
         da: process.arch,
         al: appConfig.get('autoLogin') ? 'Y' : 'N',
-        isAuto: true
+        isAuto: true,
       };
-      
+
       setIsExtUser(appConfig.get('isExtUser'));
 
-      if(appConfig.get('isExtUser')){
-        onExtLogin(data)
-      }else{
+      if (appConfig.get('isExtUser')) {
+        onExtLogin(data);
+      } else {
         onLogin(data);
       }
     } else {
@@ -57,7 +57,7 @@ const AutoLogin = ({ history }) => {
     if (authFail) {
       history.push('/client/login');
     } else if (token) {
-      let defaultMenu = isExtUser ? 'channellist':'contactlist';
+      let defaultMenu = isExtUser ? 'channellist' : 'contactlist';
       if (DEVICE_TYPE == 'd') {
         const data = {
           tk: token,
