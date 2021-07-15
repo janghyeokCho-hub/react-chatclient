@@ -54,7 +54,7 @@ const makeMessageText = lastMessage => {
         if (drawData.msgType == 'C') {
           drawText = common.getDictionary(drawData.title);
         } else if (typeof drawData == 'object') {
-          drawText = JSON.stringify(drawData);
+          drawText = drawData.context || JSON.stringify(drawData);
         } else {
           drawText = drawData.context;
         }
