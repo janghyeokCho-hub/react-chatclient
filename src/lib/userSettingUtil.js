@@ -5,7 +5,7 @@ export const getJobInfo = () => {
     if (DEVICE_TYPE == 'd') {
         const appConfig = evalConnector({
             method: 'getGlobal',
-            name: 'APP_SETTING',
+            name: 'APP_SECURITY_SETTING',
         });
         jobInfo = appConfig.get('jobInfo')
     }else{
