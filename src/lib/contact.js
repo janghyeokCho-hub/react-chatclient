@@ -1,7 +1,8 @@
 import { chatsvr, managesvr } from '@/lib/api';
+import { getJobInfo } from '@/lib/userSettingUtil';
 
 export const getContactList = params => {
-  return managesvr('get', `/user/contact?deptCode=${params}`);
+  return managesvr('get', `/user/contact?deptCode=${params}&st=${getJobInfo()}`);
 };
 
 export const addContactList = params => {
