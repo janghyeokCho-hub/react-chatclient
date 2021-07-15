@@ -1,9 +1,10 @@
-import React, { useState, forwardRef, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, forwardRef, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { openPopup } from '@/lib/common';
 import { useNoteUnreadCount, deleteNote, useNoteList, getNoteList, useSearchState, SORT, useSortState } from '@/lib/note';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';
 import RightContextMenu from '@/components/common/popup/RightConxtMenu';
+import useWindowDimensions from '@/hooks/useWindowDimensions';
 
 const Arrow = forwardRef((props, ref) => <ArrowDownward {...props} ref={ref} />);
 function popupResult(dispatch, message) {
@@ -59,6 +60,19 @@ export default function Manager({ viewType }) {
     const [nameSort, setNameSort] = useState(SORT.DESC);
     const [dateSort, setDateSort] = useState(SORT.DESC);
     const [activeSort, setActiveSort] = useState(null);
+    const { width } = useWindowDimensions();
+    const windowViewType = useSelector(({ room }) => room.viewType);
+
+    const collapseInfo = useMemo(() => {
+        //창 크기 축소시 다국어 변경
+        if (windowViewType === 'M' && width < 1200) {
+            return true;
+        }
+        if (windowViewType === 'S' && width < 450) {
+            return true;
+        }
+        return false;
+    }, [width, windowViewType]);
 
     useEffect(() => {
         // 쪽지함 타입 or 검색어 바뀔경우 정렬상태 초기화
@@ -133,7 +147,7 @@ export default function Manager({ viewType }) {
     return (
         <div className="note_info">
             <p className="txt" style={{ display: 'inline-block' }}>
-                <strong className="count">({unreadNoteCnt})</strong>{covi.getDic('Msg_Note_Unread', '개의 읽지 않은 쪽지가 있습니다.')}
+                <strong className="count">({unreadNoteCnt})</strong>{collapseInfo ? covi.getDic('Msg_Note_Unread_Short', '읽지 않음') : covi.getDic('Msg_Note_Unread', '개의 읽지 않은 쪽지가 있습니다.')}
             </p>
             <div className="note_btn" style={{ display: 'inline-block', top: 'unset', transform: 'unset' }}>
                 <RightContextMenu menuId={menuId} menus={menus} holdToDisplay={0} renderTag='a' attributes={{ className: 'btn_sort' }}>
