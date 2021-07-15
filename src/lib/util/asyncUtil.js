@@ -9,43 +9,6 @@
  *
  *  @param {Promise} promise 
  */
-function cancelable(promise) {
-    let hasCancelled = false;
-
-    return {
-        promise: promise.then(v => {
-            if (hasCancelled) {
-                throw { isCancelled: true };
-            }
-            return v;
-        }),
-        cancel: () => hasCancelled = true
-    }
-};
-
-// 2020.12.28
-// Promise debounce
-// 구현 미완료
-function createTakeLatest(timeout = 100, leading = false) {
-    let cancelablePromise = null;
-    let cancelableTimer = null;
-
-    const cancel = () => {
-        clearTimeout(cancelableTimer);
-        cancelableTimer = null;
-    }
-
-    const takeLatest = promise => {
-        cancel();
-        cancelablePromise = cancelable(promise);
-        return cancelablePromise.promise;
-    };
-
-    return {
-        cancel,
-        takeLatest,
-    };
-};
 
 // 2020.12.28
 // Timer debounce
@@ -77,16 +40,57 @@ function createTakeLatestTimer(timeout = 100) {
     };
 }
 
-// 2020.12.28
-// Throttle promise
-// 구현 미완료
-function createThrottle(threshold) {
+/**
+ * 
+ * 2021.07.13
+ * debounce 구현 (2차)
+ * 
+ * debounce(func, timeout);
+ * debounce(func, timeout, { leading: true });
+ * 
+ * @param {Function} func 
+ * @param {Number} timeout 
+ * @param {*} options
+ * @returns {Function}
+ */
+function debounce(func, timeout = 100, {leading = false, throttle = false} = {}) {
+    let currentTimer = null;
+    
+    return () => {
+        const execImmediate = (leading || throttle) && !currentTimer;
 
+        if (currentTimer && !throttle) {
+            clearTimeout(currentTimer);
+            currentTimer = 0;
+        }
+
+        if(!currentTimer) {
+            currentTimer = setTimeout(() => {
+                !throttle && func(...arguments);
+                currentTimer = 0;
+            }, timeout);
+        }
+
+        execImmediate && func(...arguments);
+    }
+}
+
+/**
+ * 2021.07.13
+ * Throttle 구현
+ * 
+ * @param {Function} func 
+ * @param {Number} timeout 
+ * @returns {Function}
+ */
+function throttle(func, timeout) {
+    return debounce(func, timeout, { throttle: true });
 }
 
 export {
-    cancelable,
-    createTakeLatest,
-    createTakeLatestTimer,
-    createThrottle,
+    debounce,
+    throttle,
+    
+    // createTakeLatestTimer: 1차 구현된 debounce (legacy)
+    createTakeLatestTimer
 }
