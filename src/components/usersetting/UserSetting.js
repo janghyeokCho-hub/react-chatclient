@@ -718,13 +718,11 @@ const UserSetting = ({ history }) => {
                   </li>
                   <li className="ChatConfig-list">
                     <SelectBox
-                      items={[
-                        { name: `15${covi.getDic('Minute')}`, value: 900 },
-                        { name: `30${covi.getDic('Minute')}`, value: 1800 },
-                      ]}
+                      items={getConfig('awayTime')}
                       order={4}
                       defaultValue={idleTime}
                       onChange={item => {
+                        console.log(item)
                         handleUserConfig({ idleTime: parseInt(item.value) });
                         setIdleTime(item.value);
                       }}
