@@ -213,8 +213,7 @@ function _NoteItem({ note, viewType, history }) {
                     if (DEVICE_TYPE === 'd' && deviceViewType === 'M') {
                         return;
                     }
-                    _openNewNote(dispatch, viewType, note, { viewer: true, newWin: true });
-                    // openNote({ type: 'receive', viewType, noteId: note.noteId });
+                    openNote({ type: 'receive', viewType, noteId: note.noteId });
                 }}
             >
                 <a>
