@@ -29,7 +29,7 @@ export function getWinId(type, noteId) {
 export function openNoteWindow({ type, noteId, viewType, isEmergency = false }) {
     const winId = getWinId(type, noteId);
     const createdWin = NOTE_WIN_MAP[winId];
-    console.log(`Open Note type(${type}) => winId(${winId})`);
+    console.log(`Open Note type(${type}) viewType(${viewType}) => winId(${winId})`);
 
     // 이미 생성된 윈도우가 있을 경우 재생성하지 않음
     if (createdWin) {
