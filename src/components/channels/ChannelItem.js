@@ -358,10 +358,8 @@ const ChannelItem = ({
         </>
         {channel.openType != 'O' && <span className="private" />}
         <span className="name">
-          <span>
-            {channel.roomName == '' ? covi.getDic('NoTitle') : channel.roomName}
-          </span>
-          <span>{channel.categoryName ? `(${channel.categoryName})` : ''}</span>
+          {channel.roomName == '' ? covi.getDic('NoTitle') : channel.roomName}
+          {channel.categoryName ? `(${channel.categoryName})` : ''}
         </span>
         {isJoin ? (
           <>
