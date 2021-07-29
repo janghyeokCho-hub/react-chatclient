@@ -193,7 +193,7 @@ const ProfilePopup = ({ userInfo }) => {
               <dd>
                 {userInfo.phoneNumber}
                 {'  '}
-                {makeCall?.isUse && userInfo.phoneNumber.length > 0 && (
+                {makeCall?.isUse && userInfo?.phoneNumber?.length > 0 && (
                   <button
                     onClick={() => {
                       // make call
@@ -246,7 +246,7 @@ const ProfilePopup = ({ userInfo }) => {
               <dd>
                 {userInfo.companyNumber}
                 {'  '}
-                {makeCall?.isUse && userInfo.companyNumber.length > 0 && (
+                {makeCall?.isUse && userInfo?.companyNumber?.length > 0 && (
                   <button
                     onClick={() => {
                       // make call
@@ -295,12 +295,14 @@ const ProfilePopup = ({ userInfo }) => {
             </dl>
             <dl>
               <dt>{covi.getDic('Email')}</dt>
-              <dd>{userInfo.mailAddress}</dd>
+              <dd>
+                {userInfo.mailAddress == null ? '' : userInfo.mailAddress}
+              </dd>
             </dl>
             <dl>
               <dt>{covi.getDic('Work')}</dt>
               <dd>
-                <a>{userInfo.work}</a>
+                <a>{userInfo.work == null ? '' : userInfo.work}</a>
               </dd>
             </dl>
           </div>
