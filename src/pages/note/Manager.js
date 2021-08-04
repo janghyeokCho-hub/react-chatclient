@@ -16,7 +16,18 @@ function popupResult(dispatch, message) {
         dispatch
     );
 }
-
+function _popup(dispatch, type = 'Alert', message, cb) {
+    return new Promise((resolve) => {
+        openPopup(
+            {
+                type: 'Confirm',
+                message,
+                callback: resolve
+            },
+            dispatch
+        );
+    });
+}
 function SortButton({ active, text, direction, style }) {
     const defaultStyle = {
         transition: `opacity 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,transform 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms`,
@@ -131,6 +142,10 @@ export default function Manager({ viewType }) {
 
     async function deleteAllNotes() {
         try {
+            const result = await _popup(dispatch, 'Confirm', covi.getDic('Msg_Note_DeleteConfirm'));
+            if (result === false) {
+                return;
+            }
             const { data } = await deleteNote({ viewType, noteId: 'ALL' });
             if (data && data.status === 'SUCCESS') {
                 // 삭제 성공시 state 즉시 초기화
