@@ -119,9 +119,11 @@ export async function getNoteList(path, sortName, sort) {
 export function useNoteList({ viewType = 'receive' }) {
     const path = `/note/list/${viewType}`;
     const state = useSWR(path, null);
+    const searchState = useSWR('/note/list/tmp', null, { initialData: null });
 
     return {
         ...state,
+        data: searchState.data ? searchState.data : state.data,
         async search(searchText, sortName, sort) {
             const queryParams = {
                 value: (typeof searchText === 'string' && searchText.length) ? searchText : undefined,
@@ -136,8 +138,11 @@ export function useNoteList({ viewType = 'receive' }) {
                 }
             );
             if (result && result.data && result.data.status === 'SUCCESS') {
-                state.mutate(result.data.result, false);
+                searchState.mutate(result.data.result, false);
             }
+        },
+        clearSearchResult() {
+            searchState.mutate(null, false);
         },
         find(noteId) {
             return state.data?.find((note) => note.noteId === noteId);
