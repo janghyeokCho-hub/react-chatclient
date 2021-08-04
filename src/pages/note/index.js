@@ -20,7 +20,7 @@ const debounceTimer = createTakeLatestTimer(250);
 export default function NoteList() {
     const [viewType, setViewType] = useViewType('receive');
     const [searchText, setSearchText] = useSearchState('');
-    const { data: noteList, mutate: setNoteList, search, removeNote, readNote } = useNoteList({ viewType });
+    const { data: noteList, mutate: setNoteList, search, removeNote, readNote, clearSearchResult } = useNoteList({ viewType });
     const [_, setViewState] = useViewState();
     const dispatch = useDispatch();
     
@@ -60,6 +60,7 @@ export default function NoteList() {
     useEffect(() => {
         // 수신함/발신함/보관함 전환시 검색 초기화
         setSearchText('');
+        clearSearchResult();
         revalidateNote();
     }, [viewType]);
 
