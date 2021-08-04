@@ -46,6 +46,19 @@ function _popupResult(dispatch, message, cb) {
     );
 }
 
+function _popup(dispatch, type = 'Alert', message, cb) {
+    return new Promise((resolve) => {
+        openPopup(
+            {
+                type: 'Confirm',
+                message,
+                callback: resolve
+            },
+            dispatch
+        );
+    });
+}
+
 function _convertFileSize(fileSize) {
     if (typeof fileSize !== 'number' || fileSize <= 0) {
         return '0B';
@@ -268,26 +281,34 @@ export default function NoteView({ match }) {
     }, []);
 
     const handleDeleteNote = useCallback(async () => {
-        const { data } = await deleteNote({ viewType, noteId: noteInfo.noteId });
-        if (data && data.status === 'SUCCESS') {
-            if (isNewWin) {
-                // TODO - emit IPC :remove note
-                sendMain('sync-note', {
-                    viewType,
-                    op: 'delete',
-                    noteId: noteInfo.noteId
+        try {
+            const result = await _popup(dispatch, 'Confirm', covi.getDic('Msg_Note_DeleteConfirm'));
+            if (result === false) {
+                return;
+            }
+            const { data } = await deleteNote({ viewType, noteId: noteInfo.noteId });
+            if (data && data.status === 'SUCCESS') {
+                if (isNewWin) {
+                    // TODO - emit IPC :remove note
+                    sendMain('sync-note', {
+                        viewType,
+                        op: 'delete',
+                        noteId: noteInfo.noteId
+                    });
+                } else {
+                    removeNote(viewType, noteInfo.noteId);
+                }
+                _popupResult(dispatch, covi.getDic('Msg_Note_DeleteSuccess', '쪽지가 삭제되었습니다.'), () => {
+                    if (isNewWin) {
+                        window.close();
+                    } else {
+                        mutate(null, false);
+                    }
                 });
             } else {
-                removeNote(viewType, noteInfo.noteId);
+                throw new Error('Delete Note Failed with response: ', data);
             }
-            _popupResult(dispatch, covi.getDic('Msg_Note_DeleteSuccess', '쪽지가 삭제되었습니다.'), () => {
-                if (isNewWin) {
-                    window.close();
-                } else {
-                    mutate(null, false);
-                }
-            });
-        } else {
+        } catch (err) {
             _popupResult(dispatch, covi.getDic('Msg_Note_DeleteFail', '쪽지를 삭제하지 못했습니다. 다시 시도해 주세요'));
         }
     }, [noteInfo, viewType]);

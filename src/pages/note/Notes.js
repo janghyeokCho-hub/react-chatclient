@@ -23,6 +23,19 @@ function popupResult(dispatch, message) {
     );
 }
 
+function _popup(dispatch, type = 'Alert', message, cb) {
+    return new Promise((resolve) => {
+        openPopup(
+            {
+                type: 'Confirm',
+                message,
+                callback: resolve
+            },
+            dispatch
+        );
+    });
+}
+
 function _NoteItem({ note, viewType, history }) {
     const dispatch = useDispatch();
     const deviceViewType = useSelector(({ room }) => room.viewType);
@@ -127,8 +140,11 @@ function _NoteItem({ note, viewType, history }) {
                 code: 'deleteNote',
                 isline: false,
                 async onClick() {
-                    // todo
                     try {
+                        const result = await _popup(dispatch, 'Confirm', covi.getDic('Msg_Note_DeleteConfirm'));
+                        if (result === false) {
+                            return;
+                        }
                         const { data } = await deleteNote({ viewType, noteId: note.noteId });
                         if (data && data.status === 'SUCCESS') {
                             setNoteList((prevNoteList) => {
