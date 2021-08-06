@@ -87,18 +87,21 @@ function createAddContactsSaga(type) {
 
   return function* (action) {
     if (!action.payload) return;
-
     try {
       const response = yield call(contactApi.addContactList, action.payload);
       const success = response.data.status === 'SUCCESS';
       let message = null;
-
-      // 대화상대 성공 추가
-      if (success === true) {
-        message = covi.getDic("Msg_AddContacts_Success", "대화상대 추가에 성공했습니다.")
+  
+      const folderType = action?.payload?.[0]?.folderType || action?.payload?.folderType;
+      if (folderType === 'C') {
+        // 대화상대 추가
+        message = success ? covi.getDic("Msg_AddContacts_Success", "대화상대 추가에 성공했습니다.") : covi.getDic("Msg_AddContacts_Fail", "대화상대 추가에 실패했습니다.");
+      } else if (folderType === 'F') {
+        // 즐겨찾기 추가
+        message = success ? covi.getDic("Msg_AddFavorites_Success", "즐겨찾기 추가에 성공했습니다.") : covi.getDic("Msg_AddFavorites_Fail", "즐겨찾기 추가에 실패했습니다.");
       } else {
-        // 대화상대 추가 실패
-        message = covi.getDic("Msg_AddContacts_Fail", "대화상대 추가에 실패했습니다.<br />잠시 후에 다시 시도해주세요.");
+        // unknown 기본처리
+        message = success ? covi.getDic("Msg_AddContacts_Success") : covi.getDic("Msg_AddContacts_Fail");
       }
 
       yield put({
