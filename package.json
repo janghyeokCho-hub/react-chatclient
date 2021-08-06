@@ -1,6 +1,6 @@
 {
   "name": "eumtalk",
-  "version": "1.11.4",
+  "version": "1.11.5",
   "main": "build/electron/main.js",
   "appId": "com.covision.eumtalk",
   "browserslist": [
