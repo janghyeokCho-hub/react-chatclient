@@ -9,10 +9,10 @@ import logger from '../utils/logger';
 const rootPath = path.join(app.getPath('userData'), 'config');
 
 class SecureConfigLoader {
-  constructor(configPath, file) {
+  constructor(configPath, file, configData) {
     const fullPath = path.join(configPath, file);
 
-    this.config = {};
+    this.config = configData ? configData : {};
     this.AESUtil = getAesUtilForLocalSetting();
 
     if (!fs.existsSync(fullPath)) {
@@ -138,4 +138,22 @@ export const getSecureConfig = (file, configPath) => {
 
   const config = new SecureConfigLoader(makePath, file);
   return config;
+};
+
+export const getSecureConfigUsingExsistFile = async (file, configData) => {
+  if (!fs.existsSync(rootPath)) {
+    mkdirp.sync(rootPath);
+  }
+
+  const config = new SecureConfigLoader(rootPath, file, configData);
+
+  return config;
+};
+
+export const removeExistFile = file => {
+  const fullPath = rootPath + '/' + file;
+  fs.access(fullPath, fs.constants.F_OK, err => {
+    if (err) console.log(`${fullPath} cannot be access: ${err}`);
+    fs.unlink(fullPath, () => {});
+  });
 };
