@@ -120,7 +120,7 @@ export const notifyMessage = (payload, focusWin) => {
 
     if (isNoti) {
       if (exportProps.isWin) {
-        if (global.CUSTOM_ALARM) {
+        if (global?.CUSTOM_ALARM) {
           // custom toast 사용
           showCustomAlarm({
             title: title,

@@ -471,7 +471,7 @@ const createWindow = async (isLoading, domainInfo) => {
   // win.webContents.session.clearStorageData({ storages: ['localstorage'] });
   // logger.info('old storage data remove');
 
-  // CUSTOM_ALARM = APP_SETTING.get('customAlarm');
+  CUSTOM_ALARM = APP_SECURITY_SETTING.get('customAlarm');
 
   // win8 이하 버전은 강제로 customAlarm 세팅
   if (exportProps.platform === 'win32') {
