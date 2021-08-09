@@ -23,7 +23,11 @@ import * as notReadList from './utils/notReadList';
 import { getUpdater } from './utils/updater';
 import { setConfig } from './config/config';
 import { getConfig } from './config/configLoader';
-import { getSecureConfig } from './config/secureConfigLoader';
+import {
+  getSecureConfig,
+  getSecureConfigUsingExsistFile,
+  removeExistFile,
+} from './config/secureConfigLoader';
 import installExtension, { REDUX_DEVTOOLS } from 'electron-devtools-installer';
 import {
   clearCache,
@@ -107,6 +111,25 @@ const appReady = async () => {
   =================================================================================
   `;
   logger.info(showInfo);
+
+  // if app.setting.json 이나 server.setting.json 파일이 있다면 파일을 읽어서 eumsecure로 변환해서 저장
+  const appsetting = getConfig('app.setting.json');
+  const serversetting = getConfig('server.setting.json');
+
+  // eumsecure 생성
+  await getSecureConfigUsingExsistFile(
+    'app.setting.eumsecure',
+    appsetting.all(),
+  );
+
+  await getSecureConfigUsingExsistFile(
+    'server.setting.eumsecure',
+    serversetting.all(),
+  );
+
+  // 기존 데이터 삭제
+  removeExistFile('app.setting.json');
+  removeExistFile('server.setting.json');
 
   // 암호화 세팅 파일 생성 (또는 읽어 오기)
   APP_SECURITY_SETTING = getSecureConfig('app.setting.eumsecure');

@@ -11,7 +11,7 @@ const { _loginRequest } = require(`@/lib/${DEVICE_TYPE}/login`);
  */
 
 export const loginRequest = params => {
-  const url = params?.isAuto ? '/na/r/m/login' : '/na/m/login'
+  const url = params?.isAuto ? '/na/r/m/login' : '/na/m/login';
   delete params.isAuto;
   return _loginRequest('post', url, params, {
     /**
@@ -24,7 +24,7 @@ export const loginRequest = params => {
 };
 
 export const extLoginRequest = params => {
-  const url = params?.isAuto ? '/na/r/m/extlogin' : '/na/m/extlogin'
+  const url = params?.isAuto ? '/na/r/m/extlogin' : '/na/m/extlogin';
   delete params.isAuto;
   return _loginRequest('post', url, params, {
     // useMACAddress 비활성화시 useMACEncryption 사용 안함
