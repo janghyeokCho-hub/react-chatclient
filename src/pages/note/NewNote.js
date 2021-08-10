@@ -88,19 +88,23 @@ export default function NewNote({ match, location }) {
             return;
         }
         if (replyAll === true) {
-            // receivers 목록에 sender이 포함되어 있다면 중복 방지
-            const isSenderInReceivers = userInfo.receivers.some((receiver) => {
-                return (receiver.id === userInfo.sender.id) && (parseInt(receiver.jobKey) === parseInt(userInfo.sender.jobKey));
-            });
-            if (isSenderInReceivers === false) {
-                nextTargets.push(userInfo.sender);
-            }
-            nextTargets.push(...userInfo.receivers);
+            const tempTargets = [userInfo.sender, ...userInfo.receivers].filter((receiver, index, self) => {
+                return index === self.findIndex((r) => {
+                    /**
+                     * receiver.id === r.id
+                     * => 중복 제거
+                     * receiver.id !== myInfo?.id
+                     * => 자기자신 제외
+                     */
+                    return receiver.id === r.id && receiver.id !== myInfo?.id;
+                });
+            })
+            nextTargets.push(...tempTargets);
         } else {
             nextTargets.push(userInfo.sender);
         }
         setTargets(nextTargets);
-    }, [viewState]);
+    }, [viewState, myInfo]);
 
     const replyContext = useMemo(() => {
         if(viewState?.type === 'send' || !viewState?.noteInfo) {

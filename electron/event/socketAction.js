@@ -227,17 +227,16 @@ export const onNewChannelMessage = payload => {
 export const onNewNoteMessage = (payload) => {
   try {
     const title = common.getDictionary(payload.multiDisplayName);
-    const message = common.getDictionary('새 쪽지;New note;新笔记;新しいメモ');
+    const message = payload?.subject || common.getDictionary('새 쪽지;New note;新笔记;新しいメモ');
     const noteId = parseInt(payload.noteId);
     const isEmergency = payload.emergency === 'Y';
-
-    console.log('OnNewNoteMessage:  ', noteId, isEmergency);
 
     common.notifyNoteMessage({
       noteId,
       title,
       message,
-      isEmergency
+      isEmergency,
+      photoPath: payload?.photoPath
     });
   } catch (err) {
     console.log('onNewNoteMessage Err : ', err);
