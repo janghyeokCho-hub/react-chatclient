@@ -17,6 +17,8 @@ import { insert, remove } from '@/lib/util/storageUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import useOffset from '@/hooks/useOffset';
 
+const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
+
 const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
   const { id, makeInfo, viewType } = useSelector(({ login, room }) => ({
     id: login.id,
@@ -413,7 +415,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                     height: 'calc(100% - 70px)',
                     boxSizing: 'border-box',
                   }}
-                  autoHide={true}
+                  autoHide={autoHide}
                   onUpdate={handleUpdate}
                   className="AddnPersonlist"
                 >
