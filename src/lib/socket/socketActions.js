@@ -74,7 +74,6 @@ export const handleNewNoteMessage = (dispatch, userInfo, setNoteList) => {
   return data => {
     try {
       const json_data = JSON.parse(data);
-      console.log('Note Received   ', json_data);
 
       // Noti 알림 표기용 데이터
       const senderInfo = {
@@ -93,9 +92,9 @@ export const handleNewNoteMessage = (dispatch, userInfo, setNoteList) => {
           Notification.requestPermission();
           return;
         }
-        const notification = new Notification(covi.getDic('NewNoteMessage', '새 쪽지'), {
+        const notification = new Notification(`${covi.getDic('NewNoteMessage', '새 쪽지')} : ${getJobInfo(senderInfo)}`, {
           icon: '',
-          body: `${covi.getDic('NewNoteMessage', '새 쪽지')}: ${getJobInfo(senderInfo)}`
+          body: json_data?.subject || covi.getDic('NewNoteMessage')
         });
         setTimeout(notification.close.bind(notification), 2000);
       } else if (DEVICE_TYPE === 'd') {
