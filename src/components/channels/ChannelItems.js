@@ -17,6 +17,7 @@ const ChannelItems = ({
   isSearch,
 }) => {
   const selectId = useSelector(({ channel }) => channel.selectedId);
+  const joinedChannelList = useSelector(({ channel }) => channel.channels);
 
   const [isNotis, setIsNotis] = useState({});
   const RENDER_UNIT = 5;
@@ -102,15 +103,16 @@ const ChannelItems = ({
           !loading &&
           list((channel, _) => {
             const isSelect = channel.roomId === selectId;
+            const isJoined = joinedChannelList?.findIndex((chan) => chan.roomId === channel.roomId);
             return (
               <ChannelItem
                 key={channel.roomId}
                 channel={channel}
                 onChannelChange={onChannelChange}
-                dbClickEvent={isDoubleClick}
+                dbClickEvent={isJoined !== -1 && isDoubleClick}
                 isSelect={isSelect}
                 getMenuData={getMenuData}
-                isJoin={isSearch}
+                isJoin={isJoined === -1}
               />
             );
           })
