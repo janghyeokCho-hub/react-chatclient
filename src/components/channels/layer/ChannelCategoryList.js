@@ -174,9 +174,9 @@ const ChannelCategoryList = ({ headerName }) => {
               <ul className="people">
                 {itemList.map((item, index) => {
                   const channelIdx = channels.findIndex(
-                    c => c.roomId == item.roomId,
+                    c => c.roomId === item.roomId,
                   );
-                  if (channelIdx > -1) {
+                  if (channelIdx !== -1) {
                     item.isJoin = false;
                   } else {
                     item.isJoin = true;
@@ -188,9 +188,9 @@ const ChannelCategoryList = ({ headerName }) => {
                       channel={item}
                       onChannelChange={handleChannelChange}
                       dbClickEvent={false}
-                      isSelect={false}
+                      isSelect={channelIdx === -1}
                       getMenuData={() => {}}
-                      isJoin={true}
+                      isJoin={channelIdx === -1}
                       isCategory={true}
                     />
                   );
