@@ -27,6 +27,8 @@ import useOffset from '@/hooks/useOffset';
 
 const enabledExtUser = getConfig('EnabledExtUser', 'Y');
 const SMTPConfig = getConfig('SMTPConfig', 'Y');
+const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
+
 const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   const { id } = useSelector(({ login }) => ({
     id: login.id,
@@ -567,7 +569,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                 height: scrollHeight,
                 boxSizing: 'border-box',
               }}
-              autoHide={true}
+              autoHide={autoHide}
               onUpdate={handleUpdate}
               className="AddnPersonlist"
             >
