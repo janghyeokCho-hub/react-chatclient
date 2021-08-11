@@ -62,7 +62,7 @@
       },
       {
         "from": "./vncremote",
-        "to": "vncremote",
+        "to": "resources/vncremote",
         "filter":[
           "**/**"
         ]

@@ -43,7 +43,10 @@ import * as window from './utils/window';
 import {
   connectRemoteHost,
   connectRemoteViewer,
+  createRemoteVNC,
+  createRemoteVNCHost,
 } from './utils/remoteAssistanceUtil';
+
 import { openNoteWindow } from './utils/note';
 import axios from 'axios';
 
@@ -1156,4 +1159,12 @@ ipcMain.on('open-note-window', (event, args) => {
 ipcMain.on('req-get-remote-info', async (event, args) => {
   const ipAddr = await getPublicIPAddr();
   event.returnValue = ipAddr;
+});
+
+ipcMain.on('onVNCRemote', (event, args) => {
+  createRemoteVNC(args.hostAddr, args.callback);
+});
+
+ipcMain.on('onVNCRemoteHost', (event, args) => {
+  createRemoteVNCHost();
 });

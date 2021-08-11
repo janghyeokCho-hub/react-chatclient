@@ -206,23 +206,28 @@ const Notice = ({ type, value, title, func }) => {
           });
         };
       } else if (type == 'remotevnc') {
-        return () => {
-          const execSync = window.require('child_process').exec;
-          try {
-            const command = `cd vncremote && vncviewer.exe /IP ${data.hostAddr} /PASSWORD Covi@2020`;
-            console.log(command);
-            // const command = `java -jar /Users/ldh/Desktop/VncViewer.jar -Xmx 2048m HOST 10.10.31.89 PORT 5900 PASSWORD Covi@2020`;
-            execSync(command, { shell: true });
-          } catch (ex) {
-            openPopup(
-              {
-                type: 'Alert',
-                message: '원격 지원이 종료 되었습니다.',
+        return async () => {
+          evalConnector({
+            method: 'removeListener',
+            channel: 'onVNCRemote',
+          });
+
+          evalConnector({
+            method: 'send',
+            channel: 'onVNCRemote',
+            message: {
+              hostAddr: data.hostAddr,
+              callback: () => {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: '원격지원이 종료되었습니다.',
+                  },
+                  dispatch,
+                );
               },
-              dispatch,
-            );
-            console.log(ex);
-          }
+            },
+          });
         };
       } else if (type == 'saeha') {
         return () => {
