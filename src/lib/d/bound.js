@@ -73,12 +73,6 @@ export const getInitialBounds = (boundKey, defaultSize) => {
           targetScreen.workArea.y +
           (targetScreen.workArea.height / 2 - resizedHeight / 2);
 
-        // console.log(`target xy (${targetScreen.workArea.x}, ${targetScreen.workArea.y})`);
-        // console.log(`target wh (${targetScreen.workArea.width}, ${targetScreen.workArea.height})`);
-        // console.log(`resized xy (${resizedX}, ${resizedY})`)
-        // console.log(`window xy (${x}, ${y})`)
-        // console.log(`window wh ${width} ${height}`)
-
         const resized = {
           // x,y 범위가 화면 밖을 벗어나면: 해당 디스플레이의 (0,0) 좌표로 위치 이동
           x: resizedX >= 0 ? resizedX : targetScreen.workArea.x,

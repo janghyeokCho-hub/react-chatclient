@@ -218,6 +218,7 @@ const appReady = async () => {
                 type: 'A',
               });
               logger.info('[1] Exit program. update presence offline ');
+              APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
               console.log(response.data);
             }
           } catch (err) {
@@ -261,7 +262,9 @@ const appReady = async () => {
                     state: 'offline',
                     type: 'A',
                   });
+
                   logger.info('[2] Exit program. update presence offline ');
+                  APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
                   console.log(response.data);
                 }
               } catch (err) {
@@ -445,19 +448,20 @@ const createWindow = async (isLoading, domainInfo) => {
   //NOTE: electron-window-state 대체 검토 필요
   const bounds = getInitialBounds('latestAppBounds', defaultSize);
 
+  console.log(bounds);
+
   // Create the browser window.
   win = new BrowserWindow({
-    ...bounds,
     width: defaultSize.width,
     height: defaultSize.height,
     minWidth: defaultSize.width - defaultSize.offset.width.min,
     minHeight: defaultSize.height - defaultSize.offset.height.min,
-
     webPreferences: {
       nodeIntegration: true,
     },
     frame: false,
     show: false,
+    ...bounds,
   });
 
   protocol.registerHttpProtocol('eumtalk', (req, cb) => {
@@ -616,6 +620,7 @@ app.on('window-all-closed', async () => {
           type: 'A',
         });
         logger.info('[3] Exit program. update presence offline ');
+        APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
         console.log(response.data);
       }
     } catch (err) {
@@ -653,8 +658,7 @@ app.on(
 */
 
 app.on('before-quit', event => {
-  // alarmWin 제거
-  console.log('before-quit');
+  APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
   alarmWin = null;
 });
 
