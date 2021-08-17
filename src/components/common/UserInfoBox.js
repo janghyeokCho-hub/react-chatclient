@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import { openChatRoomView } from '@/lib/roomUtil';
@@ -15,60 +21,58 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
   const checkRef = useRef(null);
   const personEl = useRef(null);
   const nameEl = useRef(null);
-  const [picAreaWidth, setPicAreaWidth] = useState('calc(100% - 250px)')
+  const [picAreaWidth, setPicAreaWidth] = useState('calc(100% - 250px)');
   const [picMaxWidth, setPicMaxWidth] = useState(0);
   const dispatch = useDispatch();
   const { confirm } = useTyping();
 
   const info = isMine
-  ? { ...myInfo, absenceInfo: userInfo.absenceInfo }
-  : userInfo;
+    ? { ...myInfo, absenceInfo: userInfo.absenceInfo }
+    : userInfo;
 
-  useEffect(()=>{
+  useEffect(() => {
     const debounceTimer = createTakeLatestTimer(100);
 
     /* 여기서 길이계산 */
     const setPicWidth = e => {
-      const personWidth = personEl.current?.getBoundingClientRect()
-      const nameWidth = nameEl.current?.getBoundingClientRect()
-      const picWidth = personWidth ? personWidth.width - 30 - 52 - nameWidth?.width - 20 - 20 : 0;
+      const personWidth = personEl.current?.getBoundingClientRect();
+      const nameWidth = nameEl.current?.getBoundingClientRect();
+      const picWidth = personWidth
+        ? personWidth.width - 30 - 52 - nameWidth?.width - 20 - 20
+        : 0;
       //personEl - personEl 30(padding) - profileArea(42+10(marign)) - nameArea - picArea Padding(20) - 20(자체 여유 너비)
 
-      if(picWidth > picMaxWidth)
-        setPicAreaWidth(picWidth)
+      if (picWidth > picMaxWidth) setPicAreaWidth(picWidth);
     };
 
     window.addEventListener('resize', () => {
       debounceTimer.takeLatest(setPicWidth);
-    })
-    
+    });
+
     setPicWidth();
 
     return () => {
       window.removeEventListener('resize', setPicWidth);
     };
-  },[])
+  }, []);
 
-  const getDeptName = useCallback(
-    ()=>{
-      let jobjParsedDept = '';
-      try {
-        jobjParsedDept = JSON.parse(info.dept);
-      }catch(e){
-        return getDictionary(info.dept);
-      };
-      if(Array.isArray(jobjParsedDept)){        
-        let arrDeptDics = [];
-        jobjParsedDept.forEach((item) => {
-          if(item == null) return false;
-          arrDeptDics.push(getDictionary(item));
-        });
-        return arrDeptDics.join("/");
-      }
+  const getDeptName = useCallback(() => {
+    let jobjParsedDept = '';
+    try {
+      jobjParsedDept = JSON.parse(info.dept);
+    } catch (e) {
       return getDictionary(info.dept);
-    },
-    [userInfo, myInfo, isMine]
-  );
+    }
+    if (Array.isArray(jobjParsedDept)) {
+      let arrDeptDics = [];
+      jobjParsedDept.forEach(item => {
+        if (item == null) return false;
+        arrDeptDics.push(getDictionary(item));
+      });
+      return arrDeptDics.join('/');
+    }
+    return getDictionary(info.dept);
+  }, [userInfo, myInfo, isMine]);
 
   // 대화목록에서 상대 클릭시 이벤트 처리
   const handleClick = useCallback(
@@ -82,7 +86,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
             selectId,
             userInfo,
             myInfo,
-            isDoubleClick
+            isDoubleClick,
           ];
           // 2020.12.22
           // input값 남아있을때 경고창 출력
@@ -110,13 +114,12 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
 
   const drawUserInfoBox = useMemo(() => {
     const type = userInfo.type;
-
     if (type == 'G') {
       return (
         <a>
           <div className="profile-photo group"></div>
           <span className="name">{getDictionary(info.name)}</span>
-          {info.dept&&<span className="team">{getDeptName()}</span>}
+          {info.dept && <span className="team">{getDeptName()}</span>}
         </a>
       );
     } else {
@@ -132,17 +135,34 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
               }
             }
 
-            return (
-              <span className="absence">
-                <span>{covi.getDic(`Ab_${absenceInfo.code}`)}</span>
-                <span>
-                  {`${format(absenceInfo.startDate, `MM. dd`)} ~ ${format(
-                    absenceInfo.endDate,
-                    `MM. dd`,
-                  )}`}
+            if (absenceInfo.code != null) {
+              return (
+                <span className="absence">
+                  <span>{covi.getDic(`Ab_${absenceInfo.code}`)}</span>
+                  <span>
+                    {`${format(absenceInfo.startDate, `MM. dd`)} ~ ${format(
+                      absenceInfo.endDate,
+                      `MM. dd`,
+                    )}`}
+                  </span>
                 </span>
-              </span>
-            );
+              );
+            } else if (info.work) {
+              return (
+                <span
+                  className="pic"
+                  title={info.work}
+                  style={{
+                    maxWidth: picAreaWidth,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {info.work}
+                </span>
+              );
+            }
           } else if (info.work) {
             return (
               <span
@@ -173,25 +193,28 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
             img={info.photoPath}
             isInherit={isInherit}
           />
-          <span ref={nameEl} className="name" title={getJobInfo(info)} >{getJobInfo(info)}</span>
+          <span ref={nameEl} className="name" title={getJobInfo(info)}>
+            {getJobInfo(info)}
+          </span>
           {info.channelAuth && info.channelAuth === 'Y' && (
             <span className="admintag">{covi.getDic('Admin')}</span>
           )}
           {info.isMobile === 'Y' && <span className="mobileico ml5"></span>}
           <span className="team">{getDeptName()}</span>
-          {!checkObj && isClick && getAdditionalInfoBox(info)}
+          {/* {!checkObj && isClick && getAdditionalInfoBox(info)} */}
+          {getAdditionalInfoBox(info)}
         </a>
       );
     }
   }, [userInfo, myInfo, isMine, picAreaWidth]);
 
   const checkedValue = useMemo(() => {
-    if(typeof checkObj === 'undefined') {
+    if (typeof checkObj === 'undefined') {
       return;
     }
     // userInfo[checkedKey] 값이 비어있으면 checkedSubKey 참조
-    if(typeof checkObj.checkedSubKey !== 'undefined') {
-      return userInfo[checkObj.checkedKey] || userInfo[checkObj.checkedSubKey];  
+    if (typeof checkObj.checkedSubKey !== 'undefined') {
+      return userInfo[checkObj.checkedKey] || userInfo[checkObj.checkedSubKey];
     }
     return userInfo[checkObj.checkedKey];
   }, [userInfo, checkObj]);
@@ -199,7 +222,10 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
   return (
     <li
       ref={personEl}
-      className={['person', info.type == 'G' && info.dept == '' ?'group' : '' ].join(' ')}
+      className={[
+        'person',
+        info.type == 'G' && info.dept == '' ? 'group' : '',
+      ].join(' ')}
       onClick={() => handleClick(false)}
       onDoubleClick={() => handleClick(true)}
     >
@@ -229,7 +255,9 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
               }
               checked={
                 checkObj.checkedList.find(
-                  item => (item[checkObj.checkedKey] || item[checkObj.checkedSubKey]) === checkedValue
+                  item =>
+                    (item[checkObj.checkedKey] ||
+                      item[checkObj.checkedSubKey]) === checkedValue,
                 ) !== undefined
               }
             />

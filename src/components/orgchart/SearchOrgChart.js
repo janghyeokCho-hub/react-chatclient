@@ -3,7 +3,13 @@ import { useSelector } from 'react-redux';
 import UserInfoBox from '@COMMON/UserInfoBox';
 import OrgChartItem from '@C/orgchart/OrgChartItem';
 
-const SearchOrgChart = ({ viewType, checkObj, searchData, handleGroup, offset }) => {
+const SearchOrgChart = ({
+  viewType,
+  checkObj,
+  searchData,
+  handleGroup,
+  offset,
+}) => {
   const userID = useSelector(({ login }) => login.id);
   const handleClick = (groupCode, companyCode) => {
     if (handleGroup) handleGroup(groupCode, companyCode);
@@ -54,15 +60,11 @@ const SearchOrgChart = ({ viewType, checkObj, searchData, handleGroup, offset })
             );
           }
         })}
-      {
-        !searchData.length && (
-          <li className="person">
-            <a>
-              {"결과 없음"}
-            </a>
-          </li>
-        )
-      }
+      {!searchData.length && (
+        <li className="person">
+          <a>{'결과 없음'}</a>
+        </li>
+      )}
     </ul>
   );
 };
