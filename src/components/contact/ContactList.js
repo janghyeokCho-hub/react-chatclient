@@ -27,7 +27,10 @@ const ContactList = ({ viewType, checkObj }) => {
 
   const RENDER_INIT = Math.ceil(window.innerHeight / 60);
   const RENDER_UNIT = 10;
-  const { renderOffset, isDone, nextStep, handleScrollUpdate } = useOffset(searchResult, { renderPerBatch : RENDER_UNIT });
+  const { renderOffset, isDone, nextStep, handleScrollUpdate } = useOffset(
+    searchResult,
+    { renderPerBatch: RENDER_UNIT },
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -52,7 +55,7 @@ const ContactList = ({ viewType, checkObj }) => {
                 dispatch,
               );
             },
-            svg: <AddUserIcon />
+            svg: <AddUserIcon />,
           },
           {
             code: 'startChat',
@@ -70,7 +73,7 @@ const ContactList = ({ viewType, checkObj }) => {
                 dispatch,
               );
             },
-            svg: <AddChatIcon />
+            svg: <AddChatIcon />,
           },
         ]),
       );
@@ -110,7 +113,7 @@ const ContactList = ({ viewType, checkObj }) => {
   );
 
   const handleUpdate = handleScrollUpdate({
-    threshold: 0.85
+    threshold: 0.85,
   });
 
   /*
@@ -137,8 +140,8 @@ const ContactList = ({ viewType, checkObj }) => {
           viewType={type}
           checkObj={checkObj}
           searchData={searchResult}
-          offset = {{
-            renderOffset
+          offset={{
+            renderOffset,
           }}
         />
       </Scrollbars>
