@@ -50,6 +50,7 @@ const MessagePostBox = forwardRef(
       isUse: false,
       remoteType: '',
       openTarget: [],
+      hostOptions: '',
     });
     const useCapture = getConfig('UseCapture', 'N');
 
@@ -445,6 +446,9 @@ const MessagePostBox = forwardRef(
                 evalConnector({
                   method: 'send',
                   channel: 'onVNCRemoteHost',
+                  message: {
+                    options: useRemoteVNC.hostOptions,
+                  },
                 });
               },
             });
