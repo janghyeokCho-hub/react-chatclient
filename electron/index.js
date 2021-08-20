@@ -1170,5 +1170,5 @@ ipcMain.on('onVNCRemote', (event, args) => {
 });
 
 ipcMain.on('onVNCRemoteHost', (event, args) => {
-  createRemoteVNCHost();
+  createRemoteVNCHost(args.options);
 });
