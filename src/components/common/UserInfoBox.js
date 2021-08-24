@@ -138,7 +138,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
             if (absenceInfo.code != null) {
               return (
                 <span className="absence">
-                  <span>{covi.getDic(`Ab_${absenceInfo.code}`)}</span>
+                  <span>{covi.getDic(`Ab_${absenceInfo.code}`, absenceInfo.code)}</span>
                   <span>
                     {`${format(absenceInfo.startDate, `MM. dd`)} ~ ${format(
                       absenceInfo.endDate,

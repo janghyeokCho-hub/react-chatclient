@@ -47,7 +47,7 @@ const ProfilePopup = ({ userInfo }) => {
 
       return (
         <>
-          <span className="team">{covi.getDic(`Ab_${absenceInfo.code}`)}</span>
+          <span className="team">{covi.getDic(`Ab_${absenceInfo.code}`, absenceInfo.code)}</span>
           <span className="team">{`${format(
             absenceInfo.startDate,
             `MM. dd`,
@@ -115,7 +115,7 @@ const ProfilePopup = ({ userInfo }) => {
     >
       <div className="innerbox">
         <div className="profileheader">
-          <a onClick={handleClose} className="closebtn"></a>
+          <a onClick={handleClose} className="closebtn" style={{ position: 'fixed' }}></a>
           <a
             onClick={handleFavorit}
             className={['favoritebtn', isFavorite == 'Y' && 'active'].join(' ')}
