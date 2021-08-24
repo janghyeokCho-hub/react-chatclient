@@ -309,62 +309,71 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
           </a>
         )}
       </div>
-      {!isMakeRoom && (
-        <>
-          <div className="MenuList">
-            <ul>
-              {DEVICE_TYPE != 'b' && (
-                <li className="divideline">
-                  <a onClick={handleAlarm}>
-                    <span className="c_menu_ico c_menu_ico_01"></span>
-                    <span>{covi.getDic('Notification')}</span>
-                    <span className="colortxt-point control-loc-right">
-                      {(isNoti && covi.getDic('On')) || covi.getDic('Off')}
-                    </span>
-                  </a>
-                </li>
-              )}
-              {roomInfo && roomInfo.roomType == 'G' && (
-                <li className="divideline">
-                  <a onClick={handleModifyRoomName}>
-                    <span className="c_menu_ico c_menu_ico_06"></span>
-                    <span>{covi.getDic('ChangeRoomName')}</span>
-                  </a>
-                </li>
-              )}
-              {roomInfo && roomInfo.roomType != 'A' && (
-                <>
-                  <li>
-                    <a onClick={handlePhotoSummary}>
-                      <span className="c_menu_ico c_menu_ico_02"></span>
-                      {covi.getDic('PhotoSummary')}
-                    </a>
-                  </li>
+      <Scrollbars
+        style={{
+          height: 'calc(100% - 46px)',
+          boxSizing: 'border-box',
+        }}
+        autoHide={autoHide}
+        onUpdate={handleUpdate}
+        className="AddnPersonlist"
+      >
+        {!isMakeRoom && (
+          <>
+            <div className="MenuList">
+              <ul>
+                {DEVICE_TYPE != 'b' && (
                   <li className="divideline">
-                    <a onClick={handleFileSummary}>
-                      <span className="c_menu_ico c_menu_ico_03"></span>
-                      {covi.getDic('FileSummary')}
+                    <a onClick={handleAlarm}>
+                      <span className="c_menu_ico c_menu_ico_01"></span>
+                      <span>{covi.getDic('Notification')}</span>
+                      <span className="colortxt-point control-loc-right">
+                        {(isNoti && covi.getDic('On')) || covi.getDic('Off')}
+                      </span>
                     </a>
                   </li>
-                  {getConfig('UseMsgExport', false) && (
+                )}
+                {roomInfo && roomInfo.roomType == 'G' && (
+                  <li className="divideline">
+                    <a onClick={handleModifyRoomName}>
+                      <span className="c_menu_ico c_menu_ico_06"></span>
+                      <span>{covi.getDic('ChangeRoomName')}</span>
+                    </a>
+                  </li>
+                )}
+                {roomInfo && roomInfo.roomType != 'A' && (
+                  <>
                     <li>
-                      <a onClick={handleSaveChat}>
-                        <span className="c_menu_ico c_menu_ico_04"></span>
-                        {covi.getDic('SaveChat')}
+                      <a onClick={handlePhotoSummary}>
+                        <span className="c_menu_ico c_menu_ico_02"></span>
+                        {covi.getDic('PhotoSummary')}
                       </a>
                     </li>
-                  )}
-                </>
-              )}
-              {/*<li className="divideline">
+                    <li className="divideline">
+                      <a onClick={handleFileSummary}>
+                        <span className="c_menu_ico c_menu_ico_03"></span>
+                        {covi.getDic('FileSummary')}
+                      </a>
+                    </li>
+                    {getConfig('UseMsgExport', false) && (
+                      <li>
+                        <a onClick={handleSaveChat}>
+                          <span className="c_menu_ico c_menu_ico_04"></span>
+                          {covi.getDic('SaveChat')}
+                        </a>
+                      </li>
+                    )}
+                  </>
+                )}
+                {/*<li className="divideline">
                 <a onClick={handleDeleteChat}>
                   <span className="c_menu_ico c_menu_ico_05"></span>대화내용
                   삭제
                 </a>
               </li>*/}
 
-              {/*개발되면 오픈 필요*/}
-              {/*DEVICE_TYPE != 'b' &&
+                {/*개발되면 오픈 필요*/}
+                {/*DEVICE_TYPE != 'b' &&
                 roomInfo &&
                 roomInfo.roomType == 'A' && (
                   <li className="divideline">
@@ -377,48 +386,31 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                     </a>
                   </li>
                 )*/}
-            </ul>
-          </div>
-        </>
-      )}
-      {roomInfo && roomInfo.roomType != 'A' && roomInfo.members && (
-        <div
-          className="AddnPersonlist"
-          style={{
-            height: !isMakeRoom
-              ? DEVICE_TYPE == 'd'
-                ? 'calc(100% - 400px)'
-                : 'calc(100% - 356px)'
-              : 'calc(100% - 130px)',
-          }}
-        >
-          <span className="titletype01 mb10">
-            {covi.getDic('ChatMembers')}
-            <span className="colortxt-point ml5">
-              {roomInfo.members.length}
+              </ul>
+            </div>
+          </>
+        )}
+        {roomInfo && roomInfo.roomType != 'A' && roomInfo.members && (
+          <div
+            className="AddnPersonlist"
+          >
+            <span className="titletype01 mb10">
+              {covi.getDic('ChatMembers')}
+              <span className="colortxt-point ml5">
+                {roomInfo.members.length}
+              </span>
             </span>
-          </span>
-          <div className="InviteUser" style={{ height: '100%' }}>
-            {roomInfo && (
-              <>
-                {isExtUser !== 'Y' && (
-                  <a onClick={isMakeRoom ? handleCreateInvite : handleInvite}>
-                    <div className="AddBoxIco mr15"></div>
-                    <span className="Addusertxt">
-                      {covi.getDic('AddChatMembers')}
-                    </span>
-                  </a>
-                )}
-
-                <Scrollbars
-                  style={{
-                    height: 'calc(100% - 70px)',
-                    boxSizing: 'border-box',
-                  }}
-                  autoHide={autoHide}
-                  onUpdate={handleUpdate}
-                  className="AddnPersonlist"
-                >
+            <div className="InviteUser" style={{ height: '100%' }}>
+              {roomInfo && (
+                <>
+                  {isExtUser !== 'Y' && (
+                    <a onClick={isMakeRoom ? handleCreateInvite : handleInvite}>
+                      <div className="AddBoxIco mr15"></div>
+                      <span className="Addusertxt">
+                        {covi.getDic('AddChatMembers')}
+                      </span>
+                    </a>
+                  )}
                   <ul className="people">
                     {
                       roomInfo.members && (
@@ -436,52 +428,52 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                       )
                     }
                   </ul>
-                </Scrollbars>
-              </>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="BottomContent" style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <a
+              className="ico_chatout"
+              onClick={isMakeRoom ? handleCreateLeaveRoom : handleLeaveRoom}
+              alt={covi.getDic('LeaveChat')}
+              title={covi.getDic('LeaveChat')}
+            ></a>
+            {DEVICE_TYPE == 'd' && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  width: '18px',
+                  height: '18px',
+                  zIndex: '10',
+                  top: '50%',
+                  transform: 'translate(0px, -50%)',
+                }}
+              >
+                <ColorBox
+                  items={covi.config.ClientBackgroundList}
+                  defaultColor={
+                    roomInfo.background
+                      ? roomInfo.background.replace('#', '')
+                      : null
+                  }
+                  onChange={item => {
+                    // db에 저장 필요
+                    (item && handleBackground(item.value)) ||
+                      handleBackground(null);
+                  }}
+                  empty={true}
+                  horizontal={true}
+                ></ColorBox>
+              </div>
             )}
           </div>
         </div>
-      )}
-
-      <div className="BottomContent">
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <a
-            className="ico_chatout"
-            onClick={isMakeRoom ? handleCreateLeaveRoom : handleLeaveRoom}
-            alt={covi.getDic('LeaveChat')}
-            title={covi.getDic('LeaveChat')}
-          ></a>
-          {DEVICE_TYPE == 'd' && (
-            <div
-              style={{
-                position: 'absolute',
-                right: '10px',
-                width: '18px',
-                height: '18px',
-                zIndex: '10',
-                top: '50%',
-                transform: 'translate(0px, -50%)',
-              }}
-            >
-              <ColorBox
-                items={covi.config.ClientBackgroundList}
-                defaultColor={
-                  roomInfo.background
-                    ? roomInfo.background.replace('#', '')
-                    : null
-                }
-                onChange={item => {
-                  // db에 저장 필요
-                  (item && handleBackground(item.value)) ||
-                    handleBackground(null);
-                }}
-                empty={true}
-                horizontal={true}
-              ></ColorBox>
-            </div>
-          )}
-        </div>
-      </div>
+      </Scrollbars>
     </div>
   );
 };

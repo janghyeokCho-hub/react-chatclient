@@ -374,16 +374,6 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
     threshold: 0.9
   });
 
-  /* 
-    채널권한 존재시
-    - 외부사용자초대, 대화상대추가 버튼에 따른 높이조정
-   */
-  const scrollHeight = useMemo(()=>{
-    let useInviteExtUser = enabledExtUser === 'Y' && SMTPConfig === 'Y';
-    let addLayoutHeight = channelAuth ? (useInviteExtUser ? 180 : 120) : 70;
-    return 'calc(100% - ' + String(addLayoutHeight) + 'px)'
-  }, [channelAuth, enabledExtUser, SMTPConfig])
-
   return (
     <div className="innerbox">
       <div className="modalheader">
@@ -422,157 +412,140 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
           </a>
         )}
       </div>
-      <div className="MenuList">
-        <ul>
-          {DEVICE_TYPE != 'b' && (
-            <li className="divideline">
-              <a onClick={handleAlarm}>
-                <span className="c_menu_ico c_menu_ico_01"></span>
-                <span>{covi.getDic('Notification')}</span>
-                <span className="colortxt-point control-loc-right">
-                  {(isNoti && covi.getDic('On')) || covi.getDic('Off')}
-                </span>
-              </a>
-            </li>
-          )}
-          <li className="divideline">
-            <a
-              onClick={() => {
-                openPopup(
-                  {
-                    type: 'ChannelInfo',
-                  },
-                  dispatch,
-                );
-              }}
-            >
-              <span className="c_menu_ico c_menu_ico_06"></span>
-              <span>{covi.getDic('ShowChannelInfo')}</span>
-            </a>
-          </li>
-          {channelInfo && channelAuth && (
+      <Scrollbars
+        style={{
+          height: 'calc(100% - 46px)',
+          boxSizing: 'border-box',
+        }}
+        autoHide={autoHide}
+        onUpdate={handleUpdate}
+        className="AddnPersonlist"
+      >
+        <div className="MenuList">
+          <ul>
+            {DEVICE_TYPE != 'b' && (
+              <li className="divideline">
+                <a onClick={handleAlarm}>
+                  <span className="c_menu_ico c_menu_ico_01"></span>
+                  <span>{covi.getDic('Notification')}</span>
+                  <span className="colortxt-point control-loc-right">
+                    {(isNoti && covi.getDic('On')) || covi.getDic('Off')}
+                  </span>
+                </a>
+              </li>
+            )}
             <li className="divideline">
               <a
                 onClick={() => {
                   openPopup(
                     {
-                      type: 'ChannelInfoModify',
+                      type: 'ChannelInfo',
                     },
                     dispatch,
                   );
                 }}
               >
                 <span className="c_menu_ico c_menu_ico_06"></span>
-                <span>{covi.getDic('ModChannelInfo')}</span>
+                <span>{covi.getDic('ShowChannelInfo')}</span>
               </a>
             </li>
-          )}
-          <li>
-            <a onClick={handlePhotoSummary}>
-              <span className="c_menu_ico c_menu_ico_02"></span>
-              {covi.getDic('PhotoSummary')}
-            </a>
-          </li>
-          <li className="divideline">
-            <a onClick={handleFileSummary}>
-              <span className="c_menu_ico c_menu_ico_03"></span>
-              {covi.getDic('FileSummary')}
-            </a>
-          </li>
-          {getConfig('UseMsgExport', false) && (
+            {channelInfo && channelAuth && (
+              <li className="divideline">
+                <a
+                  onClick={() => {
+                    openPopup(
+                      {
+                        type: 'ChannelInfoModify',
+                      },
+                      dispatch,
+                    );
+                  }}
+                >
+                  <span className="c_menu_ico c_menu_ico_06"></span>
+                  <span>{covi.getDic('ModChannelInfo')}</span>
+                </a>
+              </li>
+            )}
             <li>
-              <a onClick={handleSaveChat}>
-                <span className="c_menu_ico c_menu_ico_04"></span>
-                {covi.getDic('SaveChat')}
+              <a onClick={handlePhotoSummary}>
+                <span className="c_menu_ico c_menu_ico_02"></span>
+                {covi.getDic('PhotoSummary')}
               </a>
             </li>
-          )}
-          {/*<li className="divideline">
+            <li className="divideline">
+              <a onClick={handleFileSummary}>
+                <span className="c_menu_ico c_menu_ico_03"></span>
+                {covi.getDic('FileSummary')}
+              </a>
+            </li>
+            {getConfig('UseMsgExport', false) && (
+              <li>
+                <a onClick={handleSaveChat}>
+                  <span className="c_menu_ico c_menu_ico_04"></span>
+                  {covi.getDic('SaveChat')}
+                </a>
+              </li>
+            )}
+            {/*<li className="divideline">
                 <a onClick={handleDeleteChat}>
                   <span className="c_menu_ico c_menu_ico_05"></span>대화내용
                   삭제
                 </a>
               </li>*/}
-        </ul>
-      </div>
-      {channelInfo && channelInfo.members && (
-        <div
-          className="AddnPersonlist"
-          style={{
-            // height: '100%'
-            height:
-              DEVICE_TYPE == 'd'
-                ? channelAuth
-                  ? 'calc(100% - 400px)'
-                  : 'calc(100% - 350px)'
-                : channelAuth
-                  ? 'calc(100% - 350px)'
-                  : 'calc(100% - 300px)',
-
-            // ? channelAuth
-            //   ? 'calc(100% - 460px)'
-            //   : 'calc(100% - 420px)'
-            // : channelAuth
-            // ? 'calc(100% - 405px)'
-            // : 'calc(100% - 385px)',
-          }}
-        >
-          <span className="titletype01 mb10">
-            {covi.getDic('ChatMembers')}
-            <span className="colortxt-point ml5">
-              {channelInfo.members.length}
+          </ul>
+        </div>
+        {channelInfo && channelInfo.members && (
+          <div
+            className="AddnPersonlist"
+          >
+            <span className="titletype01 mb10">
+              {covi.getDic('ChatMembers')}
+              <span className="colortxt-point ml5">
+                {channelInfo.members.length}
+              </span>
             </span>
-          </span>
-          <div className="InviteUser" style={{ height: '100%' }}>
-            {channelAuth && (
-              <>
-                <a onClick={handleInvite}>
-                  <div className="AddBoxIco mr15"></div>
-                  <span className="Addusertxt">
-                    {covi.getDic('AddChatMembers')}
-                  </span>
-                </a>
-                {enabledExtUser === 'Y' && SMTPConfig === 'Y' && (
-                  <a onClick={handleExtUsrInvite}>
-                    <div className="Extuserbox mr15">
-                      <div className="ExtuserImg">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="25.083"
-                          height="25.071"
-                          viewBox="0 0 25.083 25.071"
-                        >
-                          <g transform="translate(-3.375 -3.375)">
-                            <path
-                              d="M17.357,22.416l-.072.006a1,1,0,0,0-.579.271l-3.893,3.893a4.389,4.389,0,0,1-6.207-6.207l4.134-4.134a4.363,4.363,0,0,1,.687-.56,4.43,4.43,0,0,1,.892-.452,4.22,4.22,0,0,1,.9-.223,4.273,4.273,0,0,1,.615-.042c.084,0,.169.006.277.012a4.377,4.377,0,0,1,2.82,1.266,4.321,4.321,0,0,1,1.031,1.645.949.949,0,0,0,1.163.609c.006,0,.012-.006.018-.006s.012,0,.012-.006a.941.941,0,0,0,.633-1.151,5.461,5.461,0,0,0-1.483-2.471A6.344,6.344,0,0,0,14.838,13.1c-.115-.018-.229-.036-.344-.048a6.22,6.22,0,0,0-.669-.036c-.157,0-.313.006-.464.018a6.078,6.078,0,0,0-.976.151c-.066.012-.127.03-.193.048a6.269,6.269,0,0,0-1.175.44,6.191,6.191,0,0,0-1.669,1.2L5.213,19.005A6.357,6.357,0,0,0,3.375,23.5a6.337,6.337,0,0,0,10.812,4.478l3.935-3.935A.954.954,0,0,0,17.357,22.416Z"
-                              transform="translate(0 -1.377)"
-                              fill="#999"
-                            />
-                            <path
-                              d="M28.038,5.225a6.351,6.351,0,0,0-8.962,0L15.237,9.064a.969.969,0,0,0,.609,1.651.979.979,0,0,0,.765-.277l3.845-3.833a4.389,4.389,0,0,1,6.207,6.207l-4.134,4.134a4.363,4.363,0,0,1-.687.56,4.43,4.43,0,0,1-.892.452,4.22,4.22,0,0,1-.9.223,4.273,4.273,0,0,1-.615.042c-.084,0-.175-.006-.277-.012a4.331,4.331,0,0,1-3.809-2.8.963.963,0,0,0-1.151-.591.974.974,0,0,0-.681,1.235,5.505,5.505,0,0,0,1.428,2.26h0l.012.012a6.345,6.345,0,0,0,3.815,1.814,6.219,6.219,0,0,0,.669.036q.235,0,.47-.018a6.89,6.89,0,0,0,1.163-.193,6.269,6.269,0,0,0,1.175-.44,6.191,6.191,0,0,0,1.669-1.2l4.134-4.134a6.344,6.344,0,0,0-.012-8.968Z"
-                              transform="translate(-1.442)"
-                              fill="#999"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                    </div>
+            <div className="InviteUser" style={{ height: '100%' }}>
+              {channelAuth && (
+                <>
+                  <a onClick={handleInvite}>
+                    <div className="AddBoxIco mr15"></div>
                     <span className="Addusertxt">
-                      {covi.getDic('InviteExUser')}
+                      {covi.getDic('AddChatMembers')}
                     </span>
                   </a>
-                )}
-              </>
-            )}
-            <Scrollbars
-              style={{
-                height: scrollHeight,
-                boxSizing: 'border-box',
-              }}
-              autoHide={autoHide}
-              onUpdate={handleUpdate}
-              className="AddnPersonlist"
-            >
+                  {enabledExtUser === 'Y' && SMTPConfig === 'Y' && (
+                    <a onClick={handleExtUsrInvite}>
+                      <div className="Extuserbox mr15">
+                        <div className="ExtuserImg">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="25.083"
+                            height="25.071"
+                            viewBox="0 0 25.083 25.071"
+                          >
+                            <g transform="translate(-3.375 -3.375)">
+                              <path
+                                d="M17.357,22.416l-.072.006a1,1,0,0,0-.579.271l-3.893,3.893a4.389,4.389,0,0,1-6.207-6.207l4.134-4.134a4.363,4.363,0,0,1,.687-.56,4.43,4.43,0,0,1,.892-.452,4.22,4.22,0,0,1,.9-.223,4.273,4.273,0,0,1,.615-.042c.084,0,.169.006.277.012a4.377,4.377,0,0,1,2.82,1.266,4.321,4.321,0,0,1,1.031,1.645.949.949,0,0,0,1.163.609c.006,0,.012-.006.018-.006s.012,0,.012-.006a.941.941,0,0,0,.633-1.151,5.461,5.461,0,0,0-1.483-2.471A6.344,6.344,0,0,0,14.838,13.1c-.115-.018-.229-.036-.344-.048a6.22,6.22,0,0,0-.669-.036c-.157,0-.313.006-.464.018a6.078,6.078,0,0,0-.976.151c-.066.012-.127.03-.193.048a6.269,6.269,0,0,0-1.175.44,6.191,6.191,0,0,0-1.669,1.2L5.213,19.005A6.357,6.357,0,0,0,3.375,23.5a6.337,6.337,0,0,0,10.812,4.478l3.935-3.935A.954.954,0,0,0,17.357,22.416Z"
+                                transform="translate(0 -1.377)"
+                                fill="#999"
+                              />
+                              <path
+                                d="M28.038,5.225a6.351,6.351,0,0,0-8.962,0L15.237,9.064a.969.969,0,0,0,.609,1.651.979.979,0,0,0,.765-.277l3.845-3.833a4.389,4.389,0,0,1,6.207,6.207l-4.134,4.134a4.363,4.363,0,0,1-.687.56,4.43,4.43,0,0,1-.892.452,4.22,4.22,0,0,1-.9.223,4.273,4.273,0,0,1-.615.042c-.084,0-.175-.006-.277-.012a4.331,4.331,0,0,1-3.809-2.8.963.963,0,0,0-1.151-.591.974.974,0,0,0-.681,1.235,5.505,5.505,0,0,0,1.428,2.26h0l.012.012a6.345,6.345,0,0,0,3.815,1.814,6.219,6.219,0,0,0,.669.036q.235,0,.47-.018a6.89,6.89,0,0,0,1.163-.193,6.269,6.269,0,0,0,1.175-.44,6.191,6.191,0,0,0,1.669-1.2l4.134-4.134a6.344,6.344,0,0,0-.012-8.968Z"
+                                transform="translate(-1.442)"
+                                fill="#999"
+                              />
+                            </g>
+                          </svg>
+                        </div>
+                      </div>
+                      <span className="Addusertxt">
+                        {covi.getDic('InviteExUser')}
+                      </span>
+                    </a>
+                  )}
+                </>
+              )}
+
               <ul className="people">
                 {channelInfo.members.length > 0 && (
                   list((member, index) => {
@@ -585,7 +558,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                     />
                   }))
                 }
-                  
+
                 {
                   /**
                    * 2020.12.22
@@ -598,58 +571,58 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                     </li>
                   )}
               </ul>
-            </Scrollbars>
+            </div>
+          </div>
+        )}
+
+        <div className="BottomContent" style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <a
+              className="ico_chatout"
+              onClick={() => handleLeaveChannel()}
+              alt={covi.getDic('LeaveChat')}
+              title={covi.getDic('LeaveChat')}
+            ></a>
+            {channelAuth && (
+              <a
+                className="ico_chatclosure"
+                onClick={() => handleClosureChannel()}
+                alt={covi.getDic('Close')}
+                title={covi.getDic('Close')}
+              ></a>
+            )}
+            {DEVICE_TYPE == 'd' && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  width: '18px',
+                  height: '18px',
+                  zIndex: '10',
+                  top: '50%',
+                  transform: 'translate(0px, -50%)',
+                }}
+              >
+                <ColorBox
+                  items={covi.config.ClientBackgroundList}
+                  defaultColor={
+                    channelInfo.background
+                      ? channelInfo.background.replace('#', '')
+                      : null
+                  }
+                  onChange={item => {
+                    // db에 저장 필요
+                    (item && handleBackground(item.value)) ||
+                      handleBackground(null);
+                  }}
+                  empty={true}
+                  horizontal={true}
+                ></ColorBox>
+              </div>
+            )}
           </div>
         </div>
-      )}
-
-      <div className="BottomContent">
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <a
-            className="ico_chatout"
-            onClick={() => handleLeaveChannel()}
-            alt={covi.getDic('LeaveChat')}
-            title={covi.getDic('LeaveChat')}
-          ></a>
-          {channelAuth && (
-            <a
-              className="ico_chatclosure"
-              onClick={() => handleClosureChannel()}
-              alt={covi.getDic('Close')}
-              title={covi.getDic('Close')}
-            ></a>
-          )}
-          {DEVICE_TYPE == 'd' && (
-            <div
-              style={{
-                position: 'absolute',
-                right: '10px',
-                width: '18px',
-                height: '18px',
-                zIndex: '10',
-                top: '50%',
-                transform: 'translate(0px, -50%)',
-              }}
-            >
-              <ColorBox
-                items={covi.config.ClientBackgroundList}
-                defaultColor={
-                  channelInfo.background
-                    ? channelInfo.background.replace('#', '')
-                    : null
-                }
-                onChange={item => {
-                  // db에 저장 필요
-                  (item && handleBackground(item.value)) ||
-                    handleBackground(null);
-                }}
-                empty={true}
-                horizontal={true}
-              ></ColorBox>
-            </div>
-          )}
-        </div>
-      </div>
+      </Scrollbars>
     </div>
   );
 };

@@ -15,7 +15,7 @@ const LayerTemplate = () => {
       const currentLayer = layer[layer.length - 1];
       return (
         <>
-          <div className="layerWrap" style={{ width: '400px' }}>
+          <div className="layerWrap" style={{ maxWidth: '400px' }}>
             <div
               key={`layer_${layer.length}`}
               className="cover_chat_menu"
@@ -23,7 +23,6 @@ const LayerTemplate = () => {
             >
               <div
                 style={{
-                  maxWidth: '500px',
                   position: 'relative',
                   height: '100%',
                 }}
