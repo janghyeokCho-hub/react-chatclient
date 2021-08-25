@@ -77,16 +77,10 @@ const MessagePostBox = forwardRef(
         const regExp = new RegExp('(<br>|<br/>|<br />)', 'gi');
         inputContext = inputContext.replace(regExp, '\n');
         inputContext = inputContext.replace(/\s+$/, ''); // 마지막 공백문자 전부 제거
-        // inputContext = inputContext.replace(/\n$/gm, ''); // 연속된 개행문자 제거
-        // tag replace
-        // inputContext = commonApi.convertInputValue(inputContext);
 
         let checkURLResult = null;
 
-        if (DEVICE_TYPE == 'b') {
-          // 링크 썸네일 처리
-          checkURLResult = commonApi.checkURL(inputContext);
-        }
+        checkURLResult = commonApi.checkURL(inputContext);
 
         // 해시태그
         const tagPattern = new RegExp(/#([^#\s,;]+)/, 'gm');

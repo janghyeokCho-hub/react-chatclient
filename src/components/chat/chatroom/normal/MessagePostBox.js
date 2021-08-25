@@ -101,10 +101,7 @@ const MessagePostBox = forwardRef(
 
         let checkURLResult = null;
 
-        if (DEVICE_TYPE == 'b') {
-          // 링크 썸네일 처리
-          checkURLResult = commonApi.checkURL(inputContext);
-        }
+        checkURLResult = commonApi.checkURL(inputContext);
 
         postAction(
           inputContext,
