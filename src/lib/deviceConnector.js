@@ -1095,3 +1095,44 @@ export const logRenderer = msg => {
     console.log(e);
   }
 };
+
+/**
+ * 
+ * @param {string} type
+ * 'R' => 채팅방 'C' => 채널
+ * 
+ */
+export function getPinnedRooms({ userId = '', type = 'R' } = {}) {
+  const KEY = userId + '_pinned_' + type;
+  if (DEVICE_TYPE === 'd') {
+    const remote = getRemote();
+    const appSetting = remote.getGlobal('APP_SECURITY_SETTING');
+    const pinnedRooms = appSetting.get(KEY);
+    return pinnedRooms ? JSON.parse(pinnedRooms) : pinnedRooms;
+  } else {
+    const pinnedRooms = localStorage.getItem(KEY);
+    return pinnedRooms ? JSON.parse(pinnedRooms) : pinnedRooms;
+  }
+}
+
+/**
+ * 
+ * @param {string} type
+ * @param {Array} data
+ * 'R' => 채팅방 'C' => 채널
+ */
+export function savePinnedRooms({ userId = '', type = 'R', data } = {}) {
+  if(Array.isArray(data) === false) {
+    return;
+  }
+  // 중복 제거(Set 변환시 중복 자동제거) 후에 설정값 저장
+  const pinnedRooms = Array.from(new Set(data));
+  const KEY = userId + '_pinned_' + type;
+  if (DEVICE_TYPE === 'd') {
+    const remote = getRemote();
+    const appSetting = remote.getGlobal('APP_SECURITY_SETTING');
+    appSetting.set(KEY, JSON.stringify(pinnedRooms));
+  } else {
+    localStorage.setItem(KEY, JSON.stringify(pinnedRooms));
+  }
+}

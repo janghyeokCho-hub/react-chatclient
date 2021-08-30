@@ -13,6 +13,7 @@ import RightConxtMenu from '../common/popup/RightConxtMenu';
 import { newChatRoom, evalConnector } from '@/lib/deviceConnector';
 import * as common from '@/lib/common';
 import { leaveRoomUtil } from '@/lib/roomUtil';
+import { getConfig } from '@/lib/util/configUtil';
 
 const getFilterMember = (members, id, roomType) => {
   if (members && roomType !== 'O') {
@@ -140,9 +141,10 @@ const makeDateTime = timestamp => {
   }
 };
 
-const Room = ({ room, onRoomChange, isSelect, dbClickEvent }) => {
+const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChange }) => {
   const id = useSelector(({ login }) => login.id);
   const [isNoti, setIsNoti] = useState(true);
+  const pinToTopLimit = useMemo(() => getConfig('PinToTop_Limit_Chat', -1), []);
 
   const filterMember = useMemo(
     () => getFilterMember(room.members, id, room.roomType),
@@ -247,6 +249,22 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent }) => {
   }, [room, dbClickEvent, dispatch]);
 
   const menus = useMemo(() => {
+    const pinToTop = {
+      code: 'pinRoom',
+      isline: false,
+      onClick() {
+        room?.roomID && onPinChange('ADD', room.roomID)
+      },
+      name: covi.getDic('PinToTop', '상단고정')
+    };
+    const unpinToTop = {
+      code: 'unpinRoom',
+      isline: false,
+      onClick() {
+        room?.roomID && onPinChange('DEL', room.roomID)
+      },
+      name: covi.getDic('UnpinToTop', '상단고정 해제')
+    };
     const menus = [
       {
         code: 'openRoom',
@@ -260,6 +278,7 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent }) => {
         },
         name: covi.getDic('OpenChat'),
       },
+      (pinToTopLimit > 0 && (pinnedTop ? unpinToTop : pinToTop)),
       {
         code: 'outRoom',
         isline: false,
@@ -295,7 +314,7 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent }) => {
     }
 
     return menus;
-  }, [dispatch, room, id, dbClickEvent, isSelect, handleDoubleClick, isNoti]);
+  }, [dispatch, room, id, dbClickEvent, isSelect, handleDoubleClick, isNoti, pinnedTop, onPinChange]);
 
   const menuId = useMemo(() => 'room_' + room.roomID, [room]);
 
@@ -332,8 +351,10 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent }) => {
             )}
           </>
 
-          <span className="name">{makeRoomName(filterMember)}</span>
-          <span className="time">{makeDateTime(room.lastMessageDate)}</span>
+          <span className="name">
+            {makeRoomName(filterMember)}
+          </span>
+          <span className="time">{ pinnedTop && '📌' }{makeDateTime(room.lastMessageDate)}</span>
           <span className="preview">
             {room.lastMessage && makeMessageText(room.lastMessage)}
           </span>
