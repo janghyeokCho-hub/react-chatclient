@@ -37,7 +37,7 @@ const RoomItems = ({ rooms, loading, onRoomChange, isDoubleClick }) => {
 
   const onPinChange = useCallback((type, roomID) => {
     if (type === 'ADD') {
-      if (pinToTopLimit > -1 && pinnedRooms?.length >= pinToTopLimit) {
+      if (pinToTopLimit > -1 && pinToTopLimit !==0 && pinnedRooms?.length >= pinToTopLimit) {
         openPopup(
           {
             type: 'Alert',
