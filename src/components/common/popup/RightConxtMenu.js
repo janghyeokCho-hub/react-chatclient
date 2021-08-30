@@ -9,6 +9,9 @@ const RightConxtMenu = ({ menuId, children, menus, ...rest }) => (
     {menus && (
       <ContextMenu id={menuId}>
         {menus.map(menu => {
+          if(!menu) {
+            return <></>;
+          }
           if (menu.isline) {
             return <MenuItem key={menu.code} preventClose={menu.preventClose} divider />;
           } else {
