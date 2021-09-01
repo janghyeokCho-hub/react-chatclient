@@ -154,9 +154,6 @@ const appReady = async () => {
 
   // 설정된 도메인이 존재하는 경우
   if (domainInfo) {
-    // window 생성
-    let isCreated = createWindow(true, domainInfo);
-
     const setConfigAfter = count => {
       SERVER_SECURITY_SETTING = getSecureConfig('server.setting.eumsecure');
 
@@ -178,16 +175,11 @@ const appReady = async () => {
             SERVER_SECURITY_SETTING.setBulk(data.result);
             // app_setting에 설정되지 않은 내용들 server_config의 default config로 초기화
             if (data.result.config) initializeDefaultConfig(data.result.config);
-            isCreated.then(() => {
-              loadMainWindow();
-            });
           } else {
             logger.info('server config load failure');
             SERVER_SECURITY_SETTING.purge();
-            isCreated.then(() => {
-              loadMainWindow();
-            });
           }
+          createWindow(true, domainInfo).then(loadMainWindow);
         })
         .catch(() => {
           logger.info('server config load error');
