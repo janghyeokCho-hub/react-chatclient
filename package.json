@@ -1,6 +1,6 @@
 {
   "name": "eumtalk",
-  "version": "1.11.5",
+  "version": "1.11.7",
   "main": "build/electron/main.js",
   "appId": "com.covision.eumtalk",
   "browserslist": [
@@ -63,7 +63,7 @@
       {
         "from": "./vncremote",
         "to": "resources/vncremote",
-        "filter":[
+        "filter": [
           "**/**"
         ]
       },

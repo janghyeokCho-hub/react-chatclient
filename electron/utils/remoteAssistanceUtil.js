@@ -106,9 +106,6 @@ export const createRemoteVNCHost = vncArgs => {
 
   vncHostProcess.once('exit', code => {
     console.log('winvnc.exe has terminated with code: ' + code);
-    if (code == 0) {
-      if (alert) alert();
-    }
   });
 };
 
