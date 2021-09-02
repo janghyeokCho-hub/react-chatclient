@@ -30,6 +30,7 @@ import {
 } from '@/lib/deviceConnector';
 import Config from '@/config/config';
 import useTimestamp from '@/hooks/useTimestamp';
+
 const UserSetting = ({ history }) => {
   const { myInfo, syncDate } = useSelector(({ login }) => ({
     myInfo: login.userInfo,
@@ -72,6 +73,11 @@ const UserSetting = ({ history }) => {
   const [downloadPathCheck, setDownloadPathCheck] = useState(false);
   const [defaultDownloadPath, setDefaultDownloadPath] = useState('');
   const fileUploadControl = useRef(null);
+
+  const autoLoginLock = getConfig('ForceAutoLogin', 'N') === 'Y';
+  const autoLaunchLock = getConfig('ForceAutoLaunch', 'N') === 'Y';
+  const forceDisbleNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
+
   // componentDidMount
   const dispatch = useDispatch();
   useEffect(() => {
@@ -89,9 +95,10 @@ const UserSetting = ({ history }) => {
         method: 'getGlobal',
         name: 'USER_SETTING',
       });
+
       const confFirstMenu = userConfig.get('firstMenu');
-      setAutoLogin(appConfig.get('autoLogin') ? true : false);
-      setAutoLaunch(appConfig.get('autoLaunch') ? true : false);
+      setAutoLogin(autoLoginLock || appConfig.get('autoLogin') ? true : false);
+      setAutoLaunch(autoLaunchLock || appConfig.get('autoLaunch') ? true : false);
       setCustomAlarm(appConfig.get('customAlarm') ? true : false);
       setIdleTime(userConfig.get('idleTime'));
       setFirstMenu(
@@ -686,6 +693,10 @@ const UserSetting = ({ history }) => {
                     <a
                       className="ChatConfig-menu"
                       onClick={e => {
+                        // 자동재시작 강제 on 설정인 경우 값 변경하지 않음
+                        if (autoLaunchLock) {
+                          return;
+                        }
                         handleConfig({
                           autoLaunch: !autoLaunch,
                         });
@@ -707,6 +718,11 @@ const UserSetting = ({ history }) => {
                     <a
                       className="ChatConfig-menu"
                       onClick={e => {
+                        // 자동로그인 강젝설정일 경우 자동로그인 변경 X
+                        if (autoLoginLock) {
+                          return;
+                        }
+
                         handleConfig({
                           autoLogin: !autoLogin,
                         });
@@ -875,6 +891,9 @@ const UserSetting = ({ history }) => {
                 <a
                   className="ChatConfig-menu"
                   onClick={e => {
+                    if (forceDisbleNoti) {
+                      return;
+                    }
                     handleUserConfig({ desktopNoti: !desktopNoti });
                     setDesktopNoti(!desktopNoti);
                   }}

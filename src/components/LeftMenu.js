@@ -13,6 +13,7 @@ import {
 } from '@/lib/deviceConnector';
 import UnreadCntButton from '@COMMON/buttons/UnreadCntButton';
 import ExternalLeft from '@C/ExternalLeft';
+import { getConfig } from '@/lib/util/configUtil';
 
 /* Note API */
 import { useNoteUnreadCount } from '@/lib/note';
@@ -47,7 +48,7 @@ const LeftMenu = ({ history }) => {
   const token = useSelector(({ login }) => login.token);
   const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
   const unreadNoteCnt = useNoteUnreadCount();
-
+  const forceDisbleNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
   const active = useSelector(
     ({ menu }) => menu.activeType,
     (left, right) => left == right,
@@ -314,17 +315,19 @@ const LeftMenu = ({ history }) => {
         </li>*/}
       </ul>
       <div className="menu-bottom-box">
-        <button
-          className={['bell', isNoti ? 'active' : ''].join(' ')}
-          onClick={() => {
-            setIsNoti(!isNoti);
-            if (DEVICE_TYPE == 'b') {
-              localStorage.setItem('check_notification', !isNoti);
-            } else {
-              handleUserConfig({ desktopNoti: !isNoti });
-            }
-          }}
-        ></button>
+        {forceDisbleNoti === false && (
+          <button
+            className={['bell', isNoti ? 'active' : ''].join(' ')}
+            onClick={() => {
+              setIsNoti(!isNoti);
+              if (DEVICE_TYPE == 'b') {
+                localStorage.setItem('check_notification', !isNoti);
+              } else {
+                handleUserConfig({ desktopNoti: !isNoti });
+              }
+            }}
+          ></button>
+        )}
         <IconConxtMenu menuId="menu_bottom" menus={menus}>
           <button className="more"></button>
         </IconConxtMenu>
