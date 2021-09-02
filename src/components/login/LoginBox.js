@@ -25,6 +25,8 @@ const LoginBox = forwardRef(
     const [autoLaunch, setAutoLaunch] = useState(false);
     const [lang, setLang] = useState(covi.settings.lang);
 
+    const autoLoginLock = getConfig('ForceAutoLogin', 'N') === 'Y';
+    const autoLaunchLock = getConfig('ForceAutoLaunch', 'N') === 'Y';
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -33,9 +35,29 @@ const LoginBox = forwardRef(
           method: 'getGlobal',
           name: 'APP_SECURITY_SETTING',
         });
+        if (!autoLogin && autoLoginLock) {
+          // 서버설정->자동로그인 강제설정일 경우 config 업데이트
+          evalConnector({
+            method: 'sendSync',
+            channel: 'save-static-config',
+            message: {
+              autoLogin: true
+            }
+          });
+        }
+        if (!autoLaunch && autoLaunchLock) {
+          // 자동재시작 강제 on 설정일 경우 config 업데이트
+          evalConnector({
+            method: 'sendSync',
+            channel: 'save-static-config',
+            message: {
+              autoLaunch: true
+            }
+          });
+        }
 
-        setAutoLogin(appConfig.get('autoLogin') ? true : false);
-        setAutoLaunch(appConfig.get('autoLaunch') ? true : false);
+        setAutoLogin(autoLoginLock || appConfig.get('autoLogin') ? true : false);
+        setAutoLaunch(autoLaunchLock || appConfig.get('autoLaunch') ? true : false);
       }
     }, []);
 
@@ -177,8 +199,14 @@ const LoginBox = forwardRef(
                 <input
                   type="checkbox"
                   id="chk01"
+                  disabled={autoLoginLock === true}
                   checked={autoLogin}
                   onChange={e => {
+                    // 자동로그인 강젝설정일 경우 자동로그인 변경 X
+                    if(autoLoginLock) {
+                      return;
+                    }
+
                     setAutoLogin(e.target.checked);
                     handleConfig({ autoLogin: e.target.checked });
                   }}
@@ -194,6 +222,9 @@ const LoginBox = forwardRef(
                   id="chk02"
                   checked={autoLaunch}
                   onChange={e => {
+                    if (autoLaunchLock) {
+                      return;
+                    }
                     setAutoLaunch(e.target.checked);
                     handleConfig({ autoLaunch: e.target.checked });
                   }}

@@ -144,6 +144,7 @@ const makeDateTime = timestamp => {
 const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChange }) => {
   const id = useSelector(({ login }) => login.id);
   const [isNoti, setIsNoti] = useState(true);
+  const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
   const pinToTopLimit = useMemo(() => getConfig('PinToTop_Limit_Chat', -1), []);
 
   const filterMember = useMemo(
@@ -289,7 +290,7 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChan
       },
     ];
 
-    if (DEVICE_TYPE != 'b') {
+    if (DEVICE_TYPE != 'b' && forceDisableNoti === false) {
       menus.push({
         code: 'line',
         isline: true,
