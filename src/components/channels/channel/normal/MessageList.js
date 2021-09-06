@@ -23,7 +23,7 @@ import {
   convertEumTalkProtocol,
 } from '@/lib/common';
 import { scrollIntoView } from '@/lib/util/domUtil';
-import { delay } from 'redux-saga/effects';
+import { updateChannelLastMessage } from '@/modules/channel';
 
 const MessageList = ({ onExtension, viewExtension }) => {
   const tempMessage = useSelector(({ message }) => message.tempChannelMessage);
@@ -221,6 +221,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
                           token.push(JSON.parse(message.fileInfos).token);
                         }
                       }
+
                       messageApi.deleteChannelMessage({
                         token,
                         messageId: message.messageID,

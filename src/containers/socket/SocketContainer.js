@@ -59,8 +59,7 @@ const SocketContainer = ({ history }) => {
             ),
             onChannelInvitation: socketActions.handleChannelInvite(dispatch),
             onChannelExit: socketActions.handleChannelExit(dispatch, userInfo),
-            onDelChannelMessage:
-              socketActions.handleDelChannelMessage(dispatch),
+            onDelChannelMessage: socketActions.handleDelChannelMessageInBrowser(dispatch),
             onNewChannelNotice: socketActions.handleNewChannelNotice(
               dispatch,
               userInfo,
@@ -110,8 +109,7 @@ const SocketContainer = ({ history }) => {
             ),
             onChannelInvitation: socketActions.handleChannelInvite(dispatch),
             onChannelExit: socketActions.handleChannelExit(dispatch, userInfo),
-            onDelChannelMessage:
-              socketActions.handleDelChannelMessage(dispatch),
+            onDelChannelMessage: socketActions.handleDelChannelMessageInDesktop(dispatch),
             onChannelClosure: socketActions.handleChannelClosure(dispatch), //channel closure
             onNewChannelNotice: socketActions.handleNewChannelNotice(
               dispatch,

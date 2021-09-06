@@ -23,48 +23,34 @@ import { changeOpenRoom } from '@/modules/room';
 import { get } from '@/lib/util/storageUtil';
 
 import { format } from 'date-fns';
+import { fi } from 'date-fns/locale';
 
 const INIT = 'channel/INIT';
 const SET_CHANNELS = 'channel/SET_CHANNELS';
-const [
-  GET_CHANNELS,
-  GET_CHANNELS_SUCCESS,
-  GET_CHANNELS_FAILURE,
-] = createRequestActionTypes('channel/GET_CHANNELS');
+const [GET_CHANNELS, GET_CHANNELS_SUCCESS, GET_CHANNELS_FAILURE] =
+  createRequestActionTypes('channel/GET_CHANNELS');
 
-const [
-  UPDATE_CHANNELS,
-  UPDATE_CHANNELS_SUCCESS,
-  UPDATE_CHANNELS_FAILURE,
-] = createRequestActionTypes('channel/UPDATE_CHANNELS');
+const [UPDATE_CHANNELS, UPDATE_CHANNELS_SUCCESS, UPDATE_CHANNELS_FAILURE] =
+  createRequestActionTypes('channel/UPDATE_CHANNELS');
 
 const [
   GET_CHANNEL_CATEGORIES,
   GET_CHANNEL_CATEGORIES_SUCCESS,
   GET_CHANNEL_CATEGORIES_FAILURE,
 ] = createRequestActionTypes('channel/GET_CHANNEL_CATEGORIES');
-const [
-  GET_CHANNEL_INFO,
-  GET_CHANNEL_INFO_SUCCESS,
-  GET_CHANNEL_INFO_FAILURE,
-] = createRequestActionTypes('channel/GET_CHANNEL_INFO');
+const [GET_CHANNEL_INFO, GET_CHANNEL_INFO_SUCCESS, GET_CHANNEL_INFO_FAILURE] =
+  createRequestActionTypes('channel/GET_CHANNEL_INFO');
 const [
   GET_CHANNEL_NOTICE,
   GET_CHANNEL_NOTICE_SUCCESS,
   GET_CHANNEL_NOTICE_FAILURE,
 ] = createRequestActionTypes('channel/GET_CHANNEL_NOTICE');
 
-const [
-  LEAVE_CHANNEL,
-  LEAVE_CHANNEL_SUCCESS,
-  LEAVE_CHANNEL_FAILURE,
-] = createRequestActionTypes('channel/LEAVE_CHANNEL');
+const [LEAVE_CHANNEL, LEAVE_CHANNEL_SUCCESS, LEAVE_CHANNEL_FAILURE] =
+  createRequestActionTypes('channel/LEAVE_CHANNEL');
 
-const [
-  INVITE_MEMBER,
-  INVITE_MEMBER_SUCCESS,
-  INVITE_MEMBER_FAILURE,
-] = createRequestActionTypes('channel/INVITE_MEMBER');
+const [INVITE_MEMBER, INVITE_MEMBER_SUCCESS, INVITE_MEMBER_FAILURE] =
+  createRequestActionTypes('channel/INVITE_MEMBER');
 
 const [
   UPLOAD_CHANNELICON,
@@ -97,6 +83,7 @@ const [
 ] = createRequestActionTypes('channel/REMOVE_CHANNEL_NOTICE');
 
 const RECEIVE_MESSAGE = 'channel/RECEIVE_MESSAGE';
+const DELETE_MESSAGE = 'channel/DELETE_MESSAGE';
 const RECEIVE_DELETED_MESSAGE = 'channel/RECEIVE_DELETED_MESSAGE';
 const RECEIVE_NOTICE = 'channel/RECEIVE_NOTICE';
 const RECEIVE_DELETED_NOTICE = 'channel/RECEIVE_DELETED_NOTICE';
@@ -144,6 +131,8 @@ const MESSAGE_CURRENT_TYPING = 'room/MESSAGE_CURRENT_TYPING';
 const SELECT_EMOTICON = 'channel/SELECT_EMOTICON';
 const CLEAR_EMOTICON = 'channel/CLEAR_EMOTICON';
 
+const UPDATE_LAST_MESSAGE = 'channel/UPDATE_LAST_MESSAGE';
+
 const [
   MODIFY_CHANNELSETTING,
   MODIFY_CHANNELSETTING_SUCCESS,
@@ -163,6 +152,8 @@ export const receiveMessage = createAction(RECEIVE_MESSAGE);
 export const receiveDeletedMessage = createAction(RECEIVE_DELETED_MESSAGE);
 export const receiveNotice = createAction(RECEIVE_NOTICE);
 export const receiveDeletedNotice = createAction(RECEIVE_DELETED_NOTICE);
+
+export const deleteMessage = createAction(DELETE_MESSAGE);
 
 export const openChannel = createAction(OPEN_CHANNEL);
 export const changeOpenChannel = createAction(CHANGE_OPEN_CHANNEL);
@@ -214,6 +205,8 @@ export const messageCurrentTyping = createAction(MESSAGE_CURRENT_TYPING);
 
 export const selectEmoticon = createAction(SELECT_EMOTICON);
 export const clearEmoticon = createAction(CLEAR_EMOTICON);
+
+export const updateLastMessage = createAction(UPDATE_LAST_MESSAGE);
 
 function createGetChannelsSaga() {
   return function* (action) {
@@ -342,6 +335,28 @@ function createReceiveMessageSaga() {
       } catch (e) {
         yield put({
           type: 'channel/RECEIVE_MESSAGE_FAILURE',
+          payload: action.payload,
+          error: true,
+        });
+      }
+    }
+  };
+}
+
+const deleteMessageSaga = createDeleteMessageSaga();
+
+function createDeleteMessageSaga() {
+  return function* (action) {
+    if (action.payload) {
+      try {
+        yield console.log('createDeleteMessageSaga >>> ', action.payload);
+        const lastMessage = action.payload.lastMessage;
+        if (lastMessage) {
+          yield put(updateLastMessage(lastMessage));
+        }
+      } catch (e) {
+        yield put({
+          type: 'channel/DELETE_MESSAGE_FAILURE',
           payload: action.payload,
           error: true,
         });
@@ -778,6 +793,7 @@ export function* channelSaga() {
   yield takeLatest(UPDATE_CHANNELS, updateChannelsSaga);
   yield takeLatest(GET_CHANNEL_CATEGORIES, getChannelCategoriesSaga);
   yield takeLatest(RECEIVE_MESSAGE, receiveMessageSaga);
+  yield takeLatest(DELETE_MESSAGE, deleteMessageSaga);
   yield takeLatest(OPEN_CHANNEL, openChannelSaga);
   yield takeLatest(GET_CHANNEL_INFO, getChannelInfoSaga);
   yield takeLatest(GET_CHANNEL_NOTICE, getChannelNoticeSaga);
@@ -812,6 +828,22 @@ const channel = handleActions(
     [INIT]: (state, action) => ({
       ...initialState,
     }),
+    [UPDATE_LAST_MESSAGE]: (state, action) => {
+      return produce(state, draft => {
+        console.log(action.payload);
+        const channel = draft.channels.find(
+          c => c.roomId == action.payload.roomID,
+        );
+        if (channel) {
+          channel.lastMessage = JSON.stringify({
+            Message: action.payload.context,
+            File: action.payload.fileInfos,
+          });
+          channel.lastMessageDate = action.payload.sendDate;
+          channel.lastMessageType = action.payload.messageType;
+        }
+      });
+    },
     [SET_CHANNEL_CLOSURE]: (state, action) => {
       return produce(state, draft => {
         // 채널 폐쇄
@@ -830,7 +862,9 @@ const channel = handleActions(
       return produce(state, draft => {
         // login 시에만 사용
         // filter 로직: 메세지 만료된 채널방 제거
-        draft.channels = action.payload.result.filter(channel=> channel.lastMessageDate);
+        draft.channels = action.payload.result.filter(
+          channel => channel.lastMessageDate,
+        );
       });
     },
     [GET_CHANNELS_SUCCESS]: (state, action) => {
@@ -1583,6 +1617,22 @@ const channel = handleActions(
               ),
               1,
             );
+            // 여기에 추가
+            const channel = draft.channels.find(
+              r => r.roomId == action.payload.roomID,
+            );
+            if (channel) {
+              const lastMessage = draft.messages[draft.messages.length - 1];
+
+              if (lastMessage) {
+                channel.lastMessage = JSON.stringify({
+                  Message: lastMessage.context ? lastMessage.context : '',
+                  File: lastMessage.fileInfos ? lastMessage.fileInfos : '',
+                });
+                channel.lastMessageDate = lastMessage.sendDate;
+                channel.lastMessageType = lastMessage.messageType;
+              }
+            }
           }
         }
       });
