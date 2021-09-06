@@ -50,7 +50,11 @@ const LoginContainer = ({ history, location }) => {
         dp: process.platform,
         da: process.arch,
         al: appConfig.get('autoLogin') ? 'Y' : 'N',
+        isAuto: false,
       };
+
+      appConfig.set('loginId', userId);
+      appConfig.set('loginPw', encryptPassword);
     } else if (DEVICE_TYPE == 'b') {
       data = {
         id: userId,
@@ -124,7 +128,12 @@ const LoginContainer = ({ history, location }) => {
         } else if (errStatus === 'ACCOUNT_LOCK') {
           message = covi.getDic(
             'Msg_Fail_Account_Lock',
-            '보안상의 이유로 계정이 비활성화되었으므로 로그인할 수 없습니다',
+            '보안상의 이유로 계정이 비활성화되었으므로 로그인할 수 없습니다.',
+          );
+        } else if (errStatus === 'ERR_NETWORK_CHANGED') {
+          message = covi.getDic(
+            'Msg_Network_Changed',
+            '네트워크 환경이 변경되어 다시 로그인을 해야합니다.',
           );
         }
       }

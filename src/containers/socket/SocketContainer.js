@@ -6,6 +6,7 @@ import * as deviceConnector from '@/lib/deviceConnector';
 import { openPopup } from '@/lib/common';
 import { withRouter } from 'react-router-dom';
 import { logout } from '@/modules/login';
+import { evalConnector } from '@/lib/deviceConnector';
 import { clearUserData } from '@/lib/util/localStorageUtil';
 import useSWR from 'swr';
 
@@ -32,7 +33,11 @@ const SocketContainer = ({ history }) => {
           },
           {
             onNewMessage: socketActions.handleNewMessage(dispatch, userInfo),
-            onNewNoteMessage: socketActions.handleNewNoteMessage(dispatch, userInfo, setNoteList),
+            onNewNoteMessage: socketActions.handleNewNoteMessage(
+              dispatch,
+              userInfo,
+              setNoteList,
+            ),
             onChatRoomInvitation: socketActions.handleChatRoomInvite(dispatch),
             onChatRoomExit: socketActions.handleChatRoomExit(
               dispatch,
@@ -54,9 +59,8 @@ const SocketContainer = ({ history }) => {
             ),
             onChannelInvitation: socketActions.handleChannelInvite(dispatch),
             onChannelExit: socketActions.handleChannelExit(dispatch, userInfo),
-            onDelChannelMessage: socketActions.handleDelChannelMessage(
-              dispatch,
-            ),
+            onDelChannelMessage:
+              socketActions.handleDelChannelMessage(dispatch),
             onNewChannelNotice: socketActions.handleNewChannelNotice(
               dispatch,
               userInfo,
@@ -74,13 +78,20 @@ const SocketContainer = ({ history }) => {
         deviceConnector.socketConnect(
           {
             token,
-            accessid: userid
+            accessid: userid,
           },
           {
             onNewMessage: socketActions.handleNewMessage(dispatch, userInfo),
-            onNewNoteMessage: socketActions.handleNewNoteMessage(dispatch, userInfo, setNoteList),
+            onNewNoteMessage: socketActions.handleNewNoteMessage(
+              dispatch,
+              userInfo,
+              setNoteList,
+            ),
             onChatRoomInvitation: socketActions.handleChatRoomInvite(dispatch),
-            onChatRoomExit: socketActions.handleChatRoomExit(dispatch, userInfo),
+            onChatRoomExit: socketActions.handleChatRoomExit(
+              dispatch,
+              userInfo,
+            ),
             onReadCountChanged: socketActions.handleReadCountChanged(
               dispatch,
               userInfo,
@@ -99,7 +110,8 @@ const SocketContainer = ({ history }) => {
             ),
             onChannelInvitation: socketActions.handleChannelInvite(dispatch),
             onChannelExit: socketActions.handleChannelExit(dispatch, userInfo),
-            onDelChannelMessage: socketActions.handleDelChannelMessage(dispatch),
+            onDelChannelMessage:
+              socketActions.handleDelChannelMessage(dispatch),
             onChannelClosure: socketActions.handleChannelClosure(dispatch), //channel closure
             onNewChannelNotice: socketActions.handleNewChannelNotice(
               dispatch,
@@ -107,7 +119,8 @@ const SocketContainer = ({ history }) => {
             ),
             onDelChannelNotice: socketActions.handleDelChannelNotice(dispatch),
             onAuthChanged: socketActions.handleAuthChanged(dispatch),
-          });
+          },
+        );
       }
     } else {
       console.log('token disabled');
