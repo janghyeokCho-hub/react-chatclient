@@ -16,6 +16,7 @@ import { getAesUtil } from '@/lib/aesUtil';
 import { clearLayer, openPopup } from '@/lib/common';
 import * as channelApi from '@/lib/channel';
 import * as common from '@/lib/common';
+import { evalConnector } from '@/lib/deviceConnector';
 
 const makeDateTime = timestamp => {
   if (timestamp && isValid(new Date(timestamp))) {
@@ -132,8 +133,26 @@ const ChannelItem = ({
   isJoin,
 }) => {
   const id = useSelector(({ login }) => login.id);
+  const channels = useSelector(({ channel }) => channel.channels);
+
   const menuId = useMemo(() => 'channel_' + channel.roomId, [channel]);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    evalConnector({
+      method: 'on',
+      channel: 'onNewDeleteMessage',
+      callback: (event, args) => {
+        console.log('onNewDeleteMessage called >> ', args);
+      },
+    });
+    return () => {
+      evalConnector({
+        method: 'removeListener',
+        channel: 'onNewDeleteMessage',
+      });
+    };
+  }, []);
 
   const handleDoubleClick = useCallback(() => {
     if (dbClickEvent && !channel.newWin) {
@@ -315,14 +334,18 @@ const ChannelItem = ({
     [dispatch, channel, id, dbClickEvent, isSelect, handleDoubleClick],
   );
 
-  const messageDate = useMemo(() => makeDateTime(channel.lastMessageDate), [
-    channel,
-  ]);
-
-  const lastMessageText = useMemo(
-    () => makeMessageText(channel.lastMessage, channel.lastMessageType),
+  const messageDate = useMemo(
+    () => makeDateTime(channel.lastMessageDate),
     [channel],
   );
+
+  const lastMessageText = useMemo(() => {
+    const changeTargetChannel = channels.find(c => c.roomId == channel.roomId);
+    return makeMessageText(
+      changeTargetChannel.lastMessage,
+      changeTargetChannel.lastMessageType,
+    );
+  }, [channel]);
 
   return (
     <RightConxtMenu menuId={menuId} menus={menus}>

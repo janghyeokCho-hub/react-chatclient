@@ -23,6 +23,7 @@ import {
   resetUnreadCount,
   channelLeaveOtherDevice,
   changeChannelAuth,
+  deleteMessage,
 } from '@/modules/channel';
 
 import { setUsersPresence, addFixedUsers } from '@/modules/presence';
@@ -83,7 +84,7 @@ export const handleNewNoteMessage = (dispatch, userInfo, setNoteList) => {
         deptName: json_data.multiDeptName,
         LN: json_data.multiJobLevelName,
         PN: json_data.multiJobPositionName,
-        TN: json_data.multiJobTitleName
+        TN: json_data.multiJobTitleName,
       };
 
       if (DEVICE_TYPE === 'b') {
@@ -92,16 +93,21 @@ export const handleNewNoteMessage = (dispatch, userInfo, setNoteList) => {
           Notification.requestPermission();
           return;
         }
-        const notification = new Notification(`${covi.getDic('NewNoteMessage', '새 쪽지')} : ${getJobInfo(senderInfo)}`, {
-          icon: '',
-          body: json_data?.subject || covi.getDic('NewNoteMessage')
-        });
+        const notification = new Notification(
+          `${covi.getDic('NewNoteMessage', '새 쪽지')} : ${getJobInfo(
+            senderInfo,
+          )}`,
+          {
+            icon: '',
+            body: json_data?.subject || covi.getDic('NewNoteMessage'),
+          },
+        );
         setTimeout(notification.close.bind(notification), 2000);
       } else if (DEVICE_TYPE === 'd') {
         // PC noti
       }
 
-      setNoteList((prevState) => {
+      setNoteList(prevState => {
         // 쪽지 리스트에 추가할 데이터 (쪽지 조회시 sender 구조와 동일해야 함)
         const receivedInfo = {
           noteId: json_data.noteId,
@@ -113,11 +119,11 @@ export const handleNewNoteMessage = (dispatch, userInfo, setNoteList) => {
           fileFlag: json_data.fileFlag,
           subject: json_data.subject,
           sendDate: Date.now(),
-          readFlag: 'N',  //새로 발송된 쪽지는 기본적으로 읽지 않은 상태임
+          readFlag: 'N', //새로 발송된 쪽지는 기본적으로 읽지 않은 상태임
           favorites: '2', //새로 발송된 쪽지는 기본적으로 즐겨찾기되어 있지 않음
         };
 
-        if(typeof prevState === 'undefined') {
+        if (typeof prevState === 'undefined') {
           return [receivedInfo];
         }
         return produce(prevState, draft => {
@@ -430,16 +436,29 @@ export const handleNewNotice = dispatch => {
   };
 };
 
-// 채널 메시지 삭제
-export const handleDelChannelMessage = dispatch => {
+// 채널 메시지 삭제 (Broswer)
+export const handleDelChannelMessageInBrowser = dispatch => {
   return data => {
     const json_data = JSON.parse(data);
 
-    // 차후 삭제 필요
-    console.dir(json_data);
     if (json_data.messageType === 'I') {
       dispatch(receiveDeletedChannelNotice(json_data));
     } else {
+      dispatch(receiveDeletedChannelMessage(json_data));
+    }
+  };
+};
+
+// 채널 메시지 삭제 (Desktop)
+export const handleDelChannelMessageInDesktop = dispatch => {
+  return data => {
+    const json_data = JSON.parse(data);
+
+    if (json_data.messageType === 'I') {
+      dispatch(receiveDeletedChannelNotice(json_data));
+    } else {
+      console.log('detele message called');
+      dispatch(deleteMessage(json_data));
       dispatch(receiveDeletedChannelMessage(json_data));
     }
   };
