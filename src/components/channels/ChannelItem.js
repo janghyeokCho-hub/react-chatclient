@@ -341,10 +341,12 @@ const ChannelItem = ({
 
   const lastMessageText = useMemo(() => {
     const changeTargetChannel = channels.find(c => c.roomId == channel.roomId);
-    return makeMessageText(
-      changeTargetChannel.lastMessage,
-      changeTargetChannel.lastMessageType,
-    );
+    if (changeTargetChannel) {
+      return makeMessageText(
+        changeTargetChannel.lastMessage,
+        changeTargetChannel.lastMessageType,
+      );
+    } else return makeMessageText(channel.lastMessage, channel.lastMessageType);
   }, [channel]);
 
   return (

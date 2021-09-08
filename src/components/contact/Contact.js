@@ -41,6 +41,7 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
               subItem.isContact && subItem.isContact != ''
                 ? subItem.isContact
                 : contact.folderType,
+              contact.folderID,
             );
           },
           name: covi.getDic('AddFavorite'),
@@ -77,7 +78,7 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
       returnMenu.push({
         code: 'line',
         isline: true,
-        onClick: () => { },
+        onClick: () => {},
         name: '',
       });
 
@@ -142,22 +143,25 @@ const Contact = ({ contact, viewType, checkObj }) => {
     }
   }, [contact.sub]);
 
-  const handleIsOpen = useCallback((evt) => {
-    setIsopen(!isopen);
-    if (isopen) subDivEl.current.style.display = 'none';
-    else {
-      if (contact.folderType == 'G' && !isload) {
-        setIsload(true);
-        dispatch(
-          getItemGroup({
-            folderID: contact.groupCode,
-            folderType: contact.folderType,
-          }),
-        );
+  const handleIsOpen = useCallback(
+    evt => {
+      setIsopen(!isopen);
+      if (isopen) subDivEl.current.style.display = 'none';
+      else {
+        if (contact.folderType == 'G' && !isload) {
+          setIsload(true);
+          dispatch(
+            getItemGroup({
+              folderID: contact.groupCode,
+              folderType: contact.folderType,
+            }),
+          );
+        }
+        subDivEl.current.style.display = '';
       }
-      subDivEl.current.style.display = '';
-    }
-  }, [contact, isopen, isload, dispatch]);
+    },
+    [contact, isopen, isload, dispatch],
+  );
 
   const menus = useMemo(() => {
     const returnMenu = [];
@@ -169,45 +173,27 @@ const Contact = ({ contact, viewType, checkObj }) => {
       returnMenu.push({
         code: 'createCustomGroup',
         isline: false,
-        onClick: () =>{
+        onClick: () => {
           addGroupOpen();
         },
         name: covi.getDic('Create_Group', '그룹 생성'),
       });
-    }else{
+    } else {
       returnMenu.push({
-          code: 'startChat',
-          isline: false,
-          onClick: () => {
-            if (contact.pChat == 'Y') {
-              let userInfos = { id: contact.groupCode, type: contact.folderType };
-  
-              if (contact.folderType != 'G') {
-                userInfos.sub = contact.sub;
-              }
-  
-              if (
-                contact.folderType != 'G' &&
-                (!userInfos.sub || userInfos.sub.length == 0)
-              ) {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_EmptyChatMember'),
-                  },
-                  dispatch,
-                );
-              } else {
-                openChatRoomView(
-                  dispatch,
-                  viewTypeChat,
-                  rooms,
-                  selectId,
-                  userInfos,
-                  myInfo,
-                );
-              }
-            } else
+        code: 'startChat',
+        isline: false,
+        onClick: () => {
+          if (contact.pChat == 'Y') {
+            let userInfos = { id: contact.groupCode, type: contact.folderType };
+
+            if (contact.folderType != 'G') {
+              userInfos.sub = contact.sub;
+            }
+
+            if (
+              contact.folderType != 'G' &&
+              (!userInfos.sub || userInfos.sub.length == 0)
+            ) {
               openPopup(
                 {
                   type: 'Alert',
@@ -215,11 +201,29 @@ const Contact = ({ contact, viewType, checkObj }) => {
                 },
                 dispatch,
               );
-          },
-          name: covi.getDic('StartChat'),
-        });
+            } else {
+              openChatRoomView(
+                dispatch,
+                viewTypeChat,
+                rooms,
+                selectId,
+                userInfos,
+                myInfo,
+              );
+            }
+          } else
+            openPopup(
+              {
+                type: 'Alert',
+                message: covi.getDic('Msg_EmptyChatMember'),
+              },
+              dispatch,
+            );
+        },
+        name: covi.getDic('StartChat'),
+      });
     }
-    
+
     if (contact.folderType == 'G') {
       returnMenu.push({
         code: 'deleteContact',
@@ -233,8 +237,8 @@ const Contact = ({ contact, viewType, checkObj }) => {
 
     return returnMenu;
   }, [dispatch, contact, userID, myInfo, viewTypeChat, rooms, selectId]);
-  
-  const addGroupOpen = useCallback(()=>{
+
+  const addGroupOpen = useCallback(() => {
     openLayer(
       {
         component: <AddContact useGroup={true} />,
@@ -246,56 +250,64 @@ const Contact = ({ contact, viewType, checkObj }) => {
   return (
     <>
       <RightConxtMenu menuId={`contactFD_${contact.folderID}`} menus={menus}>
-        <div className={["contextArea"].join(" ")}>
+        <div className={['contextArea'].join(' ')}>
           <a
-            className={['ListDivisionLine', isopen ? 'show' : '', contact.folderType == 'R' ? 'customGroup': ''].join(' ')}
+            className={[
+              'ListDivisionLine',
+              isopen ? 'show' : '',
+              contact.folderType == 'R' ? 'customGroup' : '',
+            ].join(' ')}
             onClick={handleIsOpen}
           >
             <span>
               {getDictionary(contact.folderName)}{' '}
-              {(contact.folderType == 'F' || contact.folderType == 'C' || contact.folderType == 'R') &&
+              {(contact.folderType == 'F' ||
+                contact.folderType == 'C' ||
+                contact.folderType == 'R') &&
                 (contact.sub ? `(${contact.sub.length})` : `(0)`)}
             </span>
           </a>
         </div>
       </RightConxtMenu>
       <ul className="people" ref={subDivEl}>
-        {contact.folderType != 'R' ? contact.sub &&
-          contact.sub.map((sub, idx) => {
-            if (viewType == 'list') {
-              // 자기자신과 대화 허용 20200720 작업시작 - shpark1
+        {contact.folderType != 'R'
+          ? contact.sub &&
+            contact.sub.map((sub, idx) => {
+              if (viewType == 'list') {
+                // 자기자신과 대화 허용 20200720 작업시작 - shpark1
+                return (
+                  <ContactItem
+                    key={contact.folderID + '_' + sub.id + idx}
+                    contact={contact}
+                    subItem={sub}
+                    isMine={sub.id == userID}
+                  />
+                );
+              } else if (viewType == 'checklist') {
+                return (
+                  <UserInfoBox
+                    key={contact.folderID + '_' + sub.id + idx}
+                    userInfo={sub}
+                    isInherit={false}
+                    isClick={false}
+                    checkObj={checkObj}
+                    isMine={sub.id == userID}
+                  />
+                );
+              }
+            })
+          : contact.sub &&
+            contact.sub.map(group => {
               return (
-                <ContactItem
-                  key={contact.folderID + '_' + sub.id + idx}
+                <GroupItem
+                  key={'group_' + contact.folderID + '_' + group.folderID}
                   contact={contact}
-                  subItem={sub}
-                  isMine={sub.id == userID}
-                />
-              );
-            } else if (viewType == 'checklist') {
-              return (
-                <UserInfoBox
-                  key={contact.folderID + '_' + sub.id + idx}
-                  userInfo={sub}
-                  isInherit={false}
-                  isClick={false}
+                  groupItem={group}
                   checkObj={checkObj}
-                  isMine={sub.id == userID}
+                  viewType={viewType}
                 />
               );
-            }
-          }): 
-          contact.sub && contact.sub.map(group =>{
-            return(
-              <GroupItem 
-                key={'group_'+contact.folderID + '_' + group.folderID}
-                contact={contact}
-                groupItem={group}
-                checkObj={checkObj}
-                viewType={viewType}
-              />
-            )
-          })}
+            })}
       </ul>
     </>
   );
