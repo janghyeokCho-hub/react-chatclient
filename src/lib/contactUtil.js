@@ -2,26 +2,45 @@
 import { addFixedUsers } from '@/modules/presence';
 import { getAesUtil } from '@/lib/aesUtil';
 
-export const addFavorite = (dispatch, userInfo, orgFolderType) => {
+export const addFavorite = (dispatch, userInfo, orgFolderType, folderId) => {
   if (!userInfo.id) return;
+
+  console.log('addFavorite >> ', userInfo, orgFolderType);
 
   // prop 변경시도 오류 방지를 위한 object clone
   const _userInfo = Object.assign({}, userInfo, { pChat: 'Y' });
 
-  dispatch(
-    addContacts([
-      {
-        targetId: _userInfo.id,
-        targetType: _userInfo.type,
-        folderType: 'F',
-        orgFolderType: orgFolderType,
-        userInfo: _userInfo,
-      },
-    ]),
-  );
+  if (folderId) {
+    dispatch(
+      addContacts([
+        {
+          targetId: _userInfo.id,
+          targetType: _userInfo.type,
+          folderType: 'F',
+          orgFolderType: orgFolderType,
+          folderId: folderId,
+          userInfo: _userInfo,
+        },
+      ]),
+    );
+  } else {
+    dispatch(
+      addContacts([
+        {
+          targetId: _userInfo.id,
+          targetType: _userInfo.type,
+          folderType: 'F',
+          orgFolderType: orgFolderType,
+          userInfo: _userInfo,
+        },
+      ]),
+    );
+  }
 
   if (orgFolderType != 'C' && _userInfo.type == 'U') {
-    dispatch(addFixedUsers([{ id: _userInfo.id, presence: _userInfo.presence }]));
+    dispatch(
+      addFixedUsers([{ id: _userInfo.id, presence: _userInfo.presence }]),
+    );
   }
 };
 
@@ -53,7 +72,12 @@ export const addContactList = (dispatch, list) => {
   dispatch(addFixedUsers(presenceList));
 };
 
-export const editGroupContactList = (dispatch, action, groupInfo, addMemberList) => {
+export const editGroupContactList = (
+  dispatch,
+  action,
+  groupInfo,
+  addMemberList,
+) => {
   dispatch(action(groupInfo));
 
   const presenceList = addMemberList.filter(item => {
@@ -92,18 +116,17 @@ export const deleteFavorite = (dispatch, id) => {
     group: 변경중인 group 정보
     userId: 접속 userId
 */
-export const filterSearchGroupMember = (data, group, userID) =>{
-  return data.filter((contact)=>{
+export const filterSearchGroupMember = (data, group, userID) => {
+  return data.filter(contact => {
     let flag = true;
-    if(group.sub){
-      group.sub.forEach(groupUser =>{
-        if(groupUser.id === contact.id)
-          flag = false;
+    if (group.sub) {
+      group.sub.forEach(groupUser => {
+        if (groupUser.id === contact.id) flag = false;
       });
     }
     return flag && contact.id != userID;
-  })
-}
+  });
+};
 
 /* 
   사용자 그룹생성 및 멤버 추가/제거 
@@ -115,12 +138,12 @@ export const filterSearchGroupMember = (data, group, userID) =>{
 */
 export const getApplyGroupInfo = (members, name, group, reserved) => {
   const AESUtil = getAesUtil();
-  let modifyInfo ={};
-  if((group && group.folderID) && reserved){
+  let modifyInfo = {};
+  if (group && group.folderID && reserved) {
     modifyInfo = {
       folderId: group ? group.folderID : null,
-      reserved : reserved || null
-    }
+      reserved: reserved || null,
+    };
   }
   /* 신청 param  
     folderId: 변경되는 그룹 id
@@ -129,15 +152,27 @@ export const getApplyGroupInfo = (members, name, group, reserved) => {
     arrGroup: 추가/제거되는 조직 리스트(암호화)
     arrMember: 추가/제거되는 사용자 리스트(암호화)
   */
-  return [{
-    ...modifyInfo,
-    displayName: ";;;;;;;;;".replace(/[\;]/g, name+";"),
-    folderType: 'R',
-    arrGroup: AESUtil.encrypt(members.filter((item)=> item.type == 'G').map((item)=>{
-      return item.id+"|"+item.companyCode;
-    }).join(",")),
-    arrMember: AESUtil.encrypt(members.filter((item)=> item.type == 'U').map((item)=>{
-      return item.id;
-    }).join(","))
-  }];
-}
+  return [
+    {
+      ...modifyInfo,
+      displayName: ';;;;;;;;;'.replace(/[\;]/g, name + ';'),
+      folderType: 'R',
+      arrGroup: AESUtil.encrypt(
+        members
+          .filter(item => item.type == 'G')
+          .map(item => {
+            return item.id + '|' + item.companyCode;
+          })
+          .join(','),
+      ),
+      arrMember: AESUtil.encrypt(
+        members
+          .filter(item => item.type == 'U')
+          .map(item => {
+            return item.id;
+          })
+          .join(','),
+      ),
+    },
+  ];
+};
