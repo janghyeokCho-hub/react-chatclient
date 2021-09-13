@@ -280,7 +280,7 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChan
         name: covi.getDic('OpenChat'),
       },
       (pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop)),
-      {
+      room?.roomType !== 'A' && {
         code: 'outRoom',
         isline: false,
         onClick: () => {
