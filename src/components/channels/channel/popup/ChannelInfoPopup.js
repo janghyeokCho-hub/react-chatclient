@@ -330,6 +330,34 @@ const ChannelInfoPopup = () => {
                           },
                           dispatch,
                         );
+                      } else if (displayName?.length > 20) {
+                        openPopupToFront(
+                          {
+                            type: 'Alert',
+                            message: covi.getDic('Msg_LimitChannelNameLength'),
+                          },
+                          dispatch,
+                        );
+                      } else if (description?.length > 40) {
+                        openPopupToFront(
+                          {
+                            type: 'Alert',
+                            message: covi.getDic(
+                              'Msg_LimitChannelDescriptionLength',
+                            ),
+                          },
+                          dispatch,
+                        );
+                      } else if (secretKey?.length > 20) {
+                        openPopupToFront(
+                          {
+                            type: 'Alert',
+                            message: covi.getDic(
+                              'Msg_LimitChannelPasswordLength',
+                            ),
+                          },
+                          dispatch,
+                        );
                       } else if (openType != 'O' && secretKey == '') {
                         openPopupToFront(
                           {
