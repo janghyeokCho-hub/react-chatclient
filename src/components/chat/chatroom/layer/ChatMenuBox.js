@@ -436,12 +436,12 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
 
         <div className="BottomContent" style={{ position: 'relative' }}>
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            <a
+            { roomInfo?.roomType !== 'A' && <a
               className="ico_chatout"
               onClick={isMakeRoom ? handleCreateLeaveRoom : handleLeaveRoom}
               alt={covi.getDic('LeaveChat')}
               title={covi.getDic('LeaveChat')}
-            ></a>
+            ></a> }
             {DEVICE_TYPE == 'd' && (
               <div
                 style={{
