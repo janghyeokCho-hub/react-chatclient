@@ -355,19 +355,19 @@ export default function NoteView({ match }) {
 
     return (
         <>
-        <ConditionalWrapper wrapIf={isNewWin} wrapper={(children) => <div className="Chat Newwindow">{children}</div>}>
-            <NoteHeader onClose={handleClose} />
-            <Scrollbars className="noteWrap Layer-Notepop" style={{ zIndex: 'unset', overflow: 'hidden' }}>
-                <_DrawNote noteInfo={noteInfo} onUserNameClicked={openProfile} loginId={loginId} />
-            </Scrollbars>
-            <div className="layer-bottom-btn-wrap right">
-                <a className="btn_delete" onClick={handleDeleteNote}>{covi.getDic('Delete')}</a>
-                <a className="Btn-pointcolor-mini" onClick={() => _openNewNote(dispatch, 'reply', noteInfo)}>{covi.getDic('Reply', '답장')}</a>
-                <a className="Btn-pointcolor-mini" onClick={() => _openNewNote(dispatch, 'replyAll', noteInfo)}>{covi.getDic('ReplyAll', '전체답장')}</a>
-                <a className="Btn-pointcolor-mini" onClick={() => _openNewNote(dispatch, 'forward', noteInfo)}>{covi.getDic('Forward', '전달')}</a>
-            </div>
-        </ConditionalWrapper>
-        { isNewWin && <LayerTemplate /> }
+            <ConditionalWrapper wrapIf={isNewWin} wrapper={(children) => <div className="Chat Newwindow">{children}</div>}>
+                <NoteHeader onClose={handleClose} />
+                <Scrollbars className="noteWrap Layer-Notepop" style={{ zIndex: 'unset', overflow: 'hidden' }} autoHide={false} >
+                    <_DrawNote noteInfo={noteInfo} onUserNameClicked={openProfile} loginId={loginId} />
+                </Scrollbars>
+                <div className="layer-bottom-btn-wrap right">
+                    <a className="btn_delete" onClick={handleDeleteNote}>{covi.getDic('Delete')}</a>
+                    <a className="Btn-pointcolor-mini" onClick={() => _openNewNote(dispatch, 'reply', noteInfo)}>{covi.getDic('Reply', '답장')}</a>
+                    <a className="Btn-pointcolor-mini" onClick={() => _openNewNote(dispatch, 'replyAll', noteInfo)}>{covi.getDic('ReplyAll', '전체답장')}</a>
+                    <a className="Btn-pointcolor-mini" onClick={() => _openNewNote(dispatch, 'forward', noteInfo)}>{covi.getDic('Forward', '전달')}</a>
+                </div>
+            </ConditionalWrapper>
+            {isNewWin && <LayerTemplate />}
         </>
     );
 }
