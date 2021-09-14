@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import usePrevious from '@/lib/usePrevious';
 
-const SelectBox = ({ onChange, items, defaultValue, order, style }) => {
+const SelectBox = ({ onChange, items, defaultValue, order, style, fontMode }) => {
   const [viewList, setViewList] = useState(false);
   const [selectIdx, setSelectIdx] = useState(-1);
 
@@ -30,7 +30,7 @@ const SelectBox = ({ onChange, items, defaultValue, order, style }) => {
       style={{ zIndex: `${typeof order == 'number' ? order : 1}` }}
     >
       <a
-        style={style}
+        style={{...style, ...(selectIdx > -1 && items?.[selectIdx]?.style) }}
         onClick={e => {
           setViewList(!viewList);
         }}
@@ -49,6 +49,7 @@ const SelectBox = ({ onChange, items, defaultValue, order, style }) => {
                 onClick={e => {
                   onSelect(idx);
                 }}
+                style={{...(fontMode && { fontFamily: item.value }), ...item.style}}
               >
                 {item.name}
               </li>

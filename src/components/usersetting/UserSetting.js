@@ -1,14 +1,16 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Scrollbars from 'react-custom-scrollbars';
 import { format } from 'date-fns';
+import useSWR from 'swr';
+
 import SelectBox from '@COMMON/buttons/SelectBox';
 import ColorBox from '@COMMON/buttons/ColorBox';
+import ColorPicker from '@COMMON/buttons/ColorPicker';
 import {
   bound,
   setTopButton,
   changeTheme,
-  changeFontSize,
 } from '@/modules/menu';
 import { changeMyPhotoPath, changeMyInfo, logout } from '@/modules/login';
 import { getConfig } from '@/lib/util/configUtil';
@@ -24,12 +26,24 @@ import {
   evalConnector,
   sendParent,
   themeChange,
-  fontSizeChange,
+  broadcastEvent,
   getDownloadDefaultPath,
   openDirectoryDialog,
 } from '@/lib/deviceConnector';
 import Config from '@/config/config';
 import useTimestamp from '@/hooks/useTimestamp';
+import Slider from '@material-ui/core/Slider';
+import { makeStyles } from '@material-ui/core/styles';
+import clsx from 'clsx';
+import { debounce } from '@/lib/util/asyncUtil';
+import { useChatFontSize, useChatFontType, useMyChatFontColor } from '@/hooks/useChat';
+
+const useStyles = makeStyles({
+  slider: {
+    maxWidth: 150,
+    zIndex: 1
+  },
+});
 
 const UserSetting = ({ history }) => {
   const { myInfo, syncDate } = useSelector(({ login }) => ({
@@ -55,6 +69,8 @@ const UserSetting = ({ history }) => {
   const [showNotiContent, setShowNotiContent] = useState(false);
   const [workTiemNoti, setWorkTimeNoti] = useState(false);
   const notificationBlock = getConfig('NotificationBlock');
+  const customFonts = getConfig('UseCustomFonts', { use: false, fonts: [] });
+
   // 색상 선택
   const [useEmoji, setUseEmoji] = useState(false);
   // 직무표시
@@ -65,10 +81,11 @@ const UserSetting = ({ history }) => {
   const [lang, setLang] = useState(
     (covi.settings && covi.settings.lang) || 'ko',
   );
-  // 글씨크기
-  const [fontSize, setFontSize] = useState(
-    (covi.settings && covi.settings.fontSize) || 'm',
-  );
+
+  const [fontSize, setFontSize] = useChatFontSize();
+  const [fontType, setFontType] = useChatFontType();
+  const [myChatColor, setMyChatColor] = useMyChatFontColor();
+  const defaultFontSize = useMemo(() => fontSize, []);
   // 첨부파일 다운로드
   const [downloadPathCheck, setDownloadPathCheck] = useState(false);
   const [defaultDownloadPath, setDefaultDownloadPath] = useState('');
@@ -80,6 +97,8 @@ const UserSetting = ({ history }) => {
 
   // componentDidMount
   const dispatch = useDispatch();
+  const styles = useStyles();
+
   useEffect(() => {
     dispatch(bound({ name: '', type: '' }));
     dispatch(setTopButton(null));
@@ -377,24 +396,22 @@ const UserSetting = ({ history }) => {
     if (typeof langList == 'object') return langList;
     else return [{ name: '한국어', value: 'ko' }];
   }, []);
-  const handleChangeFontSize = fontSize => {
-    if (fontSize == 's' || fontSize == 'm' || fontSize == 'l') {
-      // APP_SETTING 저장
-      if (DEVICE_TYPE == 'd') {
-        handleConfig({ fontSize: fontSize });
-      } else if (DEVICE_TYPE == 'b') {
-        localStorage.setItem('covi_user_fontSize', fontSize);
-      }
-      if (covi.settings) covi.settings.fontSize = fontSize;
-      dispatch(changeFontSize(fontSize));
-      if (DEVICE_TYPE == 'd') {
-        fontSizeChange(fontSize);
-      }
+  const handleChangeFontSize = debounce((_, _fontSize) => {
+    setFontSize(_fontSize);
+    if (DEVICE_TYPE == 'd') {
+      broadcastEvent('onFontSizeChange', _fontSize);
     }
-  };
+  }, 100);
+
+  const handleChangeMychatColor = useCallback(_fontColor => {
+    setMyChatColor(_fontColor);
+    if (DEVICE_TYPE === 'd') {
+      broadcastEvent('onFontColorChange', _fontColor);
+    }
+  }, []);
+
   // 프로필이미지 1시간 단위로 캐싱
   const { timestamp } = useTimestamp({ option: 'yMdh', prefix: '?t=' });
-
   const menuItems = useMemo(() => {
     const firstItem = myInfo.isExtUser
       ? []
@@ -404,6 +421,8 @@ const UserSetting = ({ history }) => {
       { name: covi.getDic('Channel'), value: 'channellist' },
     ]);
   }, [myInfo]);
+
+  const themeColor = covi?.config?.ClientThemeList?.find(t => t?.name === getInitTheme());
 
   return (
     <div style={{ height: '100%' }}>
@@ -990,7 +1009,7 @@ const UserSetting = ({ history }) => {
           <div className="ChatConfigCon">
             <ul>
               <li className="ChatConfig-list">
-                <div className="color-box-wrap">
+                <div className="color-box-wrap" style={{ zIndex: 2 }}>
                   <ColorBox
                     items={covi.config.ClientThemeList}
                     defaultColor={getInitTheme()}
@@ -1003,23 +1022,54 @@ const UserSetting = ({ history }) => {
                   <span>{covi.getDic('ChangeTheme')}</span>
                 </a>
               </li>
+              {/* 폰트크기 변경 */}
               <li className="ChatConfig-list">
-                <SelectBox
-                  items={[
-                    { name: covi.getDic('Small'), value: 's' },
-                    { name: covi.getDic('Medium'), value: 'm' },
-                    { name: covi.getDic('Large'), value: 'l' },
-                  ]}
-                  order={2}
-                  defaultValue={fontSize}
-                  onChange={item => {
-                    handleChangeFontSize(item.value);
-                  }}
-                ></SelectBox>
                 <span className="ChatConfig-menu">
                   <span>{covi.getDic('FontSize')}</span>
                 </span>
+                <Slider
+                  defaultValue={defaultFontSize}
+                  aria-labelledby="discrete-slider"
+                  valueLabelDisplay="auto"
+                  step={2}
+                  marks
+                  min={10}
+                  max={20}
+                  className={clsx('link_select_box', styles.slider)}
+                  style={{
+                    color: themeColor?.value || '#888'
+                  }}
+                  onChange={handleChangeFontSize}
+                />
               </li>
+              { /* 자신의 메시지 색상변경 */ }
+              <li className="ChatConfig-list">
+                <span className="ChatConfig-menu">
+                  <span>{covi.getDic('MyChatColor', '내가 보낸 메시지 색상')}</span>
+                </span>
+                <ColorPicker initialColor={myChatColor} onChange={handleChangeMychatColor}/>
+              </li>
+              { /* 폰트변경 */ }
+              {customFonts?.use === true && (
+                <li className="ChatConfig-list">
+                  <span className="ChatConfig-menu">
+                    <span>{covi.getDic('Font', '글씨체')}</span>
+                  </span>
+                  <SelectBox
+                    items={customFonts.fonts}
+                    fontMode={true}
+                    order={4}
+                    defaultValue={fontType}
+                    onChange={item => {
+                      if (DEVICE_TYPE === 'd') {
+                        broadcastEvent('onFontTypeChange', item.value);
+                      }
+                      setFontType(item.value);
+                    }}
+                    style={{ width: '180px' }}
+                  ></SelectBox>
+                </li>
+              )}
               {DEVICE_TYPE == 'd' && (
                 <>
                   <li className="ChatConfig-list">

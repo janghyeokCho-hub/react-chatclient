@@ -12,7 +12,7 @@ import * as common from '@/lib/common';
 import IconConxtMenu from '@C/common/popup/IconConxtMenu';
 import { removeChannelNotice } from '@/modules/channel';
 import { setMessageLinkInfo } from '@/modules/room';
-import { Plain, Link, Tag, Sticker, Mention  } from '@C/chat/message/types';
+import { useChatFontSize } from '@/hooks/useChat';
 
 import { evalConnector } from '@/lib/deviceConnector';
 import useMemberInfo from '@/hooks/useMemberInfo';
@@ -25,7 +25,7 @@ const NoticeBox = () => {
   const [isNew, setIsNew] = useState(false);
   const [hideChannelNotices, setHideChannelNotices] = useState({});
   const [noticeContext, setNoticeContext] = useState('');
-
+  const [fontSize] = useChatFontSize();
   const dispatch = useDispatch();
 
   const { findMemberInfo } = useMemberInfo();
@@ -142,6 +142,8 @@ const NoticeBox = () => {
       const timestamp = message.sendDate;
       let dateText = '';
 
+      const smallFontSize = Math.max(10, fontSize - 2);
+
       if (timestamp && isValid(new Date(timestamp))) {
         const toDay = startOfToday();
         const procTime = new Date(timestamp);
@@ -198,7 +200,7 @@ const NoticeBox = () => {
                 )}
                 {!message.fileInfos && (
                   <div className="chatinfo">
-                    {timeBox && <span className="Sendtime">{}</span>}
+                    {timeBox && <span className="Sendtime" style={{ fontSize: smallFontSize }}>{}</span>}
                   </div>
                 )}
                 {isMine && (
@@ -255,7 +257,7 @@ const NoticeBox = () => {
                       isInherit={true}
                       img={senderInfo.photoPath}
                     ></ProfileBox>
-                    <p className="msgname">{common.getJobInfo(senderInfo)}</p>
+                    <p className="msgname" style={{ fontSize }}>{common.getJobInfo(senderInfo)}</p>
                   </>
                 )}
                 <FileMessageBox
@@ -264,7 +266,7 @@ const NoticeBox = () => {
                   id={!drawText && id}
                 />
                 <div className="chatinfo">
-                  {timeBox && <span className="Sendtime">{dateText}</span>}
+                  {timeBox && <span className="Sendtime" style={{ fontSize: smallFontSize}}>{dateText}</span>}
                 </div>
               </li>
             );
@@ -276,7 +278,7 @@ const NoticeBox = () => {
                 }
               >
                 <div className="chatinfo">
-                  {timeBox && <span className="Sendtime">{dateText}</span>}
+                  {timeBox && <span className="Sendtime" style={{ fontSize: smallFontSize}}>{dateText}</span>}
                 </div>
                 <FileMessageBox
                   messageId={message.messageID}
@@ -336,7 +338,7 @@ const NoticeBox = () => {
         </>
       );
     },
-    [openNotice, currentChannel],
+    [openNotice, currentChannel, fontSize],
   );
 
   const processContext = async() => {

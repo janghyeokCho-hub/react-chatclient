@@ -17,12 +17,13 @@ import { get, remove } from '@/lib/util/storageUtil';
 import { openFile, openPath } from '@/lib/deviceConnector';
 import { getDic } from '@/lib/util/configUtil';
 import { logRenderer } from '@/lib/deviceConnector';
+import { useChatFontSize } from '../../../../hooks/useChat';
 
 const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
   const extension = getFileExtension(item.ext);
   const [progressData, setProgressData] = useState(null);
   const [downloaded, setDownloaded] = useState(false);
-
+  const [fontSize] = useChatFontSize();
   const dispatch = useDispatch();
   useEffect(() => {
     if (DEVICE_TYPE == 'd') {
@@ -357,7 +358,7 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
           >
             <div className="file-type-ico"></div>
             <div className="file-info-txt">
-              <p className="file-name">
+              <p className="file-name" style={{ fontSize }}>
                 {isTemp ? item.fullName : item.fileName}
               </p>
               <p className="file-size">
@@ -381,6 +382,7 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
                 onViewer={() => handleViewer}
                 downloaded={downloaded}
                 onOpen={handleOpenFile}
+                fontSize={fontSize}
               ></FileMenuBox>
             )}
 

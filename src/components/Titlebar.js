@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import useSWR from 'swr';
+
 import {
   evalConnector,
   openLink,
@@ -11,11 +13,12 @@ import {
   isMainWindow,
   setWindowOpacity,
 } from '@/lib/deviceConnector';
-import { changeTheme, changeFontSize } from '@/modules/menu';
+import { changeTheme, changeFontSize, changeMychatColor } from '@/modules/menu';
 import { openRoom, newWinRoom } from '@/modules/room';
 import { openChannel, newWinChannel } from '@/modules/channel';
 import { openPopup } from '@/lib/common';
 import Range from '@COMMON/buttons/Range';
+import { useChatFontSize, useChatFontType, useMyChatFontColor } from '../hooks/useChat';
 
 const Titlebar = () => {
   const [alwaysTop, setAlwaysTop] = useState(getWindowAlwaysTop());
@@ -25,7 +28,9 @@ const Titlebar = () => {
   const isNewWin = !isMainWindow();
 
   const tempMessage = useSelector(({ message }) => message.tempMessage);
-
+  const [_, setFontType]= useChatFontType();
+  const [__, setFontSize] = useChatFontSize();
+  const [___, setMyChatColor] = useMyChatFontColor();
   const dispatch = useDispatch();
 
   // window객체에 global로 세팅해야하는 함수들을 미리 loading ( titlebar draw 시점 및 사용시점 파악 필요 )
@@ -58,9 +63,25 @@ const Titlebar = () => {
     evalConnector({
       method: 'on',
       channel: 'onFontSizeChange',
-      callback: (event, fontSize) => {
-        dispatch(changeFontSize(fontSize));
+      callback: (_, _fontSize) => {
+        setFontSize(_fontSize);
       },
+    });
+
+    evalConnector({
+      method: 'on',
+      channel: 'onFontColorChange',
+      callback: (_, _fontColor) => {
+        setMyChatColor(_fontColor);
+      },
+    });
+
+    evalConnector({
+      method: 'on',
+      channel: 'onFontTypeChange',
+      callback(_, data) {
+        setFontType(data);
+      }
     });
 
     evalConnector({
@@ -103,6 +124,14 @@ const Titlebar = () => {
       evalConnector({
         method: 'removeListener',
         channel: 'onFontSizeChange',
+      });
+      evalConnector({
+        method: 'removeListener',
+        channel: 'onFontColorChange',
+      });
+      evalConnector({
+        method: 'removeListener',
+        channel: 'onFontTypeChange',
       });
       evalConnector({
         method: 'removeListener',

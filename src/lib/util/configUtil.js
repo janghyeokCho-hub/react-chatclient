@@ -1,5 +1,6 @@
 import { managesvr } from '@/lib/api';
 import { evalConnector } from '@/lib/deviceConnector';
+
 export const setInitConfig = callback => {
   // 전역함수 등록
   window.covi.getDic = (key, defaultValue) => {
@@ -79,9 +80,9 @@ export const getInitSettings = () => {
       : 'PN'; // PN - default
 
   let fontSize =
-    window.covi.config && window.covi.config.DefaultFontSize
-      ? window.covi.config.DefaultFontSize
-      : 'm';
+    window.covi.config && window.covi.config.DefaultFontSize_v2
+      ? window.covi.config.DefaultFontSize_v2
+      : '12';
 
   let setLang = null;
   let setTheme = null;
@@ -92,7 +93,7 @@ export const getInitSettings = () => {
     setLang = localStorage.getItem('covi_user_lang');
     setTheme = localStorage.getItem('covi_user_theme');
     setJobInfo = localStorage.getItem('covi_user_jobInfo');
-    setFontSize = localStorage.getItem('covi_user_fontSize');
+    setFontSize = localStorage.getItem('covi_user_font_size');
   } else {
     const appConfig = evalConnector({
       method: 'getGlobal',
@@ -109,7 +110,7 @@ export const getInitSettings = () => {
     lang: setLang ? setLang : lang,
     theme: setTheme ? setTheme : theme,
     jobInfo: setJobInfo ? setJobInfo : jobInfo,
-    fontSize: setFontSize ? setFontSize : fontSize,
+    fontSize: (isNaN(+setFontSize) || !setFontSize) ? fontSize : setFontSize,
   };
 
   if (DEVICE_TYPE == 'b') {
@@ -117,7 +118,7 @@ export const getInitSettings = () => {
     localStorage.setItem('covi_user_lang', resultSetting.lang);
     localStorage.setItem('covi_user_theme', resultSetting.theme);
     localStorage.setItem('covi_user_jobInfo', resultSetting.jobInfo);
-    localStorage.setItem('covi_user_fontSize', resultSetting.fontSize);
+    localStorage.setItem('covi_user_font_size', resultSetting.fontSize);
   }
 
   return resultSetting;

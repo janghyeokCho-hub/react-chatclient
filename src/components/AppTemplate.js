@@ -1,5 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import useSWR from 'swr';
+
 import LeftMenu from '@C/LeftMenu';
 import Content from '@C/Content';
 import MultiView from '@C/MultiView';
@@ -29,11 +31,13 @@ import {
   leaveChannelByAdminUtilAfter,
 } from '@/lib/channelUtil';
 import { addFavorite, deleteFavorite } from '@/lib/contactUtil';
+import { useChatFontType } from '../hooks/useChat';
 
 const AppTemplate = () => {
   const viewType = useSelector(({ room }) => room.viewType);
   const contactList = useSelector(({ contact }) => contact.contacts);
   const dispatch = useDispatch();
+  const [fontType] = useChatFontType();
 
   const windowSizeChange = useCallback(() => {
     if (viewType === 'M' && window.innerWidth <= 1000) {
@@ -303,7 +307,7 @@ const AppTemplate = () => {
           </div>
           <>
             {viewType === 'M' && (
-              <div className="Chat">
+              <div className="Chat" style={{ fontFamily: fontType === 'Default' ? null : fontType }}>
                 <MultiView></MultiView>
               </div>
             )}

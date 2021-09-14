@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { Plain, Link, Tag, Sticker, Mention } from '@C/chat/message/types';
+import { useChatFontSize, useMyChatFontColor } from '@/hooks/useChat';
 
 const getAttribute = tag => {
   const attrPattern = new RegExp(
     /(\S+)=["']?((?:.(?!["']?\s+(?:\S+)=|[>"']))+.)["']?/,
     'gi',
   );
-  let attrs = {};
+  let attrs = { };
   const match = tag.match(attrPattern);
 
   if (match && match.length > 0) {
@@ -23,14 +25,16 @@ const getAttribute = tag => {
         }
 
         attrs[key] = value;
-      } catch (e) {}
+      } catch (e) { }
     });
   }
 
   return attrs;
 };
 
-const Message = ({ children, className, eleId, marking, mentionInfo }) => {
+const Message = ({ children, className, eleId, marking, mentionInfo, isMine }) => {
+  const [fontSize] = useChatFontSize();
+  const [myChatColor] = useMyChatFontColor();
   const drawText = useMemo(() => {
     const pattern = new RegExp(
       /[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/,
@@ -52,7 +56,7 @@ const Message = ({ children, className, eleId, marking, mentionInfo }) => {
           ></Plain>,
         );
       }
-      
+
       var attrs = getAttribute(match[0]);
 
       if (match[1] == 'LINK') {
@@ -94,13 +98,13 @@ const Message = ({ children, className, eleId, marking, mentionInfo }) => {
   }, [children]);
 
   return (
-    <>
-      {(eleId && (
-        <div className={className} id={eleId}>
-          {drawText}
-        </div>
-      )) || <div className={className}>{drawText}</div>}
-    </>
+    <div
+      className={className}
+      style={{ fontSize, color: isMine ? myChatColor : undefined }}
+      id={eleId ? eleId : undefined}
+    >
+      {drawText}
+    </div>
   );
 };
 

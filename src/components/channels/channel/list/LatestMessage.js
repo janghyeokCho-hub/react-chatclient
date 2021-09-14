@@ -33,7 +33,7 @@ const LatestMessage = () => {
 
   const drawMessage = useCallback(message => {
     let senderInfo = null;
-
+  
     if (!(typeof message.senderInfo === 'object')) {
       senderInfo = JSON.parse(message.senderInfo);
     } else {

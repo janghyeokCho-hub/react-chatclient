@@ -882,6 +882,22 @@ export const fontSizeChange = fontSize => {
   }
 };
 
+
+export function broadcastEvent(eventName, value) {
+  try {
+    const remote = getRemote();
+    const allWindows = remote.BrowserWindow.getAllWindows();
+    const currentWindowId = remote.getCurrentWindow().id;
+    allWindows.forEach(win => {
+      if (win.id !== currentWindowId) {
+        win.webContents.send(eventName, value);
+      }
+    });
+  } catch (e) {
+    console.log(`Error has been orrured when broadcasting event("${eventName}") : `, e);
+  }
+}
+
 export const resetParentUnreadCount = args => {
   const remote = getRemote();
 

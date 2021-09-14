@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import * as common from '@/lib/common';
 import LinkMessageBox from '@C/chat/message/LinkMessageBox'; // 그대로 사용
 import FileMessageBox from '@C/chat/message/FileMessageBox'; // 그대로 사용
+import { useChatFontSize } from '@/hooks/useChat';
 
 import { setMessageLinkInfo } from '@/modules/channel';
 
@@ -22,6 +23,7 @@ const MessageBox = ({
   getMenuData,
 }) => {
   const roomId = useSelector(({ channel }) => channel.currentChannel.roomId);
+  const [fontSize] = useChatFontSize();
   const currMember = useSelector(
     ({ channel }) => channel.currentChannel.members,
   );
@@ -57,6 +59,7 @@ const MessageBox = ({
     let messageType = 'message';
     let mentionInfo = [];
 
+    const smallFontSize = Math.max(10, fontSize - 2);
     // protocol check
     if (common.eumTalkRegularExp.test(drawText)) {
       const processMsg = common.convertEumTalkProtocol(drawText);
@@ -119,7 +122,7 @@ const MessageBox = ({
               {!message.fileInfos && (
                 <div className="chatinfo">
                   {timeBox && (
-                    <span className="Sendtime">
+                    <span className="Sendtime" style={{ fontSize: smallFontSize}}>
                       {format(new Date(message.sendDate), 'HH:mm')}
                     </span>
                   )}
@@ -178,7 +181,7 @@ const MessageBox = ({
                     isInherit={isOldMember ? false : true}
                     img={senderInfo.photoPath}
                   ></ProfileBox>
-                  <p className="msgname">
+                  <p className="msgname" style={{ fontSize }}>
                     {common.getJobInfo(senderInfo)}
                     {senderInfo.isMobile === 'Y' && (
                       <span style={{ padding: '0px 5px' }}>
@@ -222,7 +225,7 @@ const MessageBox = ({
               />
               <div className="chatinfo">
                 {timeBox && (
-                  <span className="Sendtime">
+                  <span className="Sendtime" style={{ fontSize: smallFontSize}}>
                     {format(new Date(message.sendDate), 'HH:mm')}
                   </span>
                 )}
@@ -246,7 +249,7 @@ const MessageBox = ({
               ></div>
               <div className="chatinfo">
                 {timeBox && (
-                  <span className="Sendtime">
+                  <span className="Sendtime" style={{ fontSize: smallFontSize}}>
                     {format(new Date(message.sendDate), 'HH:mm')}
                   </span>
                 )}
@@ -301,7 +304,7 @@ const MessageBox = ({
                       isInherit={isOldMember ? false : true}
                       img={senderInfo.photoPath}
                     ></ProfileBox>
-                    <p className="msgname">
+                    <p className="msgname" style={{ fontSize }}>
                       {common.getJobInfo(senderInfo)}
                       {senderInfo.isMobile === 'Y' && (
                         <span style={{ padding: '0px 5px' }}>
@@ -348,6 +351,7 @@ const MessageBox = ({
                     eleId={id}
                     marking={marking}
                     mentionInfo={mentionInfo}
+                    isMine={isMine}
                   >
                     {drawText}
                   </Message>
@@ -355,7 +359,7 @@ const MessageBox = ({
                 {!fileInfoJSX && !urlInfoJSX && (
                   <div className="chatinfo">
                     {timeBox && (
-                      <span className="Sendtime">
+                      <span className="Sendtime" style={{ fontSize: smallFontSize}}>
                         {format(new Date(message.sendDate), 'HH:mm')}
                       </span>
                     )}
@@ -383,7 +387,7 @@ const MessageBox = ({
             {!fileInfoJSX && !urlInfoJSX && (
               <div className="chatinfo">
                 {timeBox && (
-                  <span className="Sendtime">
+                  <span className="Sendtime" style={{ fontSize: smallFontSize}}>
                     {format(new Date(message.sendDate), 'HH:mm')}
                   </span>
                 )}
@@ -400,6 +404,7 @@ const MessageBox = ({
                   eleId={id}
                   marking={marking}
                   mentionInfo={mentionInfo}
+                  isMine={isMine}
                 >
                   {drawText}
                 </Message>
@@ -413,7 +418,7 @@ const MessageBox = ({
         </>
       );
     }
-  }, [message, marking]);
+  }, [message, marking, fontSize]);
 
   return drawMessage;
 };

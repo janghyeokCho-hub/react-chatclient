@@ -56,7 +56,7 @@ function createTakeLatestTimer(timeout = 100) {
 function debounce(func, timeout = 100, {leading = false, throttle = false} = {}) {
     let currentTimer = null;
     
-    return () => {
+    return (...args) => {
         const execImmediate = (leading || throttle) && !currentTimer;
 
         if (currentTimer && !throttle) {
@@ -66,12 +66,12 @@ function debounce(func, timeout = 100, {leading = false, throttle = false} = {})
 
         if(!currentTimer) {
             currentTimer = setTimeout(() => {
-                !throttle && func(...arguments);
+                !throttle && func(...args);
                 currentTimer = 0;
             }, timeout);
         }
 
-        execImmediate && func(...arguments);
+        execImmediate && func(...args);
     }
 }
 

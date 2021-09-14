@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { format, getDay } from 'date-fns';
 import { getDictionary, isJSONStr, getSysMsgFormatStr } from '@/lib/common';
+import { useChatFontSize } from '@/hooks/useChat';
 
 const getWeekText = dayIndex => {
   if (dayIndex == 0) {
@@ -21,6 +22,8 @@ const getWeekText = dayIndex => {
 };
 
 const SystemMessageBox = ({ message, date }) => {
+  const [fontSize] = useChatFontSize();
+
   const drawMessage = useMemo(() => {
     try {
       let printMessage = '';
@@ -49,7 +52,7 @@ const SystemMessageBox = ({ message, date }) => {
       return (
         <li className="dateinfo">
           <p
-            style={{ textAlign: 'center' }}
+            style={{ textAlign: 'center', fontSize }}
             dangerouslySetInnerHTML={{ __html: printMessage }}
           ></p>
         </li>
@@ -58,7 +61,7 @@ const SystemMessageBox = ({ message, date }) => {
       console.log('system message draw err :: ' + e);
       return <></>;
     }
-  }, [message, date]);
+  }, [message, date, fontSize]);
 
   return drawMessage;
 };

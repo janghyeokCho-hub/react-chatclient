@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import loadable from '@loadable/component';
+import useSWR from 'swr';
+
 import LoadingWrap from '@COMMON/LoadingWrap';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import {
@@ -17,6 +19,7 @@ import { newChatRoom, evalConnector, focusWin } from '@/lib/deviceConnector';
 import { clearLayer } from '@/lib/common';
 import MessageView from '@C/chat/chatroom/normal/MessageView';
 import ChatBackground from './layer/ChatBackground';
+import { useChatFontType } from '../../../hooks/useChat';
 
 const SearchView = loadable(() => import('@C/chat/chatroom/search/SearchView'));
 const MoveView = loadable(() => import('@C/chat/chatroom/move/MoveView'));
@@ -42,6 +45,8 @@ const ChatRoom = ({ match, roomInfo }) => {
 
   const [viewExtension, setViewExtension] = useState('');
   const [cancelHandlerFn, setCancelHandlerFn] = useState(null);
+
+  const [fontType] = useChatFontType();
 
   const dispatch = useDispatch();
 
@@ -204,7 +209,7 @@ const ChatRoom = ({ match, roomInfo }) => {
       {!loading && roomID && (
         <>
           {isNewWin && (
-            <div className="Chat Newwindow">
+            <div className="Chat Newwindow" style={{ fontFamily: fontType === 'Default' ? null : fontType }}>
               {DEVICE_TYPE == 'd' && room && (
                 <ChatBackground background={room.background} />
               )}

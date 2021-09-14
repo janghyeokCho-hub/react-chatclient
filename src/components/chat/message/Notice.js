@@ -13,6 +13,7 @@ import {
 import { openPopup } from '@/lib/common';
 import ParamUtil, { encryptText } from '@/lib/util/paramUtil';
 import { evalConnector } from '@/lib/deviceConnector';
+import { useChatFontSize } from '@/hooks/useChat';
 
 const getAttribute = tag => {
   const attrPattern = new RegExp(
@@ -47,6 +48,7 @@ const Notice = ({ type, value, title, func }) => {
   const dispatch = useDispatch();
   const userInfo = useSelector(({ login }) => login.userInfo);
   const loginId = useSelector(({ login }) => login.id);
+  const [fontSize] = useChatFontSize();
 
   const drawText = useMemo(() => {
     let procVal = value;
@@ -333,9 +335,10 @@ const Notice = ({ type, value, title, func }) => {
             boxSizing: 'border-box',
             padding: '20px',
             textAlign: 'left',
+            fontSize
           }}
         >
-          <span className="sys-tit">
+          <span className="sys-tit" style={{ fontSize: fontSize + 2 }}>
             <span style={{ float: 'left' }}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -382,8 +385,8 @@ const Notice = ({ type, value, title, func }) => {
           {drawText}
         </div>
       )) || (
-        <div className="msgtxt" style={{ color: '#000' }}>
-          <span className="sys-tit">
+        <div className="msgtxt" style={{ color: '#000', fontSize }}>
+          <span className="sys-tit" style={{ fontSize: fontSize + 2 }}>
             {(title && getDictionary(title)) ||
               getDictionary(
                 '시스템 알림;System Alarm;System Alarm;System Alarm;System Alarm;System Alarm;System Alarm;System Alarm;System Alarm;',
