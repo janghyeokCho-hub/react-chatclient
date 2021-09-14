@@ -51,12 +51,10 @@
     </div>
 
     <script>
-      const electron = require('electron');
-      let { ipcRenderer, remote } = electron;
-
+      const { ipcRenderer } = require('electron');
+      const { getGlobal }  = require('@electron/remote/main');
       window.onload = () => {
-        const domainInfo = remote
-          .getGlobal('APP_SECURITY_SETTING')
+        const domainInfo = getGlobal('APP_SECURITY_SETTING')
           .get('domain');
 
         let connChat = false;

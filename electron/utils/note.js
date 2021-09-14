@@ -53,7 +53,10 @@ export function openNoteWindow({ type, noteId, viewType, isEmergency = false }) 
         minWidth,
         minHeight,
         webPrefereces: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            contextIsolation: false,
+            enableRemoteModule: true,
+            nodeIntegrationInSubFrames: true
         },
         frame: false,
         alwaysOnTop: isEmergency

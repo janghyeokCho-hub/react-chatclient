@@ -302,8 +302,8 @@
     </div>
 
     <script>
-      const electron = require('electron');
-      let { ipcRenderer, remote } = electron;
+      const { ipcRenderer } = require('electron');
+      const { dialog, app, getCurrentWindow } = require('@electron/remote/main');
 
       window.onload = () => {
         const closeBtn = document.querySelector('#btnClose');
@@ -324,7 +324,7 @@
                     domain,
                   );
                 } else {
-                  remote.dialog.showMessageBox(remote.getCurrentWindow(), {
+                  dialog.showMessageBox(getCurrentWindow(), {
                     type: 'info',
                     title: '실패 / failure',
                     message:
@@ -333,7 +333,7 @@
                 }
               })
               .catch(e => {
-                remote.dialog.showMessageBox(remote.getCurrentWindow(), {
+                dialog.showMessageBox(getCurrentWindow(), {
                   type: 'info',
                   title: '실패 / failure',
                   message:
@@ -341,7 +341,7 @@
                 });
               });
           } else {
-            remote.dialog.showMessageBox(remote.getCurrentWindow(), {
+            dialog.showMessageBox(getCurrentWindow(), {
               type: 'info',
               title: '실패 / failure',
               message:
@@ -351,8 +351,8 @@
         });
 
         closeBtn.addEventListener('click', () => {
-          remote.app.quit();
-          remote.app.exit();
+          app.quit();
+          app.exit();
         });
       };
 

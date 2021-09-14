@@ -23,6 +23,8 @@ export const evalConnector = options => {
     const emitter = getEmitter();
     const remote = getRemote();
 
+    console.log('remote@@   ', remote);
+
     if (options.method == 'on') {
       emitter.on(options.channel, options.callback);
     } else if (options.method == 'once') {
@@ -129,7 +131,12 @@ export const newExtensionWindow = (winName, id, openURL) => {
       roomObj = new remote.BrowserWindow({
         ...initial,
         frame: false,
-        webPreferences: { nodeIntegration: true },
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+          enableRemoteModule: true,
+          nodeIntegrationInSubFrames: true
+        },
       });
 
       const loadURL = `${url.format({
@@ -181,6 +188,7 @@ export const isExceededMaxWindow = () => {
 };
 
 export const newChatRoom = (winName, id, openURL) => {
+  console.log('newChatRoom    ', winName, id, openURL);
   let roomObj = null;
   if (DEVICE_TYPE == 'b') {
     roomObj = window.open(
@@ -229,7 +237,7 @@ export const newChatRoom = (winName, id, openURL) => {
       }
 
       if (roomInfo && roomInfo[0]) {
-        const bounds = getInitialBounds(roomInfo[0], defaultSize);
+        const bounds = getInitialBounds(roomInfo[0], defaultSize, remote);
         // APP_SETTING에 저장된 bounds가 있는 경우
         if (!!bounds) {
           initial = {
@@ -269,7 +277,12 @@ export const newChatRoom = (winName, id, openURL) => {
       roomObj = new remote.BrowserWindow({
         ...initial,
         frame: false,
-        webPreferences: { nodeIntegration: true },
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+          enableRemoteModule: true,
+          nodeIntegrationInSubFrames: true
+        },
         // show: false,
       });
 
@@ -607,7 +620,12 @@ export const openLinkNative = link => {
   const subWin = new remote.BrowserWindow({
     ...initial,
     frame: true,
-    webPreferences: { nodeIntegration: true },
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
+    },
     show: false,
   });
 
@@ -982,7 +1000,7 @@ export const newChannel = (winName, id, openURL) => {
       let initial = null;
 
       if (roomInfo && roomInfo[0]) {
-        const bounds = getInitialBounds(roomInfo[0], defaultSize);
+        const bounds = getInitialBounds(roomInfo[0], defaultSize, remote);
         // APP_SETTING에 저장된 bounds가 있는 경우
         if (!!bounds) {
           initial = {
@@ -1022,6 +1040,12 @@ export const newChannel = (winName, id, openURL) => {
       channelObj = new remote.BrowserWindow({
         ...initial,
         frame: false,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+          enableRemoteModule: true,
+          nodeIntegrationInSubFrames: true
+        },
       });
 
       const loadURL = `${url.format({

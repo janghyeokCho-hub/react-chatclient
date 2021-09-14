@@ -354,11 +354,15 @@ export const clearCache = () => {
     ),
     confirm: () => {
       const ses = win.webContents.session;
-      ses.clearCache(() => {
+      ses.clearCache().then(() => {
         reloadApp(true);
+      }).catch(err=> {
+        console.log('clearCacheError   ', err);
       });
     },
-    cancel: () => {},
+    cancel: () => {
+      console.log('CANCEL');
+    },
   });
 };
 
@@ -374,7 +378,9 @@ export const initApp = () => {
     ),
     confirm: async () => {
       const ses = win.webContents.session;
-      ses.clearCache(async () => {
+
+      try {
+        await ses.clearCache();
         const allWindows = BrowserWindow.getAllWindows();
 
         allWindows.forEach(child => {
@@ -392,7 +398,11 @@ export const initApp = () => {
 
         app.relaunch();
         app.exit();
-      });
+
+      } catch(err) {
+        // handle error
+        console.log('Reset App error :  ', err);
+      }
     },
     cancel: () => {},
   });
@@ -463,6 +473,9 @@ export const makeCustomAlarmPop = () => {
     height: 80,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
     },
     transparent: true,
     frame: false,
@@ -511,6 +524,9 @@ export const makeFixAlarmPop = () => {
     height: 80,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
     },
     transparent: true,
     frame: false,

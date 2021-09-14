@@ -1,3 +1,4 @@
+import './injectGlobal';
 import {
   app,
   BrowserWindow,
@@ -450,6 +451,9 @@ const createWindow = async (isLoading, domainInfo) => {
     minHeight: defaultSize.height - defaultSize.offset.height.min,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
     },
     frame: false,
     show: false,
@@ -564,6 +568,9 @@ const createDomainRegistWindow = () => {
     maxWidth: 550,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
     },
     frame: false,
     show: false,
@@ -988,7 +995,7 @@ ipcMain.on('clear-domain', e => {
     message: SERVER_SECURITY_SETTING.getDic('Msg_InitDomain'), //'설정된 도메인 정보를 초기화합니다.<br/>확인 시 앱 데이터가 초기화 됩니다.'
     confirm: () => {
       // 저장된 캐시데이터 삭제
-      ses.clearCache(() => {
+      ses.clearCache().then(() => {
         // Domain 정보 제거 후 앱 재시작
         APP_SECURITY_SETTING.purge();
         app.relaunch();
