@@ -11,6 +11,7 @@ const FileMenuBox = ({
   onDownloadWithOpen,
   downloaded,
   onOpen,
+  fontSize
 }) => {
   const handleOpenFile = useCallback(() => {
     onOpen(false);
@@ -21,7 +22,7 @@ const FileMenuBox = ({
   }, [onOpen]);
 
   return (
-    <span className="file-func-list">
+    <span className="file-func-list" style={{ fontSize }}>
       {!downloaded &&
         fileAttachViewMode &&
         fileAttachViewMode[0].type === 'PC' &&

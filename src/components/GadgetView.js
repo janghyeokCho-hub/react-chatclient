@@ -1,5 +1,7 @@
 import React, { useCallback, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import useSWR from 'swr';
+
 import ChatRoom from '@C/chat/chatroom/ChatRoom';
 import MakeRoom from '@C/chat/chatroom/normal/MakeRoom';
 import { closeWinRoom, makeRoomView } from '@/modules/room';
@@ -12,6 +14,7 @@ import Channel from '@C/channels/channel/Channel';
 import { useNoteState, useViewState } from '@/lib/note';
 import NewNote from '@/pages/note/NewNote';
 import NoteView from '@/pages/note/NoteView';
+import { useChatFontType } from '../hooks/useChat';
 
 const GadgetView = () => {
   const currentRoom = useSelector(({ room }) => room.currentRoom);
@@ -22,6 +25,7 @@ const GadgetView = () => {
   const makeChannelInfo = useSelector(({ channel }) => channel.makeInfo);
   const { data: noteInfo } = useNoteState();
   const [noteViewState] = useViewState();
+  const [fontType] = useChatFontType();
 
   const dispatch = useDispatch();
 
@@ -54,6 +58,7 @@ const GadgetView = () => {
         left: '0px',
         zIndex: currentRoom || currentChannel || noteInfo || noteViewState.type ? '100' : '-50',
         display: 'block',
+        fontFamily: fontType === 'Default' ? null : fontType
       }}
     >
       {drawGadgetView}

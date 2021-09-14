@@ -72,23 +72,9 @@ class App extends Component {
     return (window.covi.settings && window.covi.settings.theme) || 'blue';
   };
 
-  getFontSizeClz = () => {
-    let fontSize = 'm';
-    if (
-      this.props.fontSize === 's' ||
-      this.props.fontSize === 'm' ||
-      this.props.fontSize === 'l'
-    ) {
-      fontSize = this.props.fontSize;
-    } else {
-      fontSize = (window.covi.settings && window.covi.settings.fontSize) || 'm';
-    }
-    return `font-size-${fontSize}`;
-  };
-
   render() {
     const { tokenCheckFlag, gotoURL } = this.tokenCheck();
-    const { theme, fontSize, error } = this.props;
+    const { theme, error } = this.props;
 
     return (
       <>
@@ -99,7 +85,6 @@ class App extends Component {
           <div
             className={[
               theme ? theme : this.getInitTheme(),
-              this.getFontSizeClz(),
             ].join(' ')}
             style={{ width: '100%', height: '100%', overflow: 'hidden' }}
           >
@@ -325,8 +310,7 @@ const appModule = () => {
       connect(
         ({ login, menu }) => ({
           token: login.token,
-          theme: menu.theme,
-          fontSize: menu.fontSize,
+          theme: menu.theme
         }),
         {},
       )(App),
@@ -335,8 +319,7 @@ const appModule = () => {
     return connect(
       ({ login, menu }) => ({
         token: login.token,
-        theme: menu.theme,
-        fontSize: menu.fontSize,
+        theme: menu.theme
       }),
       {},
     )(App);

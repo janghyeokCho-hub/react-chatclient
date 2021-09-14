@@ -226,6 +226,7 @@
     "material-table": "^1.69.3",
     "mobile-detect": "^1.4.4",
     "preact": "^10.5.13",
+    "react-color": "2.19.3",
     "react-helmet": "^6.1.0",
     "spectre.css": "^0.5.3",
     "style-loader": "^2.0.0",

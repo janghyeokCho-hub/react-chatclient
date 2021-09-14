@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import loadable from '@loadable/component';
-import LoadingWrap from '@COMMON/LoadingWrap';
+import useSWR from 'swr';
 
+import LoadingWrap from '@COMMON/LoadingWrap';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import {
   newWinChannel,
@@ -36,6 +37,7 @@ const SearchView = loadable(() =>
 const MoveView = loadable(() => import('@C/channels/channel/move/MoveView'));
 
 import ChannelInfoPopup from '@C/channels/channel/popup/ChannelInfoPopup';
+import { useChatFontType } from '../../../hooks/useChat';
 
 const Channel = ({ match, channelInfo }) => {
   // channelInfo가 넘어오지 않은경우 URL로 접근
@@ -59,6 +61,8 @@ const Channel = ({ match, channelInfo }) => {
 
   const [viewExtension, setViewExtension] = useState('');
   const [cancelHandlerFn, setCancelHandlerFn] = useState(null);
+
+  const [fontType] = useChatFontType();
 
   const dispatch = useDispatch();
 
@@ -232,7 +236,7 @@ const Channel = ({ match, channelInfo }) => {
       {!loading && roomId && (
         <>
           {isNewWin && (
-            <div className="Chat Newwindow">
+            <div className="Chat Newwindow" style={{ fontFamily: fontType === 'Default' ? null : fontType }}>
               {DEVICE_TYPE == 'd' && channel && (
                 <ChatBackground background={channel.background} />
               )}

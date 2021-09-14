@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import * as common from '@/lib/common';
 import LinkMessageBox from '@C/chat/message/LinkMessageBox';
 import FileMessageBox from '@C/chat/message/FileMessageBox';
+import { useChatFontSize } from '@/hooks/useChat';
 
 import { setMessageLinkInfo } from '@/modules/room';
 import { evalConnector } from '@/lib/deviceConnector';
@@ -24,7 +25,7 @@ const MessageBox = ({
   getMenuData,
 }) => {
   const currMember = useSelector(({ room }) => room.currentRoom.members);
-
+  const [fontSize] = useChatFontSize();
   const dispatch = useDispatch();
 
   const isOldMember = useMemo(() => {
@@ -52,6 +53,8 @@ const MessageBox = ({
 
     let messageType = 'message';
     let mentionInfo = [];
+
+    const smallFontSize = Math.max(10, fontSize - 2);
 
     // 처리가 필요한 message의 경우 ( protocol 이 포함된 경우 )
     if (common.eumTalkRegularExp.test(drawText)) {
@@ -101,7 +104,7 @@ const MessageBox = ({
                 />
               )}
               {!message.fileInfos && (
-                <div className="chatinfo">
+                <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
                   {message.unreadCnt > 0 && (
                     <span className="Unreadcount">{message.unreadCnt}</span>
                   )}
@@ -167,7 +170,7 @@ const MessageBox = ({
                     isInherit={isOldMember ? false : true}
                     img={senderInfo.photoPath}
                   ></ProfileBox>
-                  <p className="msgname">
+                  <p className="msgname" style={{ fontSize }}>
                     {common.getJobInfo(senderInfo)}
                     {senderInfo.isMobile === 'Y' && (
                       <span style={{ padding: '0px 5px' }}>
@@ -209,7 +212,7 @@ const MessageBox = ({
                 fileObj={fileInfoJSON}
                 id={!drawText && id}
               />
-              <div className="chatinfo">
+              <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
                 {message.unreadCnt > 0 && (
                   <span className="Unreadcount">{message.unreadCnt}</span>
                 )}
@@ -228,7 +231,7 @@ const MessageBox = ({
                 nameBoxVisible && index == 0 ? 'replies' : 'text-only replies'
               }
             >
-              <div className="chatinfo">
+              <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
                 {message.unreadCnt > 0 && (
                   <span className="Unreadcount">{message.unreadCnt}</span>
                 )}
@@ -316,7 +319,7 @@ const MessageBox = ({
                       isInherit={isOldMember ? false : true}
                       img={senderInfo.photoPath}
                     ></ProfileBox>
-                    <p className="msgname">
+                    <p className="msgname" style={{ fontSize }}>
                       {common.getJobInfo(senderInfo)}
                       {senderInfo.isMobile === 'Y' && (
                         <span style={{ padding: '0px 5px' }}>
@@ -365,12 +368,13 @@ const MessageBox = ({
                     marking={marking}
                     mentionInfo={mentionInfo}
                     messageID={message.messageID}
+                    isMine={isMine}
                   >
                     {drawText}
                   </Message>
                 </RightConxtMenu>
                 {!fileInfoJSX && !urlInfoJSX && (
-                  <div className="chatinfo">
+                  <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
                     {message.unreadCnt > 0 && (
                       <span className="Unreadcount">{message.unreadCnt}</span>
                     )}
@@ -408,7 +412,7 @@ const MessageBox = ({
                   ></div>
                 )}
                 {!fileInfoJSX && !urlInfoJSX && (
-                  <div className="chatinfo">
+                  <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
                     {message.unreadCnt > 0 && (
                       <span className="Unreadcount">{message.unreadCnt}</span>
                     )}
@@ -431,6 +435,7 @@ const MessageBox = ({
                     marking={marking}
                     mentionInfo={mentionInfo}
                     messageID={message.messageID}
+                    isMine={isMine}
                   >
                     {drawText}
                   </Message>
@@ -443,7 +448,7 @@ const MessageBox = ({
         </>
       );
     }
-  }, [message, marking, startMessage, endMessage]);
+  }, [message, marking, startMessage, endMessage, fontSize]);
 
   return drawMessage;
 };

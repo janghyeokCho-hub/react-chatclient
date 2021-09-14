@@ -9,6 +9,7 @@ const SET_CURRENT_CHANNEL = 'menu/SET_CURRENT_CHANNEL';
 const INIT = 'menu/INIT';
 const CHANGE_THEME = 'menu/CHANGE_THEME';
 const CHANGE_FONT_SIZE = 'menu/CHANGE_FONT_SIZE';
+const CHANGE_MYCHAT_COLOR = 'menu/CHANGE_MYCHAT_COLOR';
 
 export const init = createAction(INIT);
 export const bound = createAction(BOUND);
@@ -18,6 +19,7 @@ export const setCurrentRoom = createAction(SET_CURRENT_ROOM);
 export const setCurrentChannel = createAction(SET_CURRENT_CHANNEL);
 export const changeTheme = createAction(CHANGE_THEME);
 export const changeFontSize = createAction(CHANGE_FONT_SIZE);
+export const changeMychatColor = createAction(CHANGE_MYCHAT_COLOR);
 
 const initialState = {
   menu: '',
@@ -26,8 +28,7 @@ const initialState = {
   //newPush: [],
   currentRoomID: -1,
   currentChannelId: -1,
-  theme: null,
-  fontSize: null,
+  theme: null
 };
 
 const menu = handleActions(
@@ -82,12 +83,7 @@ const menu = handleActions(
       return produce(state, draft => {
         draft.theme = action.payload;
       });
-    },
-    [CHANGE_FONT_SIZE]: (state, action) => {
-      return produce(state, draft => {
-        draft.fontSize = action.payload;
-      });
-    },
+    }
   },
   initialState,
 );

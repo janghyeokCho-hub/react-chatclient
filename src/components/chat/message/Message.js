@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { Plain, Link, Tag, Sticker, Mention } from '@C/chat/message/types';
+import { useChatFontSize, useMyChatFontColor } from '@/hooks/useChat';
 
 const getAttribute = tag => {
   const attrPattern = new RegExp(
@@ -30,7 +32,10 @@ const getAttribute = tag => {
   return attrs;
 };
 
-const Message = ({ children, style, className, eleId, marking, messageID }) => {
+const Message = ({ children, style, className, eleId, marking, messageID, isMine }) => {
+  const [fontSize] = useChatFontSize();
+  const [myChatColor] = useMyChatFontColor();
+
   const drawText = useMemo(() => {
     const pattern = new RegExp(
       /[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/,
@@ -96,6 +101,7 @@ const Message = ({ children, style, className, eleId, marking, messageID }) => {
   return (
     <div
       className={className}
+      style={{ fontSize, color: isMine ? myChatColor : undefined}}
       id={eleId ? eleId : undefined}
       data-messageid={messageID}
     >
