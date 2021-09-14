@@ -693,23 +693,22 @@ const setActiveChecker = () => {
   if (activeChecker != null) clearInterval(activeChecker);
 
   activeChecker = setInterval(() => {
-    powerMonitor.querySystemIdleTime(idleTime => {
-      if (
-        idleTime == 0 &&
-        win &&
-        CONN_SOCKET != null &&
-        CONN_SOCKET.connected
-      ) {
-        clearInterval(activeChecker); // activeChecker 종료
-        win.webContents.send(
-          'onSystemIdleTimeInit',
-          BEFORE_PRESENCE ? BEFORE_PRESENCE : 'online',
-        );
+    const idleTime = powerMonitor.getSystemIdleTime();
+    if (
+      idleTime == 0 &&
+      win &&
+      CONN_SOCKET != null &&
+      CONN_SOCKET.connected
+    ) {
+      clearInterval(activeChecker); // activeChecker 종료
+      win.webContents.send(
+        'onSystemIdleTimeInit',
+        BEFORE_PRESENCE ? BEFORE_PRESENCE : 'online',
+      );
 
-        BEFORE_PRESENCE = '';
-        setIdleChecker(); // idle checker 시작
-      }
-    });
+      BEFORE_PRESENCE = '';
+      setIdleChecker(); // idle checker 시작
+    }
   }, 1000);
 };
 
@@ -717,18 +716,17 @@ const setIdleChecker = () => {
   if (idleChecker != null) clearInterval(idleChecker);
 
   idleChecker = setInterval(() => {
-    powerMonitor.querySystemIdleTime(idleTime => {
-      if (
-        appIdleTime < idleTime &&
-        win &&
-        CONN_SOCKET != null &&
-        CONN_SOCKET.connected
-      ) {
-        clearInterval(idleChecker); // idle checker 종료
-        win.webContents.send('onSystemIdleTime', ''); // idle 전파
-        setActiveChecker(); // active checker 시작
-      }
-    });
+    const idleTime = powerMonitor.getSystemIdleTime();
+    if (
+      appIdleTime < idleTime &&
+      win &&
+      CONN_SOCKET != null &&
+      CONN_SOCKET.connected
+    ) {
+      clearInterval(idleChecker); // idle checker 종료
+      win.webContents.send('onSystemIdleTime', ''); // idle 전파
+      setActiveChecker(); // active checker 시작
+    }
   }, 1000 * 60);
 };
 // presence idle checker end
