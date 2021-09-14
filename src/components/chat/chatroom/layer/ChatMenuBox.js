@@ -35,6 +35,8 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
   const handleUpdate = handleScrollUpdate({
     threshold: 0.9
   });
+  const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -322,7 +324,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
           <>
             <div className="MenuList">
               <ul>
-                {DEVICE_TYPE != 'b' && (
+                {DEVICE_TYPE != 'b' && forceDisableNoti === false && (
                   <li className="divideline">
                     <a onClick={handleAlarm}>
                       <span className="c_menu_ico c_menu_ico_01"></span>

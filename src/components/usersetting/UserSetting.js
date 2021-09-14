@@ -76,7 +76,7 @@ const UserSetting = ({ history }) => {
 
   const autoLoginLock = getConfig('ForceAutoLogin', 'N') === 'Y';
   const autoLaunchLock = getConfig('ForceAutoLaunch', 'N') === 'Y';
-  const forceDisbleNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
+  const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
   // componentDidMount
   const dispatch = useDispatch();
@@ -891,7 +891,7 @@ const UserSetting = ({ history }) => {
                 <a
                   className="ChatConfig-menu"
                   onClick={e => {
-                    if (forceDisbleNoti) {
+                    if (forceDisableNoti) {
                       return;
                     }
                     handleUserConfig({ desktopNoti: !desktopNoti });

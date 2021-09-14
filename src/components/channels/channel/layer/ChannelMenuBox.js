@@ -37,6 +37,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   const [isNoti, setIsNoti] = useState(true);
   const [channelAuth, setChannelAuth] = useState(false);
   const [channelAdminMembers, setChannelAdminMembers] = useState([]);
+  const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
   const dispatch = useDispatch();
 
@@ -423,7 +424,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
       >
         <div className="MenuList">
           <ul>
-            {DEVICE_TYPE != 'b' && (
+            {DEVICE_TYPE != 'b' && forceDisableNoti === false && (
               <li className="divideline">
                 <a onClick={handleAlarm}>
                   <span className="c_menu_ico c_menu_ico_01"></span>
