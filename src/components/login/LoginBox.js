@@ -212,7 +212,7 @@ const LoginBox = forwardRef(
                   }}
                 />
                 <label htmlFor="chk01">
-                  <span></span>
+                  <span style={{ backgroundColor: autoLoginLock ? '#999' : '' }}></span>
                   {covi.getDic('AutoLogin')}
                 </label>
               </div>
@@ -230,7 +230,7 @@ const LoginBox = forwardRef(
                   }}
                 />
                 <label htmlFor="chk02">
-                  <span></span>
+                  <span style={{ backgroundColor: autoLaunchLock ? '#999' : '' }}></span>
                   {covi.getDic('AutoLaunch')}
                 </label>
               </div>
