@@ -1,6 +1,6 @@
 // components\chat\Room.js
 
-import React, { useMemo, useCallback, useState, useEffect } from 'react';
+import React, { useMemo, useCallback, useState, useEffect, useLayoutEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   format,
@@ -40,8 +40,9 @@ const makeDateTime = timestamp => {
   }
 };
 
-const makeMessageText = lastMessage => {
+const makeMessageText = async lastMessage => {
   let returnText = covi.getDic('Msg_NoMessages');
+
   try {
     let msgObj = null;
 
@@ -67,7 +68,7 @@ const makeMessageText = lastMessage => {
       }
       // protocol check
       if (common.eumTalkRegularExp.test(drawText)) {
-        const messageObj = common.convertEumTalkProtocolPreview(drawText);
+        const messageObj = await common.convertEumTalkProtocolPreviewForChannelItem(drawText);
         if (messageObj.type == 'emoticon') returnText = covi.getDic('Emoticon');
         else returnText = messageObj.message.split('\n')[0];
       } else {
@@ -338,15 +339,19 @@ const ChannelItem = ({
     () => makeDateTime(channel.lastMessageDate),
     [channel],
   );
+  
+  const [lastMessageText, setLastMessageText] = useState('');
 
-  const lastMessageText = useMemo(() => {
+  useLayoutEffect(() => {
     const changeTargetChannel = channels.find(c => c.roomId == channel.roomId);
     if (changeTargetChannel) {
-      return makeMessageText(
+      makeMessageText(
         changeTargetChannel.lastMessage,
         changeTargetChannel.lastMessageType,
-      );
-    } else return makeMessageText(channel.lastMessage, channel.lastMessageType);
+      ).then(setLastMessageText);
+    } else {
+      makeMessageText(channel.lastMessage, channel.lastMessageType).then(setLastMessageText)
+    }
   }, [channel]);
 
   return (

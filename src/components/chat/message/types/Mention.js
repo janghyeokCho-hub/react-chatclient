@@ -53,7 +53,8 @@ const Mention = ({ marking, mentionInfo, type, targetId}) => {
   const handleClick = () => {
     if (memberInfo.isMine) {
       if (typeof covi.changeSearchView == 'function') {
-        covi.changeSearchView(`eumtalk://mention.user.${memberInfo.id}`);
+        // covi.changeSearchView(`eumtalk://mention.user.${memberInfo.id}`);
+        covi.changeSearchView(`@${memberInfo.id}`);
       }
     } else {
       openProfilePopup(dispatch, memberInfo.id);
