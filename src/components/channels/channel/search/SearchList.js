@@ -1,10 +1,15 @@
-// E:\rd01_messenger\messenger\chatclient\src\components\chat\chatroom\search\SearchList.js
-
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import MessageBox from '@C/channels/message/MessageBox';
-import SystemMessageBox from '@C/chat/message/SystemMessageBox'; // 그대로 사용
-import NoticeMessageBox from '@C/chat/message/NoticeMessageBox'; // 그대로 사용
-import SearchScrollBox from '@/components/chat/chatroom/search/SearchScrollBox'; // 그대로 사용
+import { setChannelNotice } from '@/lib/channel';
+import SystemMessageBox from '@C/chat/message/SystemMessageBox';
+import NoticeMessageBox from '@C/chat/message/NoticeMessageBox';
+import SearchScrollBox from '@/components/chat/chatroom/search/SearchScrollBox';
+import {
+  openPopup,
+  eumTalkRegularExp,
+  convertEumTalkProtocol,
+} from '@/lib/common';
 import { format } from 'date-fns';
 import * as messageApi from '@/lib/message';
 
@@ -20,6 +25,8 @@ const SearchList = ({ moveData, markingText, roomID }) => {
 
   const [beforeId, setBeforeId] = useState(-1);
   const [beforeMessages, setBeforeMessages] = useState([]);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (moveData != null) {
@@ -114,6 +121,66 @@ const SearchList = ({ moveData, markingText, roomID }) => {
     }
   };
 
+  const getMenuData = useCallback(
+    message => {
+      const menus = [];
+
+      if (message.messageType != 'S' && message.messageType != 'I') {
+        let messageType = 'message';
+        if (eumTalkRegularExp.test(message.context)) {
+          const processMsg = convertEumTalkProtocol(message.context);
+          messageType = processMsg.type;
+        }
+        if (messageType == 'message') {
+          if (!message.fileInfos) {
+            menus.push(
+              {
+                code: 'copyClipboardMessage',
+                isline: false,
+                onClick: () => {
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: covi.getDic('Msg_Copy'),
+                      callback: result => {
+                        navigator.clipboard.writeText(message.context);
+                      },
+                    },
+                    dispatch,
+                  );
+                },
+                name: covi.getDic('Copy'),
+              },
+              {
+                code: 'setNoticeMessage',
+                isline: false,
+                onClick: () => {
+                  openPopup(
+                    {
+                      type: 'Confirm',
+                      message: covi.getDic('Msg_RegNotice'),
+                      callback: result => {
+                        if (result) {
+                          setChannelNotice({
+                            messageID: message.messageID,
+                          });
+                        }
+                      },
+                    },
+                    dispatch,
+                  );
+                },
+                name: covi.getDic('Notice'),
+              },
+            );
+          }
+        }
+      }
+      return menus;
+    },
+    [dispatch],
+  );
+
   const drawMessage = () => {
     if (messages.length > 0) {
       let lastDate = format(
@@ -175,6 +242,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                 timeBox={timeBox}
                 id={`msg_${message.messageID}`}
                 marking={markingText}
+                getMenuData={getMenuData}
               ></MessageBox>,
             );
           } else {
@@ -186,6 +254,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                 nameBox={nameBox}
                 timeBox={timeBox}
                 marking={markingText}
+                getMenuData={getMenuData}
               ></MessageBox>,
             );
           }

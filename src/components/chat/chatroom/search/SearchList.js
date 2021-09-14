@@ -1,8 +1,14 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import MessageBox from '@C/chat/message/MessageBox';
 import SystemMessageBox from '@C/chat/message/SystemMessageBox';
 import NoticeMessageBox from '@C/chat/message/NoticeMessageBox';
 import SearchScrollBox from '@/components/chat/chatroom/search/SearchScrollBox';
+import {
+  openPopup,
+  eumTalkRegularExp,
+  convertEumTalkProtocol,
+} from '@/lib/common';
 import { format } from 'date-fns';
 import { getMessage } from '@/lib/messageUtil';
 
@@ -18,6 +24,8 @@ const SearchList = ({ moveData, markingText, roomID }) => {
 
   const [beforeId, setBeforeId] = useState(-1);
   const [beforeMessages, setBeforeMessages] = useState([]);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (moveData != null) {
@@ -109,6 +117,40 @@ const SearchList = ({ moveData, markingText, roomID }) => {
     }
   };
 
+  const getMenuData = useCallback(
+    message => {
+      const menus = [];
+      if (message.messageType != 'S' && message.messageType != 'I') {
+        let messageType = 'message';
+        if (eumTalkRegularExp.test(message.context)) {
+          const processMsg = convertEumTalkProtocol(message.context);
+          messageType = processMsg.type;
+        }
+        if (messageType == 'message') {
+          menus.push({
+            code: 'copyClipboardMessage',
+            isline: false,
+            onClick: () => {
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: covi.getDic('Msg_Copy'),
+                  callback: result => {
+                    navigator.clipboard.writeText(message.context);
+                  },
+                },
+                dispatch,
+              );
+            },
+            name: covi.getDic('Copy'),
+          });
+        }
+      }
+      return menus;
+    },
+    [dispatch],
+  );
+
   const drawMessage = () => {
     if (messages.length > 0) {
       let lastDate = format(
@@ -169,6 +211,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                 timeBox={timeBox}
                 id={`msg_${message.messageID}`}
                 marking={markingText}
+                getMenuData={getMenuData}
               ></MessageBox>,
             );
           } else {
@@ -180,6 +223,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                 nameBox={nameBox}
                 timeBox={timeBox}
                 marking={markingText}
+                getMenuData={getMenuData}
               ></MessageBox>,
             );
           }
