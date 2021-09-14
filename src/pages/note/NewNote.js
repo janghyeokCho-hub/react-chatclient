@@ -3,6 +3,7 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import { useDispatch, useSelector } from 'react-redux';
 import { TailSpin } from '@agney/react-loading';
 import qs from 'qs';
+import turndown from 'turndown';
 
 import { NOTE_RECEIVER_SEPARATOR, sendNote, useNoteList, getNoteList, useViewState, parseSender, translateName, convertTimeFormat, emergencyMark, nonEmergencyMark } from '@/lib/note';
 import { appendLayer, getJobInfo, openPopup, getDictionary } from '@/lib/common';
@@ -19,6 +20,8 @@ import { sendMain, isMainWindow } from '@/lib/deviceConnector';
 // WYSIWYG Editor
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor } from '@toast-ui/react-editor';
+
+const convertMarkdown = new turndown();
 
 function _popupResult(dispatch, message, cb) {
     openPopup(
@@ -115,15 +118,17 @@ export default function NewNote({ match, location }) {
         const sendDate = convertTimeFormat(noteInfo.sendDate);
         const targetName = getDictionary(noteInfo.senderDisplayName);
         const originalReceivers = translateName(receivers);
+        const _context = convertMarkdown.turndown(noteInfo.context);
         const replyFormat = [
-            '<hr/>',
+            '\n',
+            '***',
             `Sent: ${sendDate}`,
             `From: ${targetName}`,
             `To: ${originalReceivers}`,
-            `Subject: ${noteInfo.subject}`
-        ].map(txt => `<p>${txt}</p>`).join('');
-        const replyHTML = noteInfo.context.split('<br>').map(txt => `<p>${txt}</p>`).join('');
-        return replyFormat + replyHTML;
+            `Subject: ${noteInfo.subject}`,
+            _context
+        ].map(txt => `${txt}`).join('\n\n');
+        return replyFormat;
     }, [viewState]);
 
     useLayoutEffect(() => {
@@ -141,7 +146,7 @@ export default function NewNote({ match, location }) {
         }
 
         if(isNewWin && replyContext) {
-            editorRef.current.getInstance().setHTML(replyContext);
+            editorRef.current.getInstance().setMarkdown(replyContext);
             editorRef.current.getInstance().moveCursorToStart();
         }
 
@@ -228,7 +233,6 @@ export default function NewNote({ match, location }) {
         console.log('Title   ', title.current.value);
 
         const _context = editorRef?.current?.getInstance().getHTML();
-
         // input validation
         if (receiveUser.length === 0 && receiveGroup.length === 0) {
             _popupResult(dispatch, covi.getDic('Msg_Note_EnterRecipient', '받는사람을 선택하세요.'));
@@ -366,7 +370,7 @@ export default function NewNote({ match, location }) {
                                 {/* <textarea className="string optional" name="" id="" cols="30" rows="10" placeholder="내용을 입력하세요." ref={context} style={{ cursor: 'text', resize: 'both', display: 'none' }}></textarea> */}
                                 <Editor
                                     ref={editorRef}
-                                    initialEditType='wysiwyg'
+                                    initialEditType='markdown'
                                     initialValue={replyContext}
                                     toolbarItems={[
                                         ['heading', 'bold', 'italic', 'strike'],

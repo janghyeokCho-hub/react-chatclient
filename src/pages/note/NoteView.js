@@ -82,6 +82,10 @@ function _DrawFile({ files = [], loginId }) {
         setIsSaving(true);
         try {
             const savePath = await getDownloadPath();
+            if (savePath === null) {
+                // 지정된 파일 경로가 없을경우 다운로드 중단
+                return;
+            }
             const { fileName, accessKey: fileID } = opts;
             const response = await downloadFile({
                 ...opts,
@@ -157,7 +161,7 @@ function _DrawNote({ noteInfo, onUserNameClicked, loginId }) {
 
     useEffect(() => {
         // 쪽지 전환시 뷰어 업데이트    
-        viewerRef.current.getInstance().preview.setHTML(noteInfo.context);
+        viewerRef.current.getInstance().setMarkdown(noteInfo.context);
     }, [viewerRef, noteInfo.context]);
 
     return <>
