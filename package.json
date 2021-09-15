@@ -27,6 +27,12 @@
     "productName": "eumtalk",
     "appId": "com.covision.eumtalk",
     "asar": true,
+    "protocols": [{
+      "name": "eumtalk-protocol",
+      "schemes": [
+        "eumtalk"
+      ]
+    }],
     "files": [
       "build/electron/templates/**",
       "build/electron/main.js"

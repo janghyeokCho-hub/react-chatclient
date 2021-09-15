@@ -8,8 +8,9 @@ import {
   protocol,
 } from 'electron';
 import path from 'path';
-import os from 'os';
 import url from 'url';
+import qs from 'querystring';
+
 import exportProps from './config/exportProps';
 import * as socketEvt from './event/socket';
 import * as commonEvt from './event/common';
@@ -50,6 +51,9 @@ import {
 
 import { openNoteWindow } from './utils/note';
 import axios from 'axios';
+
+// app.setAsDefaultProtocolClient(exportProps.isDev ? 'eumdev' : 'eumtalk');
+app.setAsDefaultProtocolClient('eumtalk');
 
 /********** GLOBAL VARIABLE **********/
 // dirName
@@ -152,6 +156,24 @@ const appReady = async () => {
   }
 
   const domainInfo = APP_SECURITY_SETTING.get('domain');
+
+  app.on('open-url', (_, arg) => {
+    console.log('Open url: ', arg, arg.startsWith('eumtalk://init?url'), domainInfo);
+    if (arg.startsWith('eumtalk://init?url') === true && !domainInfo) {
+      const parsed = qs.parse(arg)?.['eumtalk://init?url'];
+      if (!parsed) {
+        return;
+      }
+
+      console.log('Set domainInfo by open url: ', arg);
+      APP_SECURITY_SETTING.set('domain', parsed);
+      fileUtil.makeIndexFile(parsed, () => {
+        setConfig(parsed);
+        app.relaunch();
+        app.exit();
+      });
+    }
+  });
 
   // 설정된 도메인이 존재하는 경우
   if (domainInfo) {
