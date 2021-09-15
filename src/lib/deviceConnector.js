@@ -23,8 +23,6 @@ export const evalConnector = options => {
     const emitter = getEmitter();
     const remote = getRemote();
 
-    console.log('remote@@   ', remote);
-
     if (options.method == 'on') {
       emitter.on(options.channel, options.callback);
     } else if (options.method == 'once') {
