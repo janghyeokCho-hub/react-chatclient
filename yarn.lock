@@ -1445,27 +1445,6 @@
     readdirp "^2.2.1"
     upath "^1.1.1"
 
-"@nodert-win10-au/windows.applicationmodel@^0.4.4":
-  version "0.4.4"
-  resolved "https://registry.yarnpkg.com/@nodert-win10-au/windows.applicationmodel/-/windows.applicationmodel-0.4.4.tgz#8bc2043270dd89dcd00c0ac8a5221c7cc75d8904"
-  integrity sha512-/46SHT3E5s29p9Fh+BEAJIuzX1vLnGTKSfeGHcUKrPzJneP7OY05NTRH1PHRfRRCgE7YfbIeQqRpbJ0dyvliqw==
-  dependencies:
-    nan latest
-
-"@nodert-win10-au/windows.data.xml.dom@^0.4.4":
-  version "0.4.4"
-  resolved "https://registry.yarnpkg.com/@nodert-win10-au/windows.data.xml.dom/-/windows.data.xml.dom-0.4.4.tgz#6f32ae56d4a1413bdc0cee55ed944e4c6c58588c"
-  integrity sha512-UxKrBzuM4D4SYVdUWuzhlpLAtjtV25SIBuip1bcp6b8pLk0tg1Od3/UUmOatk3eGP0SCTg6KuTBM6vEKZxXW9g==
-  dependencies:
-    nan latest
-
-"@nodert-win10-au/windows.ui.notifications@^0.4.4":
-  version "0.4.4"
-  resolved "https://registry.yarnpkg.com/@nodert-win10-au/windows.ui.notifications/-/windows.ui.notifications-0.4.4.tgz#b53d24d8f5d79b04f6cb31662bd4dee700ff9c70"
-  integrity sha512-wo0/D7boePEWN6bUoQ/RpnG4xwmrzT06RzPv8Ns7WnYSIb6NvEbCNdIMgx1hTr9qriLrgeZX7DNrWAKcDtLsXg==
-  dependencies:
-    nan latest
-
 "@redux-saga/core@^1.1.3":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@redux-saga/core/-/core-1.1.3.tgz#3085097b57a4ea8db5528d58673f20ce0950f6a4"
@@ -3966,19 +3945,6 @@ electron-updater@4.2.0:
     pako "^1.0.10"
     semver "^6.3.0"
 
-"electron-windows-notifications@file:lib/electron-windows-notifications-3.0.6.tgz":
-  version "3.0.6"
-  resolved "file:lib/electron-windows-notifications-3.0.6.tgz#e9d43e49b95380b43551b51e883b62ab1fa5593e"
-  dependencies:
-    "@nodert-win10-au/windows.applicationmodel" "^0.4.4"
-    "@nodert-win10-au/windows.data.xml.dom" "^0.4.4"
-    "@nodert-win10-au/windows.ui.notifications" "^0.4.4"
-    debug "^4.1.1"
-    is-electron-renderer "^2.0.1"
-    sanitize-xml-string "^1.1.0"
-    uuid "^3.3.2"
-    xml-escape "^1.1.0"
-
 electron@^14.0.1:
   version "14.0.1"
   resolved "https://registry.yarnpkg.com/electron/-/electron-14.0.1.tgz#967da47895a77a9af8a7938e9266cd4a75ab24c4"
@@ -5677,11 +5643,6 @@ is-descriptor@^1.0.0, is-descriptor@^1.0.2:
     is-data-descriptor "^1.0.0"
     kind-of "^6.0.2"
 
-is-electron-renderer@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/is-electron-renderer/-/is-electron-renderer-2.0.1.tgz#a469d056f975697c58c98c6023eb0aa79af895a2"
-  integrity sha1-pGnQVvl1aXxYyYxgI+sKp5r4laI=
-
 is-extendable@^0.1.0, is-extendable@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/is-extendable/-/is-extendable-0.1.1.tgz#62b110e289a471418e3ec36a617d472e301dfc89"
@@ -6738,7 +6699,7 @@ multicast-dns@^6.0.1:
     dns-packet "^1.3.1"
     thunky "^1.0.2"
 
-nan@^2.12.1, nan@latest:
+nan@^2.12.1:
   version "2.14.2"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.2.tgz#f5376400695168f4cc694ac9393d0c9585eeea19"
   integrity sha512-M2ufzIiINKCuDfBSAUr1vWQ+vuVcA9kqx8JJUsbQi6yf1uGRyb7HfpdfUr5qLXf3B/t8dPvcjhKMmlfnP47EzQ==
@@ -8632,11 +8593,6 @@ sanitize-filename@^1.6.3:
   dependencies:
     truncate-utf8-bytes "^1.0.0"
 
-sanitize-xml-string@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/sanitize-xml-string/-/sanitize-xml-string-1.1.0.tgz#dd86686069ce102b4954912d9c7982037b928768"
-  integrity sha512-RzX25K64YtZm9FvdZr/Ac7Eeq0va1YX0xmpOkjWoREhgKXXldrJRVJhBel83nS8omIcaKcNTdLY8XzOIK920HA==
-
 sax@>=0.6.0, sax@^1.2.4:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
@@ -10366,11 +10322,6 @@ xhr@^2.0.1:
     is-function "^1.0.1"
     parse-headers "^2.0.0"
     xtend "^4.0.0"
-
-xml-escape@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/xml-escape/-/xml-escape-1.1.0.tgz#3904c143fa8eb3a0030ec646d2902a2f1b706c44"
-  integrity sha1-OQTBQ/qOs6ADDsZG0pAqLxtwbEQ=
 
 xml-parse-from-string@^1.0.0:
   version "1.0.1"

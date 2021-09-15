@@ -2,7 +2,6 @@ import { app, BrowserWindow, Notification, screen } from 'electron';
 import path from 'path';
 import logger from './logger';
 import exportProps from '../config/exportProps';
-import { ToastNotification, history } from 'electron-windows-notifications';
 import * as window from './window';
 import { managesvr } from '../utils/api';
 import { removeLocalDatabaseDir } from '../utils/fileUtils';
@@ -119,42 +118,19 @@ export const notifyMessage = (payload, focusWin) => {
     const isNoti = !USER_SETTING.config.notiExRooms[roomID];
 
     if (isNoti) {
-      if (exportProps.isWin) {
-        if (global?.CUSTOM_ALARM) {
-          // custom toast 사용
-          showCustomAlarm({
-            title: title,
-            message: message,
-            photoPath: iconImage,
-            // iconPath: `file://${iconImage}`,
-            iconPath: iconImage,
-            clickData: {
-              roomID: roomID,
-              isChannel: payload.isChannel,
-            },
-          });
-        } else {
-          // windows OS toast 사용
-          // console.log('iconImage ::', iconImage);
-          const noti = new ToastNotification({
-            appId: exportProps.appId,
-            template: `<toast><visual><binding template="ToastGeneric"><image placement="appLogoOverride" hint-crop="circle" id="1" src="%s"/><text id="1" hint-maxLines="1">%s</text><text id="2">%s</text></binding></visual></toast>`,
-            strings: [localIconImage, title, message],
-            group: roomID,
-          });
-
-          noti.on('activated', t => {
-            history.removeGroup({
-              group: t.group,
-              appId: exportProps.appId,
-            });
-
-            const room = t.group;
-            openFocusRoom(room, payload.isChannel);
-          });
-
-          noti.show();
-        }
+      if (exportProps.isWin && global?.CUSTOM_ALARM) {
+        // custom toast 사용
+        showCustomAlarm({
+          title: title,
+          message: message,
+          photoPath: iconImage,
+          // iconPath: `file://${iconImage}`,
+          iconPath: iconImage,
+          clickData: {
+            roomID: roomID,
+            isChannel: payload.isChannel,
+          },
+        });
       } else {
         if (Notification.isSupported()) {
           const noti = new Notification({
@@ -228,43 +204,15 @@ export const notifyNoteMessage = ({
     return;
   }
 
-  if (exportProps.isWin) {
+  if (exportProps.isWin && global.CUSTOM_ALARM) {
     // Windows Noti
-    if (global.CUSTOM_ALARM) {
-      // Custon Noti
-      showCustomAlarm({
-        title,
-        message,
-        photoPath,
-        iconPath: photoPath,
-      });
-      return;
-    }
-    // WIndow Native Noti
-    const noti = new ToastNotification({
-      appId: exportProps.appId,
-      template: `<toast><visual><binding template="ToastGeneric"><image placement="appLogoOverride" hint-crop="circle" id="1" src="%s"/><text id="1" hint-maxLines="1">%s</text><text id="2">%s</text></binding></visual></toast>`,
-      strings: [localIconImage, title, message],
-      group: 'Note',
-      noteId: noteId,
+    // Custon Noti
+    showCustomAlarm({
+      title,
+      message,
+      photoPath,
+      iconPath: photoPath,
     });
-    const windowParams = {
-      type: 'receive',
-      viewType: 'receive',
-      noteId: noteId,
-      isEmergency,
-    };
-    noti.on('activated', t => {
-      history.removeGroup({
-        group: t.group,
-        appId: exportProps.appId,
-      });
-      openNoteWindow(windowParams);
-    });
-    noti.show();
-    if (isEmergency === true) {
-      openNoteWindow(windowParams);
-    }
   } else {
     const noti = new Notification({
       title: title,
