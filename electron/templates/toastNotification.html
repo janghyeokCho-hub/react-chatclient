@@ -107,7 +107,7 @@
 
     <script>
       const { ipcRenderer } = require('electron');
-      const { getCurrentWindow, getGlobal, BrowserWindow } = require('@electron/remote/main');
+      const { getCurrentWindow, getGlobal, BrowserWindow } = require('@electron/remote');
       let HOST = '';
       let clickTarget = null;
       let alarmWin = getCurrentWindow();
