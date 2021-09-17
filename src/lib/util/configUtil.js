@@ -79,21 +79,14 @@ export const getInitSettings = () => {
       ? window.covi.config.DefaultClientJobInfo
       : 'PN'; // PN - default
 
-  let fontSize =
-    window.covi.config && window.covi.config.DefaultFontSize_v2
-      ? window.covi.config.DefaultFontSize_v2
-      : '12';
-
   let setLang = null;
   let setTheme = null;
   let setJobInfo = null;
-  let setFontSize = null;
 
   if (DEVICE_TYPE == 'b') {
     setLang = localStorage.getItem('covi_user_lang');
     setTheme = localStorage.getItem('covi_user_theme');
     setJobInfo = localStorage.getItem('covi_user_jobInfo');
-    setFontSize = localStorage.getItem('covi_user_font_size');
   } else {
     const appConfig = evalConnector({
       method: 'getGlobal',
@@ -103,14 +96,12 @@ export const getInitSettings = () => {
     setLang = appConfig.get('lang');
     setTheme = appConfig.get('theme');
     setJobInfo = appConfig.get('jobInfo');
-    setFontSize = appConfig.get('fontSize');
   }
 
   const resultSetting = {
     lang: setLang ? setLang : lang,
     theme: setTheme ? setTheme : theme,
     jobInfo: setJobInfo ? setJobInfo : jobInfo,
-    fontSize: (isNaN(+setFontSize) || !setFontSize) ? fontSize : setFontSize,
   };
 
   if (DEVICE_TYPE == 'b') {
@@ -118,7 +109,6 @@ export const getInitSettings = () => {
     localStorage.setItem('covi_user_lang', resultSetting.lang);
     localStorage.setItem('covi_user_theme', resultSetting.theme);
     localStorage.setItem('covi_user_jobInfo', resultSetting.jobInfo);
-    localStorage.setItem('covi_user_font_size', resultSetting.fontSize);
   }
 
   return resultSetting;

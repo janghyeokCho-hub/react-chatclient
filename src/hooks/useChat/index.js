@@ -3,7 +3,7 @@ import { getConfig } from '@/lib/util/configUtil';
 import useSWR from 'swr';
 
 export function useChatFontSize() {
-    const { data: fontType, mutate } = useSWR('/user/fontType', null, { initialData: +localStorage.getItem('covi_user_font_size') || 10 });
+    const { data: fontType, mutate } = useSWR('/user/fontType', null, { initialData: +localStorage.getItem('covi_user_font_size') || 12 });
     const setFontType = useCallback((newVal) => {
         localStorage.setItem('covi_user_font_size', newVal);
         mutate(newVal);
