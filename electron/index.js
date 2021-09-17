@@ -52,29 +52,6 @@ import {
 import { openNoteWindow } from './utils/note';
 import axios from 'axios';
 
-// app.setAsDefaultProtocolClient(exportProps.isDev ? 'eumdev' : 'eumtalk');
-app.setAsDefaultProtocolClient('eumtalk');
-app.on('open-url', (_, arg) => {
-  logger.info(`Open url:  ${arg}`);
-  const _APP_SETTING = getSecureConfig('app.setting.eumsecure');
-  const domainInfo = _APP_SETTING.get('domain');
-  if (arg.startsWith('eumtalk://init?url') === true && !domainInfo) {
-    const parsed = qs.parse(arg)?.['eumtalk://init?url'];
-    if (!parsed) {
-      return;
-    }
-
-    logger.info(`Set domainInfo by open url: ${arg} (current comain: ${domainInfo})`);
-    _APP_SETTING.set('domain', parsed);
-    fileUtil.makeIndexFile(parsed, () => {
-      setConfig(parsed);
-      logger.info(`Relaunch app with domainInfo ${parsed}`);
-      app.relaunch();
-      app.exit();
-    });
-  }
-});
-
 /********** GLOBAL VARIABLE **********/
 // dirName
 global.DIR_NAME = __dirname;
