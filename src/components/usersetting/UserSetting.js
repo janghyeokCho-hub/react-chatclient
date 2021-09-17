@@ -1,17 +1,17 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Scrollbars from 'react-custom-scrollbars';
 import { format } from 'date-fns';
-import useSWR from 'swr';
-
 import SelectBox from '@COMMON/buttons/SelectBox';
 import ColorBox from '@COMMON/buttons/ColorBox';
 import ColorPicker from '@COMMON/buttons/ColorPicker';
-import {
-  bound,
-  setTopButton,
-  changeTheme,
-} from '@/modules/menu';
+import { bound, setTopButton, changeTheme } from '@/modules/menu';
 import { changeMyPhotoPath, changeMyInfo, logout } from '@/modules/login';
 import { getConfig } from '@/lib/util/configUtil';
 import {
@@ -19,6 +19,7 @@ import {
   modifyUserProfileImage,
   modifyUserInfo,
   changeNotificationBlockOption,
+  getLatestLogin,
 } from '@/lib/setting';
 import { openPopup, getJobInfo } from '@/lib/common';
 import { getAesUtil } from '@/lib/aesUtil';
@@ -36,12 +37,16 @@ import Slider from '@material-ui/core/Slider';
 import { makeStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { debounce } from '@/lib/util/asyncUtil';
-import { useChatFontSize, useChatFontType, useMyChatFontColor } from '@/hooks/useChat';
+import {
+  useChatFontSize,
+  useChatFontType,
+  useMyChatFontColor,
+} from '@/hooks/useChat';
 
 const useStyles = makeStyles({
   slider: {
     maxWidth: 150,
-    zIndex: 1
+    zIndex: 1,
   },
 });
 
@@ -58,11 +63,14 @@ const UserSetting = ({ history }) => {
   const [email, setEmail] = useState(myInfo.mailAddress);
   const [phoneNumber, setPhoneNumber] = useState(myInfo.phoneNumber);
   const [work, setWork] = useState(myInfo.work);
+  const [latestLogin, setLatestLogin] = useState(new Date());
+
   // 일반
   const [autoLaunch, setAutoLaunch] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
   const [idleTime, setIdleTime] = useState(900);
   const [firstMenu, setFirstMenu] = useState('contactlist');
+
   // 알림
   const [customAlarm, setCustomAlarm] = useState(false);
   const [desktopNoti, setDesktopNoti] = useState(false);
@@ -102,9 +110,20 @@ const UserSetting = ({ history }) => {
   useEffect(() => {
     dispatch(bound({ name: '', type: '' }));
     dispatch(setTopButton(null));
+
+    // 최근 로그인 시간 조회
+    getLatestLogin().then(response => {
+      if (response?.data?.result?.LoginDate) {
+        setLatestLogin(new Date(response.data.result.LoginDate));
+      } else {
+        setLatestLogin(new Date());
+      }
+    });
+
     if (!activeSettingTab) {
       setActiveSettingTab('I');
     }
+
     if (DEVICE_TYPE == 'd') {
       const appConfig = evalConnector({
         method: 'getGlobal',
@@ -117,7 +136,9 @@ const UserSetting = ({ history }) => {
 
       const confFirstMenu = userConfig.get('firstMenu');
       setAutoLogin(autoLoginLock || appConfig.get('autoLogin') ? true : false);
-      setAutoLaunch(autoLaunchLock || appConfig.get('autoLaunch') ? true : false);
+      setAutoLaunch(
+        autoLaunchLock || appConfig.get('autoLaunch') ? true : false,
+      );
       setCustomAlarm(appConfig.get('customAlarm') ? true : false);
       setIdleTime(userConfig.get('idleTime'));
       setFirstMenu(
@@ -422,7 +443,9 @@ const UserSetting = ({ history }) => {
     ]);
   }, [myInfo]);
 
-  const themeColor = covi?.config?.ClientThemeList?.find(t => t?.name === getInitTheme());
+  const themeColor = covi?.config?.ClientThemeList?.find(
+    t => t?.name === getInitTheme(),
+  );
 
   return (
     <div style={{ height: '100%' }}>
@@ -610,6 +633,12 @@ const UserSetting = ({ history }) => {
                 )}
               </div>
             </div>
+            <div style={{ margin: '0px 17px', display: 'inline-block' }}>
+              <p
+                style={{ fontSize: 12, fontWeight: 'bold', lineHeight: '35px' }}
+              >{`${covi.getDic('LatestLogin')}`}</p>
+              <p>{`${format(latestLogin, 'yyyy.MM.dd HH:mm:ss')}`}</p>
+            </div>
             {myInfo.isHR === 'N' && (
               <div className="Btn-con-wrap mt20">
                 <button
@@ -757,7 +786,7 @@ const UserSetting = ({ history }) => {
                       order={4}
                       defaultValue={idleTime}
                       onChange={item => {
-                        console.log(item)
+                        console.log(item);
                         handleUserConfig({ idleTime: parseInt(item.value) });
                         setIdleTime(item.value);
                       }}
@@ -1037,19 +1066,24 @@ const UserSetting = ({ history }) => {
                   max={20}
                   className={clsx('link_select_box', styles.slider)}
                   style={{
-                    color: themeColor?.value || '#888'
+                    color: themeColor?.value || '#888',
                   }}
                   onChange={handleChangeFontSize}
                 />
               </li>
-              { /* 자신의 메시지 색상변경 */ }
+              {/* 자신의 메시지 색상변경 */}
               <li className="ChatConfig-list">
                 <span className="ChatConfig-menu">
-                  <span>{covi.getDic('MyChatColor', '내가 보낸 메시지 색상')}</span>
+                  <span>
+                    {covi.getDic('MyChatColor', '내가 보낸 메시지 색상')}
+                  </span>
                 </span>
-                <ColorPicker initialColor={myChatColor} onChange={handleChangeMychatColor}/>
+                <ColorPicker
+                  initialColor={myChatColor}
+                  onChange={handleChangeMychatColor}
+                />
               </li>
-              { /* 폰트변경 */ }
+              {/* 폰트변경 */}
               {customFonts?.use === true && (
                 <li className="ChatConfig-list">
                   <span className="ChatConfig-menu">
