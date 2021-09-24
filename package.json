@@ -220,7 +220,7 @@
     "image-extensions": "^1.1.0",
     "ip": "^1.1.5",
     "jschardet": "^2.3.0",
-    "knex": "file:lib/knex-0.20.4.tgz",
+    "knex": "file:lib/knex-0.95.11.tgz",
     "lru-cache": "^6.0.0",
     "macaddress": "^0.5.1",
     "material-table": "^1.69.3",
