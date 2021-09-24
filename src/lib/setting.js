@@ -16,3 +16,6 @@ export const getVersions = params => {
 export const changeNotificationBlockOption = params => {
   return managesvr('post', '/nf/office/overtime/option', params);
 };
+export const getLatestLogin = () => {
+  return managesvr('get', '/latest/login');
+};

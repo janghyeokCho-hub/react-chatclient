@@ -53,8 +53,11 @@ const Mention = ({ marking, mentionInfo, type, targetId}) => {
   const handleClick = () => {
     if (memberInfo.isMine) {
       if (typeof covi.changeSearchView == 'function') {
+        // eumtalk://mention. ~ 전체검색하는 경우에만 검색결과가 나오지 않음
         // covi.changeSearchView(`eumtalk://mention.user.${memberInfo.id}`);
-        covi.changeSearchView(`@${memberInfo.id}`);
+
+        // 멘션 임시패치
+        covi.changeSearchView(`://mention.user.${memberInfo.id}`);
       }
     } else {
       openProfilePopup(dispatch, memberInfo.id);

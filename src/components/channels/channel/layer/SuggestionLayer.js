@@ -36,10 +36,9 @@ const SuggestionLayer = ({
     // 멘션 키워드("@") 입력시 SuggestionLayer 노출
     if (messageContext[messageContext.length - 1] == '@') {
       // 새로운 request 없이 props로 넘겨받은 currMember로 멘션 리스트에 노출
-      const suggestionMembers = currMember.filter((member) => member.id !== loginId);
-      setMensionHeight(String(resizeMensionHeight(suggestionMembers.length) + 'px'));
-      onSuggestionMembers(suggestionMembers);
-      setSuggestionList(suggestionMembers);
+      setMensionHeight(String(resizeMensionHeight(currMember.length) + 'px'));
+      onSuggestionMembers(currMember);
+      setSuggestionList(currMember);
     }
     // 멘션 키워드('@') 이후 검색대상 입력
     else if (messageContext.lastIndexOf('@') > -1) {
