@@ -1,7 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
-import { getJobInfo } from '@/lib/common';
+import {
+  getJobInfo,
+  eumTalkRegularExp,
+  convertEumTalkProtocolPreview,
+} from '@/lib/common';
 
 let hiddenTimer = null;
 
@@ -32,12 +36,27 @@ const LatestMessage = () => {
 
   const drawMessage = useCallback(message => {
     let senderInfo = null;
+    let context = null;
 
     if (!(typeof message.senderInfo === 'object')) {
       senderInfo = JSON.parse(message.senderInfo);
     } else {
       senderInfo = message.senderInfo;
     }
+
+    context = message.context;
+
+    // protocol check
+    if (eumTalkRegularExp.test(context)) {
+      const messageObj = convertEumTalkProtocolPreview(context);
+      console.log(messageObj);
+      if (messageObj.type == 'emoticon') context = covi.getDic('Emoticon');
+      else context = messageObj.message.split('\n')[0];
+    } else {
+      context = context.split('\n')[0];
+    }
+
+    if (context == '') context = covi.getDic('File');
 
     return (
       <>
@@ -105,7 +124,7 @@ const LatestMessage = () => {
             overflow: 'hidden',
           }}
         >
-          {message.context}
+          {context}
         </div>
       </>
     );
