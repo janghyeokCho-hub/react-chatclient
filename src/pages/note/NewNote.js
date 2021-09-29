@@ -3,7 +3,6 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import { useDispatch, useSelector } from 'react-redux';
 import { TailSpin } from '@agney/react-loading';
 import qs from 'qs';
-import turndown from 'turndown';
 
 import { NOTE_RECEIVER_SEPARATOR, sendNote, useNoteList, getNoteList, useViewState, parseSender, translateName, convertTimeFormat, emergencyMark, nonEmergencyMark } from '@/lib/note';
 import { appendLayer, getJobInfo, openPopup, getDictionary } from '@/lib/common';
@@ -20,8 +19,6 @@ import { sendMain, isMainWindow } from '@/lib/deviceConnector';
 // WYSIWYG Editor
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor } from '@toast-ui/react-editor';
-
-const convertMarkdown = new turndown();
 
 function _popupResult(dispatch, message, cb) {
     openPopup(
@@ -118,15 +115,14 @@ export default function NewNote({ match, location }) {
         const sendDate = convertTimeFormat(noteInfo.sendDate);
         const targetName = getDictionary(noteInfo.senderDisplayName);
         const originalReceivers = translateName(receivers);
-        const _context = convertMarkdown.turndown(noteInfo.context);
         const replyFormat = [
-            '\n',
+            '<br/><br/>',
             '***',
             `Sent: ${sendDate}`,
             `From: ${targetName}`,
             `To: ${originalReceivers}`,
             `Subject: ${noteInfo.subject}`,
-            _context
+            noteInfo.context
         ].map(txt => `${txt}`).join('\n\n');
         return replyFormat;
     }, [viewState]);
@@ -370,14 +366,9 @@ export default function NewNote({ match, location }) {
                                 {/* <textarea className="string optional" name="" id="" cols="30" rows="10" placeholder="내용을 입력하세요." ref={context} style={{ cursor: 'text', resize: 'both', display: 'none' }}></textarea> */}
                                 <Editor
                                     ref={editorRef}
-                                    initialEditType='markdown'
+                                    initialEditType='wysiwyg'
                                     initialValue={replyContext}
-                                    toolbarItems={[
-                                        ['heading', 'bold', 'italic', 'strike'],
-                                        ['hr', 'quote'],
-                                        ['ul', 'ol', 'indent', 'outdent'],
-                                        ['table'],
-                                    ]}
+                                    toolbarItems={''}
                                     hideModeSwitch={true}
                                 />
                             </div>
