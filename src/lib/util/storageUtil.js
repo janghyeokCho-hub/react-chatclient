@@ -49,13 +49,46 @@ const getObjectStore = (store_name, mode) => {
   else return null;
 };
 
+/**
+ * 2021.09.29
+ * index field를 기준으로 데이터를 검색해서 조건에 만족하는 데이터를 모두 제거
+ */
+export async function filterRemoveByIndex(storeName, key, value, predicate) {
+  // Promisify indexeddb call
+  return new Promise((resolve, reject) => {
+    const store = getObjectStore(storeName, 'readwrite');
+    if (store === null) {
+      reject(`ObjectStore ${storeName} is not created.`);
+      return;
+    }
+   
+    const pathIndex = store.index(key);
+    const findDuplicatedValues = pathIndex.getAllKeys(value);
+
+    findDuplicatedValues.onsuccess = () => {
+      const duplicates = findDuplicatedValues?.result;
+      for (const dupKey of duplicates) {
+        if (predicate?.(dupKey) === true) {
+          remove('files', dupKey, () => {
+            console.log(`Remove duplicated data : ${dupKey}`);
+          });
+        }
+      }
+      resolve(true);
+    }
+
+    findDuplicatedValues.onerror = (err) => {
+      reject(err);
+    }
+  });
+}
+
 // 데이터 입력 (차후 다른용도로 사용 시 소스 리팩터링 필요)
 export const insert = (storeName, data, callback) => {
-  let store = getObjectStore(storeName, 'readwrite');
-  if (store != null) {
-    let req = null;
+  const store = getObjectStore(storeName, 'readwrite');
+  if (store !== null) {
     try {
-      req = store.add(data);
+      const req = store.add(data);
 
       req.onsuccess = () => {
         callback({ status: 'SUCCESS' });
@@ -75,7 +108,7 @@ export const get = (storeName, key, callback) => {
     let req = null;
     try {
       req = store.get(key);
-
+      
       req.onsuccess = () => {
         if (req.result) callback({ status: 'SUCCESS', data: req.result });
         else callback({ status: 'NORESULT', data: null });
