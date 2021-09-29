@@ -45,9 +45,18 @@ export default function ReadListTable({ noteId, onError }) {
                 readFlag: status.readFlag
             };
         });
+
+        const total = readList?.length;
+        const read = readList?.reduce((acc, cur) => {
+            return cur?.readFlag === 'Y' ? acc+1 : acc;
+        }, 0);
+
         return {
             columns,
-            data
+            data,
+            total,
+            read,
+            unread: total - read
         }
     }, [readList]);
 
@@ -74,7 +83,7 @@ export default function ReadListTable({ noteId, onError }) {
         return (
             <Scrollbars autoHide={true} >
                 <MaterialTable
-                    title={`Total: ${readList.length}`}
+                    title={`Total: ${tableData.total} | ${covi.getDic('Check')}: ${tableData.read} | ${covi.getDic('Uncheck')}: ${tableData.unread}`}
                     columns={tableData.columns}
                     data={tableData.data}
                     options={{
