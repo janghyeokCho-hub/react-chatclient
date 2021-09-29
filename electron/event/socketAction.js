@@ -238,6 +238,7 @@ export const onNewNoteMessage = (payload) => {
       isEmergency,
       photoPath: payload?.photoPath
     });
+    setHot(true);
   } catch (err) {
     console.log('onNewNoteMessage Err : ', err);
     // log error

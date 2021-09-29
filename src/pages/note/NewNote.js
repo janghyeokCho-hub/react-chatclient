@@ -324,10 +324,10 @@ export default function NewNote({ match, location }) {
             <NoteHeader onClose={handleClose} title={headerTitle} />
             <div id="wrap" style={{ height: 'calc(100% - 60px)' }}>
                 <Scrollbars autoHide={true} className="noteWrap Layer-Notepop" style={{ zIndex: 'unset', overflow: 'hidden' }}>
-                    <div className="txtBox">
+                    <div className="txtBox" style={{ padding: '0 30px'}}>
                         <p>{covi.getDic('Note_Recipient', '받는사람')}</p>
                     </div>
-                    <div className="org_select_wrap">
+                    <div className="org_select_wrap" style={{ marginRight: '30px', marginLeft: '30px'}}>
                         <ul>
                             {
                                 targets.map((target, idx) => {

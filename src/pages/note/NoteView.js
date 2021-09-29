@@ -224,6 +224,7 @@ function _DrawNote({ noteInfo, onUserNameClicked, loginId }) {
                 </div>
                 <div className="note-txt-cont" style={{
                     userSelect: 'text',
+                    minHeight: '50px',
                     ...plainTextStyle
                 }}>
                     {/* {noteInfo.context} */}
