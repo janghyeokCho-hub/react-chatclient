@@ -360,7 +360,12 @@ export const getInstance = () => {
 };
 
 export const downloadByTokenAll = async fileItems => {
-  const savePath = await getDownloadPath();
+  /**
+   * 2021.09.28
+   * 다운로드 경로확인 ON 설정일 때
+   * 파일 모아보기에서 저장하면 'saveAs'가 동작하지 않도록 'open' 옵션 강제 지정
+   */
+  const savePath = await getDownloadPath({ mode: 'open' });
   if (DEVICE_TYPE === 'd' && savePath === null) return null;
 
   return fileItems.map(item => {
@@ -419,8 +424,8 @@ export const downloadByToken = async (
   progress,
   execute,
 ) => {
-  const savePath = await getDownloadPath();
-  if (DEVICE_TYPE === 'd' && savePath === null) return null;
+  const savePath = await getDownloadPath({ defaultFileName: fileName });
+  if (DEVICE_TYPE === 'd' && !savePath) return null;
   else downloadFiles(token, savePath, fileName, callback, progress, execute);
 };
 

@@ -1,6 +1,6 @@
 import path from 'path';
 import url from 'url';
-import { insert } from '@/lib/util/storageUtil';
+import { insert, filterRemoveByIndex } from '@/lib/util/storageUtil';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import { chatsvr } from '@/lib/api';
@@ -646,13 +646,28 @@ export const openPath = path => {
 };
 
 export const saveFile = (path, name, data, options) => {
-  // 중복되지 않는 파일명 생성
-  const savePath = makeFileName(path, name);
+  const downloadPathCheck = getRemote()
+      .getGlobal('APP_SECURITY_SETTING')
+      .get('downloadPathCheck');
+  const _isMulti = Array.isArray(path) === true;
+  const _path = _isMulti ? path[0] : path;
+  /**
+   * 2021.09.28
+   * 
+   * 다운로드 경로확인 OFF: 중복되지 않는 파일명 생성
+   * 다운로드 경로확인 ON: 전달받은 path 경로(파일이름이 포함된 경로) 그대로 사용
+   * 다운로드 경로확인 ON && 복수저장: 중복되지 않는 파일명 생성
+   */
+  const savePath = (downloadPathCheck && !_isMulti) ? _path : makeFileName(_path, name);
 
-  writeFile(savePath, Buffer.from(data), err => {
+  writeFile(savePath, Buffer.from(data), async (err) => {
     if (err) {
       // error 처리 ?
     } else {
+      try {
+        // savePath(다운로드 경로)가 중복될 경우 파일을 덮어씌우기 전에 indexeddb에서 이전 파일의 정보 삭제
+        await filterRemoveByIndex('files', 'path', savePath, (dup) => dup !== options.token);
+      } catch(_err) { console.log('Insert FileInfo Error : ', _err)}
       insert('files', { token: options.token, path: savePath }, () => {
         console.log('file info save');
       });
@@ -686,7 +701,7 @@ export const getDownloadDefaultPath = () => {
   }
 };
 
-export const getDownloadPath = async () => {
+export const getDownloadPath = async ({ defaultFileName = '', mode = ''} = {}) => {
   const remote = getRemote();
   if (remote) {
     const downloadPathCheck = remote
@@ -694,17 +709,7 @@ export const getDownloadPath = async () => {
       .get('downloadPathCheck');
     const defaultDownloadPath = getDownloadDefaultPath();
     if (downloadPathCheck) {
-      const path = await new Promise((resolve, reject) => {
-        openDirectoryDialog(defaultDownloadPath, filePaths => {
-          if (filePaths && filePaths.length > 0) {
-            const selectedFilePath = filePaths[0];
-            resolve(selectedFilePath);
-          }
-
-          resolve(null);
-        });
-      });
-      return path;
+      return openDirectoryDialog(defaultDownloadPath + `/${defaultFileName || ''}`, mode || 'saveAs');
     } else {
       return defaultDownloadPath;
     }
@@ -713,20 +718,34 @@ export const getDownloadPath = async () => {
   }
 };
 
-export const openDirectoryDialog = (defaultPath, callback) => {
+export const openDirectoryDialog = (defaultPath, type = 'open') => {
   const remote = getRemote();
-  remote.dialog.showOpenDialog(
-    {
-      defaultPath: defaultPath,
-      properties: [
-        'openDirectory',
-        'createDirectory',
-        'promptToCreate',
-        'noResolveAliases',
-      ],
-    },
-    callback,
-  );
+  try {
+    if (type === 'open') {
+      return remote.dialog.showOpenDialog(
+        {
+          defaultPath: defaultPath,
+          properties: [
+            'openDirectory',
+            'createDirectory',
+            'promptToCreate',
+            'noResolveAliases',
+          ],
+        }
+      );
+    } else if (type === 'saveAs') {
+      return remote.dialog.showSaveDialog(
+        {
+          defaultPath: defaultPath,
+          properties: [
+            'createDirectory'
+          ]
+        }
+      );
+    }
+  } catch (err) {
+    return null;
+  }
 };
 
 const makeFileName = (basePath, name) => {
