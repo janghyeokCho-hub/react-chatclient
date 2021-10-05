@@ -18,7 +18,11 @@ import { openRoom, newWinRoom } from '@/modules/room';
 import { openChannel, newWinChannel } from '@/modules/channel';
 import { openPopup } from '@/lib/common';
 import Range from '@COMMON/buttons/Range';
-import { useChatFontSize, useChatFontType, useMyChatFontColor } from '../hooks/useChat';
+import {
+  useChatFontSize,
+  useChatFontType,
+  useMyChatFontColor,
+} from '../hooks/useChat';
 
 const Titlebar = () => {
   const [alwaysTop, setAlwaysTop] = useState(getWindowAlwaysTop());
@@ -28,7 +32,7 @@ const Titlebar = () => {
   const isNewWin = !isMainWindow();
 
   const tempMessage = useSelector(({ message }) => message.tempMessage);
-  const [_, setFontType]= useChatFontType();
+  const [_, setFontType] = useChatFontType();
   const [__, setFontSize] = useChatFontSize();
   const [___, setMyChatColor] = useMyChatFontColor();
   const dispatch = useDispatch();
@@ -81,7 +85,7 @@ const Titlebar = () => {
       channel: 'onFontTypeChange',
       callback(_, data) {
         setFontType(data);
-      }
+      },
     });
 
     evalConnector({
@@ -221,13 +225,25 @@ const Titlebar = () => {
             title={covi.getDic('Close')}
             style={{ WebkitAppRegion: 'no-drag' }}
             onClick={e => {
-              if (tempMessage && tempMessage.length > 0) {
+              let closeAlertMessageFlag = false;
+
+              if (tempMessage?.length > 0) {
+                tempMessage.map(data => {
+                  if (data.messageType != 'A') {
+                    closeAlertMessageFlag = true;
+                  }
+                });
+              }
+
+              if (closeAlertMessageFlag) {
                 openPopup(
                   {
-                    type: 'Alert',
+                    type: 'Confirm',
                     message: covi.getDic('Msg_FileSendingClose'),
                     callback: result => {
-                      closeWindow();
+                      if (result) {
+                        closeWindow();
+                      }
                     },
                   },
                   dispatch,
