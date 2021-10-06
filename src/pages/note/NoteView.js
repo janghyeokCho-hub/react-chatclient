@@ -92,8 +92,8 @@ function _DrawFile({ files = [], loginId }) {
                 if (DEVICE_TYPE === 'b') {
                     fileDownload(response.data, fileName);
                 } else if (DEVICE_TYPE === 'd') {
-                    const savePath = await getDownloadPath();
-                    if (savePath === null) {
+                    const savePath = await getDownloadPath({ defaultFileName: opts?.fileName });
+                    if (!savePath) {
                         // 지정된 파일 경로가 없을경우 다운로드 중단
                         return;
                     }
@@ -224,6 +224,7 @@ function _DrawNote({ noteInfo, onUserNameClicked, loginId }) {
                 </div>
                 <div className="note-txt-cont" style={{
                     userSelect: 'text',
+                    minHeight: '50px',
                     ...plainTextStyle
                 }}>
                     {/* {noteInfo.context} */}

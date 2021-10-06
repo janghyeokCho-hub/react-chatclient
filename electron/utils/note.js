@@ -44,7 +44,7 @@ export function openNoteWindow({ type, noteId, viewType, isEmergency = false }) 
     const minHeight = 500;
 
     const defaultWidth = currentDisplay.workAreaSize.width / 3;
-    const defaultHeight = currentDisplay.workAreaSize.height / 2;
+    const defaultHeight = currentDisplay.workAreaSize.height / 1.5;
 
     const newWindow = new BrowserWindow({
         width: defaultWidth < minWidth ? minWidth : defaultWidth,

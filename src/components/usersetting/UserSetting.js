@@ -890,16 +890,14 @@ const UserSetting = ({ history }) => {
                   <li className="ChatConfig-list">
                     <a
                       className="ChatConfig-menu"
-                      onClick={() => {
-                        openDirectoryDialog(defaultDownloadPath, filePaths => {
-                          if (filePaths && filePaths.length > 0) {
-                            const selectedFilePath = filePaths[0];
-                            setDefaultDownloadPath(selectedFilePath);
-                            handleConfig({
-                              defaultDownloadPath: selectedFilePath,
-                            });
-                          }
-                        });
+                      onClick={async () => {
+                        const selectPath = await openDirectoryDialog(defaultDownloadPath, 'open');
+                        if (selectPath) {
+                          setDefaultDownloadPath(selectPath);
+                          handleConfig({
+                            defaultDownloadPath: selectPath
+                          });
+                        }
                       }}
                     >
                       <span>{covi.getDic('DownloadDeafultPath')}</span>
