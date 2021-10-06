@@ -366,12 +366,12 @@ export const downloadByTokenAll = async fileItems => {
    * 파일 모아보기에서 저장하면 'saveAs'가 동작하지 않도록 'open' 옵션 강제 지정
    */
   const savePath = await getDownloadPath({ mode: 'open' });
-  if (DEVICE_TYPE === 'd' && savePath === null) return null;
+  if (DEVICE_TYPE === 'd' && !savePath) return null;
 
   return fileItems.map(item => {
     return new Promise((resolve, reject) => {
       downloadFiles(item.token, savePath, item.name, data => {
-        if (data.result != 'SUCCESS') {
+        if (data.result !== 'SUCCESS') {
           resolve({ result: false, data: data });
         }
         resolve({ result: true, data: null });
