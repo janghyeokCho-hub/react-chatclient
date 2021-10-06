@@ -135,17 +135,29 @@ const Photo = ({ photo, onSelect, selectMode }) => {
           {
             name: covi.getDic('Download'),
             callback: () => {
-              downloadByToken(item.FileID, item.FileName, data => {
-                if (data.result != 'SUCCESS') {
-                  openPopup(
-                    {
-                      type: 'Alert',
-                      message: data.message,
-                    },
-                    dispatch,
-                  );
-                }
-              });
+                downloadByToken(
+                  item.FileID,
+                  downloadPath + item.FileName,
+                  data => {
+                    if (data.result != 'SUCCESS') {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: data.message,
+                        },
+                        dispatch,
+                      );
+                    } else {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: covi.getDic('Msg_DownloadSuccess'),
+                        },
+                        dispatch,
+                      );
+                    }
+                  }
+                );
             },
           }
         );

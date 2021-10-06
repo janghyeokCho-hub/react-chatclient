@@ -17,7 +17,6 @@ import {
 import { setMoveView } from '@/modules/message';
 import LoadingWrap from '@/components/common/LoadingWrap';
 import { format } from 'date-fns';
-import { getDownloadPath } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
 import * as viewerApi from '@/lib/viewer';
 import { getDic } from '@/lib/util/configUtil';
@@ -142,43 +141,29 @@ const File = ({ file, onSelect, selectMode }) => {
             {
               name: covi.getDic('Download'),
               callback: () => {
-                downloadByToken(item.FileID, item.FileName, data => {
-                  if (data.result != 'SUCCESS') {
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: data.message,
-                      },
-                      dispatch,
-                    );
-                  }
-                });
-  
-                getDownloadPath().then(downloadPath => {
-                  downloadByToken(
-                    item.FileID,
-                    downloadPath + item.FileName,
-                    data => {
-                      if (data.result != 'SUCCESS') {
-                        openPopup(
-                          {
-                            type: 'Alert',
-                            message: data.message,
-                          },
-                          dispatch,
-                        );
-                      } else {
-                        openPopup(
-                          {
-                            type: 'Alert',
-                            message: covi.getDic('Msg_DownloadSuccess'),
-                          },
-                          dispatch,
-                        );
-                      }
-                    },
-                  );
-                });
+                downloadByToken(
+                  item.FileID,
+                  item.FileName,
+                  data => {
+                    if (data.result !== 'SUCCESS') {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: data.message,
+                        },
+                        dispatch,
+                      );
+                    } else {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: covi.getDic('Msg_DownloadSuccess'),
+                        },
+                        dispatch,
+                      );
+                    }
+                  },
+                );
               },
             },
           ],
@@ -229,22 +214,9 @@ const File = ({ file, onSelect, selectMode }) => {
             {
               name: covi.getDic('Download'),
               callback: () => {
-                downloadByToken(item.FileID, item.FileName, data => {
-                  if (data.result != 'SUCCESS') {
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: data.message,
-                      },
-                      dispatch,
-                    );
-                  }
-                });
-  
-                getDownloadPath().then(downloadPath => {
                   downloadByToken(
                     item.FileID,
-                    downloadPath + item.FileName,
+                    item.FileName,
                     data => {
                       if (data.result != 'SUCCESS') {
                         openPopup(
@@ -265,7 +237,6 @@ const File = ({ file, onSelect, selectMode }) => {
                       }
                     },
                   );
-                });
               },
             },
           ],
@@ -448,22 +419,9 @@ const File = ({ file, onSelect, selectMode }) => {
             {
               name: covi.getDic('Download'),
               callback: () => {
-                downloadByToken(item.FileID, item.FileName, data => {
-                  if (data.result != 'SUCCESS') {
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: data.message,
-                      },
-                      dispatch,
-                    );
-                  }
-                });
-  
-                getDownloadPath().then(downloadPath => {
                   downloadByToken(
                     item.FileID,
-                    downloadPath + item.FileName,
+                    item.FileName,
                     data => {
                       if (data.result != 'SUCCESS') {
                         openPopup(
@@ -484,7 +442,6 @@ const File = ({ file, onSelect, selectMode }) => {
                       }
                     },
                   );
-                });
               },
             },
           ],
@@ -755,7 +712,7 @@ const FileSummary = ({ roomId }) => {
                 </div>
               </a>
                   ) || ( select &&
-              <a className="Okbtn" onClick={handleSelect}>
+            <a className="Okbtn" onClick={handleSelect}>
               <span className="colortxt-point mr5">{selectItems.length}</span>
               {covi.getDic('Save')}
             </a>
