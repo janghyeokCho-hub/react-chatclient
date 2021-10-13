@@ -12,7 +12,7 @@ PC앱의 경우 react + electron을 기반으로 제작됨.
   7. develop 적용 후 main 브랜치로 PR 요청
 ### Requirements
 Common
-+ node 15.x 이상
++ node 16.x 이상
 + yarn 1.x
 
 #### PC Environment
