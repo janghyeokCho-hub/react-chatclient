@@ -212,7 +212,7 @@ const appReady = async () => {
                 type: 'A',
               });
               logger.info('[1] Exit program. update presence offline ');
-              APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
+              APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
               console.log(response.data);
             }
           } catch (err) {
@@ -258,7 +258,7 @@ const appReady = async () => {
                   });
 
                   logger.info('[2] Exit program. update presence offline ');
-                  APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
+                  APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
                   console.log(response.data);
                 }
               } catch (err) {
@@ -620,7 +620,7 @@ app.on('window-all-closed', async () => {
           type: 'A',
         });
         logger.info('[3] Exit program. update presence offline ');
-        APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
+        APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
         console.log(response.data);
       }
     } catch (err) {
@@ -658,7 +658,7 @@ app.on(
 */
 
 app.on('before-quit', event => {
-  APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
+  APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
   alarmWin = null;
 });
 
