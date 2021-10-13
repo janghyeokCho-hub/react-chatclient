@@ -646,7 +646,7 @@ export const openLinkNative = link => {
 export const openFile = path => {
   if (existsSync(path)) {
     const shell = getRemote().shell;
-    shell.openItem(path);
+    shell.openPath(path);
   } else {
     throw new Error('FILE NOT EXIST');
   }
@@ -689,7 +689,7 @@ export const saveFile = (path, name, data, options) => {
       });
 
       if (options.execute) {
-        getRemote().shell.openItem(savePath);
+        getRemote().shell.openPath(savePath);
       }
     }
   });
