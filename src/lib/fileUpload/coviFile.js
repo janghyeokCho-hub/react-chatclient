@@ -366,11 +366,10 @@ export const downloadByTokenAll = async fileItems => {
    * 파일 모아보기에서 저장하면 'saveAs'가 동작하지 않도록 'open' 옵션 강제 지정
    */
   const savePath = await getDownloadPath({ mode: 'open' });
-  if (DEVICE_TYPE === 'd' && !savePath) return null;
-
+  if (DEVICE_TYPE === 'd' && savePath?.canceled) return null;
   return fileItems.map(item => {
     return new Promise((resolve, reject) => {
-      downloadFiles(item.token, savePath, item.name, data => {
+      downloadFiles(item.token, savePath?.filePath, item.name, data => {
         if (data.result !== 'SUCCESS') {
           resolve({ result: false, data: data });
         }
@@ -425,8 +424,8 @@ export const downloadByToken = async (
   execute,
 ) => {
   const savePath = await getDownloadPath({ defaultFileName: fileName });
-  if (DEVICE_TYPE === 'd' && !savePath) return null;
-  else downloadFiles(token, savePath, fileName, callback, progress, execute);
+  if (DEVICE_TYPE === 'd' && savePath?.canceled) return null;
+  else downloadFiles(token, savePath?.filePath, fileName, callback, progress, execute);
 };
 
 export const downloadMessageData = async (roomID, fileName) => {
