@@ -727,7 +727,7 @@ export const getDownloadPath = async ({ defaultFileName = '', mode = ''} = {}) =
     if (downloadPathCheck) {
       return openDirectoryDialog(defaultDownloadPath + `/${defaultFileName || ''}`, mode || 'saveAs');
     } else {
-      return defaultDownloadPath;
+      return { canceled: false, filePath: defaultDownloadPath };
     }
   } else {
     return null;

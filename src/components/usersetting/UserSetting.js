@@ -892,10 +892,10 @@ const UserSetting = ({ history }) => {
                       className="ChatConfig-menu"
                       onClick={async () => {
                         const selectPath = await openDirectoryDialog(defaultDownloadPath, 'open');
-                        if (selectPath) {
-                          setDefaultDownloadPath(selectPath);
+                        if (!selectPath?.canceled && Array.isArray(selectPath?.filePaths)) {
+                          setDefaultDownloadPath(selectPath.filePaths[0]);
                           handleConfig({
-                            defaultDownloadPath: selectPath
+                            defaultDownloadPath: selectPath.filePaths[0]
                           });
                         }
                       }}
