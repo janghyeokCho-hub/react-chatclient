@@ -52,7 +52,7 @@
 
     <script>
       const { ipcRenderer } = require('electron');
-      const { getGlobal }  = require('@electron/remote/main');
+      const { getGlobal }  = require('@electron/remote');
       window.onload = () => {
         const domainInfo = getGlobal('APP_SECURITY_SETTING')
           .get('domain');
@@ -63,7 +63,7 @@
 
         if (domainInfo) {
           document.querySelector('#domain_Info').innerText = domainInfo;
-          const socket = remote.getGlobal('CONN_SOCKET');
+          const socket = getGlobal('CONN_SOCKET');
           const socketConnect = socket && socket.connected;
           document.querySelector('#conn_socket').innerText = socketConnect
             ? 'connected'
