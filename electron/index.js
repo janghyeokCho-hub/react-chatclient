@@ -659,7 +659,7 @@ app.on(
 
 app.on('before-quit', event => {
   APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
-  alarmWin = null;
+  // alarmWin = null;
 });
 
 app.on('will-throw-error', event => {
