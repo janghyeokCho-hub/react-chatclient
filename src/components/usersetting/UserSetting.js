@@ -432,7 +432,7 @@ const UserSetting = ({ history }) => {
   }, []);
 
   // 프로필이미지 1시간 단위로 캐싱
-  const { timestamp } = useTimestamp({ option: 'yMdh', prefix: '?t=' });
+  const { timestamp } = useTimestamp({ option: 'yMdh' });
   const menuItems = useMemo(() => {
     const firstItem = myInfo.isExtUser
       ? []
@@ -446,6 +446,24 @@ const UserSetting = ({ history }) => {
   const themeColor = covi?.config?.ClientThemeList?.find(
     t => t?.name === getInitTheme(),
   );
+  
+  const photoPath = useMemo(() => {
+    let p = '';
+    try {
+      p = new URL(myInfo.photoPath);
+      p.searchParams.append('t', timestamp);
+    } catch (err) {
+      // url이 relative path인 경우 catch error
+
+      if (DEF_MODE === 'development') {
+        p = myInfo.photoPath;
+      } else {
+        p = new URL(myInfo.photoPath, window.covi);
+        p.searchParams.append('t', timestamp);
+      }
+    }
+    return decodeURIComponent(p.toString());    
+  }, [photoPath]);
 
   return (
     <div style={{ height: '100%' }}>
@@ -515,7 +533,7 @@ const UserSetting = ({ history }) => {
                   <a style={{ cursor: 'default' }}>
                     <img
                       className="profile-photo"
-                      src={`${myInfo.photoPath}${timestamp}`}
+                      src={photoPath}
                       onError={e => {
                         e.target.src = `${Config.ServerURL.HOST}/storage/no_image.jpg`;
                         e.target.onerror = null;
