@@ -30,13 +30,27 @@ const ProfileBox = ({
     openProfilePopup(dispatch, userId);
   }, [userId, dispatch]);
 
-  const { timestamp } = useTimestamp({ option: 'yMdh', prefix: '?t=' });
+  const { timestamp } = useTimestamp({ option: 'yMdh' });
 
   const profileBox = useMemo(() => {
     if (img && imgVisible) {
+      let photoSrc = '';
+      try {
+        photoSrc = new URL(img);
+        photoSrc.searchParams.append('t', timestamp);
+      } catch (err) {
+        // url이 relative path인 경우 catch error
+
+        if (DEF_MODE === 'development') {
+          photoSrc = img;
+        } else {
+          photoSrc = new URL(img, window.covi);
+          photoSrc.searchParams.append('t', timestamp);
+        }
+      }
       return (
         <img
-          src={`${img}${timestamp}`}
+          src={decodeURIComponent(photoSrc.toString())}
           onError={e => {
             setImgVisible(false);
             e.target.src = `${Config.ServerURL.HOST}/storage/no_image.jpg`;
