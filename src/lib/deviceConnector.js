@@ -129,7 +129,12 @@ export const newExtensionWindow = (winName, id, openURL) => {
       roomObj = new remote.BrowserWindow({
         ...initial,
         frame: false,
-        webPreferences: { nodeIntegration: true },
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+          enableRemoteModule: true,
+          nodeIntegrationInSubFrames: true
+        },
       });
 
       const loadURL = `${url.format({
@@ -181,6 +186,7 @@ export const isExceededMaxWindow = () => {
 };
 
 export const newChatRoom = (winName, id, openURL) => {
+  console.log('newChatRoom    ', winName, id, openURL);
   let roomObj = null;
   if (DEVICE_TYPE == 'b') {
     roomObj = window.open(
@@ -229,7 +235,7 @@ export const newChatRoom = (winName, id, openURL) => {
       }
 
       if (roomInfo && roomInfo[0]) {
-        const bounds = getInitialBounds(roomInfo[0], defaultSize);
+        const bounds = getInitialBounds(roomInfo[0], defaultSize, remote);
         // APP_SETTING에 저장된 bounds가 있는 경우
         if (!!bounds) {
           initial = {
@@ -269,7 +275,12 @@ export const newChatRoom = (winName, id, openURL) => {
       roomObj = new remote.BrowserWindow({
         ...initial,
         frame: false,
-        webPreferences: { nodeIntegration: true },
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+          enableRemoteModule: true,
+          nodeIntegrationInSubFrames: true
+        },
         // show: false,
       });
 
@@ -607,7 +618,12 @@ export const openLinkNative = link => {
   const subWin = new remote.BrowserWindow({
     ...initial,
     frame: true,
-    webPreferences: { nodeIntegration: true },
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
+    },
     show: false,
   });
 
@@ -630,7 +646,7 @@ export const openLinkNative = link => {
 export const openFile = path => {
   if (existsSync(path)) {
     const shell = getRemote().shell;
-    shell.openItem(path);
+    shell.openPath(path);
   } else {
     throw new Error('FILE NOT EXIST');
   }
@@ -654,26 +670,34 @@ export const saveFile = (path, name, data, options) => {
   /**
    * 2021.09.28
    * 
-   * 다운로드 경로확인 OFF: 중복되지 않는 파일명 생성
-   * 다운로드 경로확인 ON: 전달받은 path 경로(파일이름이 포함된 경로) 그대로 사용
-   * 다운로드 경로확인 ON && 복수저장: 중복되지 않는 파일명 생성
+   * 다운로드 경로확인 OFF (downloadPathCheck false && isMulti false)
+   * : 중복되지 않는 파일명 생성
+   * 
+   * 다운로드 경로확인 ON (downloadPathCheck true && isMulti false)
+   * : 전달받은 path 경로(파일이름이 포함된 경로) 그대로 사용
+   * 
+   * 복수저장 (downloadPathCheck true && isMulti true)
+   * : 중복되지 않는 파일명 생성
    */
   const savePath = (downloadPathCheck && !_isMulti) ? _path : makeFileName(_path, name);
 
   writeFile(savePath, Buffer.from(data), async (err) => {
     if (err) {
+      console.log('FileSave Error  ', err)
       // error 처리 ?
     } else {
       try {
         // savePath(다운로드 경로)가 중복될 경우 파일을 덮어씌우기 전에 indexeddb에서 이전 파일의 정보 삭제
         await filterRemoveByIndex('files', 'path', savePath, (dup) => dup !== options.token);
-      } catch(_err) { console.log('Insert FileInfo Error : ', _err)}
+      } catch (_err) {
+        console.log('Insert FileInfo Error : ', _err)
+      }
       insert('files', { token: options.token, path: savePath }, () => {
         console.log('file info save');
       });
 
       if (options.execute) {
-        getRemote().shell.openItem(savePath);
+        getRemote().shell.openPath(savePath);
       }
     }
   });
@@ -711,7 +735,7 @@ export const getDownloadPath = async ({ defaultFileName = '', mode = ''} = {}) =
     if (downloadPathCheck) {
       return openDirectoryDialog(defaultDownloadPath + `/${defaultFileName || ''}`, mode || 'saveAs');
     } else {
-      return defaultDownloadPath;
+      return { canceled: false, filePath: defaultDownloadPath };
     }
   } else {
     return null;
@@ -1001,7 +1025,7 @@ export const newChannel = (winName, id, openURL) => {
       let initial = null;
 
       if (roomInfo && roomInfo[0]) {
-        const bounds = getInitialBounds(roomInfo[0], defaultSize);
+        const bounds = getInitialBounds(roomInfo[0], defaultSize, remote);
         // APP_SETTING에 저장된 bounds가 있는 경우
         if (!!bounds) {
           initial = {
@@ -1041,6 +1065,12 @@ export const newChannel = (winName, id, openURL) => {
       channelObj = new remote.BrowserWindow({
         ...initial,
         frame: false,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+          enableRemoteModule: true,
+          nodeIntegrationInSubFrames: true
+        },
       });
 
       const loadURL = `${url.format({

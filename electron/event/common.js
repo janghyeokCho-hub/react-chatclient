@@ -103,6 +103,12 @@ export const reqMakeRoom = (event, args) => {
   let makeWin = new BrowserWindow({
     ...initial,
     frame: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
+    }
   });
 
   MAKE_DATA[makeWin.id] = args.makeData;
@@ -187,6 +193,12 @@ export const reqSubPop = (event, args) => {
       x: bounds.x,
       y: bounds.y,
       frame: false,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        enableRemoteModule: true,
+        nodeIntegrationInSubFrames: true
+      }
     });
 
     pop.setResizable(args.options.resize ? true : false);

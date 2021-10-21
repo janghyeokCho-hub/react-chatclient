@@ -1,3 +1,4 @@
+import './injectGlobal';
 import {
   app,
   BrowserWindow,
@@ -7,8 +8,9 @@ import {
   protocol,
 } from 'electron';
 import path from 'path';
-import os from 'os';
 import url from 'url';
+import qs from 'querystring';
+
 import exportProps from './config/exportProps';
 import * as socketEvt from './event/socket';
 import * as commonEvt from './event/common';
@@ -210,7 +212,7 @@ const appReady = async () => {
                 type: 'A',
               });
               logger.info('[1] Exit program. update presence offline ');
-              APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
+              APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
               console.log(response.data);
             }
           } catch (err) {
@@ -256,7 +258,7 @@ const appReady = async () => {
                   });
 
                   logger.info('[2] Exit program. update presence offline ');
-                  APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
+                  APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
                   console.log(response.data);
                 }
               } catch (err) {
@@ -450,6 +452,9 @@ const createWindow = async (isLoading, domainInfo) => {
     minHeight: defaultSize.height - defaultSize.offset.height.min,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
     },
     frame: false,
     show: false,
@@ -564,6 +569,9 @@ const createDomainRegistWindow = () => {
     maxWidth: 550,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
     },
     frame: false,
     show: false,
@@ -612,7 +620,7 @@ app.on('window-all-closed', async () => {
           type: 'A',
         });
         logger.info('[3] Exit program. update presence offline ');
-        APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
+        APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
         console.log(response.data);
       }
     } catch (err) {
@@ -650,8 +658,8 @@ app.on(
 */
 
 app.on('before-quit', event => {
-  APP_SECURITY_SETTING.set('latestAppBounds', app.getBounds());
-  alarmWin = null;
+  APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
+  // alarmWin = null;
 });
 
 app.on('will-throw-error', event => {
@@ -686,23 +694,22 @@ const setActiveChecker = () => {
   if (activeChecker != null) clearInterval(activeChecker);
 
   activeChecker = setInterval(() => {
-    powerMonitor.querySystemIdleTime(idleTime => {
-      if (
-        idleTime == 0 &&
-        win &&
-        CONN_SOCKET != null &&
-        CONN_SOCKET.connected
-      ) {
-        clearInterval(activeChecker); // activeChecker 종료
-        win.webContents.send(
-          'onSystemIdleTimeInit',
-          BEFORE_PRESENCE ? BEFORE_PRESENCE : 'online',
-        );
+    const idleTime = powerMonitor.getSystemIdleTime();
+    if (
+      idleTime == 0 &&
+      win &&
+      CONN_SOCKET != null &&
+      CONN_SOCKET.connected
+    ) {
+      clearInterval(activeChecker); // activeChecker 종료
+      win.webContents.send(
+        'onSystemIdleTimeInit',
+        BEFORE_PRESENCE ? BEFORE_PRESENCE : 'online',
+      );
 
-        BEFORE_PRESENCE = '';
-        setIdleChecker(); // idle checker 시작
-      }
-    });
+      BEFORE_PRESENCE = '';
+      setIdleChecker(); // idle checker 시작
+    }
   }, 1000);
 };
 
@@ -710,18 +717,17 @@ const setIdleChecker = () => {
   if (idleChecker != null) clearInterval(idleChecker);
 
   idleChecker = setInterval(() => {
-    powerMonitor.querySystemIdleTime(idleTime => {
-      if (
-        appIdleTime < idleTime &&
-        win &&
-        CONN_SOCKET != null &&
-        CONN_SOCKET.connected
-      ) {
-        clearInterval(idleChecker); // idle checker 종료
-        win.webContents.send('onSystemIdleTime', ''); // idle 전파
-        setActiveChecker(); // active checker 시작
-      }
-    });
+    const idleTime = powerMonitor.getSystemIdleTime();
+    if (
+      appIdleTime < idleTime &&
+      win &&
+      CONN_SOCKET != null &&
+      CONN_SOCKET.connected
+    ) {
+      clearInterval(idleChecker); // idle checker 종료
+      win.webContents.send('onSystemIdleTime', ''); // idle 전파
+      setActiveChecker(); // active checker 시작
+    }
   }, 1000 * 60);
 };
 // presence idle checker end
@@ -988,7 +994,7 @@ ipcMain.on('clear-domain', e => {
     message: SERVER_SECURITY_SETTING.getDic('Msg_InitDomain'), //'설정된 도메인 정보를 초기화합니다.<br/>확인 시 앱 데이터가 초기화 됩니다.'
     confirm: () => {
       // 저장된 캐시데이터 삭제
-      ses.clearCache(() => {
+      ses.clearCache().then(() => {
         // Domain 정보 제거 후 앱 재시작
         APP_SECURITY_SETTING.purge();
         app.relaunch();

@@ -14,6 +14,12 @@ export const showModalDialog = (parent, option) => {
     width: option.width,
     height: option.height,
     alwaysOnTop: true,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
+    }
   });
 
   modalDialog.loadFile(path.join(DIR_NAME, 'templates', `${option.type}.html`));
@@ -23,7 +29,7 @@ export const showModalDialog = (parent, option) => {
     messageBox.innerHTML = '${option.message}'
     var confirmBtn = document.getElementById("btnConfirm");
     confirmBtn.addEventListener("click", () => {
-        const currentWindow = remote.getCurrentWindow();
+        const currentWindow = getCurrentWindow();
         ipcRenderer.send('modal-callback', true);
         currentWindow.close();
     });
@@ -32,7 +38,7 @@ export const showModalDialog = (parent, option) => {
       option.type == 'confirm'
         ? `var cancelBtn = document.getElementById("btnCancel");
         cancelBtn.addEventListener("click", () => {
-            const currentWindow = remote.getCurrentWindow();
+            const currentWindow = getCurrentWindow();
             ipcRenderer.send('modal-callback', false);
             currentWindow.close();
     })`
@@ -73,6 +79,12 @@ export const showModalProgress = (parent, option) => {
     resizable: false,
     width: 300,
     height: 150,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
+    }
   });
 
   modalDialog.loadFile(path.join(DIR_NAME, 'templates', 'progress.html'));
@@ -99,6 +111,12 @@ export const showVersionInformation = () => {
     resizable: false,
     width: 620,
     height: 500,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
+    }
   });
 
   let loadURL = '';
@@ -130,6 +148,12 @@ export const showConnectInformation = () => {
     resizable: false,
     width: 300,
     height: 220,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      nodeIntegrationInSubFrames: true
+    }
   });
 
   modalDialog.setMenu(null);

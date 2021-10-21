@@ -366,11 +366,21 @@ export const downloadByTokenAll = async fileItems => {
    * 파일 모아보기에서 저장하면 'saveAs'가 동작하지 않도록 'open' 옵션 강제 지정
    */
   const savePath = await getDownloadPath({ mode: 'open' });
-  if (DEVICE_TYPE === 'd' && !savePath) return null;
-
+  // 다운로드 경로지정 dialog을 닫은경우 다운로드 실행하지 않음
+  if (DEVICE_TYPE === 'd' && savePath?.canceled) return null;
+  if (savePath?.filePath && !savePath?.filePaths) {
+    /**
+     * 2021.10.19
+     * 다운로드 경로확인 옵션 X일 경우: filePath가 경로
+     * 다운로드 경로확인 옵션 O일경우: filePaths가 경로
+     * 
+     * 다운로드 경로확인 옵션 X일 경우에 중복파일명 덮어쓰기 방지를 위해 경로를 array로 넘김
+     */
+    savePath.filePaths = [savePath.filePath];
+  }
   return fileItems.map(item => {
     return new Promise((resolve, reject) => {
-      downloadFiles(item.token, savePath, item.name, data => {
+      downloadFiles(item.token, savePath?.filePaths, item.name, data => {
         if (data.result !== 'SUCCESS') {
           resolve({ result: false, data: data });
         }
@@ -401,18 +411,17 @@ const downloadFiles = (
         message: covi.getDic('Msg_FilePermission'),
       });
     } else {
-      callback({ result: 'SUCCESS', message: '' });
       if (DEVICE_TYPE == 'b') {
         fileDownload(response.data, fileName);
       } else {
         //const blobData = [response.data];
         //const blob = new Blob(blobData, { type: 'application/octet-stream' });
-
         saveFile(savePath, fileName, response.data, {
           execute: execute,
           token: token,
         });
       }
+      callback({ result: 'SUCCESS', message: '' });
     }
   });
 };
@@ -425,8 +434,8 @@ export const downloadByToken = async (
   execute,
 ) => {
   const savePath = await getDownloadPath({ defaultFileName: fileName });
-  if (DEVICE_TYPE === 'd' && !savePath) return null;
-  else downloadFiles(token, savePath, fileName, callback, progress, execute);
+  if (DEVICE_TYPE === 'd' && savePath?.canceled) return null;
+  else downloadFiles(token, savePath?.filePath, fileName, callback, progress, execute);
 };
 
 export const downloadMessageData = async (roomID, fileName) => {

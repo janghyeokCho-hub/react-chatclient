@@ -37,7 +37,6 @@ export function openNoteWindow({ type, noteId, viewType, isEmergency = false }) 
         return;
     }
 
-    
     const currentCursor = screen.getCursorScreenPoint();
     const currentDisplay = screen.getDisplayNearestPoint(currentCursor);
 
@@ -52,8 +51,11 @@ export function openNoteWindow({ type, noteId, viewType, isEmergency = false }) 
         height: defaultHeight < minHeight ? minHeight : defaultHeight,
         minWidth,
         minHeight,
-        webPrefereces: {
-            nodeIntegration: true
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+            enableRemoteModule: true,
+            nodeIntegrationInSubFrames: true
         },
         frame: false,
         alwaysOnTop: isEmergency

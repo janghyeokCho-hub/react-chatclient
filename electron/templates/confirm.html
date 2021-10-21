@@ -62,8 +62,8 @@
       </div>
     </div>
     <script>
-      const electron = require('electron');
-      let { ipcRenderer, remote } = electron;
+      const { ipcRenderer } = require('electron');
+      const { getCurrentWindow, BrowserWindow } = require('@electron/remote');
     </script>
   </body>
 </html>

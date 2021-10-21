@@ -21,8 +21,7 @@ export function requestOAuth() {
         // frame: false,
         webPreferences: {
             nodeIntegration: false,
-            contextIsolation: true,
-            // enableRemoteModule: false
+            contextIsolation: false
         }
     });
 

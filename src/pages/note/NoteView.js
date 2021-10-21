@@ -93,11 +93,11 @@ function _DrawFile({ files = [], loginId }) {
                     fileDownload(response.data, fileName);
                 } else if (DEVICE_TYPE === 'd') {
                     const savePath = await getDownloadPath({ defaultFileName: opts?.fileName });
-                    if (!savePath) {
+                    if (savePath?.canceled) {
                         // 지정된 파일 경로가 없을경우 다운로드 중단
                         return;
                     }
-                    saveFile(savePath, fileName, response.data, {
+                    saveFile(savePath.filePath, fileName, response.data, {
                         token: fileID,
                         execute: true
                     });
