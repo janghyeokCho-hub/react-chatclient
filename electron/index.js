@@ -265,6 +265,7 @@ const appReady = async () => {
                 logger.info('Error when updating presnce offline', err);
               }
               app.quit();
+              app.exit();
             },
           },
         ],
