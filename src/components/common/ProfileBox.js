@@ -40,11 +40,10 @@ const ProfileBox = ({
         photoSrc.searchParams.append('t', timestamp);
       } catch (err) {
         // url이 relative path인 경우 catch error
-
         if (DEF_MODE === 'development') {
           photoSrc = img;
         } else {
-          photoSrc = new URL(img, window.covi);
+          photoSrc = new URL(img, window.covi.baseURL);
           photoSrc.searchParams.append('t', timestamp);
         }
       }
