@@ -108,8 +108,8 @@
       </div>
     </div>
     <script>
-      const electron = require('electron');
-      const { ipcRenderer, remote } = electron;
+      const { ipcRenderer } = require('electron');
+      const { getCurrentWindow } = require('@electron/remote');
 
       ipcRenderer.on('modal-progress-change', (event, args) => {
         document.getElementById('progress').innerHTML = args + '%';
@@ -120,7 +120,7 @@
       });
 
       ipcRenderer.on('modal-progress-end', (event, args) => {
-        remote.getCurrentWindow().close();
+        getCurrentWindow().close();
       });
     </script>
   </body>

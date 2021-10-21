@@ -1,18 +1,19 @@
-import { screen, remote } from 'electron';
+import { screen } from 'electron';
 import { deepEqual } from '../util/objectUtil';
 
-export const getInitialBounds = (boundKey, defaultSize) => {
+export const getInitialBounds = (boundKey, defaultSize, _remote) => {
   try {
     // electron main thread     =>  remote.getGlobal undefined
     // eletron renderer thread  =>  global.APP_SETTING undefined
 
-    const APP_SETTING = remote?.getGlobal
-      ? remote.getGlobal('APP_SECURITY_SETTING')
+    const _screen = _remote?.screen ? _remote.screen : screen;
+    const APP_SETTING = _remote?.getGlobal
+      ? _remote.getGlobal('APP_SECURITY_SETTING')
       : global.APP_SECURITY_SETTING;
 
     const initialBounds = APP_SETTING.get(boundKey);
     if (initialBounds) {
-      const targetScreen = screen.getDisplayMatching(initialBounds);
+      const targetScreen = _screen.getDisplayMatching(initialBounds);
       const { x, y, width, height, display } = initialBounds;
 
       // 디스플레이 구성이 달라졌을 경우 저장된 좌표를 사용하지 않음 (화면 밖으로 나가는 현상 방지)

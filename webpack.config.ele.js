@@ -26,10 +26,6 @@ module.exports = (env, options) => {
         knex: 'commonjs knex',
       },
       {
-        'electron-windows-notifications':
-          'commonjs electron-windows-notifications',
-      },
-      {
         '@journeyapps/sqlcipher': 'commonjs @journeyapps/sqlcipher',
       },
     ],

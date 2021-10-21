@@ -8,14 +8,14 @@ import electron, {
     desktopCapturer,
     screen,
     shell, 
-    remote,
     clipboard,
 } from 'electron';
+import { BrowserWindow, getCurrentWindow, app } from '@electron/remote/main';
+
 // import { openPopup } from '@/lib/common';
 // import * as coviFile from '@/lib/fileUpload/coviFile';
 // import { changeFiles, clearFiles, deleteFile } from '@/modules/message';
 
-const BrowserWindow = remote.BrowserWindow;
 // const dev = process.env.NODE_ENV === 'development';
 const path = require('path');
 const screenSize = screen.getPrimaryDisplay().size;
@@ -65,6 +65,12 @@ const Snipper = ({ props }) => {
             frame : false,
             transparent : true,
             kiosk: true,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false,
+                enableRemoteModule: true,
+                nodeIntegrationInSubFrames: true
+            }
         });
         
         // snipWindow.openDevTools();
@@ -85,10 +91,6 @@ const Snipper = ({ props }) => {
         snipWindow.loadURL(window.location.href + '?snip');
         snipWindow.setResizable(false);
         //snipWindow.webContents.openDevTools();
-    };
-
-    const getCurrentWindow = () => {
-        return remote.getCurrentWindow();
     };
 
     const getAllInstances = () => {
@@ -315,7 +317,7 @@ const Snipper = ({ props }) => {
     }
 
     const saveToDisk = () => {
-        const directory = remote.app.getPath('pictures');
+        const directory = app.getPath('pictures');
         const filepath = path.join(directory + '/' + uuidv4() + '.png');
         if (!fs.existsSync(directory)){
             fs.mkdirSync(directory);
@@ -348,7 +350,7 @@ const Snipper = ({ props }) => {
         console.log('aaa', aaa[1]);
 
         console.log('getCurrentWindow()',getCurrentWindow());
-        console.log('remote',remote.getCurrentWindow());
+        console.log('remote', getCurrentWindow());
         // aaa[1].close();
         // aaa[2].close();
     }

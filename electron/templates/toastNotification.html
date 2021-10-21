@@ -106,11 +106,11 @@
     </div>
 
     <script>
-      const electron = require('electron');
-      let { ipcRenderer, remote } = electron;
+      const { ipcRenderer } = require('electron');
+      const { getCurrentWindow, getGlobal, BrowserWindow } = require('@electron/remote');
       let HOST = '';
       let clickTarget = null;
-      let alarmWin = remote.getCurrentWindow();
+      let alarmWin = getCurrentWindow();
       let hideActionId = null;
       let hideAnimationId = null;
 
@@ -123,7 +123,7 @@
           hideCustomAlarm(args);
         });
 
-        const appConfigs = remote.getGlobal('APP_SECURITY_SETTING');
+        const appConfigs = getGlobal('APP_SECURITY_SETTING');
 
         HOST = appConfigs.get('domain');
 
@@ -217,21 +217,21 @@
       };
 
       const openFocusRoom = (roomID, isChannel) => {
-        const room_win_map = remote.getGlobal('ROOM_WIN_MAP');
+        const room_win_map = getGlobal('ROOM_WIN_MAP');
 
         const id = room_win_map[roomID];
         let focusWin = null;
 
         if (id) {
-          const findWin = remote.BrowserWindow.fromId(id);
+          const findWin = BrowserWindow.fromId(id);
           if (findWin) {
             focusWin = findWin;
           } else {
-            focusWin = remote.BrowserWindow.fromId(1);
+            focusWin = BrowserWindow.fromId(1);
             focusWin.webContents.send('onAlarmClick', { roomID, isChannel });
           }
         } else {
-          focusWin = remote.BrowserWindow.fromId(1);
+          focusWin = BrowserWindow.fromId(1);
           focusWin.webContents.send('onAlarmClick', { roomID, isChannel });
         }
 
