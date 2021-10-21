@@ -393,7 +393,6 @@ export const reqInitRoom = async (event, args) => {
       logger.info(e.stack);
       await tx.rollback();
     }
-
     reqLogout(event, args);
 
     const mainWin = BrowserWindow.fromId(1);
@@ -406,7 +405,7 @@ export const reqInitRoom = async (event, args) => {
     });
 
     logger.info(`load URL : ${loadURL}${firstPage}`);
-    mainWin.loadURL(`${loadURL}${firstPage}`);
+    mainWin.loadURL(`${loadURL}${firstPage}?refresh=true`);
   }
 };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { parse } from 'qs';
 import * as socketUtil from '@/lib/socket/socketUtil';
 import * as socketActions from '@/lib/socket/socketActions';
 import * as deviceConnector from '@/lib/deviceConnector';
@@ -12,14 +13,18 @@ import useSWR from 'swr';
 
 const socketConnector = require(`@/lib/socket/socketConnect.${DEVICE_TYPE}`);
 
-const SocketContainer = ({ history }) => {
+const SocketContainer = ({ history, location }) => {
   const token = useSelector(({ login }) => login.token);
   const userid = useSelector(({ login }) => login.id);
   const userInfo = useSelector(({ login }) => login.userInfo);
   const connected = useSelector(({ login }) => login.socketConnect);
   const { mutate: setNoteList } = useSWR('/note/list/receive', null);
-
+  const query = parse(location?.search, { ignoreQueryPrefix: true });
   const dispatch = useDispatch();
+
+  if (query?.refresh === true || query?.refresh === 'true') {
+    deviceConnector.closeSocket(true);
+  }
 
   useEffect(() => {
     if (token && !!userid) {
