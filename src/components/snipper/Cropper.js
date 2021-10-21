@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
+import { screen } from '@electron/remote';
 
-const { screen, autoUpdater } = require('electron');
 const screenSize = screen.getPrimaryDisplay().size;
 
 const style = {
