@@ -48,12 +48,12 @@ const ProfileBox = ({
           photoSrc.searchParams.append('t', timestamp);
         }
       } catch (err) {
-        // url이 relative path인 경우 catch error
-        if (DEF_MODE === 'development') {
-          photoSrc = img;
-        } else {
+        try {
+          // url이 relative path인 경우 catch error
           photoSrc = new URL(img, window.covi.baseURL);
           photoSrc.searchParams.append('t', timestamp);
+        } catch(err) {
+          photoSrc = img;
         }
       }
       return (
