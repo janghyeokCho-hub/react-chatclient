@@ -36,8 +36,17 @@ const ProfileBox = ({
     if (img && imgVisible) {
       let photoSrc = '';
       try {
-        photoSrc = new URL(img);
-        photoSrc.searchParams.append('t', timestamp);
+        const urlParts = img?.split('?');
+        /* query string에 't' 타임스탬프 추가 */
+        if (Array.isArray(urlParts) && urlParts.length >= 2) {
+          /* query string '?' identifier 중복처리 */
+          const urlBase = urlParts.shift();
+          photoSrc = new URL(urlBase + '?' + urlParts.join('&'));
+          photoSrc.searchParams.append('t', timestamp);
+        } else {
+          photoSrc = new URL(img);
+          photoSrc.searchParams.append('t', timestamp);
+        }
       } catch (err) {
         // url이 relative path인 경우 catch error
         if (DEF_MODE === 'development') {
