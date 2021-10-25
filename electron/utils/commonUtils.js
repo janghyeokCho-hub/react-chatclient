@@ -200,7 +200,7 @@ export const notifyNoteMessage = ({
   );
   
   // 알림설정(종모양) off인 경우 전체 쪽지에 대한 noti 비활성
-  if (USER_SETTING?.config?.desktopNoti === false) {
+  if (USER_SETTING?.config?.desktopNoti === false && isEmergency === false) {
     return;
   }
 

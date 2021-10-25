@@ -77,7 +77,7 @@ export default function NoteList() {
         return viewType === _viewType ? 'active' : '';
     }
 
-    const handleSyncNote = (event, args) => {
+    const handleSyncNote = useCallback((event, args) => {
         const { op, viewType, noteId } = args;
         if (op === 'refetch') {
             // 쪽지함 리로드 IPC
@@ -89,7 +89,7 @@ export default function NoteList() {
             // 쪽지 삭제처리 IPC
             removeNote(viewType, noteId);
         }
-    };
+    }, [noteList]);
 
     useEffect(() => {
         // 이전에 등록된 listener 삭제하고 재등록(contactList 데이터 갱신 이슈)
