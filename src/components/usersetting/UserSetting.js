@@ -454,12 +454,12 @@ const UserSetting = ({ history }) => {
       p.searchParams.append('t', timestamp);
     } catch (err) {
       // url이 relative path인 경우 catch error
-
-      if (DEF_MODE === 'development') {
-        p = myInfo.photoPath;
-      } else {
-        p = new URL(myInfo.photoPath, window.covi);
+      try {
+        // url이 relative path인 경우 catch error
+        p = new URL(myInfo.photoPath, window.covi.baseURL);
         p.searchParams.append('t', timestamp);
+      } catch (err) {
+        p = myInfo.photoPath;
       }
     }
     return decodeURIComponent(p.toString());    
