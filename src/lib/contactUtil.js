@@ -5,9 +5,6 @@ import { getAesUtil } from '@/lib/aesUtil';
 export const addFavorite = (dispatch, userInfo, orgFolderType, folderId) => {
   if (!userInfo.id) return;
 
-  console.log('addFavorite >> ', userInfo, orgFolderType);
-
-  // prop 변경시도 오류 방지를 위한 object clone
   const _userInfo = Object.assign({}, userInfo, { pChat: 'Y' });
 
   if (folderId) {
