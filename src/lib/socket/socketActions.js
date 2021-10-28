@@ -457,7 +457,6 @@ export const handleDelChannelMessageInDesktop = dispatch => {
     if (json_data.messageType === 'I') {
       dispatch(receiveDeletedChannelNotice(json_data));
     } else {
-      console.log('detele message called');
       dispatch(deleteMessage(json_data));
       dispatch(receiveDeletedChannelMessage(json_data));
     }
