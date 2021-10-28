@@ -349,7 +349,6 @@ function createDeleteMessageSaga() {
   return function* (action) {
     if (action.payload) {
       try {
-        yield console.log('createDeleteMessageSaga >>> ', action.payload);
         const lastMessage = action.payload.lastMessage;
         if (lastMessage) {
           yield put(updateLastMessage(lastMessage));
@@ -1613,7 +1612,7 @@ const channel = handleActions(
           if (draft.currentChannel.roomId == action.payload.roomID) {
             draft.messages.splice(
               draft.messages.findIndex(
-                m => m.messageID == action.payload.messageID,
+                m => m.messageID == action.payload.deleteMessage.messageID,
               ),
               1,
             );
