@@ -78,6 +78,7 @@ const UserSetting = ({ history }) => {
   const [workTiemNoti, setWorkTimeNoti] = useState(false);
   const notificationBlock = getConfig('NotificationBlock');
   const customFonts = getConfig('UseCustomFonts', { use: false, fonts: [] });
+  const customPathOption = getConfig('UseCustomDownloadPath', { isUse: false, defaultPath: '', useDefaultValue: false });
 
   // 색상 선택
   const [useEmoji, setUseEmoji] = useState(false);
@@ -909,8 +910,29 @@ const UserSetting = ({ history }) => {
                     <a
                       className="ChatConfig-menu"
                       onClick={async () => {
-                        const selectPath = await openDirectoryDialog(defaultDownloadPath, 'open');
-                        if (!selectPath?.canceled && Array.isArray(selectPath?.filePaths)) {
+                        if (customPathOption?.isUse && customPathOption?.useDefaultValue) {
+                          // 다운로드 기본경로 강제설정인 경우, 경로변경 미동작 처리
+                          return;
+                        } else if (customPathOption?.isUse && !customPathOption?.useDefaultValue) {
+                          // 사용자가 직접 경로입력
+                          openPopup({
+                            type: 'Prompt',
+                            title: covi.getDic('DownloadDeafultPath'),
+                            initValue: defaultDownloadPath,
+                            callback(result) {
+                              console.log('Change default download Path');
+                              setDefaultDownloadPath(result);
+                              handleConfig({
+                                defaultDownloadPath: result
+                              });
+                            }
+                          }, dispatch);
+                        } else {
+                          // 다운로드 경로로 사용할 디렉토리 선택 (기본동작)
+                          const selectPath = await openDirectoryDialog(defaultDownloadPath, 'open');
+                          if (selectPath?.canceled || !Array.isArray(selectPath?.filePaths)) {
+                            return;
+                          }
                           setDefaultDownloadPath(selectPath.filePaths[0]);
                           handleConfig({
                             defaultDownloadPath: selectPath.filePaths[0]
@@ -919,7 +941,7 @@ const UserSetting = ({ history }) => {
                       }}
                     >
                       <span>{covi.getDic('DownloadDeafultPath')}</span>
-                      <span className="chat-sync-date">
+                      <span className="chat-sync-date" style={{ color: (customPathOption?.isUse && customPathOption?.useDefaultValue) ? '#999' : undefined }}>
                         {defaultDownloadPath}
                       </span>
                     </a>
