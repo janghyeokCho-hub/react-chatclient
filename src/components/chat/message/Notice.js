@@ -219,15 +219,6 @@ const Notice = ({ type, value, title, func }) => {
             channel: 'onVNCRemote',
             message: {
               hostAddr: data.hostAddr,
-              callback: () => {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: '원격지원이 종료되었습니다.',
-                  },
-                  dispatch,
-                );
-              },
             },
           });
         };
@@ -335,7 +326,7 @@ const Notice = ({ type, value, title, func }) => {
             boxSizing: 'border-box',
             padding: '20px',
             textAlign: 'left',
-            fontSize
+            fontSize,
           }}
         >
           <span className="sys-tit" style={{ fontSize: fontSize + 2 }}>
