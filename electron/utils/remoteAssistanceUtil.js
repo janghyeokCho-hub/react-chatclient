@@ -109,7 +109,7 @@ export const createRemoteVNCHost = vncArgs => {
   });
 };
 
-export const createRemoteVNC = (hostAddr, alert) => {
+export const createRemoteVNC = hostAddr => {
   const appPath = dirname(app.getAppPath());
   const filePath = resolve(appPath, 'vncremote', 'vncviewer.exe');
 
@@ -120,19 +120,12 @@ export const createRemoteVNC = (hostAddr, alert) => {
   );
 
   vncProcess.stderr.on('data', data => {
-    console.log('vncviewer.exe call stderr =>');
-    console.log(data);
-
     const msg = new TextDecoder('euc-kr').decode(data);
-
     console.log(msg);
   });
 
   vncProcess.stdout.on('data', data => {
-    console.log('vncviewer.exe call stdout =>');
-    console.log(data);
     const msg = new TextDecoder('euc-kr').decode(data);
-
     console.log(msg);
   });
 
@@ -142,8 +135,8 @@ export const createRemoteVNC = (hostAddr, alert) => {
 
   vncProcess.once('exit', code => {
     console.log('vncviewer.exe has terminated with code: ' + code);
-    if (code == 0) {
-      if (alert) alert();
-    }
+    // if (code == 0) {
+    //   if (alert) alert();
+    // }
   });
 };
