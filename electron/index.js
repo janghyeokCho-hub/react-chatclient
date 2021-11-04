@@ -455,7 +455,7 @@ const createWindow = async (isLoading, domainInfo) => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
+      nodeIntegrationInSubFrames: true,
     },
     frame: false,
     show: false,
@@ -572,7 +572,7 @@ const createDomainRegistWindow = () => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
+      nodeIntegrationInSubFrames: true,
     },
     frame: false,
     show: false,
@@ -696,12 +696,7 @@ const setActiveChecker = () => {
 
   activeChecker = setInterval(() => {
     const idleTime = powerMonitor.getSystemIdleTime();
-    if (
-      idleTime == 0 &&
-      win &&
-      CONN_SOCKET != null &&
-      CONN_SOCKET.connected
-    ) {
+    if (idleTime == 0 && win && CONN_SOCKET != null && CONN_SOCKET.connected) {
       clearInterval(activeChecker); // activeChecker 종료
       win.webContents.send(
         'onSystemIdleTimeInit',

@@ -1,6 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import useSWR from 'swr';
 
 import LeftMenu from '@C/LeftMenu';
 import Content from '@C/Content';
@@ -49,31 +48,38 @@ const AppTemplate = () => {
       dispatch(changeChannelViewType(true)); // 채널
     }
   }, [viewType, dispatch]);
-  
-  const handleSync = useCallback((event, args) => {
-    const { userInfo } = args;
-    if (args.op === 'add') {
-      const otherContacts = contactList && contactList.find((_contact) =>  _contact.folderID === '2');
-      // 다른 연락처에 있는지 없는지 확인
-      if (otherContacts?.sub && otherContacts.sub.length > 0) {
-        let flag = false;
-        otherContacts.sub.map(data => {
-          if (userInfo.id == data.id) {
-            // 만약 다른 연락처에 사용자가 있다면....
-            addFavorite(dispatch, userInfo, otherContacts.folderType);
-            flag = true;
+
+  const handleSync = useCallback(
+    (event, args) => {
+      const { userInfo } = args;
+      if (args.op === 'add') {
+        const otherContacts =
+          contactList &&
+          contactList.find(_contact => _contact.folderID === '2');
+        // 다른 연락처에 있는지 없는지 확인
+        if (otherContacts?.sub && otherContacts.sub.length > 0) {
+          let flag = false;
+          otherContacts.sub.map(data => {
+            if (userInfo.id == data.id) {
+              // 만약 다른 연락처에 사용자가 있다면....
+              addFavorite(dispatch, userInfo, otherContacts.folderType);
+              flag = true;
+            }
+          });
+          if (!flag) {
+            addFavorite(dispatch, userInfo, '');
           }
-        });
-        if (!flag) {
+        } else {
           addFavorite(dispatch, userInfo, '');
         }
-      } else {
-        addFavorite(dispatch, userInfo, '');
+      } else if (args.op === 'del') {
+        deleteFavorite(dispatch, args.userId);
       }
-    } else if(args.op === 'del') {
-      deleteFavorite(dispatch, args.userId);
-    }
-  }, [contactList]);
+    },
+    [contactList],
+  );
+
+  const menu = useSelector(({ menu }) => menu.menu);
 
   useEffect(() => {
     // static 함수 등록
@@ -214,7 +220,6 @@ const AppTemplate = () => {
         channel: 'sync-favorite',
       });
     };
-    
   }, []);
 
   useEffect(() => {
@@ -227,7 +232,7 @@ const AppTemplate = () => {
     evalConnector({
       method: 'on',
       channel: 'sync-favorite',
-      callback: handleSync
+      callback: handleSync,
     });
   }, [contactList]);
 
@@ -301,13 +306,19 @@ const AppTemplate = () => {
           <LeftMenu />
         </nav>
         <div className="Content">
-          <div className="ListCont">
+          <div
+            className="ListCont"
+            style={{ width: menu == 'Extension' ? '100%' : '' }}
+          >
             <Header />
             <Content />
           </div>
           <>
             {viewType === 'M' && (
-              <div className="Chat" style={{ fontFamily: fontType === 'Default' ? null : fontType }}>
+              <div
+                className="Chat"
+                style={{ fontFamily: fontType === 'Default' ? null : fontType }}
+              >
                 <MultiView></MultiView>
               </div>
             )}

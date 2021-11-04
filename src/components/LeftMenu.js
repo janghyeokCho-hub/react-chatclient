@@ -7,7 +7,6 @@ import { logoutRequest } from '@/modules/login';
 import {
   quit,
   openSubPop,
-  newExtensionWindow,
   evalConnector,
   sendSubPop,
 } from '@/lib/deviceConnector';
@@ -17,15 +16,14 @@ import { getConfig } from '@/lib/util/configUtil';
 
 /* Note API */
 import { useNoteUnreadCount } from '@/lib/note';
-/* Note API */
 
 /* svg icons */
 import ContactIcon from '@/icons/svg/ContactList';
+import ExtensionIcon from '@/icons/svg/ExtensionIcon';
 import ChatIcon from '@/icons/svg/ChatList';
 import ChannelIcon from '@/icons/svg/ChannelList';
 import OrgchartIcon from '@/icons/svg/Orgchart';
 import NoteIcon from '@/icons/svg/note/Note';
-/* svg icons */
 
 const handleUserConfig = data => {
   evalConnector({
@@ -42,6 +40,94 @@ const handleUserConfig = data => {
   }
 };
 
+const exntension = {
+  isUse: true,
+};
+
+const extensionList = [
+  {
+    title: 'Groupware',
+    description: 'Groupware In Messenger',
+    iconPath: '/gw/icon/path',
+    version: 1,
+    createDate: new Date(),
+    updateDate: new Date(),
+    category: 'app',
+  },
+  {
+    title: 'Memo',
+    description: 'Memo In Messenger',
+    iconPath: '/gw/icon/path',
+    version: 1,
+    createDate: new Date(),
+    updateDate: new Date(),
+    category: 'app',
+  },
+  {
+    title: 'Memo',
+    description: 'Memo In Messenger',
+    iconPath: '/gw/icon/path',
+    version: 1,
+    createDate: new Date(),
+    updateDate: new Date(),
+    category: 'app',
+  },
+  {
+    title: 'Memo',
+    description: 'Memo In Messenger',
+    iconPath: '/gw/icon/path',
+    version: 1,
+    createDate: new Date(),
+    updateDate: new Date(),
+    category: 'app',
+  },
+  {
+    title: 'Memo',
+    description: 'Memo In Messenger',
+    iconPath: '/gw/icon/path',
+    version: 1,
+    createDate: new Date(),
+    updateDate: new Date(),
+    category: 'app',
+  },
+  {
+    title: 'Memo',
+    description: 'Memo In Messenger',
+    iconPath: '/gw/icon/path',
+    version: 1,
+    createDate: new Date(),
+    updateDate: new Date(),
+    category: 'app',
+  },
+  {
+    title: 'Memo',
+    description: 'Memo In Messenger',
+    iconPath: '/gw/icon/path',
+    version: 1,
+    createDate: new Date(),
+    updateDate: new Date(),
+    category: 'app',
+  },
+  {
+    title: 'Memo',
+    description: 'Memo In Messenger',
+    iconPath: '/gw/icon/path',
+    version: 1,
+    createDate: new Date(),
+    updateDate: new Date(),
+    category: 'app',
+  },
+  {
+    title: 'Memo',
+    description: 'Memo In Messenger',
+    iconPath: '/gw/icon/path',
+    version: 1,
+    createDate: new Date(),
+    updateDate: new Date(),
+    category: 'app',
+  },
+];
+
 const LeftMenu = ({ history }) => {
   const id = useSelector(({ login }) => login.id);
   const userInfo = useSelector(({ login }) => login.userInfo);
@@ -49,6 +135,9 @@ const LeftMenu = ({ history }) => {
   const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
   const unreadNoteCnt = useNoteUnreadCount();
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
+
+  const [isExtensionUse, setIsExtensionUse] = useState(false);
+
   const active = useSelector(
     ({ menu }) => menu.activeType,
     (left, right) => left == right,
@@ -245,32 +334,32 @@ const LeftMenu = ({ history }) => {
             >
               <OrgchartIcon className="menu-li-svg" />
             </li>
-        )}
+          )}
         {(covi.config.UseChannel == undefined
           ? 'Y'
           : covi.config.UseChannel) === 'Y' && (
-            <li
-              className={[
-                'menu-li',
-                active == 'channellist' ? 'active' : '',
-              ].join(' ')}
-              onClick={e => {
-                handleClickMenu('/client/main/channellist');
-              }}
-              style={{ position: 'relative', cursor: 'pointer' }}
-            >
-              <UnreadCntButton unreadCnt={unreadChannelCnt}></UnreadCntButton>
-              <ChannelIcon className="menu-li-svg" />
-            </li>
+          <li
+            className={[
+              'menu-li',
+              active == 'channellist' ? 'active' : '',
+            ].join(' ')}
+            onClick={e => {
+              handleClickMenu('/client/main/channellist');
+            }}
+            style={{ position: 'relative', cursor: 'pointer' }}
+          >
+            <UnreadCntButton unreadCnt={unreadChannelCnt}></UnreadCntButton>
+            <ChannelIcon className="menu-li-svg" />
+          </li>
         )}
 
         {/* 외부사용자 or 쪽지기능 비활성화일 경우 메뉴 노출 X */}
-        {(!isExtUser || isExtUser == 'N') && (covi?.config?.UseNote?.use === 'Y') && (
+        {(!isExtUser || isExtUser == 'N') &&
+          covi?.config?.UseNote?.use === 'Y' && (
             <li
-              className={[
-                'menu-li',
-                active == 'notelist' ? 'active' : '',
-              ].join(' ')}
+              className={['menu-li', active == 'notelist' ? 'active' : ''].join(
+                ' ',
+              )}
               onClick={() => {
                 handleClickMenu('/client/main/notelist');
               }}
@@ -279,42 +368,74 @@ const LeftMenu = ({ history }) => {
               <UnreadCntButton unreadCnt={unreadNoteCnt}></UnreadCntButton>
               <NoteIcon className="menu-li-svg" />
             </li>
-        )}
+          )}
 
         {(!isExtUser || isExtUser == 'N') && (
           <ExternalLeft paramObj={userInfo}></ExternalLeft>
         )}
-
-        {/*
-        TODO: 아래 기능 구현되면 표시
-        <li
-          className={[
-            'menu-li',
-            active == 'externaluserlist' ? 'active' : '',
-          ].join(' ')}
-          onClick={e => {
-            handleClickMenu('/client/main/externaluserlist');
-          }}
-        >
-          <svg
-            className="menu-li-svg"
-            xmlns="http://www.w3.org/2000/svg"
-            width="35.127"
-            height="39.812"
-            viewBox="0 0 141 157"
-          >
-            <g fill="none" stroke="#fff" strokeWidth="10">
-              <rect width="141" height="157" rx="17" stroke="none" />
-              <rect x="5" y="5" width="131" height="147" rx="12" />
-            </g>
-            <path
-              d="M32 114a6 6 0 001 1l3 2h1a37 37 0 0015 3c9 0 17-3 22-9l29-29c9-9 11-24 6-37a2 2 0 00-1-1l-2-3-5-5a9 9 0 00-6-3 8 8 0 00-6 2L74 51a8 8 0 000 11l6 6-20 20-6-6a8 8 0 00-6-2 8 8 0 00-5 2L27 97a9 9 0 00-2 6 8 8 0 002 6zm0-12l15-15a1 1 0 012 0l9 8a3 3 0 004 0l25-24a3 3 0 001-3 3 3 0 00-1-2l-8-9a2 2 0 010-2l15-15a1 1 0 011 0 2 2 0 011 0l5 5 2 3c5 12 1 24-5 29l-29 30c-4 4-10 6-17 6a30 30 0 01-12-2l-3-2-5-5a1 1 0 010-1 3 3 0 010-1z"
-              fill="#fff"
-            />
-          </svg>
-        </li>*/}
       </ul>
+      <div
+        style={{
+          width: '80%',
+          borderTop: 'solid 2.5px #fff',
+          margin: 'auto',
+          marginBottom: 5,
+        }}
+      ></div>
+      {DEVICE_TYPE == 'd' && isExtensionUse && (
+        <div style={{ overflow: 'hidden scroll' }}>
+          <ul className="menu-ul" style={{ height: 130 }}>
+            {extensionList.map(extensionItem => {
+              return (
+                <li
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: 8,
+                  }}
+                >
+                  <button
+                    onClick={e => {
+                      handleClickMenu('/client/main/extension');
+                    }}
+                  >
+                    <svg
+                      height="28px"
+                      viewBox="0 0 48 48"
+                      width="28px"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="#fff"
+                    >
+                      <g id="Expanded">
+                        <g>
+                          <g>
+                            <path d="M42,48H28V35h-8v13H6V27c0-0.552,0.447-1,1-1s1,0.448,1,1v19h10V33h12v13h10V28c0-0.552,0.447-1,1-1s1,0.448,1,1V48z" />
+                          </g>
+                          <g>
+                            <path d="M47,27c-0.249,0-0.497-0.092-0.691-0.277L24,5.384L1.691,26.723c-0.399,0.381-1.032,0.368-1.414-0.031     c-0.382-0.399-0.367-1.032,0.031-1.414L24,2.616l23.691,22.661c0.398,0.382,0.413,1.015,0.031,1.414     C47.526,26.896,47.264,27,47,27z" />
+                          </g>
+                          <g>
+                            <path d="M39,15c-0.553,0-1-0.448-1-1V8h-6c-0.553,0-1-0.448-1-1s0.447-1,1-1h8v8C40,14.552,39.553,15,39,15z" />
+                          </g>
+                        </g>
+                      </g>
+                    </svg>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
       <div className="menu-bottom-box">
+        {exntension.isUse && (
+          <ExtensionIcon
+            onClickEvent={() => {
+              setIsExtensionUse(!isExtensionUse);
+            }}
+          />
+        )}
         {forceDisableNoti === false && (
           <button
             className={['bell', isNoti ? 'active' : ''].join(' ')}

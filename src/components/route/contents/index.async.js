@@ -6,6 +6,8 @@ export { default as OrgChart } from '@C/orgchart/OrgChart';
 export { default as NoteList } from '@/pages/note';
 export { default as ZoomOAuthSuccess } from '@/pages/oauth2/zoom/ZoomOAuthSuccess';
 
+export { default as ExtensionLayer } from '@/containers/extension/ExtensionLayer';
+
 export const ChannelList = asyncRoute(() => import('@C/channels/ChannelList'));
 export const ExternalUserList = asyncRoute(() =>
   import('@C/externaluserlist/ExternalUserList'),
