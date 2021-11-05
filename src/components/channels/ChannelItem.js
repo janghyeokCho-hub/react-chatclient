@@ -1,6 +1,12 @@
 // components\chat\Room.js
 
-import React, { useMemo, useCallback, useState, useEffect, useLayoutEffect } from 'react';
+import React, {
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+  useLayoutEffect,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   format,
@@ -68,7 +74,8 @@ const makeMessageText = async lastMessage => {
       }
       // protocol check
       if (common.eumTalkRegularExp.test(drawText)) {
-        const messageObj = await common.convertEumTalkProtocolPreviewForChannelItem(drawText);
+        const messageObj =
+          await common.convertEumTalkProtocolPreviewForChannelItem(drawText);
         if (messageObj.type == 'emoticon') returnText = covi.getDic('Emoticon');
         else returnText = messageObj.message.split('\n')[0];
       } else {
@@ -339,7 +346,7 @@ const ChannelItem = ({
     () => makeDateTime(channel.lastMessageDate),
     [channel],
   );
-  
+
   const [lastMessageText, setLastMessageText] = useState('');
 
   useLayoutEffect(() => {
@@ -350,7 +357,9 @@ const ChannelItem = ({
         changeTargetChannel.lastMessageType,
       ).then(setLastMessageText);
     } else {
-      makeMessageText(channel.lastMessage, channel.lastMessageType).then(setLastMessageText)
+      makeMessageText(channel.lastMessage, channel.lastMessageType).then(
+        setLastMessageText,
+      );
     }
   }, [channel]);
 
@@ -387,11 +396,13 @@ const ChannelItem = ({
           </div>
         </>
         {channel.openType != 'O' && <span className="private" />}
-        <span className="name">
+        <span className="channelName">
           <span>
             {channel.roomName == '' ? covi.getDic('NoTitle') : channel.roomName}
           </span>
-          <span>{channel.categoryName ? `(${channel.categoryName})` : ''}</span>
+          <span className="categoryName">
+            {channel.categoryName ? `(${channel.categoryName})` : ''}
+          </span>
         </span>
         {isJoin ? (
           <>

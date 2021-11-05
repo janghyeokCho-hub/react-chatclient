@@ -1160,7 +1160,7 @@ ipcMain.on('req-get-remote-info', async (event, args) => {
 });
 
 ipcMain.on('onVNCRemote', (event, args) => {
-  createRemoteVNC(args.hostAddr, args.callback);
+  createRemoteVNC(args.hostAddr);
 });
 
 ipcMain.on('onVNCRemoteHost', (event, args) => {

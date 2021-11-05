@@ -185,6 +185,13 @@ export const onNewNotice = payload => {
 };
 
 export const onNewChannelMessage = payload => {
+  try {
+    const context = JSON.parse(payload?.context);
+    // '채널공지 내림' 이벤트는 notification 띄우지 않음
+    if (context?.templateKey === 'Tmp_noticeOff') {
+      return;
+    }
+  } catch(err) {}
   // 자기자신 메세지 확인
   payload.sender == loginInfo.getData().id && (payload.isMine = 'Y');
 

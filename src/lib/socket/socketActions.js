@@ -110,7 +110,7 @@ export const handleNewNoteMessage = (dispatch, userInfo, setNoteList) => {
       setNoteList(prevState => {
         // 쪽지 리스트에 추가할 데이터 (쪽지 조회시 sender 구조와 동일해야 함)
         const receivedInfo = {
-          noteId: json_data.noteId,
+          noteId: parseInt(json_data.noteId) || json_data.noteId,
           senderUserId: json_data.userId,
           senderDisplayName: json_data.multiDisplayName,
           senderJobPositionName: json_data.multiJobPositionName,
@@ -457,7 +457,6 @@ export const handleDelChannelMessageInDesktop = dispatch => {
     if (json_data.messageType === 'I') {
       dispatch(receiveDeletedChannelNotice(json_data));
     } else {
-      console.log('detele message called');
       dispatch(deleteMessage(json_data));
       dispatch(receiveDeletedChannelMessage(json_data));
     }

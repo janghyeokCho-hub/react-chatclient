@@ -706,9 +706,15 @@ export const saveFile = (path, name, data, options) => {
 export const getDownloadDefaultPath = () => {
   const remote = getRemote();
   if (remote) {
+    const customPathOption = getConfig('UseCustomDownloadPath', { isUse: false, defaultPath: '', useDefaultValue: false });
     const osDownloadPath = remote.app.getPath('downloads');
     const appSetting = remote.getGlobal('APP_SECURITY_SETTING');
     const appDownloadPath = appSetting.get('defaultDownloadPath');
+
+    if (customPathOption?.isUse && customPathOption?.useDefaultValue === true) {
+      // 다운로드 기본경로 강제설정시 지정값 반환
+      return customPathOption?.defaultPath;
+    }
 
     if (appDownloadPath) {
       if (existsSync(appDownloadPath)) {
@@ -719,6 +725,10 @@ export const getDownloadDefaultPath = () => {
       }
     }
 
+    if (customPathOption?.isUse) {
+      // 다운로드 경로 기본값이 서버 설정에 지정된 경우 해당경로 우선사용
+      return customPathOption?.defaultPath || osDownloadPath;
+    }
     return osDownloadPath;
   } else {
     return null;
