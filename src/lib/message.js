@@ -1,8 +1,9 @@
-import { chatsvr, managesvr, filesvr, imgsvr } from '@/lib/api';
-//import jsonp from 'jsonp';
+import { chatsvr, chatbotsvr, managesvr, filesvr, imgsvr } from '@/lib/api';
 
 export const sendMessage = params => {
-  return chatsvr('post', '/message', params);
+  if (params.roomType == 'B')
+    return chatbotsvr('post', '/api/ai/message', params);
+  else return chatsvr('post', '/message', params);
 };
 
 export const readMessage = params => {
