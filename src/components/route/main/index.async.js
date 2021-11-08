@@ -1,16 +1,5 @@
 import asyncRoute from '@/lib/asyncRoute';
 
-/*
-export { default as JoinForm } from '@C/login/JoinForm';
-export const Channel = asyncRoute(() => import('@C/channels/channel/Channel'));
-export { default as AppTemplate } from '@C/AppTemplate';
-export { default as ChatRoom } from '@C/chat/chatroom/ChatRoom';
-export { default as Channel } from '@C/channels/channel/Channel';
-export const IndexMain = asyncRoute(() => import('@C/login/IndexMain'));
-export const LoginMain = asyncRoute(() => import('@C/login/LoginMain'));
-export const AutoLogin = asyncRoute(() => import('@C/login/AutoLogin'));
-*/
-
 export { default as IndexMain } from '@C/login/IndexMain';
 export { default as LoginMain } from '@C/login/LoginMain';
 export { default as AutoLogin } from '@C/login/AutoLogin';
@@ -39,4 +28,6 @@ export const Channel = asyncRoute(() => import('@C/channels/channel/Channel'));
 export const Versions = asyncRoute(() => import('@COMMON/layer/Versions'));
 export const NoteSend = asyncRoute(() => import('@/pages/note/NoteSend'));
 export const NoteReceive = asyncRoute(() => import('@/pages/note/NoteView'));
-export const NoteReadList = asyncRoute(() => import('@/pages/note/NoteReadList'));
+export const NoteReadList = asyncRoute(() =>
+  import('@/pages/note/NoteReadList'),
+);

@@ -44,95 +44,98 @@ const exntension = {
   isUse: true,
 };
 
-const extensionList = [
-  {
-    title: 'Groupware',
-    description: 'Groupware In Messenger',
-    iconPath: '/gw/icon/path',
-    version: 1,
-    createDate: new Date(),
-    updateDate: new Date(),
-    category: 'app',
-  },
-  {
-    title: 'Memo',
-    description: 'Memo In Messenger',
-    iconPath: '/gw/icon/path',
-    version: 1,
-    createDate: new Date(),
-    updateDate: new Date(),
-    category: 'app',
-  },
-  {
-    title: 'Memo',
-    description: 'Memo In Messenger',
-    iconPath: '/gw/icon/path',
-    version: 1,
-    createDate: new Date(),
-    updateDate: new Date(),
-    category: 'app',
-  },
-  {
-    title: 'Memo',
-    description: 'Memo In Messenger',
-    iconPath: '/gw/icon/path',
-    version: 1,
-    createDate: new Date(),
-    updateDate: new Date(),
-    category: 'app',
-  },
-  {
-    title: 'Memo',
-    description: 'Memo In Messenger',
-    iconPath: '/gw/icon/path',
-    version: 1,
-    createDate: new Date(),
-    updateDate: new Date(),
-    category: 'app',
-  },
-  {
-    title: 'Memo',
-    description: 'Memo In Messenger',
-    iconPath: '/gw/icon/path',
-    version: 1,
-    createDate: new Date(),
-    updateDate: new Date(),
-    category: 'app',
-  },
-  {
-    title: 'Memo',
-    description: 'Memo In Messenger',
-    iconPath: '/gw/icon/path',
-    version: 1,
-    createDate: new Date(),
-    updateDate: new Date(),
-    category: 'app',
-  },
-  {
-    title: 'Memo',
-    description: 'Memo In Messenger',
-    iconPath: '/gw/icon/path',
-    version: 1,
-    createDate: new Date(),
-    updateDate: new Date(),
-    category: 'app',
-  },
-  {
-    title: 'Memo',
-    description: 'Memo In Messenger',
-    iconPath: '/gw/icon/path',
-    version: 1,
-    createDate: new Date(),
-    updateDate: new Date(),
-    category: 'app',
-  },
-];
+// const extensionList = [
+//   {
+//     title: 'Groupware',
+//     description: 'Groupware In Messenger',
+//     iconPath: '/gw/icon/path',
+//     version: 1,
+//     createDate: new Date(),
+//     updateDate: new Date(),
+//     category: 'app',
+//   },
+//   {
+//     title: 'Memo',
+//     description: 'Memo In Messenger',
+//     iconPath: '/gw/icon/path',
+//     version: 1,
+//     createDate: new Date(),
+//     updateDate: new Date(),
+//     category: 'app',
+//   },
+//   {
+//     title: 'Memo',
+//     description: 'Memo In Messenger',
+//     iconPath: '/gw/icon/path',
+//     version: 1,
+//     createDate: new Date(),
+//     updateDate: new Date(),
+//     category: 'app',
+//   },
+//   {
+//     title: 'Memo',
+//     description: 'Memo In Messenger',
+//     iconPath: '/gw/icon/path',
+//     version: 1,
+//     createDate: new Date(),
+//     updateDate: new Date(),
+//     category: 'app',
+//   },
+//   {
+//     title: 'Memo',
+//     description: 'Memo In Messenger',
+//     iconPath: '/gw/icon/path',
+//     version: 1,
+//     createDate: new Date(),
+//     updateDate: new Date(),
+//     category: 'app',
+//   },
+//   {
+//     title: 'Memo',
+//     description: 'Memo In Messenger',
+//     iconPath: '/gw/icon/path',
+//     version: 1,
+//     createDate: new Date(),
+//     updateDate: new Date(),
+//     category: 'app',
+//   },
+//   {
+//     title: 'Memo',
+//     description: 'Memo In Messenger',
+//     iconPath: '/gw/icon/path',
+//     version: 1,
+//     createDate: new Date(),
+//     updateDate: new Date(),
+//     category: 'app',
+//   },
+//   {
+//     title: 'Memo',
+//     description: 'Memo In Messenger',
+//     iconPath: '/gw/icon/path',
+//     version: 1,
+//     createDate: new Date(),
+//     updateDate: new Date(),
+//     category: 'app',
+//   },
+//   {
+//     title: 'Memo',
+//     description: 'Memo In Messenger',
+//     iconPath: '/gw/icon/path',
+//     version: 1,
+//     createDate: new Date(),
+//     updateDate: new Date(),
+//     category: 'app',
+//   },
+// ];
 
 const LeftMenu = ({ history }) => {
   const id = useSelector(({ login }) => login.id);
   const userInfo = useSelector(({ login }) => login.userInfo);
   const token = useSelector(({ login }) => login.token);
   const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
+
+  const extensionList = useSelector(({ extension }) => extension.extensions);
+
   const unreadNoteCnt = useNoteUnreadCount();
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
@@ -429,10 +432,22 @@ const LeftMenu = ({ history }) => {
         </div>
       )}
       <div className="menu-bottom-box">
-        {exntension.isUse && (
+        {exntension.isUse && DEVICE_TYPE == 'd' && (
           <ExtensionIcon
             onClickEvent={() => {
-              setIsExtensionUse(!isExtensionUse);
+              //setIsExtensionUse(!isExtensionUse);
+              if (DEVICE_TYPE == 'd') {
+                openSubPop(
+                  'extension',
+                  '#/client/nw/extension',
+                  {},
+                  400,
+                  550,
+                  'sticky',
+                  false,
+                  { resize: false },
+                );
+              }
             }}
           />
         )}

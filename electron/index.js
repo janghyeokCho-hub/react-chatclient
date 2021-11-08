@@ -98,6 +98,9 @@ app.setAppUserModelId(exportProps.appId);
 // electron redux dev tools setting
 app.whenReady().then(() => {
   if (exportProps.isDev) {
+    // BrowserWindow.addDevToolsExtension(
+    //   '/Users/ldh/Library/Application Support/Google/Chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/2.17.2_6',
+    // );
     installExtension(REDUX_DEVTOOLS)
       .then(name => console.log(`Added Extension: ${name}`))
       .catch(error => console.log(`An error ocurred: ${error}`));

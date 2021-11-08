@@ -9,6 +9,7 @@ import contact, { contactSaga } from '@/modules/contact';
 import menu from '@/modules/menu';
 import message, { messageSaga } from '@/modules/message';
 import presence, { presenceSaga } from '@/modules/presence';
+import extension from '@/modules/extension';
 import { noteSaga } from '@/modules/note';
 
 import mainlayer from '@/modules/mainlayer';
@@ -27,6 +28,7 @@ const appReducer = combineReducers({
   menu,
   message,
   presence,
+  extension,
   mainlayer,
   error,
   util,
@@ -50,7 +52,7 @@ export function* rootSaga() {
     contactSaga(),
     messageSaga(),
     presenceSaga(),
-    noteSaga()
+    noteSaga(),
   ]);
 }
 
