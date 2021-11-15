@@ -6,6 +6,10 @@ export const sendMessage = params => {
   else return chatsvr('post', '/message', params);
 };
 
+export const sendChatBotKeyMessage = (key, params) => {
+  return chatbotsvr('post', `/api/ai/${key}/message`, params);
+};
+
 export const readMessage = params => {
   console.log(params);
   return chatsvr('put', '/message', params);

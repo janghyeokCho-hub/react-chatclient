@@ -19,23 +19,14 @@ import { changeOpenChannel } from '@/modules/channel'; // 채널
 import { addFixedUsers } from '@/modules/presence';
 import { get } from '@/lib/util/storageUtil';
 
-const [
-  GET_ROOMS,
-  GET_ROOMS_SUCCESS,
-  GET_ROOMS_FAILURE,
-] = createRequestActionTypes('room/GET_ROOMS');
+const [GET_ROOMS, GET_ROOMS_SUCCESS, GET_ROOMS_FAILURE] =
+  createRequestActionTypes('room/GET_ROOMS');
 
-const [
-  GET_ROOM_INFO,
-  GET_ROOM_INFO_SUCCESS,
-  GET_ROOM_INFO_FAILURE,
-] = createRequestActionTypes('room/GET_ROOM_INFO');
+const [GET_ROOM_INFO, GET_ROOM_INFO_SUCCESS, GET_ROOM_INFO_FAILURE] =
+  createRequestActionTypes('room/GET_ROOM_INFO');
 
-const [
-  UPDATE_ROOMS,
-  UPDATE_ROOMS_SUCCESS,
-  UPDATE_ROOMS_FAILURE,
-] = createRequestActionTypes('room/UPDATE_ROOMS');
+const [UPDATE_ROOMS, UPDATE_ROOMS_SUCCESS, UPDATE_ROOMS_FAILURE] =
+  createRequestActionTypes('room/UPDATE_ROOMS');
 
 const ROOM_MESSAGE_ADD = 'room/ROOM_MESSAGE_ADD';
 
@@ -62,17 +53,11 @@ const [
   REMATCHING_MEMBER_FAILURE,
 ] = createRequestActionTypes('room/REMATCHING_MEMBER');
 
-const [
-  INVITE_MEMBER,
-  INVITE_MEMBER_SUCCESS,
-  INVITE_MEMBER_FAILURE,
-] = createRequestActionTypes('room/INVITE_MEMBER');
+const [INVITE_MEMBER, INVITE_MEMBER_SUCCESS, INVITE_MEMBER_FAILURE] =
+  createRequestActionTypes('room/INVITE_MEMBER');
 
-const [
-  LEAVE_ROOM,
-  LEAVE_ROOM_SUCCESS,
-  LEAVE_ROOM_FAILURE,
-] = createRequestActionTypes('room/LEAVE_ROOM');
+const [LEAVE_ROOM, LEAVE_ROOM_SUCCESS, LEAVE_ROOM_FAILURE] =
+  createRequestActionTypes('room/LEAVE_ROOM');
 
 const RECEIVE_MESSAGE = 'room/RECEIVE_MESSAGE';
 
@@ -84,11 +69,8 @@ const INIT = 'room/INIT';
 const SET_INIT_CURRENTROOM = 'room/SET_CURRENT_INIT';
 
 const MODIFY_ROOMNAME_LIST = 'room/MODIFY_ROOMNAME_LIST';
-const [
-  MODIFY_ROOMNAME,
-  MODIFY_ROOMNAME_SUCCESS,
-  MODIFY_ROOMNAME_FAILURE,
-] = createRequestActionTypes('room/MODIFY_ROOMNAME');
+const [MODIFY_ROOMNAME, MODIFY_ROOMNAME_SUCCESS, MODIFY_ROOMNAME_FAILURE] =
+  createRequestActionTypes('room/MODIFY_ROOMNAME');
 
 const [
   MODIFY_ROOMSETTING,
@@ -252,7 +234,10 @@ function createGetRoomInfoSaga() {
        * => createReadMessageSaga에서 unread count state가 업데이트 되지 않음
        * => 위 경우에는 createGetRoomInfoSaga의 unread sync 과정을 생략하도록 함
        */
-      if ((DEVICE_TYPE === 'b' || data.room.roomType !== 'A') && data.messages.length > 0) {
+      if (
+        (DEVICE_TYPE === 'b' || data.room.roomType !== 'A') &&
+        data.messages.length > 0
+      ) {
         yield put(
           readMessage({
             roomID: action.payload.roomID,
@@ -701,7 +686,9 @@ const room = handleActions(
         // login 시에만 사용
         if (!draft.rooms || draft.rooms.length == 0) {
           // filter 로직: 메세지 만료된 채팅방 제거
-          draft.rooms = action.payload.rooms.filter(room => room.lastMessageDate);
+          draft.rooms = action.payload.rooms.filter(
+            room => room.lastMessageDate,
+          );
         } else {
           //newWin 관련 정보 merge
           const newWinRooms = draft.rooms.filter(item => item.newWin);
@@ -995,7 +982,7 @@ const room = handleActions(
       });
     },
     [NEW_WIN_ROOM]: (state, action) => {
-      if(action.payload.obj === null) {
+      if (action.payload.obj === null) {
         return state;
       }
       return produce(state, draft => {
@@ -1026,7 +1013,7 @@ const room = handleActions(
       });
     },
     [CLOSE_WIN_ROOM]: (state, action) => {
-      if(action.payload.obj === null) {
+      if (action.payload.obj === null) {
         return state;
       }
       return produce(state, draft => {

@@ -161,7 +161,7 @@ const MakeRoom = ({ history }) => {
     setDisabled(true);
 
     let invites = [];
-    makeInfo.members.forEach(item => invites.push(item.id));
+    makeInfo?.members?.forEach(item => invites.push(item.id));
 
     if (invites.indexOf(sender) == -1) invites.push(sender);
 
@@ -234,6 +234,10 @@ const MakeRoom = ({ history }) => {
 
   const roomName = useMemo(() => {
     if (makeInfo) {
+      if (makeInfo.roomType === 'B') {
+        // Bㅇ타입일 경우에는 이음봇으로 고정 (이후 다국어 처리 필요)
+        return '이음봇과의 대화를 위해 "안녕"이라고 메시지를 입력해보세요 !!';
+      }
       const refWord = `(Enter ${covi.getDic(
         'Send',
       )} / Shift + Enter ${covi.getDic('NewLine')})`;
@@ -316,10 +320,6 @@ const MakeRoom = ({ history }) => {
             isMakeRoom={true}
             isNewWin={isNewWin}
           />
-          <div
-            className="messages-chat"
-            style={{ position: 'relative', background: '#fff' }}
-          ></div>
           <MessagePostBox
             postAction={handleMessage}
             viewExtension={viewExtension}
@@ -331,7 +331,6 @@ const MakeRoom = ({ history }) => {
             remoteAssistance={null}
             remoteHost={remoteHost}
           />
-
           <FileUploadBox
             onView={handleUploadBox}
             view={viewFileUpload}

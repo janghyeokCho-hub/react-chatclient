@@ -289,14 +289,15 @@ const Room = ({
         name: covi.getDic('OpenChat'),
       },
       pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop),
-      room?.roomType !== 'A' && {
-        code: 'outRoom',
-        isline: false,
-        onClick: () => {
-          leaveRoomUtil(dispatch, room, id);
+      room?.roomType !== 'A' &&
+        room?.roomType !== 'B' && {
+          code: 'outRoom',
+          isline: false,
+          onClick: () => {
+            leaveRoomUtil(dispatch, room, id);
+          },
+          name: covi.getDic('LeaveChat'),
         },
-        name: covi.getDic('LeaveChat'),
-      },
     ];
 
     if (DEVICE_TYPE != 'b' && forceDisableNoti === false) {

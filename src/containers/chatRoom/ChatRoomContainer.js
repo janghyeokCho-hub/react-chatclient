@@ -66,7 +66,7 @@ const ChatRoomContainer = () => {
 
           return returnVal;
         });
-        
+
         setSearchList(filterList);
         setListMode('S');
       }
