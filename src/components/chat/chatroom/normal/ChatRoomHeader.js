@@ -140,9 +140,7 @@ const makeRoomName = (room, id, isInherit) => {
         return (
           <>
             <span className="name">
-              {!room.roomName || room.roomName == ''
-                ? covi.getDic('GroupChatRoom')
-                : room.roomName}
+              {!room.roomName || room.roomName == '' ? '이음봇' : room.roomName}
             </span>
           </>
         );
