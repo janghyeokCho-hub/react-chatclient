@@ -136,16 +136,26 @@ const makeRoomName = (room, id, isInherit) => {
       );
     } else {
       // 차후에 몇명인지 표시 필요
-      return (
-        <>
-          <span className="name">
-            {!room.roomName || room.roomName == ''
-              ? covi.getDic('GroupChatRoom')
-              : room.roomName}{' '}
-            ({room.members.length})
-          </span>
-        </>
-      );
+      if (room.roomType == 'B') {
+        return (
+          <>
+            <span className="name">
+              {!room.roomName || room.roomName == '' ? '이음봇' : room.roomName}
+            </span>
+          </>
+        );
+      } else {
+        return (
+          <>
+            <span className="name">
+              {!room.roomName || room.roomName == ''
+                ? covi.getDic('GroupChatRoom')
+                : room.roomName}{' '}
+              ({room.members.length})
+            </span>
+          </>
+        );
+      }
     }
   } else {
     return '';
@@ -184,17 +194,15 @@ const ChatRoomHeader = ({
 
   const { needAlert, confirm } = useTyping();
 
-  const roomName = useMemo(() => makeRoomName(roomInfo, id, !isMakeRoom), [
-    roomInfo,
-    id,
-    isMakeRoom,
-  ]);
+  const roomName = useMemo(
+    () => makeRoomName(roomInfo, id, !isMakeRoom),
+    [roomInfo, id, isMakeRoom],
+  );
 
   const dispatch = useDispatch();
 
   const title =
     (DEVICE_TYPE === 'd' && !isMakeRoom && useTitle(roomInfo, id)) || null;
-
 
   const handleLayerBox = useCallback(() => {
     openLayer(
@@ -220,7 +228,7 @@ const ChatRoomHeader = ({
     // 뒤로가기 버튼으로 대화창을 닫을 시,
     // 다음 대화상대를 선택할 때에도 경고창이 또 등장할 수 있어서
     // store에 저장된 flag 값을 직접 false로 업데이트 해줘야 함
-    confirm(dispatch, setInitCurrentRoom, {}, true)
+    confirm(dispatch, setInitCurrentRoom, {}, true);
   }, [dispatch]);
 
   return (
@@ -270,98 +278,100 @@ const ChatRoomHeader = ({
             </div>
           )}
           {roomInfo && roomName}
-          <div className="LeftMenuBox">
-            {!isMakeRoom && roomInfo && roomInfo.roomType != 'A' && (
-              <button
-                type="button"
-                onClick={viewSearchBox}
-                alt={covi.getDic('Search')}
-                title={covi.getDic('Search')}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="13.364"
-                  height="13.364"
-                  viewBox="0 0 13.364 13.364"
-                >
-                  <path
-                    d="M304.2,2011.439l-3.432-3.432a5.208,5.208,0,0,0,.792-2.728,5.279,5.279,0,1,0-5.28,5.279,5.208,5.208,0,0,0,2.728-.792l3.432,3.432a.669.669,0,0,0,.88,0l.88-.88A.669.669,0,0,0,304.2,2011.439Zm-7.919-2.64a3.52,3.52,0,1,1,3.52-3.52A3.53,3.53,0,0,1,296.279,2008.8Z"
-                    transform="translate(-291 -2000)"
-                    fill="#fff"
-                  ></path>
-                </svg>
-              </button>
-              /* 새창 */
-            )}
-            {onNewWin && SCREEN_OPTION != 'G' && (
-              <button
-                type="button"
-                alt={covi.getDic('ShowNewWindow')}
-                title={covi.getDic('ShowNewWindow')}
-                onClick={e => {
-                  onNewWin();
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="12.427"
-                  height="12.427"
-                  viewBox="0 0 12.427 12.427"
-                >
-                  <g transform="translate(3120 -672.573)">
-                    <path
-                      d="M10,12H2a2,2,0,0,1-2-2V2A2,2,0,0,1,2,0H5.539V1.846H1.846v8.308h8.308V6.462H12V10A2,2,0,0,1,10,12Z"
-                      transform="translate(-3120 673)"
-                      fill="#fff"
-                    ></path>
-                    <g transform="translate(-3113.286 673.846)">
-                      <path
-                        d="M10.5,14.94l4.44-4.44"
-                        transform="translate(-10.5 -10.5)"
-                        fill="none"
-                        stroke="#fff"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.8"
-                      ></path>
-                      <path
-                        d="M10.5,10.5h2.819v2.819h0"
-                        transform="translate(-8.88 -10.5)"
-                        fill="none"
-                        stroke="#fff"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.8"
-                      ></path>
-                    </g>
-                  </g>
-                </svg>
-              </button>
-            )}
-            {roomInfo && (roomInfo.roomType != 'A' || DEVICE_TYPE == 'd') && (
-              <>
+          {roomInfo?.roomType != 'B' && (
+            <div className="LeftMenuBox">
+              {!isMakeRoom && roomInfo && roomInfo.roomType != 'A' && (
                 <button
                   type="button"
-                  onClick={handleLayerBox}
-                  alt={covi.getDic('ExtensionMenu')}
-                  title={covi.getDic('ExtensionMenu')}
+                  onClick={viewSearchBox}
+                  alt={covi.getDic('Search')}
+                  title={covi.getDic('Search')}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="13.25"
-                    height="10.25"
-                    viewBox="0 0 13.25 10.25"
+                    width="13.364"
+                    height="13.364"
+                    viewBox="0 0 13.364 13.364"
                   >
                     <path
-                      d="M3,16.25H16.25V14.542H3Zm0-4.271H16.25V10.271H3ZM3,6V7.708H16.25V6Z"
-                      transform="translate(-3 -6)"
+                      d="M304.2,2011.439l-3.432-3.432a5.208,5.208,0,0,0,.792-2.728,5.279,5.279,0,1,0-5.28,5.279,5.208,5.208,0,0,0,2.728-.792l3.432,3.432a.669.669,0,0,0,.88,0l.88-.88A.669.669,0,0,0,304.2,2011.439Zm-7.919-2.64a3.52,3.52,0,1,1,3.52-3.52A3.53,3.53,0,0,1,296.279,2008.8Z"
+                      transform="translate(-291 -2000)"
                       fill="#fff"
                     ></path>
                   </svg>
                 </button>
-              </>
-            )}
-          </div>
+                /* 새창 */
+              )}
+              {onNewWin && SCREEN_OPTION != 'G' && (
+                <button
+                  type="button"
+                  alt={covi.getDic('ShowNewWindow')}
+                  title={covi.getDic('ShowNewWindow')}
+                  onClick={e => {
+                    onNewWin();
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12.427"
+                    height="12.427"
+                    viewBox="0 0 12.427 12.427"
+                  >
+                    <g transform="translate(3120 -672.573)">
+                      <path
+                        d="M10,12H2a2,2,0,0,1-2-2V2A2,2,0,0,1,2,0H5.539V1.846H1.846v8.308h8.308V6.462H12V10A2,2,0,0,1,10,12Z"
+                        transform="translate(-3120 673)"
+                        fill="#fff"
+                      ></path>
+                      <g transform="translate(-3113.286 673.846)">
+                        <path
+                          d="M10.5,14.94l4.44-4.44"
+                          transform="translate(-10.5 -10.5)"
+                          fill="none"
+                          stroke="#fff"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.8"
+                        ></path>
+                        <path
+                          d="M10.5,10.5h2.819v2.819h0"
+                          transform="translate(-8.88 -10.5)"
+                          fill="none"
+                          stroke="#fff"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="1.8"
+                        ></path>
+                      </g>
+                    </g>
+                  </svg>
+                </button>
+              )}
+              {roomInfo && (roomInfo.roomType != 'A' || DEVICE_TYPE == 'd') && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleLayerBox}
+                    alt={covi.getDic('ExtensionMenu')}
+                    title={covi.getDic('ExtensionMenu')}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="13.25"
+                      height="10.25"
+                      viewBox="0 0 13.25 10.25"
+                    >
+                      <path
+                        d="M3,16.25H16.25V14.542H3Zm0-4.271H16.25V10.271H3ZM3,6V7.708H16.25V6Z"
+                        transform="translate(-3 -6)"
+                        fill="#fff"
+                      ></path>
+                    </svg>
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </>
       </div>
     </>

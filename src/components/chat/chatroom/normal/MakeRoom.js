@@ -161,20 +161,35 @@ const MakeRoom = ({ history }) => {
     setDisabled(true);
 
     let invites = [];
-    makeInfo.members.forEach(item => invites.push(item.id));
+    makeInfo?.members?.forEach(item => invites.push(item.id));
 
     if (invites.indexOf(sender) == -1) invites.push(sender);
 
-    const data = {
-      roomType: makeInfo.roomType,
-      name: '',
-      members: invites,
-      memberType: makeInfo.memberType,
-      message: message,
-      sendFileInfo: filesObj,
-      linkInfo: linkObj,
-      messageType: messageType ? messageType : 'N',
-    };
+    let data;
+
+    if (makeInfo.roomType == 'B') {
+      data = {
+        roomType: makeInfo.roomType,
+        name: '이음봇',
+        members: invites,
+        memberType: 'U',
+        message: message,
+        sendFileInfo: filesObj,
+        linkInfo: linkObj,
+        messageType: messageType ? messageType : 'N',
+      };
+    } else {
+      data = {
+        roomType: makeInfo.roomType,
+        name: '',
+        members: invites,
+        memberType: makeInfo.memberType,
+        message: message,
+        sendFileInfo: filesObj,
+        linkInfo: linkObj,
+        messageType: messageType ? messageType : 'N',
+      };
+    }
 
     if (messageType == 'A') {
       createRoom(data).then(({ data }) => {
@@ -234,6 +249,10 @@ const MakeRoom = ({ history }) => {
 
   const roomName = useMemo(() => {
     if (makeInfo) {
+      if (makeInfo.roomType === 'B') {
+        // Bㅇ타입일 경우에는 이음봇으로 고정 (이후 다국어 처리 필요)
+        return '이음봇과의 대화를 위해 "안녕"이라고 메시지를 입력해보세요 !!';
+      }
       const refWord = `(Enter ${covi.getDic(
         'Send',
       )} / Shift + Enter ${covi.getDic('NewLine')})`;
@@ -294,6 +313,7 @@ const MakeRoom = ({ history }) => {
                 viewExtension={viewExtension}
                 onExtension={handleExtension}
                 disabeld={disabeld}
+                disabeldButtons={makeInfo?.roomType == 'B' ? true : false}
                 ref={contentEditable}
                 placeholder={roomName}
                 remoteAssistance={null}
@@ -315,21 +335,17 @@ const MakeRoom = ({ history }) => {
             isMakeRoom={true}
             isNewWin={isNewWin}
           />
-          <div
-            className="messages-chat"
-            style={{ position: 'relative', background: '#fff' }}
-          ></div>
           <MessagePostBox
             postAction={handleMessage}
             viewExtension={viewExtension}
             onExtension={handleExtension}
             disabeld={disabeld}
+            disabeldButtons={makeInfo?.roomType == 'B' ? true : false}
             ref={contentEditable}
             placeholder={roomName}
             remoteAssistance={null}
             remoteHost={remoteHost}
           />
-
           <FileUploadBox
             onView={handleUploadBox}
             view={viewFileUpload}
