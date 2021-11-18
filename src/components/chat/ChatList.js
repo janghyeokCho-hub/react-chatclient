@@ -31,8 +31,9 @@ const ChatList = () => {
 
   const handleNewChatBotRoom = () => {
     const makeInfo = {
-      name: '이음봇',
+      roomName: '이음봇',
       roomType: 'B',
+      members: [],
     };
 
     // TODO :: 추후 챗봇이 여러개가 생긴다면 구조 변경 해야함

@@ -51,7 +51,6 @@ const makeMessageText = lastMessage => {
       if (common.isJSONStr(msgObj.Message)) {
         const drawData = JSON.parse(msgObj.Message);
 
-        console.log('drawData=>', drawData);
         if (drawData.msgType == 'C') {
           drawText = common.getDictionary(drawData.title);
         } else if (typeof drawData == 'object') {

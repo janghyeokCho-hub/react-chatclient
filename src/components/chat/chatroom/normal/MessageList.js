@@ -395,8 +395,6 @@ const MessageList = ({ onExtension, viewExtension }) => {
       let returnJSX = [];
 
       messages.forEach((message, index) => {
-        console.log(message);
-
         let nameBox = !(message.sender == currentSender);
         let sendDate = format(new Date(message.sendDate), 'yyyyMMdd');
         let nextSendTime = '';

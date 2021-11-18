@@ -37,7 +37,7 @@ const AddChatBotIcon = () => {
           fill="#262727"
         />
         <g id="그룹_501" data-name="그룹 501">
-          <g id="그룹_500" data-name="그룹 500" clip-path="url(#clip-path)">
+          <g id="그룹_500" data-name="그룹 500" clipPath="url(#clip-path)">
             <path
               id="패스_2226"
               data-name="패스 2226"

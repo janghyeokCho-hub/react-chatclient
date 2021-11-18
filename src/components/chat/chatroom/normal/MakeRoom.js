@@ -165,16 +165,31 @@ const MakeRoom = ({ history }) => {
 
     if (invites.indexOf(sender) == -1) invites.push(sender);
 
-    const data = {
-      roomType: makeInfo.roomType,
-      name: '',
-      members: invites,
-      memberType: makeInfo.memberType,
-      message: message,
-      sendFileInfo: filesObj,
-      linkInfo: linkObj,
-      messageType: messageType ? messageType : 'N',
-    };
+    let data;
+
+    if (makeInfo.roomType == 'B') {
+      data = {
+        roomType: makeInfo.roomType,
+        name: '이음봇',
+        members: invites,
+        memberType: 'U',
+        message: message,
+        sendFileInfo: filesObj,
+        linkInfo: linkObj,
+        messageType: messageType ? messageType : 'N',
+      };
+    } else {
+      data = {
+        roomType: makeInfo.roomType,
+        name: '',
+        members: invites,
+        memberType: makeInfo.memberType,
+        message: message,
+        sendFileInfo: filesObj,
+        linkInfo: linkObj,
+        messageType: messageType ? messageType : 'N',
+      };
+    }
 
     if (messageType == 'A') {
       createRoom(data).then(({ data }) => {
