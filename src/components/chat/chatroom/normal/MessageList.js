@@ -8,6 +8,7 @@ import React, {
 import { useSelector, useDispatch } from 'react-redux';
 import loadable from '@loadable/component';
 import MessageBox from '@C/chat/message/MessageBox';
+import ChatBotMessageBox from '@C/chat/message/ChatBotMessageBox';
 import NoticeMessageBox from '@C/chat/message/NoticeMessageBox';
 import TempMessageBox from '@C/chat/message/TempMessageBox';
 import SystemMessageBox from '@C/chat/message/SystemMessageBox';
@@ -27,7 +28,7 @@ import {
   setMessagesForSync,
   setUnreadCountForSync,
   readMessage,
-  getRoomInfo
+  getRoomInfo,
 } from '@/modules/room';
 import { hasClass, messageCopy, getMsgElement } from '@/lib/util/domUtil';
 import { evalConnector } from '@/lib/deviceConnector';
@@ -57,8 +58,9 @@ const MessageList = ({ onExtension, viewExtension }) => {
     if ((e.ctrlKey || e.metaKey) && e.keyCode == 67) {
       window.getelestartMessageID;
 
-      let start = document.getElementsByClassName('startMessageID').item(0)
-        .value;
+      let start = document
+        .getElementsByClassName('startMessageID')
+        .item(0).value;
       let end = document.getElementsByClassName('endMessageID').item(0).value;
 
       messageCopy(messages, start, end).then(success => {
@@ -358,25 +360,23 @@ const MessageList = ({ onExtension, viewExtension }) => {
           messageType = processMsg.type;
         }
         if (messageType == 'message') {
-          menus.push(
-            {
-              code: 'copyClipboardMessage',
-              isline: false,
-              onClick: () => {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_Copy'),
-                    callback: result => {
-                      navigator.clipboard.writeText(message.context);
-                    },
+          menus.push({
+            code: 'copyClipboardMessage',
+            isline: false,
+            onClick: () => {
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: covi.getDic('Msg_Copy'),
+                  callback: result => {
+                    navigator.clipboard.writeText(message.context);
                   },
-                  dispatch,
-                );
-              },
-              name: covi.getDic('Copy'),
-            }
-          );
+                },
+                dispatch,
+              );
+            },
+            name: covi.getDic('Copy'),
+          });
         }
       }
       return menus;
@@ -432,9 +432,9 @@ const MessageList = ({ onExtension, viewExtension }) => {
 
         if (dateBox) returnJSX.push(dateComponent);
 
-        if (message.messageType === 'N') {
+        if (message.botInfo) {
           returnJSX.push(
-            <MessageBox
+            <ChatBotMessageBox
               key={message.messageID}
               message={message}
               isMine={message.isMine == 'Y'}
@@ -443,26 +443,44 @@ const MessageList = ({ onExtension, viewExtension }) => {
               nameBox={nameBox}
               timeBox={timeBox}
               getMenuData={getMenuData}
-            ></MessageBox>,
-          );
-        } else if (message.messageType === 'A' || message.messageType === 'I') {
-          returnJSX.push(
-            <NoticeMessageBox
-              key={message.messageID}
-              message={message}
-              isMine={message.isMine == 'Y'}
-              nameBox={nameBox}
-              timeBox={timeBox}
-            ></NoticeMessageBox>,
+            ></ChatBotMessageBox>,
           );
         } else {
-          // System Message
-          returnJSX.push(
-            <SystemMessageBox
-              key={message.messageID}
-              message={message}
-            ></SystemMessageBox>,
-          );
+          if (message.messageType === 'N') {
+            returnJSX.push(
+              <MessageBox
+                key={message.messageID}
+                message={message}
+                isMine={message.isMine == 'Y'}
+                startMessage={startSelectMessage}
+                endMessage={endSelectMessage}
+                nameBox={nameBox}
+                timeBox={timeBox}
+                getMenuData={getMenuData}
+              ></MessageBox>,
+            );
+          } else if (
+            message.messageType === 'A' ||
+            message.messageType === 'I'
+          ) {
+            returnJSX.push(
+              <NoticeMessageBox
+                key={message.messageID}
+                message={message}
+                isMine={message.isMine == 'Y'}
+                nameBox={nameBox}
+                timeBox={timeBox}
+              ></NoticeMessageBox>,
+            );
+          } else {
+            // System Message
+            returnJSX.push(
+              <SystemMessageBox
+                key={message.messageID}
+                message={message}
+              ></SystemMessageBox>,
+            );
+          }
         }
       });
 

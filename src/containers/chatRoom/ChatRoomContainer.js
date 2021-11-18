@@ -66,7 +66,7 @@ const ChatRoomContainer = () => {
 
           return returnVal;
         });
-        
+
         setSearchList(filterList);
         setListMode('S');
       }
@@ -82,13 +82,13 @@ const ChatRoomContainer = () => {
         if (r.updateDate === null) updateList.push(r.roomID);
       });
     }
-    if (updateList.length > 0) {
+    if (updateList?.length > 0) {
       dispatch(updateRooms({ updateList }));
     }
   }, [roomList]);
 
   useEffect(() => {
-    if (roomList == null || roomList.length == 0) dispatch(getRooms());
+    if (roomList == null || roomList?.length == 0) dispatch(getRooms());
   }, []);
   return (
     <>
@@ -101,7 +101,7 @@ const ChatRoomContainer = () => {
       />
       {listMode == 'N' && (
         <>
-          {roomList.length > 0 && (
+          {roomList?.length > 0 && (
             <RoomItems
               rooms={roomList}
               loading={loading}
@@ -109,7 +109,7 @@ const ChatRoomContainer = () => {
               isDoubleClick={viewType == 'S' && SCREEN_OPTION != 'G'}
             />
           )}
-          {roomList.length == 0 && (
+          {roomList?.length == 0 && (
             <div className="nodataBox" style={{ marginTop: '80px' }}>
               <p className="subtxt">{covi.getDic('Msg_NoChatRoom')}</p>
             </div>

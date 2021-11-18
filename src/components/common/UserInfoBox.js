@@ -42,7 +42,8 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
         : 0;
       //personEl - personEl 30(padding) - profileArea(42+10(marign)) - nameArea - picArea Padding(20) - 20(자체 여유 너비)
 
-      if (picWidth > picMaxWidth) setPicAreaWidth(picWidth - (checkObj ? 25 : 0));
+      if (picWidth > picMaxWidth)
+        setPicAreaWidth(picWidth - (checkObj ? 25 : 0));
     };
 
     window.addEventListener('resize', () => {
@@ -114,6 +115,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
 
   const drawUserInfoBox = useMemo(() => {
     const type = userInfo.type;
+    console.log('usertype >> ', userInfo.type);
     if (type == 'G') {
       return (
         <a>
@@ -122,6 +124,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
           {info.dept && <span className="team">{getDeptName()}</span>}
         </a>
       );
+    } else if (type == 'B') {
     } else {
       const getAdditionalInfoBox = info => {
         try {
@@ -137,8 +140,13 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
 
             if (absenceInfo.code != null) {
               return (
-                <span className="absence" style={{ marginRight: checkObj ? 25 : 0}}>
-                  <span>{covi.getDic(`Ab_${absenceInfo.code}`, absenceInfo.code)}</span>
+                <span
+                  className="absence"
+                  style={{ marginRight: checkObj ? 25 : 0 }}
+                >
+                  <span>
+                    {covi.getDic(`Ab_${absenceInfo.code}`, absenceInfo.code)}
+                  </span>
                   <span>
                     {`${format(absenceInfo.startDate, `MM. dd`)} ~ ${format(
                       absenceInfo.endDate,
@@ -159,7 +167,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  marginRight: checkObj ? 25 : 0
+                  marginRight: checkObj ? 25 : 0,
                 }}
               >
                 {info.work}
