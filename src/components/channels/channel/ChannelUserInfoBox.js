@@ -11,7 +11,7 @@ const ChannelUserInfoBox = ({ userId, userInfo, getMenuData, channelAuth }) => {
 
   return (
     <>
-      <UserInfoBox userInfo={userInfo} isInherit={true} isClick={false} />
+      <UserInfoBox userInfo={userInfo} isInherit={true} isClick={false} removeWork={true} />
       {channelAuth && userInfo.id != userId && (
         <IconConxtMenu menuId={menuId} menus={menus}>
           <button className="list-more-btn"></button>

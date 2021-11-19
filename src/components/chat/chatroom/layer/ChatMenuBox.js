@@ -424,6 +424,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                               isInherit={true}
                               isClick={false}
                               isMine={id === member.id}
+                              removeWork={true}
                             />
                           )
                         })

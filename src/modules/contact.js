@@ -60,11 +60,77 @@ export const modifyCustomGroupName = createAction(MODIFY_CUSTOMGROUPNAME);
 export const modifyGroupMember = createAction(MODIFY_GROUPMEMBER);
 export const init = createAction(INIT);
 
-const getContactsSaga = createRequestSaga(
-  GET_CONTACTS,
-  contactApi.getContactList,
-  false,
-);
+function createGetContactsSaga(type) {
+  const SUCCESS = `${type}_SUCCESS`;
+  const FAILURE = `${type}_FAILURE`;
+  return function* (action) {
+    if (!action.payload) return;
+    try {
+      const response = yield call(contactApi.getContactList, action.payload);
+      const success = response.data.status === 'SUCCESS';
+      /* 사용자그룹 데이터 처리 */
+      const filteredContacts = response.data.result.map(list => {
+        // 그룹 내의 contact list iteration
+        const filteredSub =
+          list.sub &&
+          list.sub.filter(user => {
+            // id, name이 null일 경우 실제 유저 데이터가 아닌것으로 판단 => 필터링
+            const userExists = user.id !== null && user.name !== null;
+            return userExists;
+          });
+        return {
+          ...list,
+          sub: filteredSub,
+        };
+      });
+      const data = [];
+      const customGroups = filteredContacts.filter(contact => {
+        if (contact.folderType != 'R' || contact.ownerID === '') {
+          data.push(contact);
+        }
+        return (
+          contact.folderType === 'R' && contact.ownerID && contact.ownerID != ''
+        );
+      }).map(contact => {
+        // jobKey 데이터타입 Number > string 변환 (뷰에서 체크박스 여부 검사시 오류방지)
+        if (Array.isArray(contact?.sub) === true) {
+          contact.sub = contact.sub.map(c => ({
+            ...c,
+            jobKey: `${c.jobKey}` || c?.jobKey
+          }));
+        }
+        return contact;
+      });
+      data.map(contact => {
+        if (contact.ownerID === '' && contact.folderType === 'R') {
+          contact.sub = [];
+          contact.sub = contact.sub.concat(customGroups);
+        }
+        return contact;
+      });
+      yield put({
+        type: success ? SUCCESS : FAILURE,
+        payload: {
+          ...response.data,
+          result: data
+        }
+      });
+    } catch(err) {
+      yield put({
+        type: FAILURE,
+        payload: action.payload,
+        error: true,
+        errMessage: err,
+      });
+    }
+  }
+}
+const getContactsSaga = createGetContactsSaga(GET_CONTACTS);
+// const getContactsSaga = createRequestSaga(
+//   GET_CONTACTS,
+//   contactApi.getContactList,
+//   false,
+// );
 
 function createAddContactsSaga(type) {
   const SUCCESS = `${type}_SUCCESS`;
@@ -416,13 +482,24 @@ const contact = handleActions(
           - contact R타입
           - contact R타입
       */
+      /* 사용자그룹 데이터 처리 */
       let data = [];
       const customGroups = filteredContacts.filter(contact => {
-        if (contact.folderType != 'R' || contact.ownerID === '')
+        if (contact.folderType != 'R' || contact.ownerID === ''){
           data.push(contact);
+        }
         return (
           contact.folderType === 'R' && contact.ownerID && contact.ownerID != ''
         );
+      }).map(contact => {
+        // jobKey 데이터타입 Number > string 변환 (뷰에서 체크박스 여부 검사시 오류방지)
+        if (Array.isArray(contact?.sub) === true) {
+          contact.sub = contact.sub.map(c => ({
+            ...c,
+            jobKey: `${c.jobKey}` || c?.jobKey
+          }));
+        }
+        return contact;
       });
 
       data.map(contact => {
