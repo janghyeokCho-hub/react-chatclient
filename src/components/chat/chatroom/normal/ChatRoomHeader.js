@@ -140,7 +140,11 @@ const makeRoomName = (room, id, isInherit) => {
         return (
           <>
             <span className="name">
+<<<<<<< src/components/chat/chatroom/normal/ChatRoomHeader.js
               {!room.roomName || room.roomName == '' ? '이음이' : room.roomName}
+=======
+              {!room.roomName || room.roomName == '' ? '이음봇' : room.roomName}
+>>>>>>> src/components/chat/chatroom/normal/ChatRoomHeader.js
             </span>
           </>
         );
