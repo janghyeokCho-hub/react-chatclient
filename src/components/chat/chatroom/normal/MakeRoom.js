@@ -170,7 +170,7 @@ const MakeRoom = ({ history }) => {
     if (makeInfo.roomType == 'B') {
       data = {
         roomType: makeInfo.roomType,
-        name: '이음봇',
+        name: '이음이',
         members: invites,
         memberType: 'U',
         message: message,
@@ -250,8 +250,8 @@ const MakeRoom = ({ history }) => {
   const roomName = useMemo(() => {
     if (makeInfo) {
       if (makeInfo.roomType === 'B') {
-        // Bㅇ타입일 경우에는 이음봇으로 고정 (이후 다국어 처리 필요)
-        return '이음봇과의 대화를 위해 "안녕"이라고 메시지를 입력해보세요 !!';
+        // B타입일 경우에는 이음이로 고정 (이후 다국어 처리 필요)
+        return '이음이와 대화를 위해 "안녕"이라고 메시지를 입력해보세요 !!';
       }
       const refWord = `(Enter ${covi.getDic(
         'Send',
