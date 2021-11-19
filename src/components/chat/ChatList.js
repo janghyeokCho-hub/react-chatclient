@@ -34,13 +34,37 @@ const ChatList = () => {
   const handleNewChatBotRoom = () => {
     const makeInfo = {
       members: [],
+<<<<<<< src/components/chat/ChatList.js
+      roomName: '이음이',
+=======
       roomName: '이음봇',
+>>>>>>> src/components/chat/ChatList.js
       roomType: 'B',
     };
 
     // TODO :: 추후 챗봇이 여러개가 생긴다면 구조 변경 해야함
     const findRoom = rooms?.find(x => x.roomType === 'B');
 
+<<<<<<< src/components/chat/ChatList.js
+    const makeData = {
+      newRoom: true,
+      makeInfo: makeInfo,
+    };
+
+    if (findRoom) {
+      handleRoomChange(findRoom.roomID);
+    } else {
+      if (DEVICE_TYPE == 'd') {
+        if (viewType == 'S') {
+          const winName = `wmr_${format(new Date(), 'yyyyMMddHHmmss')}`;
+          const openURL = `${DEVICE_TYPE == 'd' ? '#' : ''}/client/nw/makeroom`;
+          makeChatRoom(winName, makeData, openURL);
+        } else {
+          dispatch(openRoom(makeData));
+          dispatch(makeRoomView(makeInfo));
+        }
+      } else {
+=======
     if (DEVICE_TYPE == 'd') {
       if (viewType == 'S') {
         const winName = `wmr_${format(new Date(), 'yyyyMMddHHmmss')}`;
@@ -59,6 +83,7 @@ const ChatList = () => {
           makeInfo: makeInfo,
         };
 
+>>>>>>> src/components/chat/ChatList.js
         dispatch(openRoom(makeData));
         dispatch(makeRoomView(makeInfo));
       }
@@ -66,6 +91,11 @@ const ChatList = () => {
   };
 
   useEffect(() => {
+<<<<<<< src/components/chat/ChatList.js
+    console.log(rooms);
+
+=======
+>>>>>>> src/components/chat/ChatList.js
     let chatBotAddFlag = false;
     const chatBotConfig = getConfig('ChatBot');
 

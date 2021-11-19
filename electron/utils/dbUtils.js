@@ -107,7 +107,7 @@ const makeLocalDatabaseFile = async (dbPath, openName) => {
           'CREATE TABLE access (id varchar(50), token varchar(255), userinfo json, registDate bigint, roomSyncDate bigint, reserved json, primary key (id))',
         );
         db.run(
-          'CREATE TABLE message (messageId integer, context TEXT, sender varchar(50), sendDate bigint, roomId integer, roomType CHARACTER(1), receiver varchar(255), messageType CHARACTER(1), unreadCnt integer, isSyncUnread CHARACTER(1), readYN CHARACTER(1), isMine CHARACTER(1), tempId integer, fileInfos varchar(255), linkInfo varchar(255), tagInfo varchar(255), senderInfo json, reserved json, primary key (messageId))',
+          'CREATE TABLE message (messageId integer, context TEXT, sender varchar(50), sendDate bigint, roomId integer, roomType CHARACTER(1), receiver varchar(255), messageType CHARACTER(1), unreadCnt integer, isSyncUnread CHARACTER(1), readYN CHARACTER(1), isMine CHARACTER(1), tempId integer, fileInfos varchar(255), linkInfo varchar(255), tagInfo varchar(255), senderInfo json, reserved json, botInfo json, primary key (messageId))',
         );
         db.run(
           'CREATE TABLE room (roomId integer, roomName varchar(255), roomType CHARACTER(1), ownerCode varchar(50), targetCode varchar(50), registDate bigint, deleteDate bigint, updateDate bigint, syncDate bigint, setting json, reserved json, primary key (roomId))',
