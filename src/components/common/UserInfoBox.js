@@ -13,7 +13,7 @@ import { format } from 'date-fns';
 import useTyping from '@/hooks/useTyping';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
 
-const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
+const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine, removeWork }) => {
   const viewType = useSelector(({ room }) => room.viewType);
   const rooms = useSelector(({ room }) => room.rooms);
   const selectId = useSelector(({ room }) => room.selectId);
@@ -26,9 +26,10 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
   const dispatch = useDispatch();
   const { confirm } = useTyping();
 
+  // removeWork: 사용자의 업무 표기박스 미표기 플래그
   const info = isMine
-    ? { ...myInfo, absenceInfo: userInfo.absenceInfo }
-    : userInfo;
+    ? { ...myInfo, absenceInfo: userInfo.absenceInfo, work: removeWork ? undefined : myInfo?.work }
+    : { ...userInfo, work: removeWork ? undefined : userInfo?.work };
 
   useEffect(() => {
     const debounceTimer = createTakeLatestTimer(100);
