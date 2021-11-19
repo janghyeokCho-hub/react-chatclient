@@ -194,6 +194,14 @@ const Room = ({
               )}
             </>
           );
+        } else {
+          if (room.roomType == 'B') {
+            return (
+              <>
+                <span>{'이음이'}</span>
+              </>
+            );
+          }
         }
 
         if (filterMember.length == 0)
@@ -366,9 +374,20 @@ const Room = ({
                   isInherit={true}
                   img={filterMember[0].photoPath}
                 />
-              ))) || (
-              <RoomMemberBox type="G" data={filterMember}></RoomMemberBox>
-            )}
+              ))) ||
+              (room.roomType != 'B' && (
+                <RoomMemberBox type="G" data={filterMember}></RoomMemberBox>
+              )) ||
+              (room.roomType === 'B' && (
+                <ProfileBox
+                  userId={'eumbot-758f37d1-f6a6-4bc2-bb5b-0376da769697'}
+                  userName={'이음이'}
+                  presence={null}
+                  isInherit={false}
+                  img={'http://192.168.11.80/storage/ChatBot/chatbot.png'}
+                  handleClick={false}
+                />
+              ))}
           </>
 
           <span className="name">{makeRoomName(filterMember)}</span>

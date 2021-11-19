@@ -140,7 +140,7 @@ const makeRoomName = (room, id, isInherit) => {
         return (
           <>
             <span className="name">
-              {!room.roomName || room.roomName == '' ? '이음봇' : room.roomName}
+              {!room.roomName || room.roomName == '' ? '이음이' : room.roomName}
             </span>
           </>
         );

@@ -2,7 +2,7 @@ import { chatsvr, managesvr } from '@/lib/api';
 
 export const getRoomList = params => {
   let url = '/rooms';
-  if (params && params.updateList) {
+  if (params?.updateList) {
     url = `${url}/${params.updateList.join(',')}`;
   }
   return chatsvr('get', url, params);
