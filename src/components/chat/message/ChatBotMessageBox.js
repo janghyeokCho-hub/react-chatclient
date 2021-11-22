@@ -26,7 +26,6 @@ const ChatBotMessageBox = ({
   }, [currMember, message]);
 
   const drawMessage = useMemo(() => {
-    console.log(message.messageID);
     const botkey = message.key;
     const botInfo = JSON.parse(message.botInfo);
     const botInfoTitle = botInfo.title;

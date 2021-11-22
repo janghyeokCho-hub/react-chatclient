@@ -556,7 +556,7 @@ const MessagePostBox = forwardRef(
               style={{ backgroundColor: inputLock ? '#f9f9f9' : '' }}
             ></textarea>
             <div className="input-bottombox">
-              {disabledButtons && (
+              {!disabledButtons && (
                 <div className="input-icobox">
                   <button
                     className={(viewExtension == 'S' && 'active') || ''}
