@@ -25,6 +25,7 @@ const MessageView = ({
   postAction,
   view,
 }) => {
+  const chatBot = getConfig('ChatBot');
   const liveMeet = getConfig('LiveMeet');
   const zoomMeet = getConfig('ZoomMeet');
   const useMessageCopy = getConfig('UseMessageCopy', true);
@@ -321,6 +322,8 @@ const MessageView = ({
       const target = filterMember[0];
 
       return `${getDictionary(target.name)} ${refWord}`;
+    } else if (roomInfo.roomType === 'B') {
+      return `${chatBot?.name} ${refWord}`;
     } else if (roomInfo.roomType === 'O') {
       const target = (roomInfo.members && roomInfo.members[0]) || null;
       if (target) {
