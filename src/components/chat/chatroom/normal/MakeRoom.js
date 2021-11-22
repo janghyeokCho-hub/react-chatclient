@@ -313,7 +313,7 @@ const MakeRoom = ({ history }) => {
                 viewExtension={viewExtension}
                 onExtension={handleExtension}
                 disabeld={disabeld}
-                disabeldButtons={makeInfo?.roomType == 'B' ? true : false}
+                disabledButtons={makeInfo?.roomType == 'B' ? true : false}
                 ref={contentEditable}
                 placeholder={roomName}
                 remoteAssistance={null}
@@ -340,7 +340,7 @@ const MakeRoom = ({ history }) => {
             viewExtension={viewExtension}
             onExtension={handleExtension}
             disabeld={disabeld}
-            disabeldButtons={makeInfo?.roomType == 'B' ? true : false}
+            disabledButtons={makeInfo?.roomType == 'B' ? true : false}
             ref={contentEditable}
             placeholder={roomName}
             remoteAssistance={null}

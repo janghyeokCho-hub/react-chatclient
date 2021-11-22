@@ -376,6 +376,8 @@ const MessageView = ({
     return allowed;
   }, [userInfo]);
 
+  console.log('roomInfo > ', roomInfo);
+
   return (
     <div style={{ width: '100%', height: '100%' }} ref={chatBox}>
       <ChatRoomHeader
@@ -390,6 +392,7 @@ const MessageView = ({
         postAction={postAction}
         viewExtension={viewExtension}
         onExtension={onExtension}
+        disabledButtons={roomInfo?.roomType === 'B' ? true : false}
         ref={contentEditable}
         liveMeet={(liveMeet && liveMeet.use && callLiveMeet) || null}
         zoomMeet={(useZoom && callZoomMeet) || null}
