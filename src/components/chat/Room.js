@@ -150,6 +150,7 @@ const Room = ({
 }) => {
   const id = useSelector(({ login }) => login.id);
   const [isNoti, setIsNoti] = useState(true);
+  const chatBotConfig = getConfig('ChatBot');
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
   const pinToTopLimit = useMemo(() => getConfig('PinToTop_Limit_Chat', -1), []);
 
@@ -381,10 +382,10 @@ const Room = ({
               (room.roomType === 'B' && (
                 <ProfileBox
                   userId={'eumbot-758f37d1-f6a6-4bc2-bb5b-0376da769697'}
-                  userName={'이음이'}
+                  userName={chatBotConfig?.name}
                   presence={null}
                   isInherit={false}
-                  img={'http://192.168.11.80/storage/ChatBot/chatbot.png'}
+                  img={chatBotConfig?.photoURL}
                   handleClick={false}
                 />
               ))}
