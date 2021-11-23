@@ -1232,6 +1232,7 @@ export const reqGetRoomInfo = async (event, args) => {
             'm.fileInfos',
             room.roomType == 'A' ? selectSenderInfo : 'm.senderInfo',
             'm.linkInfo',
+            'm.botInfo',
           )
           .where({ roomId: roomId })
           .from('message as m')
@@ -1254,6 +1255,8 @@ export const reqGetRoomInfo = async (event, args) => {
     } catch (e) {
       logger.info(e.stack);
     }
+
+    logger.info(JSON.stringify(messages));
 
     return { room: room, messages: messages };
   } else return { room: {}, messages: [] };
@@ -1788,6 +1791,7 @@ const selectMessages = async params => {
       'fileInfos',
       params.isNotice ? selectSenderInfo : 'senderInfo',
       'linkInfo',
+      'botInfo',
     )
     .from('message as m')
     .where('roomId', params.roomID)
@@ -1822,6 +1826,7 @@ export const selectBetweenMessagesByIDs = async params => {
       'fileInfos',
       'senderInfo',
       'linkInfo',
+      'botInfo',
     )
     .from('message')
     .whereBetween('messageId', [params.startId, params.endId]);
@@ -1852,6 +1857,7 @@ const selectBetweenMessages = async params => {
       'fileInfos',
       'senderInfo',
       'linkInfo',
+      'botInfo',
     )
     .from('message as m')
     .where('roomId', params.roomID);
