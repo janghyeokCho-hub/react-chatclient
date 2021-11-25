@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@C/common/ProfileBox';
 import { inviteMember } from '@/modules/channel';
 import ContactList from '@C/contact/ContactList';
-import { deleteLayer, clearLayer, openPopup, getJobInfo } from '@/lib/common';
+import { deleteLayer, clearLayer, openPopup, getJobInfo, getDictionary, getSysMsgFormatStr } from '@/lib/common';
 import OrgChart from '@C/orgchart/OrgChart';
 import { getAllUserWithGroup } from '@/lib/room';
 import ExternalUserList from '@C/externaluserlist/ExternalUserList';
@@ -112,8 +112,9 @@ const InviteMember = ({
   }, []);
 
   const handleAddBtn = () => {
-    let inviteMembers = [];
-    if (members.find(item => item.isShow == true) != undefined) {
+    if (members.find(item => item.isShow == true) !== undefined) {
+      const groupItems = [];
+      const inviteMembers = [];
       /*
       const groupItem = members.find(item => item.type == 'G');
       if (groupItem != undefined) {
@@ -127,19 +128,67 @@ const InviteMember = ({
         });
         handleAddBtnCallback(inviteMembers);
       } */
-
-      let groupItems = [];
       members.map(item => {
         if (item.type == 'G') groupItems.push(item);
         else inviteMembers.push(item);
       });
 
+      // 부서 대상 초대요청 처리
       if (groupItems.length > 0) {
         groupItems.map((groupItem, idx) => {
           getAllUserWithGroup(groupItem.id).then(({ data }) => {
-            inviteMembers = inviteMembers.concat(data.result);
-            if (idx === groupItems.length - 1) {
-              handleAddBtnCallback(inviteMembers);
+            if (Array.isArray(data?.result) === true) {
+              const dupList = [];
+              const targetList = [];
+              if (!isNewRoom) {
+                for (const target of data.result) {
+                  // 부서 사용자를 조회하여 기존의 채널 멤버와 중복여부 식별
+                  if (oldMemberList.find(m => m.id === target.id)) {
+                    dupList.push(target);
+                  } else {
+                    targetList.push(target);
+                  }
+                }
+              }
+              inviteMembers.push(...targetList);
+
+              if (targetList.length > 0) {
+                if (dupList.length > 0) {
+                  const dupListTxt = [];
+                  for (const duplicatedUser of dupList) {
+                    duplicatedUser?.name &&
+                      dupListTxt.push(getDictionary(duplicatedUser.name));
+                  }
+                  // 중복으로 제외된 유저목록 팝업으로 안내 && 부서초대 진행
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: getSysMsgFormatStr(
+                        covi.getDic('Tmp_exceptExistMember'),
+                        [{ type: 'Plain', data: dupListTxt.join(', ') }],
+                      ),
+                      callback() {
+                        handleAddBtnCallback(inviteMembers);
+                      },
+                    },
+                    dispatch,
+                  );
+                } else {
+                  handleAddBtnCallback(inviteMembers);
+                }
+              } else {
+                // 중복제거 후 초대 대상이 0명인 경우 - 초대요청을 중단하고 팝업 안내
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: covi.getDic('Msg_ExceptExistEmpty'),
+                    callback: () => {
+                      handleClose();
+                    },
+                  },
+                  dispatch,
+                );
+              }
             }
           });
         });

@@ -65,7 +65,8 @@ export const handleNewMessage = (dispatch, userInfo) => {
       }
     }
 
-    // dispatch(roomMessageAdd(json_data));
+    console.log(json_data);
+
     dispatch(receiveMessage(json_data));
   };
 };

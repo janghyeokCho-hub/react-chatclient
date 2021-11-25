@@ -51,7 +51,6 @@ const makeMessageText = lastMessage => {
       if (common.isJSONStr(msgObj.Message)) {
         const drawData = JSON.parse(msgObj.Message);
 
-        console.log('drawData=>', drawData);
         if (drawData.msgType == 'C') {
           drawText = common.getDictionary(drawData.title);
         } else if (typeof drawData == 'object') {
@@ -141,9 +140,17 @@ const makeDateTime = timestamp => {
   }
 };
 
-const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChange }) => {
+const Room = ({
+  room,
+  onRoomChange,
+  isSelect,
+  dbClickEvent,
+  pinnedTop,
+  onPinChange,
+}) => {
   const id = useSelector(({ login }) => login.id);
   const [isNoti, setIsNoti] = useState(true);
+  const chatBotConfig = getConfig('ChatBot');
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
   const pinToTopLimit = useMemo(() => getConfig('PinToTop_Limit_Chat', -1), []);
 
@@ -181,11 +188,21 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChan
           return (
             <>
               <span>{room.roomName}</span>
-              <span className="roomMemberCtn">
-                {room.members && `(${room.members.length})`}
-              </span>
+              {room.roomType != 'B' && (
+                <span className="roomMemberCtn">
+                  {room.members && `(${room.members.length})`}
+                </span>
+              )}
             </>
           );
+        } else {
+          if (room.roomType == 'B') {
+            return (
+              <>
+                <span>{'이음이'}</span>
+              </>
+            );
+          }
         }
 
         if (filterMember.length == 0)
@@ -200,7 +217,7 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChan
                 else return common.getJobInfo(item) + ',';
               })}
             </span>
-            {room.roomType != 'A' && room.members && (
+            {room.roomType != 'A' && room.roomType != 'B' && room.members && (
               <span className="roomMemberCtn">({room.members.length})</span>
             )}
           </>
@@ -254,17 +271,17 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChan
       code: 'pinRoom',
       isline: false,
       onClick() {
-        room?.roomID && onPinChange('ADD', room.roomID)
+        room?.roomID && onPinChange('ADD', room.roomID);
       },
-      name: covi.getDic('PinToTop', '상단고정')
+      name: covi.getDic('PinToTop', '상단고정'),
     };
     const unpinToTop = {
       code: 'unpinRoom',
       isline: false,
       onClick() {
-        room?.roomID && onPinChange('DEL', room.roomID)
+        room?.roomID && onPinChange('DEL', room.roomID);
       },
-      name: covi.getDic('UnpinToTop', '상단고정 해제')
+      name: covi.getDic('UnpinToTop', '상단고정 해제'),
     };
     const menus = [
       {
@@ -279,15 +296,16 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChan
         },
         name: covi.getDic('OpenChat'),
       },
-      (pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop)),
-      room?.roomType !== 'A' && {
-        code: 'outRoom',
-        isline: false,
-        onClick: () => {
-          leaveRoomUtil(dispatch, room, id);
+      pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop),
+      room?.roomType !== 'A' &&
+        room?.roomType !== 'B' && {
+          code: 'outRoom',
+          isline: false,
+          onClick: () => {
+            leaveRoomUtil(dispatch, room, id);
+          },
+          name: covi.getDic('LeaveChat'),
         },
-        name: covi.getDic('LeaveChat'),
-      },
     ];
 
     if (DEVICE_TYPE != 'b' && forceDisableNoti === false) {
@@ -315,7 +333,17 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChan
     }
 
     return menus;
-  }, [dispatch, room, id, dbClickEvent, isSelect, handleDoubleClick, isNoti, pinnedTop, onPinChange]);
+  }, [
+    dispatch,
+    room,
+    id,
+    dbClickEvent,
+    isSelect,
+    handleDoubleClick,
+    isNoti,
+    pinnedTop,
+    onPinChange,
+  ]);
 
   const menuId = useMemo(() => 'room_' + room.roomID, [room]);
 
@@ -347,15 +375,27 @@ const Room = ({ room, onRoomChange, isSelect, dbClickEvent, pinnedTop, onPinChan
                   isInherit={true}
                   img={filterMember[0].photoPath}
                 />
-              ))) || (
-              <RoomMemberBox type="G" data={filterMember}></RoomMemberBox>
-            )}
+              ))) ||
+              (room.roomType != 'B' && (
+                <RoomMemberBox type="G" data={filterMember}></RoomMemberBox>
+              )) ||
+              (room.roomType === 'B' && (
+                <ProfileBox
+                  userId={'eumbot-758f37d1-f6a6-4bc2-bb5b-0376da769697'}
+                  userName={chatBotConfig?.name}
+                  presence={null}
+                  isInherit={false}
+                  img={chatBotConfig?.photoURL}
+                  handleClick={false}
+                />
+              ))}
           </>
 
-          <span className="name">
-            {makeRoomName(filterMember)}
+          <span className="name">{makeRoomName(filterMember)}</span>
+          <span className="time">
+            {pinnedTop && '📌'}
+            {makeDateTime(room.lastMessageDate)}
           </span>
-          <span className="time">{ pinnedTop && '📌' }{makeDateTime(room.lastMessageDate)}</span>
           <span className="preview">
             {room.lastMessage && makeMessageText(room.lastMessage)}
           </span>

@@ -198,8 +198,8 @@ export const reqRoomForSync = async (event, args) => {
           }
         }
 
-        managesvr('get', `/sync/room?syncDate=${result}`).then(
-          async response => {
+        managesvr('get', `/sync/room?syncDate=${result}`)
+          .then(async response => {
             if (
               response.data.status == 'SUCCESS' &&
               response.data.result.updateDate
@@ -210,7 +210,6 @@ export const reqRoomForSync = async (event, args) => {
                 const selectMember = await tx
                   .select('roomId', 'userId')
                   .from('room_member');
-
                 let dbRoomIds = {};
                 if (selectRoomID.length > 0) {
                   dbRoomIds = selectRoomID.reduce((acc, curr) => {
@@ -309,8 +308,10 @@ export const reqRoomForSync = async (event, args) => {
                 await tx.rollback();
               }
             }
-          },
-        );
+          })
+          .catch(err => {
+            console.log(err);
+          });
       });
 
     return true;
@@ -1016,7 +1017,6 @@ export const reqGetRoom = async (event, args) => {
         const members = await selectMember;
         const outdatedRooms = [];
 
-        //
         for await (const item of data) {
           const room = roomResult.find(room => room.roomID == item.roomId);
           if (room) {
@@ -1028,24 +1028,34 @@ export const reqGetRoom = async (event, args) => {
                * 2021.06.14
                * lastMessageDate가 null인 경우: 서버 측에서 대화기록 사라짐(메시지 삭제 주기)
                * => local db 조회하여 lastMessage / lastMessageDate 획득
-               * 
+               *
                * Future work (TODO)
                * 건당 select 대신 whereIn으로 쿼리 호출횟수 최적화 필요
                */
               try {
-                const lastMessage = await tx.select('m.context', 'm.fileInfos', 'm.sendDate').from('message as m').where('m.roomId', item.roomId).orderBy('m.sendDate', 'desc').limit(1);
+                const lastMessage = await tx
+                  .select('m.context', 'm.fileInfos', 'm.sendDate')
+                  .from('message as m')
+                  .where('m.roomId', item.roomId)
+                  .orderBy('m.sendDate', 'desc')
+                  .limit(1);
                 if (lastMessage && lastMessage.length > 0) {
                   const message = lastMessage[0];
                   room.lastMessage = {
                     Message: message.context || '',
-                    File: message.fileInfos || ''
+                    File: message.fileInfos || '',
                   };
                   room.lastMessageDate = message.sendDate;
                   room.unreadCnt = item.unreadCnt;
                   outdatedRooms.push(room);
                 }
-              } catch(err) {
-                logger.info(`An error occured when selecting lastMessage in outdated room(${item.roomId || 'UNKNOWN'}) `, err);
+              } catch (err) {
+                logger.info(
+                  `An error occured when selecting lastMessage in outdated room(${
+                    item.roomId || 'UNKNOWN'
+                  }) `,
+                  err,
+                );
               }
             } else {
               // lastMssageDate 값이 있을 경우 마지막 동기화된 값을 그대로 사용함
@@ -1067,7 +1077,6 @@ export const reqGetRoom = async (event, args) => {
          */
         outdatedRooms.sort((a, b) => b.lastMessageDate - a.lastMessageDate);
         rooms.push(...outdatedRooms);
-
       } catch (e) {
         logger.info(e.stack);
         await tx.rollback();
@@ -1223,6 +1232,7 @@ export const reqGetRoomInfo = async (event, args) => {
             'm.fileInfos',
             room.roomType == 'A' ? selectSenderInfo : 'm.senderInfo',
             'm.linkInfo',
+            'm.botInfo',
           )
           .where({ roomId: roomId })
           .from('message as m')
@@ -1245,6 +1255,8 @@ export const reqGetRoomInfo = async (event, args) => {
     } catch (e) {
       logger.info(e.stack);
     }
+
+    logger.info(JSON.stringify(messages));
 
     return { room: room, messages: messages };
   } else return { room: {}, messages: [] };
@@ -1779,6 +1791,7 @@ const selectMessages = async params => {
       'fileInfos',
       params.isNotice ? selectSenderInfo : 'senderInfo',
       'linkInfo',
+      'botInfo',
     )
     .from('message as m')
     .where('roomId', params.roomID)
@@ -1813,6 +1826,7 @@ export const selectBetweenMessagesByIDs = async params => {
       'fileInfos',
       'senderInfo',
       'linkInfo',
+      'botInfo',
     )
     .from('message')
     .whereBetween('messageId', [params.startId, params.endId]);
@@ -1843,6 +1857,7 @@ const selectBetweenMessages = async params => {
       'fileInfos',
       'senderInfo',
       'linkInfo',
+      'botInfo',
     )
     .from('message as m')
     .where('roomId', params.roomID);

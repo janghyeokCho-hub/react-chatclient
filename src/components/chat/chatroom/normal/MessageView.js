@@ -25,6 +25,7 @@ const MessageView = ({
   postAction,
   view,
 }) => {
+  const chatBot = getConfig('ChatBot');
   const liveMeet = getConfig('LiveMeet');
   const zoomMeet = getConfig('ZoomMeet');
   const useMessageCopy = getConfig('UseMessageCopy', true);
@@ -321,6 +322,8 @@ const MessageView = ({
       const target = filterMember[0];
 
       return `${getDictionary(target.name)} ${refWord}`;
+    } else if (roomInfo.roomType === 'B') {
+      return `${chatBot?.name} ${refWord}`;
     } else if (roomInfo.roomType === 'O') {
       const target = (roomInfo.members && roomInfo.members[0]) || null;
       if (target) {
@@ -373,6 +376,8 @@ const MessageView = ({
     return allowed;
   }, [userInfo]);
 
+  console.log('roomInfo > ', roomInfo);
+
   return (
     <div style={{ width: '100%', height: '100%' }} ref={chatBox}>
       <ChatRoomHeader
@@ -387,6 +392,7 @@ const MessageView = ({
         postAction={postAction}
         viewExtension={viewExtension}
         onExtension={onExtension}
+        disabledButtons={roomInfo?.roomType === 'B' ? true : false}
         ref={contentEditable}
         liveMeet={(liveMeet && liveMeet.use && callLiveMeet) || null}
         zoomMeet={(useZoom && callZoomMeet) || null}

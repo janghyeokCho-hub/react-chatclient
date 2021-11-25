@@ -52,7 +52,7 @@ const ProfileBox = ({
           // url이 relative path인 경우 catch error
           photoSrc = new URL(img, window.covi.baseURL);
           photoSrc.searchParams.append('t', timestamp);
-        } catch(err) {
+        } catch (err) {
           photoSrc = img;
         }
       }
@@ -77,28 +77,32 @@ const ProfileBox = ({
     }
   }, [img, userName, imgVisible]);
 
-  return (
-    <div
-      className="profile-photo"
-      onClick={e => {
-        if (handleClick === undefined) openProfile();
-        else if (handleClick) handleClick();
+  if (userId == 'eumbot-758f37d1-f6a6-4bc2-bb5b-0376da769697') {
+    return <div className="profile-photo">{profileBox}</div>;
+  } else {
+    return (
+      <div
+        className="profile-photo"
+        onClick={e => {
+          if (handleClick === undefined) openProfile();
+          else if (handleClick) handleClick();
 
-        if (handleClick != false) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }}
-    >
-      {profileBox}
+          if (handleClick != false) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
+      >
+        {profileBox}
 
-      <PresenceButton
-        userId={userId}
-        state={presence}
-        isInherit={isInherit}
-      ></PresenceButton>
-    </div>
-  );
+        <PresenceButton
+          userId={userId}
+          state={presence}
+          isInherit={isInherit}
+        ></PresenceButton>
+      </div>
+    );
+  }
 };
 
 export default React.memo(ProfileBox);

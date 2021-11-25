@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { makeChatRoom } from '@/lib/deviceConnector';
 import { getAllUserWithGroup, getAllUserWithGroupList } from '@/lib/room';
 import { openChatRoomView } from '@/lib/roomUtil';
-import { getSysMsgFormatStr } from '@/lib/common';
+import { getDictionary, getSysMsgFormatStr } from '@/lib/common';
 
 const InviteMember = ({
   headerName,
@@ -166,7 +166,9 @@ const InviteMember = ({
           if (inviteMembers.length > 0) {
             if (dupList.length > 0) {
               let dupListTxt = dupList.reduce((acc, curr) => {
-                acc = acc + curr.name + ', ';
+                if (curr?.name) {
+                  acc = acc + getDictionary(curr.name) + ', ';
+                }
                 return acc;
               }, '');
 

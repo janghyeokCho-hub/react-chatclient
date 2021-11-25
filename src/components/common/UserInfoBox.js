@@ -13,7 +13,7 @@ import { format } from 'date-fns';
 import useTyping from '@/hooks/useTyping';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
 
-const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
+const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine, removeWork }) => {
   const viewType = useSelector(({ room }) => room.viewType);
   const rooms = useSelector(({ room }) => room.rooms);
   const selectId = useSelector(({ room }) => room.selectId);
@@ -26,9 +26,10 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
   const dispatch = useDispatch();
   const { confirm } = useTyping();
 
+  // removeWork: 사용자의 업무 표기박스 미표기 플래그
   const info = isMine
-    ? { ...myInfo, absenceInfo: userInfo.absenceInfo }
-    : userInfo;
+    ? { ...myInfo, absenceInfo: userInfo.absenceInfo, work: removeWork ? undefined : myInfo?.work }
+    : { ...userInfo, work: removeWork ? undefined : userInfo?.work };
 
   useEffect(() => {
     const debounceTimer = createTakeLatestTimer(100);
@@ -42,7 +43,8 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
         : 0;
       //personEl - personEl 30(padding) - profileArea(42+10(marign)) - nameArea - picArea Padding(20) - 20(자체 여유 너비)
 
-      if (picWidth > picMaxWidth) setPicAreaWidth(picWidth - (checkObj ? 25 : 0));
+      if (picWidth > picMaxWidth)
+        setPicAreaWidth(picWidth - (checkObj ? 25 : 0));
     };
 
     window.addEventListener('resize', () => {
@@ -114,6 +116,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
 
   const drawUserInfoBox = useMemo(() => {
     const type = userInfo.type;
+    console.log('usertype >> ', userInfo.type);
     if (type == 'G') {
       return (
         <a>
@@ -122,6 +125,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
           {info.dept && <span className="team">{getDeptName()}</span>}
         </a>
       );
+    } else if (type == 'B') {
     } else {
       const getAdditionalInfoBox = info => {
         try {
@@ -137,8 +141,13 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
 
             if (absenceInfo.code != null) {
               return (
-                <span className="absence" style={{ marginRight: checkObj ? 25 : 0}}>
-                  <span>{covi.getDic(`Ab_${absenceInfo.code}`, absenceInfo.code)}</span>
+                <span
+                  className="absence"
+                  style={{ marginRight: checkObj ? 25 : 0 }}
+                >
+                  <span>
+                    {covi.getDic(`Ab_${absenceInfo.code}`, absenceInfo.code)}
+                  </span>
                   <span>
                     {`${format(absenceInfo.startDate, `MM. dd`)} ~ ${format(
                       absenceInfo.endDate,
@@ -159,7 +168,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine }) => {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  marginRight: checkObj ? 25 : 0
+                  marginRight: checkObj ? 25 : 0,
                 }}
               >
                 {info.work}
