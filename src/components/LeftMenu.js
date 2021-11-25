@@ -44,7 +44,7 @@ const handleUserConfig = data => {
 };
 
 const exntension = {
-  isUse: true,
+  isUse: false,
 };
 
 const LeftMenu = ({ history }) => {
