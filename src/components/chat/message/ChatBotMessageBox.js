@@ -152,19 +152,25 @@ const ChatBotMessageBox = ({
                     </p>
                     <div>
                       {botInfoType == 'LINK' && (
-                        <a
-                          href={linkInfo}
+                        <button
+                          onClick={() => {
+                            if (DEVICE_TYPE === 'd') {
+                              window.openExternalPopup(linkInfo);
+                            } else {
+                              window.open(url, '_blank');
+                            }
+                          }}
                           style={{
                             borderRadius: 5,
                             background: '#12cfee',
                             color: '#fff',
                             padding: 12,
-                            display: 'block',
                             textAlign: 'center',
+                            width: '100%',
                           }}
                         >
                           이동
-                        </a>
+                        </button>
                       )}
                       {botInfoType == 'DIVIDER' && (
                         <div>
@@ -320,13 +326,19 @@ const ChatBotMessageBox = ({
                     </ul>
                   )}
                   {linkInfo && (
-                    <a
-                      href={linkInfo}
+                    <button
                       style={{
                         background: '#12cfee',
                         color: '#fff',
-                        display: 'block',
                         textAlign: 'center',
+                        width: '100%',
+                      }}
+                      onClick={() => {
+                        if (DEVICE_TYPE === 'd') {
+                          window.openExternalPopup(linkInfo);
+                        } else {
+                          window.open(url, '_blank');
+                        }
                       }}
                     >
                       <p style={{ lineHeight: 1.5, fontSize: 16, padding: 10 }}>
@@ -336,7 +348,7 @@ const ChatBotMessageBox = ({
                           </div>
                         )) || <div>{'자세히 보기'}</div>}
                       </p>
-                    </a>
+                    </button>
                   )}
                 </div>
               )}
