@@ -61,7 +61,7 @@ const LeftMenu = ({ history }) => {
   const unreadNoteCnt = useNoteUnreadCount();
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
-  const [isExtensionUse, setIsExtensionUse] = useState(true);
+  const [isExtensionUse, setIsExtensionUse] = useState(false);
 
   const active = useSelector(
     ({ menu }) => menu.activeType,
