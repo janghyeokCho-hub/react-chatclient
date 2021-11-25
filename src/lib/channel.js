@@ -139,7 +139,7 @@ export const joinExternalUser = params => {
 export const closureChannel = params => {
   return chatsvr(
     'delete',
-    `/na/channel/closure/CLIENT/${params.roomId}?TargetRoomName=${params.roomName}`,
+    `/na/channel/closure/USER/${params.roomId}?TargetRoomName=${params.roomName}`,
     params,
   );
 };
