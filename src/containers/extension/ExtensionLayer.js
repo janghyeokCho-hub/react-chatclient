@@ -1,76 +1,60 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import ParamUtil, { encryptText } from '@/lib/util/paramUtil';
-import { getAesUtil } from '@/lib/aesUtil';
 import { bound } from '@/modules/menu';
 
-const ExtensionLayer = () => {
-  const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
-  const userInfo = useSelector(({ login }) => login.userInfo);
+import LoadingWrap from '@COMMON/LoadingWrap';
 
+const ExtensionLayer = () => {
+  const extensionInfo = useSelector(
+    ({ extension }) => extension.currentExtension,
+  );
+
+  const [script, setScript] = useState(null);
   const [loadExtension, setLoadExtension] = useState(false);
 
-  const [loadURL, setLoadURL] = useState('');
+  useEffect(() => {
+    if (extensionInfo) {
+      setLoadExtension(true);
+
+      if (extensionInfo.type == 'V') {
+        // 이전 로드된 익스텐션 언로드
+        const extension = document.getElementById(extensionInfo.extensionId);
+        if (extension) extension.remove();
+
+        const newScript = document.createElement('script');
+        newScript.src = extensionInfo.downloadURL + '?t=' + new Date();
+        newScript.id = extensionInfo.extensionId;
+
+        document.body.appendChild(newScript);
+
+        newScript.onload = () => {
+          setLoadExtension(false);
+        };
+
+        setScript(newScript);
+      } else {
+        setLoadExtension(false);
+      }
+    }
+  }, [extensionInfo]);
 
   const loadExample = () => {
-    const simpleExtension = document.getElementById('example');
-    if (simpleExtension)
-      simpleExtension.parentNode.removeChild(simpleExtension);
-    const script = document.createElement('script');
-    script.src = 'http://127.0.0.1:8080/SnakeExtension.js?t=' + new Date();
-    script.id = 'example';
-    script.onload = () => {
+    // 이전 로드된 익스텐션 언로드
+    const extension = document.getElementById(extensionInfo.extensionId);
+    if (extension) extension.remove();
+
+    const newScript = document.createElement('script');
+    newScript.src = extensionInfo.downloadURL + '?t=' + new Date();
+    newScript.id = extensionInfo.extensionId;
+
+    document.body.appendChild(newScript);
+
+    newScript.onload = () => {
       setLoadExtension(false);
     };
-    document.body.appendChild(script);
+
+    setScript(newScript);
   };
-
-  const gotoLink = useCallback(
-    async item => {
-      let url = item.url;
-      let paramStr = '';
-
-      if (item.params) {
-        for (const [key, value] of Object.entries(item.params)) {
-          let expressionStr = value.param;
-          if (!value.plain) {
-            const pUtil = new ParamUtil(value.param, userInfo);
-            expressionStr = pUtil.getURLParam();
-          }
-
-          if (!!value.enc && typeof value.enc === 'string') {
-            const encType = value.enc.toLowerCase();
-            const AESUtil = getAesUtil();
-            const encryptExp = AESUtil.encrypt(expressionStr);
-
-            const { data } = await encryptText(
-              encryptExp,
-              AESUtil.encrypt(encType),
-            );
-
-            if (data.status === 'SUCCESS') {
-              expressionStr = data.result;
-            }
-          }
-
-          paramStr += `${
-            paramStr.length > 0 ? '&' : ''
-          }${key}=${encodeURIComponent(expressionStr)}`;
-        }
-      }
-
-      if (paramStr.length > 0) {
-        if (url.indexOf('?') > -1) {
-          url = `${url}&${paramStr}`;
-        } else {
-          url = `${url}?${paramStr}`;
-        }
-      }
-
-      return url;
-    },
-    [userInfo],
-  );
 
   const dispatch = useDispatch();
 
@@ -78,49 +62,40 @@ const ExtensionLayer = () => {
     dispatch(
       bound({ name: covi.getDic('Extension'), type: 'extension-viewer' }),
     );
-
-    // if (!loadExtension) {
-    //   setLoadExtension(true);
-    //   loadExample();
-    // }
-
-    const connectionLinkMetaData = {
-      url: 'http://gw4j.covision.co.kr/covicore/login.do',
-      params: {
-        EumToken: { param: 'id$+|&+toDate#', plain: false, enc: 'aes' },
-        ReturnURL: {
-          param: '/groupware/portal/home.do',
-          plain: true,
-          enc: false,
-        },
-      },
+    return () => {
+      script?.remove();
     };
-
-    gotoLink(connectionLinkMetaData).then(data => {
-      console.log(data);
-      document.getElementById('extension').src = data;
-    });
   }, []);
 
   return (
     <div className="extension-wrap" style={{ height: '100%' }}>
-      {/* <button
-        onClick={() => {
-          window.location.reload();
-        }}
-      >
-        load extension
-      </button>
-      {loadExtension && <p>loading extension</p>}
-      <div id="extension"> </div> */}
-
-      <iframe
-        id="extension"
-        width="100%"
-        height="100%"
-        src="http://gw.covision.co.kr"
-        style={{ borderWidth: 0 }}
-      ></iframe>
+      {(extensionInfo?.type == 'I' && (
+        <iframe
+          width="100%"
+          height="100%"
+          src="http://192.168.11.126:8080/groupware/portal/home.do"
+          style={{ borderWidth: 0 }}
+        ></iframe>
+      )) || (
+        <>
+          <button
+            onClick={() => {
+              // loadExample();
+              window.location.reload();
+            }}
+            style={{
+              position: 'fixed',
+              padding: '15px 5px',
+              right: '10px',
+              top: '30px',
+            }}
+          >
+            익스텐션 업데이트
+          </button>
+          <div id="extensionLayout"></div>
+        </>
+      )}
+      {loadExtension && <LoadingWrap />}
     </div>
   );
 };

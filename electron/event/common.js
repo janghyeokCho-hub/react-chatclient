@@ -27,6 +27,24 @@ export const checkRoomWinMap = (event, args) => {
   }
 };
 
+export const changeMainWindowSize = (event, args) => {
+  const mainWin = BrowserWindow.fromId(1);
+
+  if (mainWin) {
+    mainWin.width = args.width;
+    if (args.minWidth) mainWin.minWidth = args.minWidth;
+    if (args.maxWidth) mainWin.maxWidth = args.maxWidth;
+
+    mainWin.height = args.height;
+    if (args.minHeight) mainWin.minHeight = args.minHeight;
+    if (args.maxHeight) mainWin.maxHeight = args.maxHeight;
+
+    mainWin.resizable = args.resizable;
+  }
+
+  event.returnValue = true;
+};
+
 export const checkRoomWinLength = (event, args) => {
   event.returnValue = Object.keys(ROOM_WIN_MAP).length;
 };
@@ -107,8 +125,8 @@ export const reqMakeRoom = (event, args) => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
-    }
+      nodeIntegrationInSubFrames: true,
+    },
   });
 
   MAKE_DATA[makeWin.id] = args.makeData;
@@ -197,8 +215,8 @@ export const reqSubPop = (event, args) => {
         nodeIntegration: true,
         contextIsolation: false,
         enableRemoteModule: true,
-        nodeIntegrationInSubFrames: true
-      }
+        nodeIntegrationInSubFrames: true,
+      },
     });
 
     pop.setResizable(args.options.resize ? true : false);

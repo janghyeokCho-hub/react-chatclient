@@ -133,7 +133,7 @@ export const newExtensionWindow = (winName, id, openURL) => {
           nodeIntegration: true,
           contextIsolation: false,
           enableRemoteModule: true,
-          nodeIntegrationInSubFrames: true
+          nodeIntegrationInSubFrames: true,
         },
       });
 
@@ -279,7 +279,7 @@ export const newChatRoom = (winName, id, openURL) => {
           nodeIntegration: true,
           contextIsolation: false,
           enableRemoteModule: true,
-          nodeIntegrationInSubFrames: true
+          nodeIntegrationInSubFrames: true,
         },
         // show: false,
       });
@@ -622,7 +622,7 @@ export const openLinkNative = link => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
+      nodeIntegrationInSubFrames: true,
     },
     show: false,
   });
@@ -663,34 +663,40 @@ export const openPath = path => {
 
 export const saveFile = (path, name, data, options) => {
   const downloadPathCheck = getRemote()
-      .getGlobal('APP_SECURITY_SETTING')
-      .get('downloadPathCheck');
+    .getGlobal('APP_SECURITY_SETTING')
+    .get('downloadPathCheck');
   const _isMulti = Array.isArray(path) === true;
   const _path = _isMulti ? path[0] : path;
   /**
    * 2021.09.28
-   * 
+   *
    * 다운로드 경로확인 OFF (downloadPathCheck false && isMulti false)
    * : 중복되지 않는 파일명 생성
-   * 
+   *
    * 다운로드 경로확인 ON (downloadPathCheck true && isMulti false)
    * : 전달받은 path 경로(파일이름이 포함된 경로) 그대로 사용
-   * 
+   *
    * 복수저장 (downloadPathCheck true && isMulti true)
    * : 중복되지 않는 파일명 생성
    */
-  const savePath = (downloadPathCheck && !_isMulti) ? _path : makeFileName(_path, name);
+  const savePath =
+    downloadPathCheck && !_isMulti ? _path : makeFileName(_path, name);
 
-  writeFile(savePath, Buffer.from(data), async (err) => {
+  writeFile(savePath, Buffer.from(data), async err => {
     if (err) {
-      console.log('FileSave Error  ', err)
+      console.log('FileSave Error  ', err);
       // error 처리 ?
     } else {
       try {
         // savePath(다운로드 경로)가 중복될 경우 파일을 덮어씌우기 전에 indexeddb에서 이전 파일의 정보 삭제
-        await filterRemoveByIndex('files', 'path', savePath, (dup) => dup !== options.token);
+        await filterRemoveByIndex(
+          'files',
+          'path',
+          savePath,
+          dup => dup !== options.token,
+        );
       } catch (_err) {
-        console.log('Insert FileInfo Error : ', _err)
+        console.log('Insert FileInfo Error : ', _err);
       }
       insert('files', { token: options.token, path: savePath }, () => {
         console.log('file info save');
@@ -706,7 +712,11 @@ export const saveFile = (path, name, data, options) => {
 export const getDownloadDefaultPath = () => {
   const remote = getRemote();
   if (remote) {
-    const customPathOption = getConfig('UseCustomDownloadPath', { isUse: false, defaultPath: '', useDefaultValue: false });
+    const customPathOption = getConfig('UseCustomDownloadPath', {
+      isUse: false,
+      defaultPath: '',
+      useDefaultValue: false,
+    });
     const osDownloadPath = remote.app.getPath('downloads');
     const appSetting = remote.getGlobal('APP_SECURITY_SETTING');
     const appDownloadPath = appSetting.get('defaultDownloadPath');
@@ -735,7 +745,10 @@ export const getDownloadDefaultPath = () => {
   }
 };
 
-export const getDownloadPath = async ({ defaultFileName = '', mode = ''} = {}) => {
+export const getDownloadPath = async ({
+  defaultFileName = '',
+  mode = '',
+} = {}) => {
   const remote = getRemote();
   if (remote) {
     const downloadPathCheck = remote
@@ -743,7 +756,10 @@ export const getDownloadPath = async ({ defaultFileName = '', mode = ''} = {}) =
       .get('downloadPathCheck');
     const defaultDownloadPath = getDownloadDefaultPath();
     if (downloadPathCheck) {
-      return openDirectoryDialog(defaultDownloadPath + `/${defaultFileName || ''}`, mode || 'saveAs');
+      return openDirectoryDialog(
+        defaultDownloadPath + `/${defaultFileName || ''}`,
+        mode || 'saveAs',
+      );
     } else {
       return { canceled: false, filePath: defaultDownloadPath };
     }
@@ -756,26 +772,20 @@ export const openDirectoryDialog = (defaultPath, type = 'open') => {
   const remote = getRemote();
   try {
     if (type === 'open') {
-      return remote.dialog.showOpenDialog(
-        {
-          defaultPath: defaultPath,
-          properties: [
-            'openDirectory',
-            'createDirectory',
-            'promptToCreate',
-            'noResolveAliases',
-          ],
-        }
-      );
+      return remote.dialog.showOpenDialog({
+        defaultPath: defaultPath,
+        properties: [
+          'openDirectory',
+          'createDirectory',
+          'promptToCreate',
+          'noResolveAliases',
+        ],
+      });
     } else if (type === 'saveAs') {
-      return remote.dialog.showSaveDialog(
-        {
-          defaultPath: defaultPath,
-          properties: [
-            'createDirectory'
-          ]
-        }
-      );
+      return remote.dialog.showSaveDialog({
+        defaultPath: defaultPath,
+        properties: ['createDirectory'],
+      });
     }
   } catch (err) {
     return null;
@@ -935,7 +945,6 @@ export const fontSizeChange = fontSize => {
   }
 };
 
-
 export function broadcastEvent(eventName, value) {
   try {
     const remote = getRemote();
@@ -947,7 +956,10 @@ export function broadcastEvent(eventName, value) {
       }
     });
   } catch (e) {
-    console.log(`Error has been orrured when broadcasting event("${eventName}") : `, e);
+    console.log(
+      `Error has been orrured when broadcasting event("${eventName}") : `,
+      e,
+    );
   }
 }
 
@@ -987,6 +999,11 @@ export const focusWin = () => {
 
   currWin.focus();
   // currWin.flashFrame(true);
+};
+
+export const chageMainWinInfo = args => {
+  const emitter = getEmitter();
+  emitter.send('change-mainwin-info', args);
 };
 
 // 채널
@@ -1079,7 +1096,7 @@ export const newChannel = (winName, id, openURL) => {
           nodeIntegration: true,
           contextIsolation: false,
           enableRemoteModule: true,
-          nodeIntegrationInSubFrames: true
+          nodeIntegrationInSubFrames: true,
         },
       });
 
@@ -1172,10 +1189,10 @@ export const logRenderer = msg => {
 };
 
 /**
- * 
+ *
  * @param {string} type
  * 'R' => 채팅방 'C' => 채널
- * 
+ *
  */
 export function getPinnedRooms({ userId = '', type = 'R' } = {}) {
   const KEY = userId + '_pinned_' + type;
@@ -1191,13 +1208,13 @@ export function getPinnedRooms({ userId = '', type = 'R' } = {}) {
 }
 
 /**
- * 
+ *
  * @param {string} type
  * @param {Array} data
  * 'R' => 채팅방 'C' => 채널
  */
 export function savePinnedRooms({ userId = '', type = 'R', data } = {}) {
-  if(Array.isArray(data) === false) {
+  if (Array.isArray(data) === false) {
     return;
   }
   // 중복 제거(Set 변환시 중복 자동제거) 후에 설정값 저장

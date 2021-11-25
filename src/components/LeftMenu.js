@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import IconConxtMenu from '@COMMON/popup/IconConxtMenu';
 import * as common from '@/lib/common';
@@ -7,6 +7,7 @@ import { logoutRequest } from '@/modules/login';
 import {
   quit,
   openSubPop,
+  chageMainWinInfo,
   evalConnector,
   sendSubPop,
 } from '@/lib/deviceConnector';
@@ -24,6 +25,8 @@ import ChatIcon from '@/icons/svg/ChatList';
 import ChannelIcon from '@/icons/svg/ChannelList';
 import OrgchartIcon from '@/icons/svg/Orgchart';
 import NoteIcon from '@/icons/svg/note/Note';
+
+import { extensionAdd, setCurrentExtension } from '@/modules/extension';
 
 const handleUserConfig = data => {
   evalConnector({
@@ -44,102 +47,21 @@ const exntension = {
   isUse: true,
 };
 
-// const extensionList = [
-//   {
-//     title: 'Groupware',
-//     description: 'Groupware In Messenger',
-//     iconPath: '/gw/icon/path',
-//     version: 1,
-//     createDate: new Date(),
-//     updateDate: new Date(),
-//     category: 'app',
-//   },
-//   {
-//     title: 'Memo',
-//     description: 'Memo In Messenger',
-//     iconPath: '/gw/icon/path',
-//     version: 1,
-//     createDate: new Date(),
-//     updateDate: new Date(),
-//     category: 'app',
-//   },
-//   {
-//     title: 'Memo',
-//     description: 'Memo In Messenger',
-//     iconPath: '/gw/icon/path',
-//     version: 1,
-//     createDate: new Date(),
-//     updateDate: new Date(),
-//     category: 'app',
-//   },
-//   {
-//     title: 'Memo',
-//     description: 'Memo In Messenger',
-//     iconPath: '/gw/icon/path',
-//     version: 1,
-//     createDate: new Date(),
-//     updateDate: new Date(),
-//     category: 'app',
-//   },
-//   {
-//     title: 'Memo',
-//     description: 'Memo In Messenger',
-//     iconPath: '/gw/icon/path',
-//     version: 1,
-//     createDate: new Date(),
-//     updateDate: new Date(),
-//     category: 'app',
-//   },
-//   {
-//     title: 'Memo',
-//     description: 'Memo In Messenger',
-//     iconPath: '/gw/icon/path',
-//     version: 1,
-//     createDate: new Date(),
-//     updateDate: new Date(),
-//     category: 'app',
-//   },
-//   {
-//     title: 'Memo',
-//     description: 'Memo In Messenger',
-//     iconPath: '/gw/icon/path',
-//     version: 1,
-//     createDate: new Date(),
-//     updateDate: new Date(),
-//     category: 'app',
-//   },
-//   {
-//     title: 'Memo',
-//     description: 'Memo In Messenger',
-//     iconPath: '/gw/icon/path',
-//     version: 1,
-//     createDate: new Date(),
-//     updateDate: new Date(),
-//     category: 'app',
-//   },
-//   {
-//     title: 'Memo',
-//     description: 'Memo In Messenger',
-//     iconPath: '/gw/icon/path',
-//     version: 1,
-//     createDate: new Date(),
-//     updateDate: new Date(),
-//     category: 'app',
-//   },
-// ];
-
 const LeftMenu = ({ history }) => {
   const id = useSelector(({ login }) => login.id);
   const userInfo = useSelector(({ login }) => login.userInfo);
   const token = useSelector(({ login }) => login.token);
   const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
 
-  const extensionList = useSelector(({ extension }) => extension.extensions);
+  const extensionList = useSelector(
+    ({ extension }) => extension.extensions,
+    shallowEqual,
+  );
 
   const unreadNoteCnt = useNoteUnreadCount();
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
-  const [isExtensionUse, setIsExtensionUse] = useState(false);
+  const [isExtensionUse, setIsExtensionUse] = useState(true);
 
   const active = useSelector(
     ({ menu }) => menu.activeType,
@@ -197,6 +119,14 @@ const LeftMenu = ({ history }) => {
 
       evalConnector({
         method: 'on',
+        channel: 'onExtensionEvent',
+        callback: (event, data) => {
+          dispatch(extensionAdd(data));
+        },
+      });
+
+      evalConnector({
+        method: 'on',
         channel: 'onNotiConfigChange',
         callback: (event, data) => {
           setIsNoti(data.desktopNoti);
@@ -206,6 +136,10 @@ const LeftMenu = ({ history }) => {
 
     return () => {
       if (DEVICE_TYPE == 'd') {
+        evalConnector({
+          method: 'removeListener',
+          channel: 'onExtensionEvent',
+        });
         evalConnector({
           method: 'removeListener',
           channel: 'onNotiConfigChange',
@@ -304,6 +238,11 @@ const LeftMenu = ({ history }) => {
               active == 'contactlist' ? 'active' : '',
             ].join(' ')}
             onClick={e => {
+              chageMainWinInfo({
+                width: 450,
+                height: 650,
+                resizable: true,
+              });
               handleClickMenu('/client/main/contactlist');
             }}
             style={{ WebkitAppRegion: 'no-drag', cursor: 'pointer' }}
@@ -317,6 +256,11 @@ const LeftMenu = ({ history }) => {
             ' ',
           )}
           onClick={e => {
+            chageMainWinInfo({
+              width: 450,
+              height: 650,
+              resizable: true,
+            });
             handleClickMenu('/client/main/chatlist');
           }}
           style={{ position: 'relative', cursor: 'pointer' }}
@@ -331,6 +275,11 @@ const LeftMenu = ({ history }) => {
                 ' ',
               )}
               onClick={e => {
+                chageMainWinInfo({
+                  width: 450,
+                  height: 650,
+                  resizable: true,
+                });
                 handleClickMenu('/client/main/orgchart');
               }}
               style={{ cursor: 'pointer' }}
@@ -347,6 +296,11 @@ const LeftMenu = ({ history }) => {
               active == 'channellist' ? 'active' : '',
             ].join(' ')}
             onClick={e => {
+              chageMainWinInfo({
+                width: 450,
+                height: 650,
+                resizable: true,
+              });
               handleClickMenu('/client/main/channellist');
             }}
             style={{ position: 'relative', cursor: 'pointer' }}
@@ -364,6 +318,11 @@ const LeftMenu = ({ history }) => {
                 ' ',
               )}
               onClick={() => {
+                chageMainWinInfo({
+                  width: 450,
+                  height: 650,
+                  resizable: true,
+                });
                 handleClickMenu('/client/main/notelist');
               }}
               style={{ position: 'relative', cursor: 'pointer' }}
@@ -400,30 +359,27 @@ const LeftMenu = ({ history }) => {
                 >
                   <button
                     onClick={e => {
+                      if (extensionItem.type == 'V') {
+                        chageMainWinInfo({
+                          width: 450,
+                          height: 650,
+                          resizable: false,
+                        });
+                      } else {
+                        chageMainWinInfo({
+                          width: 450,
+                          height: 650,
+                          resizable: true,
+                        });
+                      }
+                      dispatch(setCurrentExtension(extensionItem));
                       handleClickMenu('/client/main/extension');
                     }}
                   >
-                    <svg
-                      height="28px"
-                      viewBox="0 0 48 48"
-                      width="28px"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="#fff"
-                    >
-                      <g id="Expanded">
-                        <g>
-                          <g>
-                            <path d="M42,48H28V35h-8v13H6V27c0-0.552,0.447-1,1-1s1,0.448,1,1v19h10V33h12v13h10V28c0-0.552,0.447-1,1-1s1,0.448,1,1V48z" />
-                          </g>
-                          <g>
-                            <path d="M47,27c-0.249,0-0.497-0.092-0.691-0.277L24,5.384L1.691,26.723c-0.399,0.381-1.032,0.368-1.414-0.031     c-0.382-0.399-0.367-1.032,0.031-1.414L24,2.616l23.691,22.661c0.398,0.382,0.413,1.015,0.031,1.414     C47.526,26.896,47.264,27,47,27z" />
-                          </g>
-                          <g>
-                            <path d="M39,15c-0.553,0-1-0.448-1-1V8h-6c-0.553,0-1-0.448-1-1s0.447-1,1-1h8v8C40,14.552,39.553,15,39,15z" />
-                          </g>
-                        </g>
-                      </g>
-                    </svg>
+                    <img
+                      src={extensionItem.iconPath}
+                      style={{ width: 28, height: 28 }}
+                    ></img>
                   </button>
                 </li>
               );

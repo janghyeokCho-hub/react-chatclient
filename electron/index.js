@@ -778,6 +778,9 @@ ipcMain.on('req-logout', (event, args) => {
   appDataEvt.reqLogout(event, args);
 });
 
+// 메인창 - 정보 변경
+ipcMain.on('change-mainwin-info', commonEvt.changeMainWindowSize);
+
 // 방 - BW 매핑정보
 ipcMain.on('set-room-win-map', commonEvt.setRoomWinMap);
 
