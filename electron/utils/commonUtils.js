@@ -260,11 +260,11 @@ export const getSubPopupBound = (parentBounds, subSize, option) => {
     x: parentOffsetX,
     y: parentOffsetY,
   };
-  const { x: screenOffsetX, width: screenWidth } =
-    screen.getDisplayNearestPoint({
-      x: parentOffsetX,
-      y: parentOffsetY,
-    }).workArea;
+  const display = screen.getDisplayNearestPoint({
+    x: parentOffsetX,
+    y: parentOffsetY,
+  });
+  const { x: screenOffsetX, width: screenWidth } = display.workArea;
 
   if (option == 'sticky') {
     retPos.x =
@@ -279,11 +279,12 @@ export const getSubPopupBound = (parentBounds, subSize, option) => {
     retPos.y = parentOffsetY + (parentHeight / 2 - subHeight / 2);
   }
 
+  // subpop의 범위가 화면밖을 벗어나지 않도록 BrowserWindow 크기 보정
   retPos = {
-    x: parseInt(retPos.x),
-    y: parseInt(retPos.y),
-    width: parseInt(retPos.width),
-    height: parseInt(retPos.height),
+    x: Math.max(display.workArea.x, parseInt(retPos.x)),
+    y: Math.max(display.workArea.y, parseInt(retPos.y)),
+    width: Math.min(display.workArea.width, parseInt(retPos.width)),
+    height: Math.min(display.workArea.height, parseInt(retPos.height)),
   };
 
   return retPos;
