@@ -238,11 +238,12 @@ const LeftMenu = ({ history }) => {
               active == 'contactlist' ? 'active' : '',
             ].join(' ')}
             onClick={e => {
-              chageMainWinInfo({
-                width: 450,
-                height: 650,
-                resizable: true,
-              });
+              if (DEVICE_TYPE == 'd')
+                chageMainWinInfo({
+                  width: 450,
+                  height: 650,
+                  resizable: true,
+                });
               handleClickMenu('/client/main/contactlist');
             }}
             style={{ WebkitAppRegion: 'no-drag', cursor: 'pointer' }}
@@ -256,11 +257,12 @@ const LeftMenu = ({ history }) => {
             ' ',
           )}
           onClick={e => {
-            chageMainWinInfo({
-              width: 450,
-              height: 650,
-              resizable: true,
-            });
+            if (DEVICE_TYPE == 'd')
+              chageMainWinInfo({
+                width: 450,
+                height: 650,
+                resizable: true,
+              });
             handleClickMenu('/client/main/chatlist');
           }}
           style={{ position: 'relative', cursor: 'pointer' }}
@@ -275,11 +277,12 @@ const LeftMenu = ({ history }) => {
                 ' ',
               )}
               onClick={e => {
-                chageMainWinInfo({
-                  width: 450,
-                  height: 650,
-                  resizable: true,
-                });
+                if (DEVICE_TYPE == 'd')
+                  chageMainWinInfo({
+                    width: 450,
+                    height: 650,
+                    resizable: true,
+                  });
                 handleClickMenu('/client/main/orgchart');
               }}
               style={{ cursor: 'pointer' }}
@@ -296,11 +299,12 @@ const LeftMenu = ({ history }) => {
               active == 'channellist' ? 'active' : '',
             ].join(' ')}
             onClick={e => {
-              chageMainWinInfo({
-                width: 450,
-                height: 650,
-                resizable: true,
-              });
+              if (DEVICE_TYPE == 'd')
+                chageMainWinInfo({
+                  width: 450,
+                  height: 650,
+                  resizable: true,
+                });
               handleClickMenu('/client/main/channellist');
             }}
             style={{ position: 'relative', cursor: 'pointer' }}
@@ -318,11 +322,12 @@ const LeftMenu = ({ history }) => {
                 ' ',
               )}
               onClick={() => {
-                chageMainWinInfo({
-                  width: 450,
-                  height: 650,
-                  resizable: true,
-                });
+                if (DEVICE_TYPE == 'd')
+                  chageMainWinInfo({
+                    width: 450,
+                    height: 650,
+                    resizable: true,
+                  });
                 handleClickMenu('/client/main/notelist');
               }}
               style={{ position: 'relative', cursor: 'pointer' }}
@@ -336,14 +341,16 @@ const LeftMenu = ({ history }) => {
           <ExternalLeft paramObj={userInfo}></ExternalLeft>
         )}
       </ul>
-      <div
-        style={{
-          width: '80%',
-          borderTop: 'solid 2.5px #fff',
-          margin: 'auto',
-          marginBottom: 5,
-        }}
-      ></div>
+      {DEVICE_TYPE == 'd' && isExtensionUse && (
+        <div
+          style={{
+            width: '80%',
+            borderTop: 'solid 2.5px #fff',
+            margin: 'auto',
+            marginBottom: 5,
+          }}
+        ></div>
+      )}
       {DEVICE_TYPE == 'd' && isExtensionUse && (
         <div style={{ overflow: 'hidden scroll' }}>
           <ul className="menu-ul" style={{ height: 130 }}>
