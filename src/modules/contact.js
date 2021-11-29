@@ -370,8 +370,14 @@ const contact = handleActions(
               contact => contact.folderType == folderType,
             );
 
+            // 즐겨찾기 데이터와 중복이 없을 경우에만 push
             if (!parent.sub) {
               parent.sub = [userInfo];
+            } else {
+              const duplicatedItemIdx = parent?.sub?.findIndex(item => item.id === userInfo.id);
+              if (duplicatedItemIdx === -1) {
+                parent.sub.push(userInfo);
+              }
             }
 
             if (folderType == 'F' && orgFolderType == 'C') {
