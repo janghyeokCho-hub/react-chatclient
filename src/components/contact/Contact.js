@@ -41,7 +41,8 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
               subItem.isContact && subItem.isContact != ''
                 ? subItem.isContact
                 : contact.folderType,
-              contact?.folderID
+              // 다른연락처 > 즐겨찾기 이동시에만 folderID 파라미터 추가
+              `${contact?.folderID}` === '2' && contact?.folderID
             );
           },
           name: covi.getDic('AddFavorite'),
@@ -67,7 +68,12 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
           code: 'deleteFavorite',
           isline: false,
           onClick: () => {
-            deleteContact(dispatch, subItem.id, contact.folderID, 'F');
+            /**
+             * 2021.11.29
+             * 부서탭에서 '즐겨찾기 삭제'시 folderID 파라미터가 부서코드로 넘어가면 삭제오류 발생
+             * => folderID 파라미터 "1"로 고정
+             */
+            deleteContact(dispatch, subItem.id, "1", 'F');
           },
           name: covi.getDic('DelFavorite'),
         });

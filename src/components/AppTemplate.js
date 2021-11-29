@@ -62,12 +62,12 @@ const AppTemplate = () => {
           otherContacts.sub.map(data => {
             if (userInfo.id == data.id) {
               // 만약 다른 연락처에 사용자가 있다면....
-              addFavorite(dispatch, userInfo, otherContacts.folderType);
+              addFavorite(dispatch, userInfo, otherContacts.folderType, "2");
               flag = true;
             }
           });
           if (!flag) {
-            addFavorite(dispatch, userInfo, '');
+            addFavorite(dispatch, userInfo, '', "2");
           }
         } else {
           addFavorite(dispatch, userInfo, '');
