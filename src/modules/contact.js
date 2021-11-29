@@ -370,8 +370,9 @@ const contact = handleActions(
               contact => contact.folderType == folderType,
             );
 
-            if (!parent.sub) parent.sub = [];
-            parent.sub.push(userInfo);
+            if (!parent.sub) {
+              parent.sub = [userInfo];
+            }
 
             if (folderType == 'F' && orgFolderType == 'C') {
               const contact = draft.contacts.find(
