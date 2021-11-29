@@ -64,7 +64,7 @@ export default function useMemberInfo() {
             // Step 3 - redux store에 memberInfo.name이 없을 경우, 서버로 ajax 요청
             try {
                 // const tmp = await readProfileInfo(targetId);
-                const tmp = await getProfileInfo(targetId);
+                const tmp = await getProfileInfo(targetId, { useCache: true });
                 if(!tmp) {
                     return null;
                 }
