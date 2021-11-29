@@ -41,6 +41,7 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
               subItem.isContact && subItem.isContact != ''
                 ? subItem.isContact
                 : contact.folderType,
+              contact?.folderID
             );
           },
           name: covi.getDic('AddFavorite'),
