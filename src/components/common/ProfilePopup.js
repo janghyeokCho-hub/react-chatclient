@@ -67,7 +67,7 @@ const ProfilePopup = ({ userInfo }) => {
 
   const handleFavorit = () => {
     if (userInfo.isFavorite === 'Y') {
-      if (DEVICE_TYPE === 'd' && isMainWindow() === false) {
+      if (DEVICE_TYPE === 'd') {
         sendMain('sync-favorite', {
           op: 'del',
           userId: userInfo.id,
@@ -78,30 +78,11 @@ const ProfilePopup = ({ userInfo }) => {
       setIsFavorite('N');
       userInfo.isFavorite = 'N';
     } else if (userInfo.isFavorite === 'N') {
-      if (DEVICE_TYPE === 'd' && isMainWindow() === false) {
+      if (DEVICE_TYPE === 'd') {
         sendMain('sync-favorite', {
           op: 'add',
           userInfo: userInfo,
         });
-      } else {
-        const otherContacts =
-          contact && contact.find(_contact => _contact.folderID === '2');
-        // 다른 연락처에 있는지 없는지 확인
-        if (otherContacts?.sub && otherContacts.sub.length > 0) {
-          let flag = false;
-          otherContacts.sub.map(data => {
-            if (userInfo.id == data.id) {
-              // 만약 다른 연락처에 사용자가 있다면....
-              addFavorite(dispatch, userInfo, otherContacts.folderType);
-              flag = true;
-            }
-          });
-          if (!flag) {
-            addFavorite(dispatch, userInfo, '');
-          }
-        } else {
-          addFavorite(dispatch, userInfo, '');
-        }
       }
       setIsFavorite('Y');
       userInfo.isFavorite = 'Y';
