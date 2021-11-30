@@ -6,7 +6,14 @@ const cache = new LRU({
   maxAge: 1000 * 60 * 60 // 60m (1h)
 });
 
-export const getProfileInfo = async targetId => {
+const defaultOpts = {
+  useCache: false
+};
+
+export const getProfileInfo = async (targetId, { useCache } = defaultOpts) => {
+  if (useCache !== true) {
+    return managesvr('get', `/profile/${targetId}`);
+  }
   const cachedData = cache.get(targetId);
   if (cachedData) {
     // Cache hit
