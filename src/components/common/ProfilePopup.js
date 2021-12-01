@@ -68,23 +68,17 @@ const ProfilePopup = ({ userInfo }) => {
 
   const handleFavorit = () => {
     if (userInfo.isFavorite === 'Y') {
-      if (DEVICE_TYPE === 'd') {
-        syncFavorite({
-          op: 'del',
-          userId: userInfo.id,
-        });
-      } else {
-        deleteFavorite(dispatch, userInfo.id);
-      }
+      syncFavorite({
+        op: 'del',
+        userId: userInfo.id,
+      });
       setIsFavorite('N');
       userInfo.isFavorite = 'N';
     } else if (userInfo.isFavorite === 'N') {
-      if (DEVICE_TYPE === 'd') {
-        syncFavorite({
-          op: 'add',
-          userInfo: userInfo,
-        });
-      }
+      syncFavorite({
+        op: 'add',
+        userInfo: userInfo,
+      });
       setIsFavorite('Y');
       userInfo.isFavorite = 'Y';
     }
