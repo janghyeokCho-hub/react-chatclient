@@ -14,7 +14,7 @@ import { openChatRoomView } from '@/lib/roomUtil';
 import { openPopup, getDictionary, openLayer } from '@/lib/common';
 import GroupItem from '@C/contact/GroupItem';
 import AddContact from '@C/contact/AddContact';
-import { sendMain } from '@/lib/deviceConnector';
+import { useSyncFavorite } from '@/hooks/useSyncFavorite';
 
 const ContactItem = React.memo(({ contact, subItem, isMine }) => {
   const viewType = useSelector(({ room }) => room.viewType);
@@ -26,7 +26,7 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
   const myInfo = useSelector(({ login }) => login.userInfo);
 
   const dispatch = useDispatch();
-
+  const { syncFavorite } = useSyncFavorite();
   const menus = useMemo(() => {
     const returnMenu = [];
 
@@ -36,7 +36,7 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
           code: 'addFavorite',
           isline: false,
           onClick: () => {
-            sendMain('sync-favorite', {
+            syncFavorite({
               op: 'add',
               userInfo: subItem,
               folderType: subItem.isContact && subItem.isContact != ''

@@ -1,3 +1,4 @@
+// orgchartitem
 import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { addFavorite, addContact } from '@/lib/contactUtil';
@@ -5,7 +6,7 @@ import RightConxtMenu from '@COMMON/popup/RightConxtMenu';
 import UserInfoBox from '@COMMON/UserInfoBox';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { openPopup } from '@/lib/common';
-import { sendMain } from '@/lib/deviceConnector';
+import { useSyncFavorite } from '@/hooks/useSyncFavorite';
 
 const OrgChartItem = ({ result }) => {
   const contacts = useSelector(({ contact }) => contact.contacts);
@@ -18,6 +19,7 @@ const OrgChartItem = ({ result }) => {
   const myInfo = useSelector(({ login }) => login.userInfo);
 
   const dispatch = useDispatch();
+  const { syncFavorite } = useSyncFavorite();
 
   const menus = useMemo(() => {
     const returnMenu = [];
@@ -56,7 +58,7 @@ const OrgChartItem = ({ result }) => {
           code: 'addFavorite',
           isline: false,
           onClick: () => {
-            sendMain('sync-favorite', {
+            syncFavorite({
               op: 'add',
               userInfo: result,
               folderType: orgType
