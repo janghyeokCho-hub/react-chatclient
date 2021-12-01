@@ -5,6 +5,7 @@ import RightConxtMenu from '@COMMON/popup/RightConxtMenu';
 import UserInfoBox from '@COMMON/UserInfoBox';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { openPopup } from '@/lib/common';
+import { sendMain } from '@/lib/deviceConnector';
 
 const OrgChartItem = ({ result }) => {
   const contacts = useSelector(({ contact }) => contact.contacts);
@@ -55,7 +56,11 @@ const OrgChartItem = ({ result }) => {
           code: 'addFavorite',
           isline: false,
           onClick: () => {
-            addFavorite(dispatch, result, orgType);
+            sendMain('sync-favorite', {
+              op: 'add',
+              userInfo: result,
+              folderType: orgType
+            });
           },
           name: covi.getDic('AddFavorite'),
         });

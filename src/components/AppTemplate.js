@@ -67,10 +67,10 @@ const AppTemplate = () => {
             }
           });
           if (!flag) {
-            addFavorite(dispatch, userInfo, '', "2");
+            addFavorite(dispatch, userInfo, args?.folderType || '', "2");
           }
         } else {
-          addFavorite(dispatch, userInfo, '');
+          addFavorite(dispatch, userInfo, args?.folderType || '');
         }
       } else if (args.op === 'del') {
         deleteFavorite(dispatch, args.userId);
