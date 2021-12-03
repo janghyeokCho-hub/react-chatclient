@@ -14,6 +14,7 @@ import { openChatRoomView } from '@/lib/roomUtil';
 import { openPopup, getDictionary, openLayer } from '@/lib/common';
 import GroupItem from '@C/contact/GroupItem';
 import AddContact from '@C/contact/AddContact';
+import { useSyncFavorite } from '@/hooks/useSyncFavorite';
 
 const ContactItem = React.memo(({ contact, subItem, isMine }) => {
   const viewType = useSelector(({ room }) => room.viewType);
@@ -25,7 +26,7 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
   const myInfo = useSelector(({ login }) => login.userInfo);
 
   const dispatch = useDispatch();
-
+  const { syncFavorite } = useSyncFavorite();
   const menus = useMemo(() => {
     const returnMenu = [];
 
@@ -35,15 +36,13 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
           code: 'addFavorite',
           isline: false,
           onClick: () => {
-            addFavorite(
-              dispatch,
-              subItem,
-              subItem.isContact && subItem.isContact != ''
-                ? subItem.isContact
-                : contact.folderType,
-              // 다른연락처 > 즐겨찾기 이동시에만 folderID 파라미터 추가
-              `${contact?.folderID}` === '2' && contact?.folderID
-            );
+            syncFavorite({
+              op: 'add',
+              userInfo: subItem,
+              folderType: subItem.isContact && subItem.isContact != ''
+              ? subItem.isContact
+              : contact.folderType,
+            });
           },
           name: covi.getDic('AddFavorite'),
         });
