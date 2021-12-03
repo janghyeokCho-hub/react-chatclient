@@ -435,13 +435,11 @@ const UserSetting = ({ history }) => {
   // 프로필이미지 1시간 단위로 캐싱
   const { timestamp } = useTimestamp({ option: 'yMdh' });
   const menuItems = useMemo(() => {
-    const firstItem = myInfo.isExtUser
-      ? []
-      : [{ name: covi.getDic('Contact'), value: 'contactlist' }];
-    return firstItem.concat([
-      { name: covi.getDic('Chat'), value: 'chatlist' },
-      { name: covi.getDic('Channel'), value: 'channellist' },
-    ]);
+    const firstItem = [];
+    myInfo.isExtUser !== 'Y' && firstItem.push({ name: covi.getDic('Contact'), value: 'contactlist' }); // 외부사용자는 내 대화상대를 시작메뉴로 선택 불가
+    firstItem.push({ name: covi.getDic('Chat'), value: 'chatlist' });
+    getConfig('UseChannel') === 'Y' && firstItem.push({ name: covi.getDic('Channel'), value: 'channellist' }); // 채널 미사용 사이트는 조직도를 시작메뉴로 선택 불가
+    return firstItem;
   }, [myInfo]);
 
   const themeColor = covi?.config?.ClientThemeList?.find(
