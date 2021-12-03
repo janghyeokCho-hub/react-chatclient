@@ -15,7 +15,7 @@ import {
   getDictionary,
 } from '@/lib/common';
 import useTyping from '@/hooks/useTyping';
-import { sendMain, isMainWindow } from '@/lib/deviceConnector';
+import { useSyncFavorite } from '@/hooks/useSyncFavorite';
 
 const ProfilePopup = ({ userInfo }) => {
   const { viewType, rooms, selectId, myInfo, contact } = useSelector(
@@ -33,6 +33,7 @@ const ProfilePopup = ({ userInfo }) => {
   const dispatch = useDispatch();
 
   const makeCall = getConfig('makeCall', null);
+  const { syncFavorite } = useSyncFavorite();
 
   const getAbsenceInfo = useMemo(() => {
     try {
@@ -67,23 +68,17 @@ const ProfilePopup = ({ userInfo }) => {
 
   const handleFavorit = () => {
     if (userInfo.isFavorite === 'Y') {
-      if (DEVICE_TYPE === 'd') {
-        sendMain('sync-favorite', {
-          op: 'del',
-          userId: userInfo.id,
-        });
-      } else {
-        deleteFavorite(dispatch, userInfo.id);
-      }
+      syncFavorite({
+        op: 'del',
+        userId: userInfo.id,
+      });
       setIsFavorite('N');
       userInfo.isFavorite = 'N';
     } else if (userInfo.isFavorite === 'N') {
-      if (DEVICE_TYPE === 'd') {
-        sendMain('sync-favorite', {
-          op: 'add',
-          userInfo: userInfo,
-        });
-      }
+      syncFavorite({
+        op: 'add',
+        userInfo: userInfo,
+      });
       setIsFavorite('Y');
       userInfo.isFavorite = 'Y';
     }

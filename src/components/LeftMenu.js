@@ -44,7 +44,7 @@ const handleUserConfig = data => {
 };
 
 const exntension = {
-  isUse: true,
+  isUse: false,
 };
 
 const LeftMenu = ({ history }) => {
@@ -61,7 +61,7 @@ const LeftMenu = ({ history }) => {
   const unreadNoteCnt = useNoteUnreadCount();
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
-  const [isExtensionUse, setIsExtensionUse] = useState(true);
+  const [isExtensionUse, setIsExtensionUse] = useState(false);
 
   const active = useSelector(
     ({ menu }) => menu.activeType,
@@ -336,6 +336,7 @@ const LeftMenu = ({ history }) => {
           <ExternalLeft paramObj={userInfo}></ExternalLeft>
         )}
       </ul>
+      {DEVICE_TYPE == 'd' && isExtensionUse && (
       <div
         style={{
           width: '80%',
@@ -343,9 +344,9 @@ const LeftMenu = ({ history }) => {
           margin: 'auto',
           marginBottom: 5,
         }}
-      ></div>
+      ></div>)}
       {DEVICE_TYPE == 'd' && isExtensionUse && (
-        <div style={{ overflow: 'hidden scroll' }}>
+        <div style={{ overflow: 'hidden' }}>
           <ul className="menu-ul" style={{ height: 130 }}>
             {extensionList.map(extensionItem => {
               return (
