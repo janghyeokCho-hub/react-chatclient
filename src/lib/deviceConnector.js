@@ -1002,6 +1002,9 @@ export const focusWin = () => {
 };
 
 export const chageMainWinInfo = args => {
+  if (DEVICE_TYPE === 'b') {
+    return;
+  }
   const emitter = getEmitter();
   emitter.send('change-mainwin-info', args);
 };
