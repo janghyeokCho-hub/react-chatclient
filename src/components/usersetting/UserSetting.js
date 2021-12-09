@@ -146,8 +146,8 @@ const UserSetting = ({ history }) => {
         confFirstMenu
           ? confFirstMenu
           : myInfo.isExtUser
-          ? 'channellist'
-          : 'contactlist',
+            ? 'channellist'
+            : 'contactlist',
       );
       setDesktopNoti(userConfig.get('desktopNoti'));
       setShowNotiContent(userConfig.get('showNotiContent'));
@@ -212,7 +212,7 @@ const UserSetting = ({ history }) => {
           {
             type: 'Alert',
             message: covi.getDic('Msg_ImageExtError'),
-            callback: () => {},
+            callback: () => { },
           },
           dispatch,
         );
@@ -265,7 +265,7 @@ const UserSetting = ({ history }) => {
           {
             type: 'Alert',
             message: covi.getDic('Msg_UserInfoModify'),
-            callback: () => {},
+            callback: () => { },
           },
           dispatch,
         );
@@ -279,7 +279,7 @@ const UserSetting = ({ history }) => {
         {
           type: 'Alert',
           message: covi.getDic('Msg_MissingItems'),
-          callback: () => {},
+          callback: () => { },
         },
         dispatch,
       );
@@ -290,7 +290,7 @@ const UserSetting = ({ history }) => {
         {
           type: 'Alert',
           message: covi.getDic('Msg_InputNewPasswordConfirm'),
-          callback: () => {},
+          callback: () => { },
         },
         dispatch,
       );
@@ -309,7 +309,7 @@ const UserSetting = ({ history }) => {
           {
             type: 'Alert',
             message: covi.getDic('Msg_ModifySuccess'),
-            callback: () => {},
+            callback: () => { },
           },
           dispatch,
         );
@@ -322,7 +322,7 @@ const UserSetting = ({ history }) => {
           {
             type: 'Alert',
             message: covi.getDic('Msg_WrongPassword'),
-            callback: () => {},
+            callback: () => { },
           },
           dispatch,
         );
@@ -447,7 +447,7 @@ const UserSetting = ({ history }) => {
   const themeColor = covi?.config?.ClientThemeList?.find(
     t => t?.name === getInitTheme(),
   );
-  
+
   const photoPath = useMemo(() => {
     let p = '';
     try {
@@ -463,7 +463,7 @@ const UserSetting = ({ history }) => {
         p = myInfo.photoPath;
       }
     }
-    return decodeURIComponent(p.toString());    
+    return decodeURIComponent(p.toString());
   }, [photoPath]);
 
   return (
@@ -741,11 +741,10 @@ const UserSetting = ({ history }) => {
           style={{ height: '100%' }}
         >
           <Scrollbars
-            autoHide={true}
-            renderTrackVertical={() => <div style={{ display: 'none' }} />}
+            autoHide={false}
             className="ChatConfigCon"
           >
-            <ul>
+            <ul style={{ marginBottom: '42px' }}>
               {DEVICE_TYPE == 'd' && (
                 <>
                   <li className="ChatConfig-list">
