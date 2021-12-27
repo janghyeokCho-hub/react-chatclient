@@ -180,8 +180,9 @@ const ChatBotMessageBox = ({
                       {botInfoType == 'BUTTON' &&
                         botInfoValue.map(item => {
                           return (
-                            <li>
+                            <li className="system-talk">
                               <button
+                                className="system-btn"
                                 onClick={() => {
                                   messageApi.sendChatBotKeyMessage(botkey, {
                                     context: item.displayName,
@@ -190,15 +191,6 @@ const ChatBotMessageBox = ({
                                     tempId: 0,
                                     messageType: 'N',
                                   });
-                                }}
-                                style={{
-                                  marginTop: 10,
-                                  background: '#12cfee',
-                                  padding: 10,
-                                  borderRadius: 5,
-                                  color: '#fff',
-                                  fontWeight: 'bold',
-                                  width: '100%',
                                 }}
                               >
                                 {item.displayName}
