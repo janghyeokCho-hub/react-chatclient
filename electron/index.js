@@ -297,6 +297,22 @@ const appReady = async () => {
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   }
+
+  // 설정데이터가 초기화되어도 auto-launch 활성여부는 앱 실행시점에 다시 업데이트함
+  const autoLaunchEnabled = APP_SECURITY_SETTING.get('autoLaunch');
+  if (autoLaunchEnabled !== true) {
+    logger.info('autoLaunch config: disabled');
+    const autoLaunchSetting = new AutoLaunch({
+      name: app.getName(),
+      path: app.getPath('exe'),
+    });
+    if (autoLaunchSetting.isEnabled()) {
+      APP_SECURITY_SETTING.set('autoLaunch', true);
+      logger.info('AutoLaunch is already enabled. Update config "autoLaunch"');
+    }
+  } else {
+    logger.info('autoLaunch config: enabled');
+  }
 };
 
 const lockScreenEvt = () => {
