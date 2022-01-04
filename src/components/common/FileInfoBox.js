@@ -12,7 +12,7 @@ const FileInfoBox = ({ tempId, fileInfo, onDelete }) => {
       // thumbNail.current.width = fileInfoObj.width;
       // thumbNail.current.height = fileInfoObj.height;
     });
-  }, []);
+  }, [fileInfo]);
 
   return (
     <li>
