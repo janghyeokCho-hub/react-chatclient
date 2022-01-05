@@ -1165,7 +1165,7 @@ export function openNote({ type, viewType, noteId }) {
 
 export const logRenderer = msg => {
   try {
-    getRemote().send('log-info', msg);
+    getEmitter().send('log-info', msg);
   } catch (e) {
     console.log(e);
   }

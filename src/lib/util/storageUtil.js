@@ -1,3 +1,5 @@
+import { logRenderer } from '@/lib/deviceConnector';
+
 let db = null;
 
 const DATABASE = 'EUMTALK';
@@ -10,16 +12,21 @@ export const createStorage = () => {
 
   // DB 생성 성공
   req.onsuccess = e => {
+    console.log('IndexedDB OnSuccess', req.result);
+    logRenderer('IndexedDB OnSuccess' + JSON.stringify(req.result));
     db = req.result;
   };
   // DB 생성 오류
   req.onerror = e => {
-    console.error('indexedDB : ', e.target.errorCode);
+    console.error('IndexedDB OnError : ', e);
+    logRenderer('IndexedDB OnError' + JSON.stringify(e));
     db = null;
   };
 
   // DB 마그레이션 - Version 상승 또는 새로만들어질때만 실행
   req.onupgradeneeded = e => {
+    console.log('IndexedDB OnUpgradeNeeded');
+    logRenderer('IndexedDB OnUpgradeNeeded');
     db = req.result;
 
     if (!db.objectStoreNames.contains('files')) {

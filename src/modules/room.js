@@ -13,6 +13,7 @@ import {
   evalConnector,
   resetParentUnreadCount,
   isMainWindow,
+  logRenderer
 } from '@/lib/deviceConnector';
 import { startLoading, finishLoading } from '@/modules/loading';
 import { changeOpenChannel } from '@/modules/channel'; // 채널
@@ -216,6 +217,8 @@ function createGetRoomInfoSaga() {
         if (data.room) {
           let background = yield call(roomID => {
             return new Promise((resolve, reject) => {
+              console.log('Get Backgrounds');
+              logRenderer('Get Backgrounds');
               get('backgrounds', roomID, result => {
                 if (result.status == 'SUCCESS') {
                   resolve(result.data.background);

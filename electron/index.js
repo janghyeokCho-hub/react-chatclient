@@ -1043,7 +1043,7 @@ ipcMain.on('relaunch-app', (e, args) => {
 });
 
 ipcMain.on('log-info', (event, args) => {
-  logger.info(args.message);
+  logger.info(args);
   event.returnValue = '';
 });
 
