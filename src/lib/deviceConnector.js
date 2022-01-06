@@ -133,7 +133,8 @@ export const newExtensionWindow = (winName, id, openURL) => {
           nodeIntegration: true,
           contextIsolation: false,
           enableRemoteModule: true,
-          nodeIntegrationInSubFrames: true,
+          grationInSubFrames: true,
+          webviewTag: true,
         },
       });
 
@@ -277,9 +278,11 @@ export const newChatRoom = (winName, id, openURL) => {
         frame: false,
         webPreferences: {
           nodeIntegration: true,
+          gration: true,
           contextIsolation: false,
           enableRemoteModule: true,
           nodeIntegrationInSubFrames: true,
+          webviewTag: true,
         },
         // show: false,
       });
@@ -326,7 +329,7 @@ const bindChatRoomDefaultEvent = (id, roomObj, isChannel) => {
   const parentWin = remote.BrowserWindow.fromId(1);
 
   emitter.send('set-room-win-map', { roomID: id, winID: roomObj.id });
-  const APP_SETTING = remote.getGlobal('APP_SECURITY_SETTING');
+  const APP_SECURITY_SETTING = remote.getGlobal('APP_SECURITY_SETTING');
 
   // 이벤트 핸들러에 debounce 적용
   const debounceTimer = createTakeLatestTimer(100);
@@ -358,7 +361,7 @@ const bindChatRoomDefaultEvent = (id, roomObj, isChannel) => {
          */
         if (latestBounds) {
           const settingKey = isChannel ? `channel/${rId}` : `chatroom/${rId}`;
-          APP_SETTING.set(settingKey, {
+          APP_SECURITY_SETTING.set(settingKey, {
             ...latestBounds,
             display: latestDisplay,
           });
@@ -480,6 +483,26 @@ export const getMakeData = () => {
 export const mappingChatRoomEvent = roomID => {
   const remote = getRemote();
   bindChatRoomDefaultEvent(roomID, remote.getCurrentWindow(), false);
+};
+
+export const getExtension = () => {
+  const remote = getRemote();
+  const EXTENSION_INFO = remote.getGlobal('EXTENSION_INFO');
+
+  if (EXTENSION_INFO) {
+    return EXTENSION_INFO.get('installList');
+  }
+
+  return null;
+};
+
+export const installExtension = extensionInfo => {
+  const remote = getRemote();
+  const EXTENSION_INFO = remote.getGlobal('EXTENSION_INFO');
+
+  if (EXTENSION_INFO) {
+    EXTENSION_INFO.append('installList', extensionInfo);
+  }
 };
 
 /*
@@ -623,6 +646,7 @@ export const openLinkNative = link => {
       contextIsolation: false,
       enableRemoteModule: true,
       nodeIntegrationInSubFrames: true,
+      webviewTag: true,
     },
     show: false,
   });
@@ -1026,7 +1050,6 @@ export const newChannel = (winName, id, openURL) => {
 
       if (roomInfo && roomInfo[0]) {
         const bounds = getInitialBounds(roomInfo[0], defaultSize, remote);
-        // APP_SETTING에 저장된 bounds가 있는 경우
         if (!!bounds) {
           initial = {
             ...bounds,
@@ -1070,6 +1093,7 @@ export const newChannel = (winName, id, openURL) => {
           contextIsolation: false,
           enableRemoteModule: true,
           nodeIntegrationInSubFrames: true,
+          webviewTag: true,
         },
       });
 

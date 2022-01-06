@@ -4,6 +4,7 @@ import produce from 'immer';
 
 const INIT = 'extension/INIT';
 
+const SET = 'extension/SET';
 const ADD = 'extension/ADD';
 const DELETE = 'extension/DELETE';
 const UPDATE = 'extension/UPDATE';
@@ -12,6 +13,7 @@ const SET_CURRENT_EXTENSION = 'extension/current/SET';
 
 export const extensionInit = createAction(INIT);
 
+export const extensionSet = createAction(SET);
 export const extensionAdd = createAction(ADD);
 export const extensionDelete = createAction(DELETE);
 export const extensionUpdate = createAction(UPDATE);
@@ -39,6 +41,11 @@ const extension = handleActions(
     [INIT]: (state, action) => ({
       ...initialState,
     }),
+    [SET]: (state, action) => {
+      return produce(state, draft => {
+        draft.extensions = action.payload;
+      });
+    },
     [ADD]: (state, action) => {
       return produce(state, draft => {
         draft.extensions.push(action.payload);

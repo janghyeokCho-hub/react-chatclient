@@ -111,6 +111,26 @@ class SecureConfigLoader {
     }
   };
 
+  append = (key, value) => {
+    const tempValue = configSecure.search(this.config, key);
+
+    if (tempValue === undefined) return;
+
+    configSecure.remove(this.config, key)();
+    configSecure.sync(
+      this.file,
+      this.AESUtil.encrypt(JSON.stringify(this.config)),
+    );
+
+    tempValue.push(value);
+
+    configSecure.set(this.config, key)(tempValue);
+    configSecure.sync(
+      this.file,
+      this.AESUtil.encrypt(JSON.stringify(this.config)),
+    );
+  };
+
   getDic = (key, defaultValue) => {
     const dic = this.config && this.config.dic;
     if (dic) {

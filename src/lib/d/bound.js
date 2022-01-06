@@ -3,15 +3,12 @@ import { deepEqual } from '../util/objectUtil';
 
 export const getInitialBounds = (boundKey, defaultSize, _remote) => {
   try {
-    // electron main thread     =>  remote.getGlobal undefined
-    // eletron renderer thread  =>  global.APP_SETTING undefined
-
     const _screen = _remote?.screen ? _remote.screen : screen;
-    const APP_SETTING = _remote?.getGlobal
+    const APP_SECURITY_SETTING = _remote?.getGlobal
       ? _remote.getGlobal('APP_SECURITY_SETTING')
       : global.APP_SECURITY_SETTING;
 
-    const initialBounds = APP_SETTING.get(boundKey);
+    const initialBounds = APP_SECURITY_SETTING.get(boundKey);
     if (initialBounds) {
       const targetScreen = _screen.getDisplayMatching(initialBounds);
       const { x, y, width, height, display } = initialBounds;

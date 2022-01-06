@@ -9,7 +9,6 @@ import {
 } from 'electron';
 import path from 'path';
 import url from 'url';
-import qs from 'querystring';
 
 import exportProps from './config/exportProps';
 import * as socketEvt from './event/socket';
@@ -76,9 +75,10 @@ global.NOTE_WIN_MAP = {};
 global.APP_SECURITY_SETTING = null;
 global.SERVER_SECURITY_SETTING = null;
 global.USER_SETTING = null;
-
 global.CUSTOM_ALARM = false;
+
 /********** GLOBAL VARIABLE **********/
+global.EXTENSION_INFO = null;
 
 /********** SERVER VARIABLE *********/
 
@@ -139,6 +139,26 @@ const appReady = async () => {
   removeExistFile('app.setting.json');
   removeExistFile('server.setting.json');
 
+  // 익스텐션 정보 생성 또는 로드
+  EXTENSION_INFO = getSecureConfig('extension.eumsecure');
+
+  // example extension info
+  EXTENSION_INFO.set('installList', [
+    {
+      extensionId: 1,
+      title: '그룹웨어',
+      description: '메신저에서 그룹웨어를 사용해보세요',
+      type: 'I',
+      downloadURL: 'http://192.168.11.126:8080',
+      photoPath: 'http://192.168.11.80/storage/no_image.jpg',
+      createDate: new Date(),
+      updateDate: new Date(),
+      owner: 'ldh',
+      version: '1.0.0',
+      iconPath: 'http://192.168.11.80/storage/extension/3.svg',
+    },
+  ]);
+
   // 암호화 세팅 파일 생성 (또는 읽어 오기)
   APP_SECURITY_SETTING = getSecureConfig('app.setting.eumsecure');
 
@@ -178,7 +198,6 @@ const appReady = async () => {
           if (data.status == 'SUCCESS') {
             logger.info('server config load success');
             SERVER_SECURITY_SETTING.setBulk(data.result);
-            // app_setting에 설정되지 않은 내용들 server_config의 default config로 초기화
             if (data.result.config) initializeDefaultConfig(data.result.config);
           } else {
             logger.info('server config load failure');
@@ -475,6 +494,7 @@ const createWindow = async (isLoading, domainInfo) => {
       contextIsolation: false,
       enableRemoteModule: true,
       nodeIntegrationInSubFrames: true,
+      webviewTag: true,
     },
     frame: false,
     show: false,
@@ -494,6 +514,8 @@ const createWindow = async (isLoading, domainInfo) => {
       `,
       true,
     );
+    win.webContents.userAgent =
+      'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Mobile Safari/537.36';
     // electron 5.x 부터 loadFile의 Promise 지원.
     //Session token remove의 순서 보장을 위해, onLoad에서 분리.
   } else {

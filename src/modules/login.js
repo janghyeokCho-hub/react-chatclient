@@ -14,6 +14,7 @@ import {
   closeSocket,
   syncAppData,
   getEmitter,
+  getExtension,
 } from '@/lib/deviceConnector';
 
 import * as loginApi from '@/lib/login';
@@ -28,6 +29,9 @@ import { setFixedUsers, addFixedUsers } from './presence';
 // 채널
 import { setChannels } from '@/modules/channel';
 import * as channelApi from '@/lib/channel';
+
+// 익스텐션
+import { extensionSet } from '@/modules/extension';
 
 import { clearZoomData } from '@/lib/util/localStorageUtil';
 import {
@@ -219,6 +223,10 @@ function createLoginRequestSaga(loginType, syncType) {
             if (channels.data.status == 'SUCCESS') {
               yield put(setChannels(channels.data));
             }
+
+            // 익스텐션
+            const extensions = yield call(getExtension);
+            yield put(extensionSet(extensions));
 
             // 동기화 끝
             yield put(finishLoading(syncType));

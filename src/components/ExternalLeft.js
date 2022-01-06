@@ -7,35 +7,6 @@ const ExternalLeft = ({ paramObj }) => {
   const [exLink, setExLink] = useState([]);
 
   useEffect(() => {
-    // toURLEncode
-    // toValue
-    // toMergeValue
-
-    // # : 실행
-    // $ : key
-    // & : plain
-    // + : mergeStr
-
-    // ex)
-    /*
-    [
-      {
-        iconClass: 'exlink-gw',
-        title: 'groupware',
-        baseURL: 'https://www.naver.com',
-        params: {
-          id: { param: 'id$+|&+toDate#', plain:false, enc: 'netaes|rsa' },
-        },
-      },
-      {
-        iconClass: 'exlink-mail',
-        title: 'mail',
-        baseURL: 'https://www.google.com',
-        params: {},
-      },
-    ]
-    */
-
     const linkConfigs = getConfig('ExternalLink', []);
     setExLink(linkConfigs);
   }, []);
@@ -52,8 +23,6 @@ const ExternalLeft = ({ paramObj }) => {
             const pUtil = new ParamUtil(value.param, paramObj);
             expressionStr = pUtil.getURLParam();
           }
-
-          console.log(value.enc);
 
           if (!!value.enc && typeof value.enc === 'string') {
             const encType = value.enc.toLowerCase();
