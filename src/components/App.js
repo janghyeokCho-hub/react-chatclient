@@ -26,7 +26,7 @@ import {
   Extension,
   NoteSend,
   NoteReceive,
-  NoteReadList
+  NoteReadList,
 } from '@C/route/main/index.async';
 
 import SimplePopup from '@COMMON/popup/SimplePopup';
@@ -75,6 +75,7 @@ class App extends Component {
   render() {
     const { tokenCheckFlag, gotoURL } = this.tokenCheck();
     const { theme, error } = this.props;
+    if (theme) window.covi.settings.theme = theme;
 
     return (
       <>
@@ -83,9 +84,7 @@ class App extends Component {
         </Helmet>
         {(navigator.onLine && (
           <div
-            className={[
-              theme ? theme : this.getInitTheme(),
-            ].join(' ')}
+            className={[theme ? theme : this.getInitTheme()].join(' ')}
             style={{ width: '100%', height: '100%', overflow: 'hidden' }}
           >
             {DEVICE_TYPE === 'b' ||
@@ -310,7 +309,7 @@ const appModule = () => {
       connect(
         ({ login, menu }) => ({
           token: login.token,
-          theme: menu.theme
+          theme: menu.theme,
         }),
         {},
       )(App),
@@ -319,7 +318,7 @@ const appModule = () => {
     return connect(
       ({ login, menu }) => ({
         token: login.token,
-        theme: menu.theme
+        theme: menu.theme,
       }),
       {},
     )(App);
