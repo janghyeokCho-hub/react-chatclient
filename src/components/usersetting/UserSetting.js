@@ -26,7 +26,6 @@ import { getAesUtil } from '@/lib/aesUtil';
 import {
   evalConnector,
   sendParent,
-  themeChange,
   broadcastEvent,
   getDownloadDefaultPath,
   openDirectoryDialog,
@@ -78,7 +77,11 @@ const UserSetting = ({ history }) => {
   const [workTiemNoti, setWorkTimeNoti] = useState(false);
   const notificationBlock = getConfig('NotificationBlock');
   const customFonts = getConfig('UseCustomFonts', { use: false, fonts: [] });
-  const customPathOption = getConfig('UseCustomDownloadPath', { isUse: false, defaultPath: '', useDefaultValue: false });
+  const customPathOption = getConfig('UseCustomDownloadPath', {
+    isUse: false,
+    defaultPath: '',
+    useDefaultValue: false,
+  });
 
   // 색상 선택
   const [useEmoji, setUseEmoji] = useState(false);
@@ -341,16 +344,13 @@ const UserSetting = ({ history }) => {
 
   const selectTheme = color => {
     // APP_SETTING 저장
-    if (DEVICE_TYPE == 'd') {
-      handleConfig({ theme: color });
-    } else if (DEVICE_TYPE == 'b') {
-      localStorage.setItem('covi_user_theme', color);
-    }
+    if (DEVICE_TYPE == 'd') handleConfig({ theme: color });
+    else if (DEVICE_TYPE == 'b') localStorage.setItem('covi_user_theme', color);
+
     if (covi.settings) covi.settings.theme = color;
     dispatch(changeTheme(color));
-    if (DEVICE_TYPE == 'd') {
-      themeChange(color);
-    }
+
+    if (DEVICE_TYPE == 'd') broadcastEvent('onThemeChange', color);
   };
   const handleReSyncData = () => {
     openPopup(
@@ -436,16 +436,18 @@ const UserSetting = ({ history }) => {
   const { timestamp } = useTimestamp({ option: 'yMdh' });
   const menuItems = useMemo(() => {
     const firstItem = [];
-    myInfo.isExtUser !== 'Y' && firstItem.push({ name: covi.getDic('Contact'), value: 'contactlist' }); // 외부사용자는 내 대화상대를 시작메뉴로 선택 불가
+    myInfo.isExtUser !== 'Y' &&
+      firstItem.push({ name: covi.getDic('Contact'), value: 'contactlist' }); // 외부사용자는 내 대화상대를 시작메뉴로 선택 불가
     firstItem.push({ name: covi.getDic('Chat'), value: 'chatlist' });
-    getConfig('UseChannel') === 'Y' && firstItem.push({ name: covi.getDic('Channel'), value: 'channellist' }); // 채널 미사용 사이트는 조직도를 시작메뉴로 선택 불가
+    getConfig('UseChannel') === 'Y' &&
+      firstItem.push({ name: covi.getDic('Channel'), value: 'channellist' }); // 채널 미사용 사이트는 조직도를 시작메뉴로 선택 불가
     return firstItem;
   }, [myInfo]);
 
   const themeColor = covi?.config?.ClientThemeList?.find(
     t => t?.name === getInitTheme(),
   );
-  
+
   const photoPath = useMemo(() => {
     let p = '';
     try {
@@ -461,7 +463,7 @@ const UserSetting = ({ history }) => {
         p = myInfo.photoPath;
       }
     }
-    return decodeURIComponent(p.toString());    
+    return decodeURIComponent(p.toString());
   }, [photoPath]);
 
   return (
@@ -908,38 +910,62 @@ const UserSetting = ({ history }) => {
                     <a
                       className="ChatConfig-menu"
                       onClick={async () => {
-                        if (customPathOption?.isUse && customPathOption?.useDefaultValue) {
+                        if (
+                          customPathOption?.isUse &&
+                          customPathOption?.useDefaultValue
+                        ) {
                           // 다운로드 기본경로 강제설정인 경우, 경로변경 미동작 처리
                           return;
-                        } else if (customPathOption?.isUse && !customPathOption?.useDefaultValue) {
+                        } else if (
+                          customPathOption?.isUse &&
+                          !customPathOption?.useDefaultValue
+                        ) {
                           // 사용자가 직접 경로입력
-                          openPopup({
-                            type: 'Prompt',
-                            title: covi.getDic('DownloadDeafultPath'),
-                            initValue: defaultDownloadPath,
-                            callback(result) {
-                              console.log('Change default download Path');
-                              setDefaultDownloadPath(result);
-                              handleConfig({
-                                defaultDownloadPath: result
-                              });
-                            }
-                          }, dispatch);
+                          openPopup(
+                            {
+                              type: 'Prompt',
+                              title: covi.getDic('DownloadDeafultPath'),
+                              initValue: defaultDownloadPath,
+                              callback(result) {
+                                console.log('Change default download Path');
+                                setDefaultDownloadPath(result);
+                                handleConfig({
+                                  defaultDownloadPath: result,
+                                });
+                              },
+                            },
+                            dispatch,
+                          );
                         } else {
                           // 다운로드 경로로 사용할 디렉토리 선택 (기본동작)
-                          const selectPath = await openDirectoryDialog(defaultDownloadPath, 'open');
-                          if (selectPath?.canceled || !Array.isArray(selectPath?.filePaths)) {
+                          const selectPath = await openDirectoryDialog(
+                            defaultDownloadPath,
+                            'open',
+                          );
+                          if (
+                            selectPath?.canceled ||
+                            !Array.isArray(selectPath?.filePaths)
+                          ) {
                             return;
                           }
                           setDefaultDownloadPath(selectPath.filePaths[0]);
                           handleConfig({
-                            defaultDownloadPath: selectPath.filePaths[0]
+                            defaultDownloadPath: selectPath.filePaths[0],
                           });
                         }
                       }}
                     >
                       <span>{covi.getDic('DownloadDeafultPath')}</span>
-                      <span className="chat-sync-date" style={{ color: (customPathOption?.isUse && customPathOption?.useDefaultValue) ? '#999' : undefined }}>
+                      <span
+                        className="chat-sync-date"
+                        style={{
+                          color:
+                            customPathOption?.isUse &&
+                            customPathOption?.useDefaultValue
+                              ? '#999'
+                              : undefined,
+                        }}
+                      >
                         {defaultDownloadPath}
                       </span>
                     </a>

@@ -915,36 +915,6 @@ export const closeWindow = () => {
   getRemote().getCurrentWindow().close();
 };
 
-export const themeChange = theme => {
-  try {
-    const remote = getRemote();
-    const allWindows = remote.BrowserWindow.getAllWindows();
-    const currentWindowId = remote.getCurrentWindow().id;
-    allWindows.forEach(win => {
-      if (win.id != currentWindowId) {
-        win.webContents.send('onThemeChange', theme);
-      }
-    });
-  } catch (e) {
-    // console.log('Windows has already closed');
-  }
-};
-
-export const fontSizeChange = fontSize => {
-  try {
-    const remote = getRemote();
-    const allWindows = remote.BrowserWindow.getAllWindows();
-    const currentWindowId = remote.getCurrentWindow().id;
-    allWindows.forEach(win => {
-      if (win.id != currentWindowId) {
-        win.webContents.send('onFontSizeChange', fontSize);
-      }
-    });
-  } catch (e) {
-    // console.log('Windows has already closed');
-  }
-};
-
 export function broadcastEvent(eventName, value) {
   try {
     const remote = getRemote();
