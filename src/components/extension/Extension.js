@@ -2,9 +2,9 @@ import React, { useRef, useEffect } from 'react';
 import { useDispatch, useSelector, shallowEqual } from 'react-redux';
 import SearchIcon from '@/icons/svg/Search';
 import ExtensionBox from '@C/extension/ExtensionBox';
-import { sendMain } from '@/lib/deviceConnector';
+import { sendMain, getExtension } from '@/lib/deviceConnector';
 
-import { extensionAdd } from '@/modules/extension';
+import { extensionAdd, extensionSet } from '@/modules/extension';
 
 const extensionItemList = [
   {
@@ -20,45 +20,6 @@ const extensionItemList = [
     version: '1.0.0',
     iconPath: 'http://192.168.11.80/storage/extension/3.svg',
   },
-  {
-    extensionId: 2,
-    title: '메모이음',
-    description: '메모를 통해 업무 능력을 향상시켜보세요',
-    type: 'V',
-    downloadURL: 'http://10.10.32.111:8080/Memo.js',
-    photoPath: 'http://192.168.11.80/storage/no_image.jpg',
-    createDate: new Date(),
-    updateDate: new Date(),
-    owner: 'ldh',
-    version: '1.0.0',
-    iconPath: 'http://192.168.11.80/storage/extension/2.svg',
-  },
-  {
-    extensionId: 3,
-    title: '웨더리음',
-    description: '오늘의 날씨 정보를 실시간으로 받아보세요',
-    type: 'V',
-    downloadURL: 'http://10.10.32.111:8080/WeatherChecker.js',
-    photoPath: 'http://192.168.11.80/storage/no_image.jpg',
-    createDate: new Date(),
-    updateDate: new Date(),
-    owner: 'ldh',
-    version: '1.0.0',
-    iconPath: 'http://192.168.11.80/storage/extension/1.svg',
-  },
-  {
-    extensionId: 4,
-    title: '겜이음',
-    description: '심심할 땐 게임으로 스트레스를 풀어보세요',
-    type: 'V',
-    downloadURL: 'http://10.10.32.111:8080/2048.js',
-    photoPath: 'http://192.168.11.80/storage/no_image.jpg',
-    createDate: new Date(),
-    updateDate: new Date(),
-    owner: 'ldh',
-    version: '1.0.0',
-    iconPath: 'http://192.168.11.80/storage/extension/4.svg',
-  },
 ];
 
 const Extension = () => {
@@ -70,6 +31,12 @@ const Extension = () => {
 
   useEffect(() => {
     searchInput.current.focus();
+
+    // load extension list
+    const data = getExtension();
+    if (data?.length > 0) {
+      dispatch(extensionSet(data));
+    }
   }, []);
 
   const extensionList = useSelector(

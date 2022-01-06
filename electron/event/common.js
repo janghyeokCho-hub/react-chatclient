@@ -216,6 +216,7 @@ export const reqSubPop = (event, args) => {
         contextIsolation: false,
         enableRemoteModule: true,
         nodeIntegrationInSubFrames: true,
+        webviewTag: true,
       },
     });
 
