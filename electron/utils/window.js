@@ -18,8 +18,8 @@ export const showModalDialog = (parent, option) => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
-    }
+      nodeIntegrationInSubFrames: true,
+    },
   });
 
   modalDialog.loadFile(path.join(DIR_NAME, 'templates', `${option.type}.html`));
@@ -83,8 +83,8 @@ export const showModalProgress = (parent, option) => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
-    }
+      nodeIntegrationInSubFrames: true,
+    },
   });
 
   modalDialog.loadFile(path.join(DIR_NAME, 'templates', 'progress.html'));
@@ -115,8 +115,9 @@ export const showVersionInformation = () => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
-    }
+      nodeIntegrationInSubFrames: true,
+      webviewTag: true,
+    },
   });
 
   let loadURL = '';
@@ -152,8 +153,8 @@ export const showConnectInformation = () => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
-    }
+      nodeIntegrationInSubFrames: true,
+    },
   });
 
   modalDialog.setMenu(null);

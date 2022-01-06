@@ -43,10 +43,6 @@ const handleUserConfig = data => {
   }
 };
 
-const exntension = {
-  isUse: false,
-};
-
 const LeftMenu = ({ history }) => {
   const id = useSelector(({ login }) => login.id);
   const userInfo = useSelector(({ login }) => login.userInfo);
@@ -58,15 +54,28 @@ const LeftMenu = ({ history }) => {
     shallowEqual,
   );
 
+  const extensionConfig = getConfig('extensionSetting', null);
+
   const unreadNoteCnt = useNoteUnreadCount();
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
-
-  const [isExtensionUse, setIsExtensionUse] = useState(false);
 
   const active = useSelector(
     ({ menu }) => menu.activeType,
     (left, right) => left == right,
   );
+
+  const isExtensionUseable = () => {
+    if (extensionConfig == null || !extensionConfig.isUse) return false;
+    if (extensionConfig?.target === 'ALL') return true;
+
+    let targetFlag = false;
+
+    extensionConfig?.target?.map(targetUser => {
+      if (targetUser == id) targetFlag = true;
+    });
+
+    return targetFlag;
+  };
 
   const unreadCnt = useSelector(
     ({ room }) => {
@@ -336,16 +345,17 @@ const LeftMenu = ({ history }) => {
           <ExternalLeft paramObj={userInfo}></ExternalLeft>
         )}
       </ul>
-      {DEVICE_TYPE == 'd' && isExtensionUse && (
-      <div
-        style={{
-          width: '80%',
-          borderTop: 'solid 2.5px #fff',
-          margin: 'auto',
-          marginBottom: 5,
-        }}
-      ></div>)}
-      {DEVICE_TYPE == 'd' && isExtensionUse && (
+      {DEVICE_TYPE == 'd' && isExtensionUseable() && (
+        <div
+          style={{
+            width: '80%',
+            borderTop: 'solid 2.5px #fff',
+            margin: 'auto',
+            marginBottom: 5,
+          }}
+        ></div>
+      )}
+      {DEVICE_TYPE == 'd' && isExtensionUseable() && (
         <div style={{ overflow: 'hidden' }}>
           <ul className="menu-ul" style={{ height: 130 }}>
             {extensionList.map(extensionItem => {
@@ -389,7 +399,7 @@ const LeftMenu = ({ history }) => {
         </div>
       )}
       <div className="menu-bottom-box">
-        {exntension.isUse && DEVICE_TYPE == 'd' && (
+        {isExtensionUseable() && DEVICE_TYPE == 'd' && (
           <ExtensionIcon
             onClickEvent={() => {
               //setIsExtensionUse(!isExtensionUse);
