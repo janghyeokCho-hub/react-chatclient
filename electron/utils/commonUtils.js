@@ -191,14 +191,14 @@ export const notifyNoteMessage = ({
   isEmergency = false,
   title = '',
   message = '',
-  photoPath = ''
+  photoPath = '',
 }) => {
   const localIconImage = path.join(
     exportProps.resourcePath,
     'icons',
     'alarm.png',
   );
-  
+
   // 알림설정(종모양) off인 경우 전체 쪽지에 대한 noti 비활성
   if (USER_SETTING?.config?.desktopNoti === false && isEmergency === false) {
     return;
@@ -303,11 +303,14 @@ export const clearCache = () => {
     ),
     confirm: () => {
       const ses = win.webContents.session;
-      ses.clearCache().then(() => {
-        reloadApp(true);
-      }).catch(err=> {
-        console.log('clearCacheError   ', err);
-      });
+      ses
+        .clearCache()
+        .then(() => {
+          reloadApp(true);
+        })
+        .catch(err => {
+          console.log('clearCacheError   ', err);
+        });
     },
     cancel: () => {
       console.log('CANCEL');
@@ -347,8 +350,7 @@ export const initApp = () => {
 
         app.relaunch();
         app.exit();
-
-      } catch(err) {
+      } catch (err) {
         // handle error
         console.log('Reset App error :  ', err);
       }
@@ -424,7 +426,7 @@ export const makeCustomAlarmPop = () => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
+      nodeIntegrationInSubFrames: true,
     },
     transparent: true,
     frame: false,
@@ -475,7 +477,8 @@ export const makeFixAlarmPop = () => {
       nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: true,
-      nodeIntegrationInSubFrames: true
+      nodeIntegrationInSubFrames: true,
+      webviewTag: true,
     },
     transparent: true,
     frame: false,
@@ -507,7 +510,6 @@ export const getDictionary = (multiDic, lang) => {
   let defaultIdx = 0;
   const arrDics = dictionary.split(';');
 
-  // let findLang = lang ? lang : APP_SETTING.get('lang') || 'ko';
   let findLang = lang ? lang : APP_SECURITY_SETTING.get('lang') || 'ko';
 
   let defaultLang =
