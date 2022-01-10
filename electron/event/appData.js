@@ -1286,6 +1286,7 @@ export const reqSaveMessage = async params => {
           tempId: params.tempId,
           fileInfos: params.fileInfos,
           linkInfo: params.linkInfo,
+          botInfo: params.botInfo,
         })
         .then(() => {
           if (params.senderInfo) {
