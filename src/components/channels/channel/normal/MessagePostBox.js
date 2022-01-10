@@ -63,14 +63,17 @@ const MessagePostBox = forwardRef(
       const fileCtrl = coviFile.getInstance();
       const files = fileCtrl.getFiles();
       const fileInfos = fileCtrl.getRealFileInfos();
-      var existEmoticon = '';
+      let existEmoticon = '';
       if (selectEmoticon !== null) {
         existEmoticon = `eumtalk://emoticon.${selectEmoticon.GroupName}.${selectEmoticon.EmoticonName}.${selectEmoticon.EmoticonType}.${selectEmoticon.CompanyCode}`;
       }
       if (selectEmoticon) handleEmoticon(existEmoticon);
       dispatch(clearEmoticon());
 
-      if (context != '' || files.length > 0) {
+      if (
+        (context.replace(/\s*/, '') != '' && context != '') ||
+        files.length > 0
+      ) {
         let inputContext = context;
 
         // TODO: 메시지 정규식 처리 필요 시 아래 부분에서 처리
