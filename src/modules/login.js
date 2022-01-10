@@ -149,6 +149,10 @@ function createLoginRequestSaga(loginType, syncType) {
                 channel: 'set-before-presence',
                 message: response.data.result.presence,
               });
+
+              // 익스텐션
+              const extensions = yield call(getExtension);
+              yield put(extensionSet(extensions));
             }
             yield put(
               addFixedUsers([
@@ -223,10 +227,6 @@ function createLoginRequestSaga(loginType, syncType) {
             if (channels.data.status == 'SUCCESS') {
               yield put(setChannels(channels.data));
             }
-
-            // 익스텐션
-            const extensions = yield call(getExtension);
-            yield put(extensionSet(extensions));
 
             // 동기화 끝
             yield put(finishLoading(syncType));
