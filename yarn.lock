@@ -1338,7 +1338,7 @@
     react-json-view "^1.21.3"
     react-rnd "^10.3.3"
 
-"@journeyapps/sqlcipher@^5.2.0":
+"@journeyapps/sqlcipher@5.2.0":
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/@journeyapps/sqlcipher/-/sqlcipher-5.2.0.tgz#5b75ff0ff8ce46bdca91ab7864c4039b62654230"
   integrity sha512-YTENn2pWVO6BU+DdQPFpubDn2AWcjrEV+6JAshx7tCL9fDI/80WrdB38BqNDeJhnFuiED6sRH+IjLZo4fByO6g==
