@@ -6,8 +6,8 @@ import { getConfig } from '@/lib/util/configUtil';
 import { openLayer } from '@/lib/common';
 import { format } from 'date-fns';
 import InviteMember from './chatroom/layer/InviteMember';
-import { makeChatRoom } from '@/lib/deviceConnector';
-import { openRoom, makeRoomView } from '@/modules/room';
+import { newChatRoom, makeChatRoom } from '@/lib/deviceConnector';
+import { openRoom, makeRoomView, newWinRoom } from '@/modules/room';
 import AddChatIcon from '@/icons/svg/AddChat';
 import AddChatBotIcon from '@/icons/svg/AddChatBot';
 import useTyping from '@/hooks/useTyping';
@@ -47,7 +47,23 @@ const ChatList = () => {
     };
 
     if (findRoom) {
-      handleRoomChange(findRoom.roomID);
+      if (DEVICE_TYPE == 'd') {
+        handleRoomChange(findRoom.roomID);
+
+        if (window.innerWidth <= 1000) {
+          const winName = `wrf${findRoom.roomID}`;
+
+          const openURL = `${
+            DEVICE_TYPE == 'd' ? '#' : ''
+          }/client/nw/chatroom/${findRoom.roomID}`;
+
+          const roomObj = newChatRoom(winName, findRoom.roomID, openURL);
+
+          dispatch(
+            newWinRoom({ id: findRoom.roomID, obj: roomObj, name: winName }),
+          );
+        }
+      } else handleRoomChange(findRoom.roomID);
     } else {
       if (DEVICE_TYPE == 'd') {
         if (viewType == 'S') {
