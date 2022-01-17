@@ -58,7 +58,6 @@ const drawThumbnail = photo => {
       } catch (e) {}
     };
   });
-
   return (
     <img
       id={`summary_${photo.FileID}`}
@@ -77,7 +76,7 @@ const Photo = ({ photo, onSelect, selectMode }) => {
   }, [selectMode]);
 
   const handleCheck = (fileID, fileName) => {
-    if (onSelect({ token: fileID, name: fileName }, !check)) {
+    if (onSelect({ token: fileID, fileName }, !check)) {
       setCheck(!check);
     }
   };
@@ -127,40 +126,34 @@ const Photo = ({ photo, onSelect, selectMode }) => {
             );
             clearLayer(dispatch);
           },
-        }
+        },
       ];
       // 파일 다운로드 허용일 경우에만 다운로드 옵션 노출
-      if(downloadOption.length === 0 || downloadOption[0].Download === true) {
-        buttonArrs.push(
-          {
-            name: covi.getDic('Download'),
-            callback: () => {
-                downloadByToken(
-                  item.FileID,
-                  downloadPath + item.FileName,
-                  data => {
-                    if (data.result != 'SUCCESS') {
-                      openPopup(
-                        {
-                          type: 'Alert',
-                          message: data.message,
-                        },
-                        dispatch,
-                      );
-                    } else {
-                      openPopup(
-                        {
-                          type: 'Alert',
-                          message: covi.getDic('Msg_DownloadSuccess'),
-                        },
-                        dispatch,
-                      );
-                    }
-                  }
+      if (downloadOption.length === 0 || downloadOption[0].Download === true) {
+        buttonArrs.push({
+          name: covi.getDic('Download'),
+          callback: () => {
+            downloadByToken(item.FileID, downloadPath + item.FileName, data => {
+              if (data.result != 'SUCCESS') {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: data.message,
+                  },
+                  dispatch,
                 );
-            },
-          }
-        );
+              } else {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: covi.getDic('Msg_DownloadSuccess'),
+                  },
+                  dispatch,
+                );
+              }
+            });
+          },
+        });
       }
       openPopup(
         {
@@ -229,6 +222,7 @@ const PhotoSummary = ({ roomId }) => {
   const [pageNum, setPageNum] = useState(1);
   const [loading, setLoading] = useState(false);
   const [pageEnd, setPageEnd] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const handleClose = () => {
     deleteLayer(dispatch);
@@ -242,11 +236,17 @@ const PhotoSummary = ({ roomId }) => {
 
       if (selectItems.length > 0) {
         // 다운로드가 금지되어 있는 경우
-        if (downloadOption.length !== 0 && downloadOption[0].Download === false) {
+        if (
+          downloadOption.length !== 0 &&
+          downloadOption[0].Download === false
+        ) {
           openPopup(
             {
               type: 'Alert',
-              message: covi.getDic('Block_FileDownload', '파일 다운로드가 금지되어 있습니다.')
+              message: covi.getDic(
+                'Block_FileDownload',
+                '파일 다운로드가 금지되어 있습니다.',
+              ),
             },
             dispatch,
           );
@@ -258,14 +258,10 @@ const PhotoSummary = ({ roomId }) => {
           const arrDownloadList = await downloadByTokenAll(selectItems);
           if (arrDownloadList) {
             Promise.all(arrDownloadList).then(values => {
-              console.log(values);
               // 실패한 조건만 탐색
               const downloaded = values.reduce(
                 (acc, val) => {
-                  if (val.result === false) {
-                    return val;
-                  }
-
+                  if (val.result === false) return val;
                   return acc;
                 },
                 { result: true, data: null },
@@ -321,7 +317,6 @@ const PhotoSummary = ({ roomId }) => {
           },
           dispatch,
         );
-
         return false;
       }
     } else {
@@ -335,6 +330,30 @@ const PhotoSummary = ({ roomId }) => {
     return true;
   };
 
+  const handleAllDownLoad = async () => {
+    const resp = await downloadByTokenAll(selectItems, setDownloading, true);
+    setDownloading(false);
+    if (resp !== null) {
+      if (!resp.result) {
+        openPopup(
+          {
+            type: 'Alert',
+            message: resp.data.message,
+          },
+          dispatch,
+        );
+      } else {
+        openPopup(
+          {
+            type: 'Alert',
+            message: covi.getDic('Msg_Save'),
+          },
+          dispatch,
+        );
+      }
+    }
+  };
+
   useEffect(() => {
     // fileData 호출
     // initialData
@@ -345,11 +364,7 @@ const PhotoSummary = ({ roomId }) => {
       loadCnt: loadCnt,
       isImage: 'Y',
     }).then(({ data }) => {
-      if (data.status == 'SUCCESS') {
-        setFiles(data.result);
-      } else {
-        setFiles([]);
-      }
+      setFiles(data.status == 'SUCCESS' ? data.result : []);
       setLoading(false);
     });
   }, []);
@@ -452,9 +467,22 @@ const PhotoSummary = ({ roomId }) => {
               </div>
             </a>
           )) || (
-            <a className="Okbtn" onClick={handleSelect}>
+            <a
+              className="Okbtn"
+              onClick={
+                !downloading
+                  ? selectItems.length > 1
+                    ? handleAllDownLoad
+                    : handleSelect
+                  : null
+              }
+            >
               <span className="colortxt-point mr5">{selectItems.length}</span>
-              {covi.getDic('Save')}
+              {downloading
+                ? covi.getDic('Compressing')
+                : selectItems.length > 1
+                ? covi.getDic('AllSave')
+                : covi.getDic('Save')}
             </a>
           )}
         </div>

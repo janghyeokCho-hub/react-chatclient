@@ -1,19 +1,16 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import File from '@C/chat/message/types/file';
 import { convertFileSize } from '@/lib/fileUpload/coviFile';
 import { getDic } from '@/lib/util/configUtil';
+import { openPopup } from '@/lib/common';
 import { getFileExtension, openFilePreview } from '@/lib/fileUpload/coviFile';
-import { isAllImage } from '@/lib/fileUpload/coviFile';
+import { isAllImage, downloadByTokenAll } from '@/lib/fileUpload/coviFile';
 import FileThumbList from '@C/chat/message/types/FileThumbList';
 
-const FileMessageBox = ({
-  messageId,
-  fileObj,
-  id,
-  isTemp,
-  inprogress,
-  total,
-}) => {
+const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
+  const [downloading, setDownloading] = useState(false);
+  const dispatch = useDispatch();
   const handleFileList = fileObj => {
     let isAllImg = isAllImage(fileObj);
     if (isAllImg) {
@@ -37,6 +34,18 @@ const FileMessageBox = ({
                 />
               );
             })}
+            <li>
+              <span className="file-func-list">
+                <span
+                  className="file-func-txt"
+                  onClick={downloading ? null : handleAllDownLoad}
+                >
+                  {downloading
+                    ? covi.getDic('Compressing')
+                    : covi.getDic('AllSave')}
+                </span>
+              </span>
+            </li>
           </ul>
         </div>
       );
@@ -56,6 +65,18 @@ const FileMessageBox = ({
                 />
               );
             })}
+            <li>
+              <span className="file-func-list">
+                <span
+                  className="file-func-txt"
+                  onClick={downloading ? null : handleAllDownLoad}
+                >
+                  {downloading
+                    ? covi.getDic('Compressing')
+                    : covi.getDic('AllSave')}
+                </span>
+              </span>
+            </li>
           </ul>
           <p style={{ marginLeft: 15, padding: 10, color: '#999' }}>
             {inprogress &&
@@ -69,6 +90,30 @@ const FileMessageBox = ({
           </p>
         </div>
       );
+    }
+  };
+
+  const handleAllDownLoad = async () => {
+    const resp = await downloadByTokenAll(fileObj, setDownloading, true);
+    setDownloading(false);
+    if (resp !== null) {
+      if (!resp.result) {
+        openPopup(
+          {
+            type: 'Alert',
+            message: resp.data.message,
+          },
+          dispatch,
+        );
+      } else {
+        openPopup(
+          {
+            type: 'Alert',
+            message: covi.getDic('Msg_Save'),
+          },
+          dispatch,
+        );
+      }
     }
   };
 
