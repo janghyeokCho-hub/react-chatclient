@@ -49,14 +49,21 @@ const File = ({ file, onSelect, selectMode }) => {
   }, [selectMode]);
 
   const handleCheck = (fileID, fileName) => {
-    if (onSelect({ token: fileID, name: fileName }, !check)) {
+    if (onSelect({ token: fileID, fileName }, !check)) {
       setCheck(!check);
     }
   };
 
   const handleMenu = item => {
     //일렉트론 다운로드o 뷰어o
-    if(DEVICE_TYPE === 'd' && synapDocViewServer && fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Viewer === true && fileAttachViewMode[0].Download === true){
+    if (
+      DEVICE_TYPE === 'd' &&
+      synapDocViewServer &&
+      fileAttachViewMode &&
+      fileAttachViewMode[0].type === 'PC' &&
+      fileAttachViewMode[0].Viewer === true &&
+      fileAttachViewMode[0].Download === true
+    ) {
       openPopup(
         {
           type: 'Select',
@@ -99,80 +106,86 @@ const File = ({ file, onSelect, selectMode }) => {
               name: covi.getDic('RunViewer'),
               callback: () => {
                 let fileType = 'URL';
-                let token = localStorage.getItem('covi_user_access_token')
-                token = token.replace(/\^/gi,'-')
-                //filePath 사이냅 서버가 문서를 변환하기 위해 다운받을 주소 
+                let token = localStorage.getItem('covi_user_access_token');
+                token = token.replace(/\^/gi, '-');
+                //filePath 사이냅 서버가 문서를 변환하기 위해 다운받을 주소
                 let eumTalkfilePath = `${window.covi.baseURL}/restful/na/nf/synabDownload/${item.FileID}/${token}`;
                 let filePath = `${eumTalkfilePath}`;
-  
+
                 //fid 사이냅 변환요청시 관리자 페이지에 표시되는 문서ID (다운로드 링크에 따라오는 파일토큰)
                 let fid = `${item.token}`;
                 // let waterMarkText = 'EumTalk';
-                viewerApi.sendConversionRequest({
-                  fileType, filePath, fid
-                }).then(response => {
-                  let job = 'job';
-                  let key = response.data.key;
-                  let url = ''
-                  let view = 'view/'
-                  url = response.config.url.indexOf(job);
-                  url = response.config.url.substring(0,url);
-                  url = url + view + key;
-  
-                  if (DEVICE_TYPE == 'd') {
-                    window.openExternalPopup(url)
-                  }else{
-                    window.open(url)
-                  }
-                  // testFunc(key)
-                }).catch(response => {
-                  if(response){
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: getDic('Msg_FileExpired'),
-                      },
-                      dispatch,
-                    );
-                  }
-                })
-              }
-            },
-            {
-              name: covi.getDic('Download'),
-              callback: () => {
-                downloadByToken(
-                  item.FileID,
-                  item.FileName,
-                  data => {
-                    if (data.result !== 'SUCCESS') {
-                      openPopup(
-                        {
-                          type: 'Alert',
-                          message: data.message,
-                        },
-                        dispatch,
-                      );
+                viewerApi
+                  .sendConversionRequest({
+                    fileType,
+                    filePath,
+                    fid,
+                  })
+                  .then(response => {
+                    let job = 'job';
+                    let key = response.data.key;
+                    let url = '';
+                    let view = 'view/';
+                    url = response.config.url.indexOf(job);
+                    url = response.config.url.substring(0, url);
+                    url = url + view + key;
+
+                    if (DEVICE_TYPE == 'd') {
+                      window.openExternalPopup(url);
                     } else {
+                      window.open(url);
+                    }
+                    // testFunc(key)
+                  })
+                  .catch(response => {
+                    if (response) {
                       openPopup(
                         {
                           type: 'Alert',
-                          message: covi.getDic('Msg_DownloadSuccess'),
+                          message: getDic('Msg_FileExpired'),
                         },
                         dispatch,
                       );
                     }
-                  },
-                );
+                  });
+              },
+            },
+            {
+              name: covi.getDic('Download'),
+              callback: () => {
+                downloadByToken(item.FileID, item.FileName, data => {
+                  if (data.result !== 'SUCCESS') {
+                    openPopup(
+                      {
+                        type: 'Alert',
+                        message: data.message,
+                      },
+                      dispatch,
+                    );
+                  } else {
+                    openPopup(
+                      {
+                        type: 'Alert',
+                        message: covi.getDic('Msg_DownloadSuccess'),
+                      },
+                      dispatch,
+                    );
+                  }
+                });
               },
             },
           ],
         },
         dispatch,
-      )
+      );
     }
     //일렉트론 다운로드o 뷰어x
-    else if(synapDocViewServer && fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Download === true){
+    else if (
+      synapDocViewServer &&
+      fileAttachViewMode &&
+      fileAttachViewMode[0].type === 'PC' &&
+      fileAttachViewMode[0].Download === true
+    ) {
       openPopup(
         {
           type: 'Select',
@@ -214,38 +227,40 @@ const File = ({ file, onSelect, selectMode }) => {
             {
               name: covi.getDic('Download'),
               callback: () => {
-                  downloadByToken(
-                    item.FileID,
-                    item.FileName,
-                    data => {
-                      if (data.result != 'SUCCESS') {
-                        openPopup(
-                          {
-                            type: 'Alert',
-                            message: data.message,
-                          },
-                          dispatch,
-                        );
-                      } else {
-                        openPopup(
-                          {
-                            type: 'Alert',
-                            message: covi.getDic('Msg_DownloadSuccess'),
-                          },
-                          dispatch,
-                        );
-                      }
-                    },
-                  );
+                downloadByToken(item.FileID, item.FileName, data => {
+                  if (data.result != 'SUCCESS') {
+                    openPopup(
+                      {
+                        type: 'Alert',
+                        message: data.message,
+                      },
+                      dispatch,
+                    );
+                  } else {
+                    openPopup(
+                      {
+                        type: 'Alert',
+                        message: covi.getDic('Msg_DownloadSuccess'),
+                      },
+                      dispatch,
+                    );
+                  }
+                });
               },
             },
           ],
         },
         dispatch,
-      )
+      );
     }
     //일렉트론 다운로드x 뷰어o
-    else if(DEVICE_TYPE === 'd' && synapDocViewServer && fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Viewer === true){
+    else if (
+      DEVICE_TYPE === 'd' &&
+      synapDocViewServer &&
+      fileAttachViewMode &&
+      fileAttachViewMode[0].type === 'PC' &&
+      fileAttachViewMode[0].Viewer === true
+    ) {
       openPopup(
         {
           type: 'Select',
@@ -288,96 +303,111 @@ const File = ({ file, onSelect, selectMode }) => {
               name: covi.getDic('RunViewer'),
               callback: () => {
                 let fileType = 'URL';
-                let token = localStorage.getItem('covi_user_access_token')
-                token = token.replace(/\^/gi,'-')
-                //filePath 사이냅 서버가 문서를 변환하기 위해 다운받을 주소 
+                let token = localStorage.getItem('covi_user_access_token');
+                token = token.replace(/\^/gi, '-');
+                //filePath 사이냅 서버가 문서를 변환하기 위해 다운받을 주소
                 let eumTalkfilePath = `${window.covi.baseURL}/restful/na/nf/synabDownload/${item.FileID}/${token}`;
                 let filePath = `${eumTalkfilePath}`;
 
                 //fid 사이냅 변환요청시 관리자 페이지에 표시되는 문서ID (다운로드 링크에 따라오는 파일토큰)
                 let fid = `${item.token}`;
                 // let waterMarkText = 'EumTalk';
-                viewerApi.sendConversionRequest({
-                  fileType, filePath, fid
-                }).then(response => {
-                  let job = 'job';
-                  let key = response.data.key;
-                  let url = ''
-                  let view = 'view/'
-                  url = response.config.url.indexOf(job);
-                  url = response.config.url.substring(0,url);
-                  url = url + view + key;
+                viewerApi
+                  .sendConversionRequest({
+                    fileType,
+                    filePath,
+                    fid,
+                  })
+                  .then(response => {
+                    let job = 'job';
+                    let key = response.data.key;
+                    let url = '';
+                    let view = 'view/';
+                    url = response.config.url.indexOf(job);
+                    url = response.config.url.substring(0, url);
+                    url = url + view + key;
 
-                  if (DEVICE_TYPE == 'd') {
-                    window.openExternalPopup(url)
-                  }else{
-                    window.open(url)
-                  }
-                  // testFunc(key)
-                }).catch(response => {
-                  if(response){
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: getDic('Msg_FileExpired'),
-                      },
-                      dispatch,
-                    );
-                  }
-                })
-              }
+                    if (DEVICE_TYPE == 'd') {
+                      window.openExternalPopup(url);
+                    } else {
+                      window.open(url);
+                    }
+                    // testFunc(key)
+                  })
+                  .catch(response => {
+                    if (response) {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: getDic('Msg_FileExpired'),
+                        },
+                        dispatch,
+                      );
+                    }
+                  });
+              },
             },
           ],
         },
         dispatch,
-      )
+      );
     }
     //브라우저(브라우저에서는 뷰어 안되니) 다운로드x
-    else if (synapDocViewServer && fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Viewer === true){
-    openPopup(
-      {
-        type: 'Select',
-        buttons: [
-          {
-            name: covi.getDic('Detail'),
-            callback: () => {
-              openPopup(
-                {
-                  type: 'Alert',
-                  message: `<ul className="menulist">
+    else if (
+      synapDocViewServer &&
+      fileAttachViewMode &&
+      fileAttachViewMode[0].type === 'PC' &&
+      fileAttachViewMode[0].Viewer === true
+    ) {
+      openPopup(
+        {
+          type: 'Select',
+          buttons: [
+            {
+              name: covi.getDic('Detail'),
+              callback: () => {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: `<ul className="menulist">
                   <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
                   ${covi.getDic('FileName')} : ${
-                    item.FileName
-                  }</li><li>${covi.getDic('FileSize')} : ${convertFileSize(
-                    item.FileSize,
-                  )}</li><li>${covi.getDic('ReceiveDate')} : ${format(
-                    new Date(item.SendDate),
-                    'yyyy.MM.dd HH:mm:ss',
-                  )}</li>`,
-                },
-                dispatch,
-              );
+                      item.FileName
+                    }</li><li>${covi.getDic('FileSize')} : ${convertFileSize(
+                      item.FileSize,
+                    )}</li><li>${covi.getDic('ReceiveDate')} : ${format(
+                      new Date(item.SendDate),
+                      'yyyy.MM.dd HH:mm:ss',
+                    )}</li>`,
+                  },
+                  dispatch,
+                );
+              },
             },
-          },
-          {
-            name: covi.getDic('ShowChat'),
-            callback: () => {
-              dispatch(
-                setMoveView({
-                  roomID: item.RoomID,
-                  moveId: item.MessageID,
-                  visible: true,
-                }),
-              );
-              clearLayer(dispatch);
+            {
+              name: covi.getDic('ShowChat'),
+              callback: () => {
+                dispatch(
+                  setMoveView({
+                    roomID: item.RoomID,
+                    moveId: item.MessageID,
+                    visible: true,
+                  }),
+                );
+                clearLayer(dispatch);
+              },
             },
-          },
-        ],
-      },
-      dispatch,
-    )}
+          ],
+        },
+        dispatch,
+      );
+    }
     // 브라우저 다운로드o
-    else if(synapDocViewServer && fileAttachViewMode && fileAttachViewMode[0].type === 'PC'){
+    else if (
+      synapDocViewServer &&
+      fileAttachViewMode &&
+      fileAttachViewMode[0].type === 'PC'
+    ) {
       openPopup(
         {
           type: 'Select',
@@ -419,36 +449,32 @@ const File = ({ file, onSelect, selectMode }) => {
             {
               name: covi.getDic('Download'),
               callback: () => {
-                  downloadByToken(
-                    item.FileID,
-                    item.FileName,
-                    data => {
-                      if (data.result != 'SUCCESS') {
-                        openPopup(
-                          {
-                            type: 'Alert',
-                            message: data.message,
-                          },
-                          dispatch,
-                        );
-                      } else {
-                        openPopup(
-                          {
-                            type: 'Alert',
-                            message: covi.getDic('Msg_DownloadSuccess'),
-                          },
-                          dispatch,
-                        );
-                      }
-                    },
-                  );
+                downloadByToken(item.FileID, item.FileName, data => {
+                  if (data.result != 'SUCCESS') {
+                    openPopup(
+                      {
+                        type: 'Alert',
+                        message: data.message,
+                      },
+                      dispatch,
+                    );
+                  } else {
+                    openPopup(
+                      {
+                        type: 'Alert',
+                        message: covi.getDic('Msg_DownloadSuccess'),
+                      },
+                      dispatch,
+                    );
+                  }
+                });
               },
             },
           ],
         },
         dispatch,
-      )
-    };
+      );
+    }
   };
 
   return (
@@ -509,6 +535,7 @@ const FileSummary = ({ roomId }) => {
   const [pageNum, setPageNum] = useState(1);
   const [loading, setLoading] = useState(false);
   const [pageEnd, setPageEnd] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const handleClose = () => {
     deleteLayer(dispatch);
@@ -599,6 +626,30 @@ const FileSummary = ({ roomId }) => {
       setSelectItems(deleteArr);
     }
     return true;
+  };
+
+  const handleAllDownLoad = async () => {
+    const resp = await downloadByTokenAll(selectItems, setDownloading, true);
+    setDownloading(false);
+    if (resp !== null) {
+      if (!resp.result) {
+        openPopup(
+          {
+            type: 'Alert',
+            message: resp.data.message,
+          },
+          dispatch,
+        );
+      } else {
+        openPopup(
+          {
+            type: 'Alert',
+            message: covi.getDic('Msg_Save'),
+          },
+          dispatch,
+        );
+      }
+    }
   };
 
   useEffect(() => {
@@ -705,21 +756,42 @@ const FileSummary = ({ roomId }) => {
           <div className="modaltit">
             <p>{covi.getDic('FileSummary')}</p>
           </div>
-          {(!select && synapDocViewServer && fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Download === true &&
+          {(!select &&
+            synapDocViewServer &&
+            fileAttachViewMode &&
+            fileAttachViewMode[0].type === 'PC' &&
+            fileAttachViewMode[0].Download === true && (
               <a className="checkbtn" onClick={handleSelect}>
-                <div style={{ position: 'absolute', left: '-50px', fontWeight: 'bold' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '-50px',
+                    fontWeight: 'bold',
+                  }}
+                >
                   {covi.getDic('chooseFile')}
                 </div>
               </a>
-                  ) || ( select &&
-            <a className="Okbtn" onClick={handleSelect}>
-              <span className="colortxt-point mr5">{selectItems.length}</span>
-              {covi.getDic('Save')}
-            </a>
-          ) || (
-            <>
-            </>
-          )}
+            )) ||
+            (select && (
+              <a
+                className="Okbtn"
+                onClick={
+                  !downloading
+                    ? selectItems.length > 1
+                      ? handleAllDownLoad
+                      : handleSelect
+                    : null
+                }
+              >
+                <span className="colortxt-point mr5">{selectItems.length}</span>
+                {downloading
+                  ? covi.getDic('Compressing')
+                  : selectItems.length > 1
+                  ? covi.getDic('AllSave')
+                  : covi.getDic('Save')}
+              </a>
+            )) || <></>}
         </div>
         {(files && files.length > 0 && (
           <Scrollbars
