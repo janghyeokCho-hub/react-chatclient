@@ -92,8 +92,12 @@ class coviFile {
 
           let width = size.resizeWidth;
           let height = size.resizeHeight;
-          let thumbDataURL = this.makeThumb(thumb, width, height, orientation)
-            .data;
+          let thumbDataURL = this.makeThumb(
+            thumb,
+            width,
+            height,
+            orientation,
+          ).data;
 
           const newFileInfo = {
             ...fileInfo,
@@ -358,8 +362,44 @@ export const getInstance = () => {
     return fileInstance;
   }
 };
+/**
+ * 파일들 데이터 받아와 압축하기
+ * @param {*} files
+ * @returns {*} { results : [ {data, status, ...} ] , JSZip : require('jszip')() }
+ */
+const makeZipFile = files => {
+  const JSZip = require('jszip')();
 
-export const downloadByTokenAll = async fileItems => {
+  return Promise.all(
+    files.map(item => {
+      return new Promise((resolve, reject) => {
+        messageApi.getFileByToken({ token: item.token }).then(resp => {
+          if (resp.status === 200) JSZip.file(item.fileName, resp.data);
+          resp.fileName = item.fileName;
+          resolve(resp);
+        });
+      });
+    }),
+  )
+    .then(results => {
+      return { results, JSZip };
+    })
+    .catch(err => {
+      console.error(err);
+      return err;
+    });
+};
+/**
+ * 여러 파일 다운로드
+ * @param {*} fileItems
+ * @param {*} isZip 압축여부 true || false
+ * @returns
+ */
+export const downloadByTokenAll = async (
+  fileItems,
+  setDownloading,
+  isZip = false,
+) => {
   /**
    * 2021.09.28
    * 다운로드 경로확인 ON 설정일 때
@@ -373,21 +413,54 @@ export const downloadByTokenAll = async fileItems => {
      * 2021.10.19
      * 다운로드 경로확인 옵션 X일 경우: filePath가 경로
      * 다운로드 경로확인 옵션 O일경우: filePaths가 경로
-     * 
+     *
      * 다운로드 경로확인 옵션 X일 경우에 중복파일명 덮어쓰기 방지를 위해 경로를 array로 넘김
      */
     savePath.filePaths = [savePath.filePath];
   }
-  return fileItems.map(item => {
-    return new Promise((resolve, reject) => {
-      downloadFiles(item.token, savePath?.filePaths, item.name, data => {
-        if (data.result !== 'SUCCESS') {
-          resolve({ result: false, data: data });
+
+  // 압축 유무
+  if (isZip) {
+    setDownloading(true);
+    const { results, JSZip } = await makeZipFile(fileItems);
+    let check = true;
+    let message = '';
+
+    for (const result of results) {
+      if (result.status !== 200) {
+        check = false;
+        message += result.fileName;
+        if (result.status === 204) {
+          message += ` ${covi.getDic('Msg_FileExpired')}\n`;
+        } else if (result.status === 403) {
+          message += ` ${covi.getDic('Msg_FilePermission')}\n`;
         }
-        resolve({ result: true, data: null });
+      }
+    }
+
+    if (Object.keys(JSZip?.files).length) {
+      let fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
+      JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
+        if (DEVICE_TYPE == 'b') {
+          fileDownload(data, fileName);
+        } else {
+          saveFile(savePath?.filePaths, fileName, data, { isZip: true });
+        }
+      });
+    }
+    return { result: check, data: { message } };
+  } else {
+    return fileItems.map(item => {
+      return new Promise((resolve, reject) => {
+        downloadFiles(item.token, savePath?.filePaths, item.fileName, data => {
+          if (data.result !== 'SUCCESS') {
+            resolve({ result: false, data: data });
+          }
+          resolve({ result: true, data: null });
+        });
       });
     });
-  });
+  }
 };
 
 const downloadFiles = (
@@ -414,11 +487,10 @@ const downloadFiles = (
       if (DEVICE_TYPE == 'b') {
         fileDownload(response.data, fileName);
       } else {
-        //const blobData = [response.data];
-        //const blob = new Blob(blobData, { type: 'application/octet-stream' });
         saveFile(savePath, fileName, response.data, {
           execute: execute,
           token: token,
+          isZip: false,
         });
       }
       callback({ result: 'SUCCESS', message: '' });
@@ -435,7 +507,15 @@ export const downloadByToken = async (
 ) => {
   const savePath = await getDownloadPath({ defaultFileName: fileName });
   if (DEVICE_TYPE === 'd' && savePath?.canceled) return null;
-  else downloadFiles(token, savePath?.filePath, fileName, callback, progress, execute);
+  else
+    downloadFiles(
+      token,
+      savePath?.filePath,
+      fileName,
+      callback,
+      progress,
+      execute,
+    );
 };
 
 export const downloadMessageData = async (roomID, fileName) => {

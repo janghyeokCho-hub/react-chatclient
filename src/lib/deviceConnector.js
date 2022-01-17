@@ -711,20 +711,23 @@ export const saveFile = (path, name, data, options) => {
       console.log('FileSave Error  ', err);
       // error 처리 ?
     } else {
-      try {
-        // savePath(다운로드 경로)가 중복될 경우 파일을 덮어씌우기 전에 indexeddb에서 이전 파일의 정보 삭제
-        await filterRemoveByIndex(
-          'files',
-          'path',
-          savePath,
-          dup => dup !== options.token,
-        );
-      } catch (_err) {
-        console.log('Insert FileInfo Error : ', _err);
+      // 압축 파일이 아닌 경우
+      if (!options.isZip) {
+        try {
+          // savePath(다운로드 경로)가 중복될 경우 파일을 덮어씌우기 전에 indexeddb에서 이전 파일의 정보 삭제
+          await filterRemoveByIndex(
+            'files',
+            'path',
+            savePath,
+            dup => dup !== options.token,
+          );
+        } catch (_err) {
+          console.log('Insert FileInfo Error : ', _err);
+        }
+        insert('files', { token: options.token, path: savePath }, () => {
+          console.log('file info save');
+        });
       }
-      insert('files', { token: options.token, path: savePath }, () => {
-        console.log('file info save');
-      });
 
       if (options.execute) {
         getRemote().shell.openPath(savePath);
