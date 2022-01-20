@@ -362,43 +362,68 @@ export const getInstance = () => {
     return fileInstance;
   }
 };
+
+/**
+ * 파일 토큰 유효 검사 동기화 실행
+ * @param {*} array 파일 목록 배열
+ * @param {*} handleProgress Progress Callback Function
+ * @returns
+ */
+const checkByTokens = (array, handleProgress, totalSize = 0) =>
+  array.reduce(
+    (prevPrms, currElem, i) =>
+      prevPrms.then(async prevRes => {
+        const currRes = await messageApi.getFileByToken(
+          { token: currElem.token },
+          e => {
+            let { loaded } = e;
+            if (typeof handleProgress === 'function') {
+              // 현재 진행파일 이전 파일들의 size 합
+              const completeSize = array.reduce((acc, cur, j) => {
+                return i > j ? (acc += cur.size) : acc;
+              }, 0);
+
+              handleProgress(loaded + completeSize, totalSize);
+            }
+          },
+        );
+        currRes.fileName = currElem.fileName;
+        return [...prevRes, currRes];
+      }),
+    Promise.resolve([]),
+  );
+
 /**
  * 파일들 데이터 받아와 압축하기
  * @param {*} files
  * @returns {*} { results : [ {data, status, ...} ] , JSZip : require('jszip')() }
  */
-const makeZipFile = files => {
+const makeZipFile = async (files, handleProgress) => {
   const JSZip = require('jszip')();
+  // 모든 파일 size 합
+  const totalSize = files.reduce((acc, cur) => {
+    return (acc += cur.size);
+  }, 0);
+  // progress 위한 비동기에서 동기실행으로 변환
+  const results = await checkByTokens(files, handleProgress, totalSize);
 
-  return Promise.all(
-    files.map(item => {
-      return new Promise((resolve, reject) => {
-        messageApi.getFileByToken({ token: item.token }).then(resp => {
-          if (resp.status === 200) JSZip.file(item.fileName, resp.data);
-          resp.fileName = item.fileName;
-          resolve(resp);
-        });
-      });
-    }),
-  )
-    .then(results => {
-      return { results, JSZip };
-    })
-    .catch(err => {
-      console.error(err);
-      return err;
-    });
+  for (const result of results) {
+    if (result.status === 200) JSZip.file(result.fileName, result.data);
+  }
+
+  return { results, JSZip };
 };
 /**
  * 여러 파일 다운로드
  * @param {*} fileItems
  * @param {*} isZip 압축여부 true || false
+ * @param {*} handleProgress
  * @returns
  */
 export const downloadByTokenAll = async (
   fileItems,
-  setDownloading,
   isZip = false,
+  handleProgress = null,
 ) => {
   /**
    * 2021.09.28
@@ -421,37 +446,41 @@ export const downloadByTokenAll = async (
 
   // 압축 유무
   if (isZip) {
-    setDownloading(true);
-    const { results, JSZip } = await makeZipFile(fileItems);
+    const { results, JSZip } = await makeZipFile(fileItems, handleProgress);
     let check = true;
     let message = '';
 
-    for (const result of results) {
-      if (result.status !== 200) {
-        check = false;
-        message += result.fileName;
-        if (result.status === 204) {
-          message += ` ${covi.getDic('Msg_FileExpired')}\n`;
-        } else if (result.status === 403) {
-          message += ` ${covi.getDic('Msg_FilePermission')}\n`;
-        }
-      }
-    }
+    // 모두 만료된 파일인가 확인
+    const expiredCheck = results.every(result => {
+      return result.status === 204;
+    });
+    // 모두 권한이 없는 파일인가 확인
+    const permissionCheck = results.every(result => {
+      return result.status === 403;
+    });
 
-    if (Object.keys(JSZip?.files).length) {
-      let fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
-      JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
-        if (DEVICE_TYPE == 'b') {
-          fileDownload(data, fileName);
-        } else {
-          saveFile(savePath?.filePaths, fileName, data, { isZip: true });
-        }
-      });
+    if (expiredCheck) {
+      check = false;
+      message = covi.getDic('Msg_FileExpired');
+    } else if (permissionCheck) {
+      check = false;
+      message = covi.getDic('Msg_FilePermission');
+    } else {
+      if (Object.keys(JSZip?.files).length) {
+        const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
+        JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
+          if (DEVICE_TYPE == 'b') {
+            fileDownload(data, fileName);
+          } else {
+            saveFile(savePath?.filePaths, fileName, data, { isZip: true });
+          }
+        });
+      }
     }
     return { result: check, data: { message } };
   } else {
     return fileItems.map(item => {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         downloadFiles(item.token, savePath?.filePaths, item.fileName, data => {
           if (data.result !== 'SUCCESS') {
             resolve({ result: false, data: data });
