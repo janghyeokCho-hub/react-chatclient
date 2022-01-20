@@ -40,6 +40,7 @@ import ProfileBox from '@/components/common/ProfileBox';
 import { openProfilePopup } from '@/lib/profileUtil';
 import { convertFileSize, downloadByTokenAll } from '@/lib/fileUpload/coviFile';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
+import Progress from '@C/common/buttons/Progress';
 
 // WYSIWYG Editor
 import '@toast-ui/editor/dist/toastui-editor.css';
@@ -92,10 +93,15 @@ function _convertFileSize(fileSize) {
 }
 
 // href={getDownloadPath({userId: loginId, accessKey: file.fileID, serviceType: file.serviceType})}
-function _DrawFile({ files = [], loginId }) {
+function _DrawFile({
+  files = [],
+  loginId,
+  progressData,
+  setProgressData,
+  handleProgress,
+}) {
   const dispatch = useDispatch();
   const [isSaving, setIsSaving] = useState(false);
-  const [downloading, setDownloading] = useState(false);
 
   /**
    * 2021.06.09
@@ -155,34 +161,40 @@ function _DrawFile({ files = [], loginId }) {
       savePath.filePaths = [savePath.filePath];
     }
 
-    setDownloading(true);
-    const { results, JSZip } = await makeZipFile({ userId: loginId }, files);
+    const { results, JSZip } = await makeZipFile(
+      { userId: loginId },
+      files,
+      handleProgress,
+    );
     let check = true;
     let message = '';
 
-    for (const result of results) {
-      if (result.status !== 200) {
-        check = false;
-        message += result.fileName;
-        if (result.status === 204) {
-          message += ` ${covi.getDic('Msg_FileExpired')}\n`;
-        } else if (result.status === 403) {
-          message += ` ${covi.getDic('Msg_FilePermission')}\n`;
-        } else {
-          message += ` ${covi.getDic('Msg_Error')}\n`;
-        }
-      }
-    }
+    // 모두 만료된 파일인가 확인
+    const expiredCheck = results.every(result => {
+      return result.status === 204;
+    });
+    // 모두 권한이 없는 파일인가 확인
+    const permissionCheck = results.every(result => {
+      return result.status === 403;
+    });
 
-    if (Object.keys(JSZip?.files).length) {
-      let fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
-      JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
-        if (DEVICE_TYPE === 'b') {
-          fileDownload(data, fileName);
-        } else {
-          saveFile(savePath?.filePaths, fileName, data, { isZip: true });
-        }
-      });
+    if (expiredCheck) {
+      check = false;
+      message = covi.getDic('Msg_FileExpired');
+    } else if (permissionCheck) {
+      check = false;
+      message = covi.getDic('Msg_FilePermission');
+    } else {
+      if (Object.keys(JSZip?.files).length) {
+        const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
+        JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
+          if (DEVICE_TYPE === 'b') {
+            fileDownload(data, fileName);
+          } else {
+            saveFile(savePath?.filePaths, fileName, data, { isZip: true });
+          }
+        });
+      }
     }
 
     openPopup(
@@ -192,7 +204,8 @@ function _DrawFile({ files = [], loginId }) {
       },
       dispatch,
     );
-    setDownloading(false);
+    // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
+    setProgressData(null);
   };
 
   // < div style={{}}/>
@@ -209,9 +222,9 @@ function _DrawFile({ files = [], loginId }) {
           {files.length > 1 && (
             <a
               className="Okbtn"
-              onClick={!downloading ? handleAllDownLoad : null}
+              onClick={progressData ? null : handleAllDownLoad}
             >
-              {downloading
+              {progressData
                 ? covi.getDic('Compressing')
                 : covi.getDic('AllSave')}
             </a>
@@ -252,7 +265,14 @@ function _DrawFile({ files = [], loginId }) {
   );
 }
 
-function _DrawNote({ noteInfo, onUserNameClicked, loginId }) {
+function _DrawNote({
+  noteInfo,
+  onUserNameClicked,
+  loginId,
+  progressData,
+  setProgressData,
+  handleProgress,
+}) {
   if (!noteInfo) {
     return null;
   }
@@ -382,7 +402,13 @@ function _DrawNote({ noteInfo, onUserNameClicked, loginId }) {
             {/* <Viewer ref={viewerRef}/> */}
             <Viewer ref={viewerRef} />
           </div>
-          <_DrawFile files={noteInfo.files} loginId={loginId} />
+          <_DrawFile
+            files={noteInfo.files}
+            loginId={loginId}
+            progressData={progressData}
+            setProgressData={setProgressData}
+            handleProgress={handleProgress}
+          />
         </div>
       </div>
     </>
@@ -407,6 +433,20 @@ export default function NoteView({ match }) {
   const { removeNote } = useNoteList({ viewType });
   const [_, setViewState] = useViewState();
   const loginId = useSelector(({ login }) => login.id);
+
+  const [progressData, setProgressData] = useState(null);
+
+  /**
+   * @param {*} load
+   * @param {*} total
+   */
+  const handleProgress = useCallback((load, total) => {
+    setProgressData({ load, total });
+  }, []);
+
+  const finishProgress = useCallback(() => {
+    setProgressData(null);
+  }, []);
 
   // Electron subwindow checker
   const isNewWin =
@@ -548,8 +588,46 @@ export default function NoteView({ match }) {
             noteInfo={noteInfo}
             onUserNameClicked={openProfile}
             loginId={loginId}
+            progressData={progressData}
+            setProgressData={setProgressData}
+            handleProgress={handleProgress}
           />
         </Scrollbars>
+        {progressData && (
+          // chatstyle로 옮기기
+          <div
+            style={{
+              bottom: 80,
+              height: '50px',
+              maxWidth: '70%',
+              display: 'flex',
+              margin: '0 auto',
+              flexWrap: 'wrap',
+              position: 'sticky',
+              textAlign: 'center',
+              alignItems: 'center',
+              borderRadius: '30px',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(200, 200, 200, 0.9)',
+            }}
+          >
+            <div style={{ width: '100%' }}>
+              <span>
+                {`${covi.getDic('Compressing')} ( ${convertFileSize(
+                  progressData.load,
+                )} / ${convertFileSize(progressData.total)} )`}
+              </span>
+            </div>
+            <div style={{ width: '100%' }}>
+              <Progress
+                id="progress"
+                load={progressData.load}
+                total={progressData.total}
+                handleFinish={finishProgress}
+              ></Progress>
+            </div>
+          </div>
+        )}
         <div className="layer-bottom-btn-wrap right">
           <a className="btn_delete" onClick={handleDeleteNote}>
             {covi.getDic('Delete')}

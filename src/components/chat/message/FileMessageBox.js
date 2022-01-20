@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import File from '@C/chat/message/types/file';
+import Progress from '@C/common/buttons/Progress';
 import { convertFileSize } from '@/lib/fileUpload/coviFile';
 import { getDic } from '@/lib/util/configUtil';
 import { openPopup } from '@/lib/common';
@@ -9,7 +10,7 @@ import { isAllImage, downloadByTokenAll } from '@/lib/fileUpload/coviFile';
 import FileThumbList from '@C/chat/message/types/FileThumbList';
 
 const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
-  const [downloading, setDownloading] = useState(false);
+  const [progressData, setProgressData] = useState(null);
   const dispatch = useDispatch();
   const handleFileList = fileObj => {
     let isAllImg = isAllImage(fileObj);
@@ -38,14 +39,36 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
               <span className="file-func-list">
                 <span
                   className="file-func-txt"
-                  onClick={downloading ? null : handleAllDownLoad}
+                  onClick={progressData ? null : handleAllDownLoad}
                 >
-                  {downloading
-                    ? covi.getDic('Compressing')
+                  {progressData
+                    ? `${covi.getDic('Compressing')} ( ${convertFileSize(
+                        progressData.load,
+                      )} / ${convertFileSize(progressData.total)} )`
                     : covi.getDic('AllSave')}
                 </span>
               </span>
             </li>
+
+            {progressData && (
+              <li>
+                <div
+                  style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    top: '-5px',
+                    left: '0px',
+                  }}
+                >
+                  <Progress
+                    load={progressData.load}
+                    total={progressData.total}
+                    handleFinish={finishProgress}
+                  ></Progress>
+                </div>
+              </li>
+            )}
           </ul>
         </div>
       );
@@ -69,14 +92,36 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
               <span className="file-func-list">
                 <span
                   className="file-func-txt"
-                  onClick={downloading ? null : handleAllDownLoad}
+                  onClick={progressData ? null : handleAllDownLoad}
                 >
-                  {downloading
-                    ? covi.getDic('Compressing')
+                  {progressData
+                    ? `${covi.getDic('Compressing')} ( ${convertFileSize(
+                        progressData.load,
+                      )} / ${convertFileSize(progressData.total)} )`
                     : covi.getDic('AllSave')}
                 </span>
               </span>
             </li>
+
+            {progressData && (
+              <li>
+                <div
+                  style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    top: '-5px',
+                    left: '0px',
+                  }}
+                >
+                  <Progress
+                    load={progressData.load}
+                    total={progressData.total}
+                    handleFinish={finishProgress}
+                  ></Progress>
+                </div>
+              </li>
+            )}
           </ul>
           <p style={{ marginLeft: 15, padding: 10, color: '#999' }}>
             {inprogress &&
@@ -92,10 +137,20 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
       );
     }
   };
+  /**
+   * @param {*} load
+   * @param {*} total
+   */
+  const handleProgress = useCallback((load, total) => {
+    setProgressData({ load, total });
+  }, []);
+
+  const finishProgress = useCallback(() => {
+    setProgressData(null);
+  }, []);
 
   const handleAllDownLoad = async () => {
-    const resp = await downloadByTokenAll(fileObj, setDownloading, true);
-    setDownloading(false);
+    const resp = await downloadByTokenAll(fileObj, true, handleProgress);
     if (resp !== null) {
       if (!resp.result) {
         openPopup(
@@ -115,6 +170,8 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
         );
       }
     }
+    // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
+    setProgressData(null);
   };
 
   const handlePreview = useCallback(

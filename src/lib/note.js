@@ -342,12 +342,49 @@ export function downloadFile({
   );
 }
 
-export async function makeZipFile(userId = null, files) {
+export async function makeZipFile(userId = null, files, handleProgress = null) {
   // 우선 쪽지에서만 사용
   const serviceType = 'NOTE';
   const module = 'CR';
   const JSZip = require('jszip')();
 
+  // 모든 파일 size 합
+  const totalSize = files.reduce((acc, cur) => {
+    return (acc += cur.fileSize);
+  }, 0);
+
+  const results = await files.reduce(
+    (prevPrms, currElem, i) =>
+      prevPrms.then(async prevRes => {
+        const currRes = await filesvr(
+          'get',
+          `/na/download/${module}/${userId}/${currElem.fileID}/${serviceType}`,
+          {},
+          {},
+          e => {
+            let { loaded } = e;
+            if (typeof handleProgress === 'function') {
+              // 현재 진행파일 이전 파일들의 size 합
+              const completeSize = files.reduce((acc, cur, j) => {
+                return i > j ? (acc += cur.fileSize) : acc;
+              }, 0);
+
+              handleProgress(loaded + completeSize, totalSize);
+            }
+          },
+        );
+        currRes.fileName = currElem.fileName;
+        return [...prevRes, currRes];
+      }),
+    Promise.resolve([]),
+  );
+
+  for (const result of results) {
+    if (result.status === 200) JSZip.file(result.fileName, result.data);
+  }
+
+  return { results, JSZip };
+  /*
   return Promise.all(
     files.map(item => {
       return new Promise((resolve, reject) => {
@@ -356,7 +393,6 @@ export async function makeZipFile(userId = null, files) {
           `/na/download/${module}/${userId}/${item.fileID}/${serviceType}`,
         )
           .then(resp => {
-            console.log(resp);
             if (resp.status === 200) JSZip.file(item.fileName, resp.data);
             resp.fileName = item.fileName;
             resolve(resp);
@@ -374,6 +410,7 @@ export async function makeZipFile(userId = null, files) {
       console.error(err);
       return err;
     });
+    */
 }
 
 // 쪽지 발송
