@@ -21,21 +21,15 @@ import OrgChart from '@C/orgchart/OrgChart';
 import Scrollbars from 'react-custom-scrollbars';
 
 const CreateChannel = ({ headerName }) => {
-  const {
-    viewType,
-    rooms,
-    selectId,
-    myInfo,
-    channelCategories,
-    sender,
-  } = useSelector(({ room, channel, login }) => ({
-    viewType: room.viewType,
-    rooms: room.rooms,
-    selectId: room.selectId,
-    myInfo: login.userInfo,
-    channelCategories: channel.categories,
-    sender: login.id,
-  }));
+  const { viewType, rooms, selectId, myInfo, channelCategories, sender } =
+    useSelector(({ room, channel, login }) => ({
+      viewType: room.viewType,
+      rooms: room.rooms,
+      selectId: room.selectId,
+      myInfo: login.userInfo,
+      channelCategories: channel.categories,
+      sender: login.id,
+    }));
 
   // 채널 기본 정보
   const [selectStage, setSelectStage] = useState(0);
@@ -311,7 +305,7 @@ const CreateChannel = ({ headerName }) => {
   };
 
   return (
-    <div className="layerWrap Layer-AddChannel" style={{ width: '400px' }}>
+    <div className="layerWrap Layer-AddChannel">
       <div className="modalheader">
         <a className="closebtn" onClick={handleClose}></a>
         <div className="modaltit">
