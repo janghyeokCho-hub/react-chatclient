@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useMemo, Fragment } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import Config from '@/config/config';
 import { Scrollbars } from 'react-custom-scrollbars';
 import {
   clearLayer,
-  openLayer,
-  appendLayer,
   deleteLayer,
   openPopup,
   getSysMsgFormatStr,
@@ -21,6 +19,7 @@ import {
 import { setMoveView } from '@/modules/message';
 import LoadingWrap from '@/components/common/LoadingWrap';
 import { format } from 'date-fns';
+import Progress from '@C/common/buttons/Progress';
 
 // [0] PC [1] MOBILE
 const downloadOption = getConfig('FileAttachViewMode') || [];
@@ -75,8 +74,13 @@ const Photo = ({ photo, onSelect, selectMode }) => {
     setCheck(false);
   }, [selectMode]);
 
-  const handleCheck = (fileID, fileName) => {
-    if (onSelect({ token: fileID, fileName }, !check)) {
+  const handleCheck = file => {
+    if (
+      onSelect(
+        { token: file.FileID, fileName: file.FileName, size: file.FileSize },
+        !check,
+      )
+    ) {
       setCheck(!check);
     }
   };
@@ -222,7 +226,7 @@ const PhotoSummary = ({ roomId }) => {
   const [pageNum, setPageNum] = useState(1);
   const [loading, setLoading] = useState(false);
   const [pageEnd, setPageEnd] = useState(false);
-  const [downloading, setDownloading] = useState(false);
+  const [progressData, setProgressData] = useState(null);
 
   const handleClose = () => {
     deleteLayer(dispatch);
@@ -330,9 +334,20 @@ const PhotoSummary = ({ roomId }) => {
     return true;
   };
 
+  /**
+   * @param {*} load
+   * @param {*} total
+   */
+  const handleProgress = useCallback((load, total) => {
+    setProgressData({ load, total });
+  }, []);
+
+  const finishProgress = useCallback(() => {
+    setProgressData(null);
+  }, []);
+
   const handleAllDownLoad = async () => {
-    const resp = await downloadByTokenAll(selectItems, setDownloading, true);
-    setDownloading(false);
+    const resp = await downloadByTokenAll(selectItems, true, handleProgress);
     if (resp !== null) {
       if (!resp.result) {
         openPopup(
@@ -352,6 +367,8 @@ const PhotoSummary = ({ roomId }) => {
         );
       }
     }
+    // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
+    setProgressData(null);
   };
 
   useEffect(() => {
@@ -470,15 +487,15 @@ const PhotoSummary = ({ roomId }) => {
             <a
               className="Okbtn"
               onClick={
-                !downloading
-                  ? selectItems.length > 1
-                    ? handleAllDownLoad
-                    : handleSelect
-                  : null
+                progressData
+                  ? null
+                  : selectItems.length > 1
+                  ? handleAllDownLoad
+                  : handleSelect
               }
             >
               <span className="colortxt-point mr5">{selectItems.length}</span>
-              {downloading
+              {progressData
                 ? covi.getDic('Compressing')
                 : selectItems.length > 1
                 ? covi.getDic('AllSave')
@@ -500,6 +517,40 @@ const PhotoSummary = ({ roomId }) => {
             style={{ width: '100%', textAlign: 'center', marginTop: '30px' }}
           >
             {covi.getDic('Msg_NoContent')}
+          </div>
+        )}
+        {progressData && (
+          <div
+            style={{
+              bottom: 10,
+              height: '50px',
+              maxWidth: '70%',
+              display: 'flex',
+              margin: '0 auto',
+              flexWrap: 'wrap',
+              position: 'sticky',
+              textAlign: 'center',
+              alignItems: 'center',
+              borderRadius: '30px',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(200, 200, 200, 0.9)',
+            }}
+          >
+            <div style={{ width: '100%' }}>
+              <span>
+                {`${covi.getDic('Compressing')} ( ${convertFileSize(
+                  progressData.load,
+                )} / ${convertFileSize(progressData.total)} )`}
+              </span>
+            </div>
+            <div style={{ width: '100%' }}>
+              <Progress
+                id="progress"
+                load={progressData.load}
+                total={progressData.total}
+                handleFinish={finishProgress}
+              ></Progress>
+            </div>
           </div>
         )}
       </div>
