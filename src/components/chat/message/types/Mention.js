@@ -6,6 +6,7 @@ import { getJobInfo } from '@/lib/common';
 import useMemberInfo from '@/hooks/useMemberInfo';
 
 const Mention = ({ marking, mentionInfo, type, targetId }) => {
+  // chatIsMine 내가 보낸 메시지인지
   const dispatch = useDispatch();
   const [value, setValue] = useState('');
   const [memberInfo, setMemberInfo] = useState(null);
@@ -68,8 +69,9 @@ const Mention = ({ marking, mentionInfo, type, targetId }) => {
     <>
       {memberInfo && (
         <span
+          className="mention"
           style={{
-            color: memberInfo.isMine ? 'pink' : 'black',
+            color: memberInfo.isMine && 'pink',
             fontWeight: 'bold',
             cursor: 'pointer',
           }}
