@@ -8,7 +8,7 @@ const getAttribute = tag => {
     /(\S+)=["']?((?:.(?!["']?\s+(?:\S+)=|[>"']))+.)["']?/,
     'gi',
   );
-  let attrs = { };
+  let attrs = {};
   const match = tag.match(attrPattern);
 
   if (match && match.length > 0) {
@@ -25,14 +25,21 @@ const getAttribute = tag => {
         }
 
         attrs[key] = value;
-      } catch (e) { }
+      } catch (e) {}
     });
   }
 
   return attrs;
 };
 
-const Message = ({ children, className, eleId, marking, mentionInfo, isMine }) => {
+const Message = ({
+  children,
+  className,
+  eleId,
+  marking,
+  mentionInfo,
+  isMine,
+}) => {
   const [fontSize] = useChatFontSize();
   const [myChatColor] = useMyChatFontColor();
   const drawText = useMemo(() => {
