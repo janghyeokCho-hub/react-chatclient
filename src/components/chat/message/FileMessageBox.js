@@ -42,7 +42,7 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
                   onClick={progressData ? null : handleAllDownLoad}
                 >
                   {progressData
-                    ? `${covi.getDic('Compressing')} ( ${convertFileSize(
+                    ? `${covi.getDic('Downloading')} ( ${convertFileSize(
                         progressData.load,
                       )} / ${convertFileSize(progressData.total)} )`
                     : covi.getDic('AllSave')}
@@ -95,7 +95,7 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
                   onClick={progressData ? null : handleAllDownLoad}
                 >
                   {progressData
-                    ? `${covi.getDic('Compressing')} ( ${convertFileSize(
+                    ? `${covi.getDic('Downloading')} ( ${convertFileSize(
                         progressData.load,
                       )} / ${convertFileSize(progressData.total)} )`
                     : covi.getDic('AllSave')}
