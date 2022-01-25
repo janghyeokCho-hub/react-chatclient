@@ -178,7 +178,7 @@ const Photo = ({ photo, onSelect, selectMode }) => {
       className={check ? 'photocheck' : ''}
       onClick={e => {
         if (selectMode) {
-          handleCheck(photo.FileID, photo.FileName);
+          handleCheck(photo);
         } else {
           handleMenu(photo);
         }
@@ -196,7 +196,7 @@ const Photo = ({ photo, onSelect, selectMode }) => {
               readOnly={true}
               onClick={e => {
                 if (selectMode) {
-                  handleCheck(photo.FileID, photo.FileName);
+                  handleCheck(photo);
                 } else {
                   handleMenu(photo);
                 }
