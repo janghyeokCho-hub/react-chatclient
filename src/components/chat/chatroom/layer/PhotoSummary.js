@@ -24,7 +24,7 @@ import Progress from '@C/common/buttons/Progress';
 // [0] PC [1] MOBILE
 const downloadOption = getConfig('FileAttachViewMode') || [];
 
-const PhotoList = ({ photos, onSelect, selectMode }) => {
+const PhotoList = ({ photos, onSelect, selectMode, handleProgress }) => {
   return (
     <ul className="photo-list">
       {photos &&
@@ -34,6 +34,7 @@ const PhotoList = ({ photos, onSelect, selectMode }) => {
             photo={item}
             onSelect={onSelect}
             selectMode={selectMode}
+            handleProgress={handleProgress}
           ></Photo>
         ))}
     </ul>
@@ -66,7 +67,7 @@ const drawThumbnail = photo => {
   );
 };
 
-const Photo = ({ photo, onSelect, selectMode }) => {
+const Photo = ({ photo, onSelect, selectMode, handleProgress }) => {
   const [check, setCheck] = useState(false);
   const dispatch = useDispatch();
 
@@ -137,25 +138,32 @@ const Photo = ({ photo, onSelect, selectMode }) => {
         buttonArrs.push({
           name: covi.getDic('Download'),
           callback: () => {
-            downloadByToken(item.FileID, downloadPath + item.FileName, data => {
-              if (data.result != 'SUCCESS') {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: data.message,
-                  },
-                  dispatch,
-                );
-              } else {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_DownloadSuccess'),
-                  },
-                  dispatch,
-                );
-              }
-            });
+            downloadByToken(
+              item.FileID,
+              item.FileName,
+              data => {
+                if (data.result != 'SUCCESS') {
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: data.message,
+                    },
+                    dispatch,
+                  );
+                } else {
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: covi.getDic('Msg_DownloadSuccess'),
+                    },
+                    dispatch,
+                  );
+                }
+              },
+              e => {
+                handleProgress(e.loaded, e.total);
+              },
+            );
           },
         });
       }
@@ -178,7 +186,7 @@ const Photo = ({ photo, onSelect, selectMode }) => {
       className={check ? 'photocheck' : ''}
       onClick={e => {
         if (selectMode) {
-          handleCheck(photo.FileID, photo.FileName);
+          handleCheck(photo);
         } else {
           handleMenu(photo);
         }
@@ -196,7 +204,7 @@ const Photo = ({ photo, onSelect, selectMode }) => {
               readOnly={true}
               onClick={e => {
                 if (selectMode) {
-                  handleCheck(photo.FileID, photo.FileName);
+                  handleCheck(photo);
                 } else {
                   handleMenu(photo);
                 }
@@ -233,8 +241,6 @@ const PhotoSummary = ({ roomId }) => {
   };
 
   const handleSelect = async () => {
-    setSelect(!select);
-
     if (select) {
       // 이전 상태가 선택모드였다면 변경시 cnt도 0으로 초기화
 
@@ -259,37 +265,34 @@ const PhotoSummary = ({ roomId }) => {
         // 만료처리 등 처리 필요
         // 다운로드 가능 && 선택개수 15개 미만
         else if (selectItems.length <= 15) {
-          const arrDownloadList = await downloadByTokenAll(selectItems);
-          if (arrDownloadList) {
-            Promise.all(arrDownloadList).then(values => {
-              // 실패한 조건만 탐색
-              const downloaded = values.reduce(
-                (acc, val) => {
-                  if (val.result === false) return val;
-                  return acc;
+          // 2개 이상은 압축
+          const isZip = selectItems.length > 1;
+          const resp = await downloadByTokenAll(
+            selectItems,
+            isZip,
+            handleProgress,
+          );
+          if (resp !== null) {
+            if (!resp.result) {
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: resp.data.message,
                 },
-                { result: true, data: null },
+                dispatch,
               );
-
-              if (!downloaded.result) {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: downloaded.data.message,
-                  },
-                  dispatch,
-                );
-              } else {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_Save'),
-                  },
-                  dispatch,
-                );
-              }
-            });
+            } else {
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: covi.getDic('Msg_Save'),
+                },
+                dispatch,
+              );
+            }
           }
+          // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
+          setProgressData(null);
         } else {
           openPopup(
             {
@@ -304,6 +307,7 @@ const PhotoSummary = ({ roomId }) => {
       }
       setSelectItems([]);
     }
+    setSelect(!select);
   };
 
   const handleSelectItem = (item, check) => {
@@ -345,31 +349,6 @@ const PhotoSummary = ({ roomId }) => {
   const finishProgress = useCallback(() => {
     setProgressData(null);
   }, []);
-
-  const handleAllDownLoad = async () => {
-    const resp = await downloadByTokenAll(selectItems, true, handleProgress);
-    if (resp !== null) {
-      if (!resp.result) {
-        openPopup(
-          {
-            type: 'Alert',
-            message: resp.data.message,
-          },
-          dispatch,
-        );
-      } else {
-        openPopup(
-          {
-            type: 'Alert',
-            message: covi.getDic('Msg_Save'),
-          },
-          dispatch,
-        );
-      }
-    }
-    // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
-    setProgressData(null);
-  };
 
   useEffect(() => {
     // fileData 호출
@@ -432,6 +411,7 @@ const PhotoSummary = ({ roomId }) => {
                 photos={sameDateArr}
                 selectMode={select}
                 onSelect={handleSelectItem}
+                handleProgress={handleProgress}
               ></PhotoList>,
             );
 
@@ -484,20 +464,9 @@ const PhotoSummary = ({ roomId }) => {
               </div>
             </a>
           )) || (
-            <a
-              className="Okbtn"
-              onClick={
-                progressData
-                  ? null
-                  : selectItems.length > 1
-                  ? handleAllDownLoad
-                  : handleSelect
-              }
-            >
+            <a className="Okbtn" onClick={progressData ? null : handleSelect}>
               <span className="colortxt-point mr5">{selectItems.length}</span>
-              {progressData
-                ? covi.getDic('Compressing')
-                : selectItems.length > 1
+              {selectItems.length > 1
                 ? covi.getDic('AllSave')
                 : covi.getDic('Save')}
             </a>
@@ -538,7 +507,7 @@ const PhotoSummary = ({ roomId }) => {
           >
             <div style={{ width: '100%' }}>
               <span>
-                {`${covi.getDic('Compressing')} ( ${convertFileSize(
+                {`${covi.getDic('Downloading')} ( ${convertFileSize(
                   progressData.load,
                 )} / ${convertFileSize(progressData.total)} )`}
               </span>

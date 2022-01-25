@@ -369,8 +369,17 @@ export const getInstance = () => {
  * @param {*} handleProgress Progress Callback Function
  * @returns
  */
-const checkByTokens = (array, handleProgress, totalSize = 0) =>
-  array.reduce(
+const checkByTokens = (array, handleProgress) => {
+  // 2개 이상인 파일일 경우
+  // n개의 파일의 사이즈 합 아니면 0
+  const totalSize =
+    array.length > 1
+      ? array.reduce((acc, cur) => {
+          return (acc += cur.size);
+        }, 0)
+      : 0;
+
+  return array.reduce(
     (prevPrms, currElem, i) =>
       prevPrms.then(async prevRes => {
         const currRes = await messageApi.getFileByToken(
@@ -382,8 +391,10 @@ const checkByTokens = (array, handleProgress, totalSize = 0) =>
               const completeSize = array.reduce((acc, cur, j) => {
                 return i > j ? (acc += cur.size) : acc;
               }, 0);
+              // 단일 파일일 경우 totalSize = 0
+              const total = totalSize ? totalSize : e.total;
 
-              handleProgress(loaded + completeSize, totalSize);
+              handleProgress(loaded + completeSize, total);
             }
           },
         );
@@ -392,26 +403,21 @@ const checkByTokens = (array, handleProgress, totalSize = 0) =>
       }),
     Promise.resolve([]),
   );
+};
 
 /**
  * 파일들 데이터 받아와 압축하기
  * @param {*} files
  * @returns {*} { results : [ {data, status, ...} ] , JSZip : require('jszip')() }
  */
-const makeZipFile = async (files, handleProgress) => {
+const makeZipFile = async files => {
   const JSZip = require('jszip')();
-  // 모든 파일 size 합
-  const totalSize = files.reduce((acc, cur) => {
-    return (acc += cur.size);
-  }, 0);
-  // progress 위한 비동기에서 동기실행으로 변환
-  const results = await checkByTokens(files, handleProgress, totalSize);
 
-  for (const result of results) {
-    if (result.status === 200) JSZip.file(result.fileName, result.data);
+  for (const file of files) {
+    if (file.status === 200) JSZip.file(file.fileName, file.data);
   }
 
-  return { results, JSZip };
+  return JSZip;
 };
 /**
  * 여러 파일 다운로드
@@ -444,28 +450,29 @@ export const downloadByTokenAll = async (
     savePath.filePaths = [savePath.filePath];
   }
 
-  // 압축 유무
-  if (isZip) {
-    const { results, JSZip } = await makeZipFile(fileItems, handleProgress);
-    let check = true;
-    let message = '';
+  let check = true;
+  let message = '';
+  const results = await checkByTokens(fileItems, handleProgress);
 
-    // 모두 만료된 파일인가 확인
-    const expiredCheck = results.every(result => {
-      return result.status === 204;
-    });
-    // 모두 권한이 없는 파일인가 확인
-    const permissionCheck = results.every(result => {
-      return result.status === 403;
-    });
+  // 모두 만료된 파일인가 확인
+  const expiredCheck = results.every(result => {
+    return result.status === 204;
+  });
+  // 모두 권한이 없는 파일인가 확인
+  const permissionCheck = results.every(result => {
+    return result.status === 403;
+  });
 
-    if (expiredCheck) {
-      check = false;
-      message = covi.getDic('Msg_FileExpired');
-    } else if (permissionCheck) {
-      check = false;
-      message = covi.getDic('Msg_FilePermission');
-    } else {
+  if (expiredCheck) {
+    check = false;
+    message = covi.getDic('Msg_FileExpired');
+  } else if (permissionCheck) {
+    check = false;
+    message = covi.getDic('Msg_FilePermission');
+  } else {
+    // 압축 여부
+    if (isZip) {
+      const JSZip = await makeZipFile(results);
       if (Object.keys(JSZip?.files).length) {
         const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
         JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
@@ -476,20 +483,20 @@ export const downloadByTokenAll = async (
           }
         });
       }
-    }
-    return { result: check, data: { message } };
-  } else {
-    return fileItems.map(item => {
-      return new Promise(resolve => {
-        downloadFiles(item.token, savePath?.filePaths, item.fileName, data => {
-          if (data.result !== 'SUCCESS') {
-            resolve({ result: false, data: data });
-          }
-          resolve({ result: true, data: null });
-        });
+    } else {
+      // 한 개만 있지만 배열 형태임
+      results.map(resilt => {
+        if (DEVICE_TYPE == 'b') {
+          fileDownload(resilt.data, resilt.fileName);
+        } else {
+          saveFile(savePath?.filePaths, resilt.fileName, resilt.data, {
+            isZip: false,
+          });
+        }
       });
-    });
+    }
   }
+  return { result: check, data: { message } };
 };
 
 const downloadFiles = (

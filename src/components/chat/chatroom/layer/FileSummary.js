@@ -25,7 +25,7 @@ import Progress from '@C/common/buttons/Progress';
 const synapDocViewServer = getConfig('SynapDocViewServer');
 const fileAttachViewMode = getConfig('FileAttachViewMode');
 
-const FileList = ({ files, onSelect, selectMode }) => {
+const FileList = ({ files, onSelect, selectMode, handleProgress }) => {
   return (
     <ul className="file-list">
       {files &&
@@ -35,13 +35,14 @@ const FileList = ({ files, onSelect, selectMode }) => {
             file={item}
             onSelect={onSelect}
             selectMode={selectMode}
+            handleProgress={handleProgress}
           ></File>
         ))}
     </ul>
   );
 };
 
-const File = ({ file, onSelect, selectMode }) => {
+const File = ({ file, onSelect, selectMode, handleProgress }) => {
   const [check, setCheck] = useState(false);
   const dispatch = useDispatch();
 
@@ -159,25 +160,32 @@ const File = ({ file, onSelect, selectMode }) => {
             {
               name: covi.getDic('Download'),
               callback: () => {
-                downloadByToken(item.FileID, item.FileName, data => {
-                  if (data.result !== 'SUCCESS') {
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: data.message,
-                      },
-                      dispatch,
-                    );
-                  } else {
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: covi.getDic('Msg_DownloadSuccess'),
-                      },
-                      dispatch,
-                    );
-                  }
-                });
+                downloadByToken(
+                  item.FileID,
+                  item.FileName,
+                  data => {
+                    if (data.result !== 'SUCCESS') {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: data.message,
+                        },
+                        dispatch,
+                      );
+                    } else {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: covi.getDic('Msg_DownloadSuccess'),
+                        },
+                        dispatch,
+                      );
+                    }
+                  },
+                  e => {
+                    handleProgress(e.loaded, e.total);
+                  },
+                );
               },
             },
           ],
@@ -233,25 +241,32 @@ const File = ({ file, onSelect, selectMode }) => {
             {
               name: covi.getDic('Download'),
               callback: () => {
-                downloadByToken(item.FileID, item.FileName, data => {
-                  if (data.result != 'SUCCESS') {
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: data.message,
-                      },
-                      dispatch,
-                    );
-                  } else {
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: covi.getDic('Msg_DownloadSuccess'),
-                      },
-                      dispatch,
-                    );
-                  }
-                });
+                downloadByToken(
+                  item.FileID,
+                  item.FileName,
+                  data => {
+                    if (data.result != 'SUCCESS') {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: data.message,
+                        },
+                        dispatch,
+                      );
+                    } else {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: covi.getDic('Msg_DownloadSuccess'),
+                        },
+                        dispatch,
+                      );
+                    }
+                  },
+                  e => {
+                    handleProgress(e.loaded, e.total);
+                  },
+                );
               },
             },
           ],
@@ -548,44 +563,38 @@ const FileSummary = ({ roomId }) => {
   };
 
   const handleSelect = async () => {
-    setSelect(!select);
-
     if (select) {
       // 이전 상태가 선택모드였다면 변경시 cnt도 0으로 초기화
       if (selectItems.length > 0) {
         if (selectItems.length <= 5) {
-          const arrDownloadList = await downloadByTokenAll(selectItems);
-          if (arrDownloadList) {
-            Promise.all(arrDownloadList).then(values => {
-              // 실패한 조건만 탐색
-              const downloaded = values.reduce(
-                (acc, val) => {
-                  if (val.result === false) {
-                    return val;
-                  }
-                  return acc;
+          // 2개 이상은 압축
+          const isZip = selectItems.length > 1;
+          const resp = await downloadByTokenAll(
+            selectItems,
+            isZip,
+            handleProgress,
+          );
+          if (resp !== null) {
+            if (!resp.result) {
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: resp.data.message,
                 },
-                { result: true, data: null },
+                dispatch,
               );
-              if (!downloaded.result) {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: downloaded.data.message,
-                  },
-                  dispatch,
-                );
-              } else {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_Save'),
-                  },
-                  dispatch,
-                );
-              }
-            });
+            } else {
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: covi.getDic('Msg_Save'),
+                },
+                dispatch,
+              );
+            }
           }
+          // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
+          setProgressData(null);
         } else {
           openPopup(
             {
@@ -598,9 +607,9 @@ const FileSummary = ({ roomId }) => {
           );
         }
       }
-
       setSelectItems([]);
     }
+    setSelect(!select);
   };
 
   const handleSelectItem = (item, check) => {
@@ -734,6 +743,7 @@ const FileSummary = ({ roomId }) => {
                 files={sameDateArr}
                 selectMode={select}
                 onSelect={handleSelectItem}
+                handleProgress={handleProgress}
               ></FileList>,
             );
 
@@ -756,6 +766,7 @@ const FileSummary = ({ roomId }) => {
               files={sameDateArr}
               selectMode={select}
               onSelect={handleSelectItem}
+              handleProgress={handleProgress}
             ></FileList>,
           );
         }
@@ -791,24 +802,13 @@ const FileSummary = ({ roomId }) => {
               </a>
             )) ||
             (select && (
-              <a
-                className="Okbtn"
-                onClick={
-                  progressData
-                    ? null
-                    : selectItems.length > 1
-                    ? handleAllDownLoad
-                    : handleSelect
-                }
-              >
+              <a className="Okbtn" onClick={progressData ? null : handleSelect}>
                 {
                   <>
                     <span className="colortxt-point mr5">
                       {selectItems.length}
                     </span>
-                    {progressData
-                      ? covi.getDic('Compressing')
-                      : selectItems.length > 1
+                    {selectItems.length > 1
                       ? covi.getDic('AllSave')
                       : covi.getDic('Save')}
                   </>
@@ -852,7 +852,7 @@ const FileSummary = ({ roomId }) => {
           >
             <div style={{ width: '100%' }}>
               <span>
-                {`${covi.getDic('Compressing')} ( ${convertFileSize(
+                {`${covi.getDic('Downloading')} ( ${convertFileSize(
                   progressData.load,
                 )} / ${convertFileSize(progressData.total)} )`}
               </span>

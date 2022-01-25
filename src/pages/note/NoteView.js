@@ -225,7 +225,7 @@ function _DrawFile({
               onClick={progressData ? null : handleAllDownLoad}
             >
               {progressData
-                ? covi.getDic('Compressing')
+                ? covi.getDic('Downloading')
                 : covi.getDic('AllSave')}
             </a>
           )}
@@ -613,7 +613,7 @@ export default function NoteView({ match }) {
           >
             <div style={{ width: '100%' }}>
               <span>
-                {`${covi.getDic('Compressing')} ( ${convertFileSize(
+                {`${covi.getDic('Downloading')} ( ${convertFileSize(
                   progressData.load,
                 )} / ${convertFileSize(progressData.total)} )`}
               </span>
