@@ -833,23 +833,7 @@ const FileSummary = ({ roomId }) => {
           </div>
         )}
         {progressData && (
-          // chatstyle로 옮기기
-          <div
-            style={{
-              bottom: 80,
-              height: '50px',
-              maxWidth: '70%',
-              display: 'flex',
-              margin: '0 auto',
-              flexWrap: 'wrap',
-              position: 'sticky',
-              textAlign: 'center',
-              alignItems: 'center',
-              borderRadius: '30px',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(200, 200, 200, 0.9)',
-            }}
-          >
+          <div className="progress-sticke">
             <div style={{ width: '100%' }}>
               <span>
                 {`${covi.getDic('Compressing')} ( ${convertFileSize(
