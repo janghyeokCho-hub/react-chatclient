@@ -489,22 +489,7 @@ const PhotoSummary = ({ roomId }) => {
           </div>
         )}
         {progressData && (
-          <div
-            style={{
-              bottom: 10,
-              height: '50px',
-              maxWidth: '70%',
-              display: 'flex',
-              margin: '0 auto',
-              flexWrap: 'wrap',
-              position: 'sticky',
-              textAlign: 'center',
-              alignItems: 'center',
-              borderRadius: '30px',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(200, 200, 200, 0.9)',
-            }}
-          >
+          <div className="progress-sticke">
             <div style={{ width: '100%' }}>
               <span>
                 {`${covi.getDic('Downloading')} ( ${convertFileSize(
