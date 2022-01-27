@@ -7,7 +7,6 @@ import {
   convertFileSize,
   resizeImage,
   downloadByToken,
-  checkByToken,
 } from '@/lib/fileUpload/coviFile';
 import * as messageApi from '@/lib/message';
 import * as viewerApi from '@/lib/viewer';
@@ -26,7 +25,7 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
   const [fontSize] = useChatFontSize();
   const dispatch = useDispatch();
   useEffect(() => {
-    if (DEVICE_TYPE == 'd') {
+    if (DEVICE_TYPE === 'd') {
       get('files', item.token, result => {
         if (result.status == 'SUCCESS') {
           if (result.data) setDownloaded(true);
@@ -36,27 +35,30 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
   }, []);
 
   const handlePreview = useCallback(() => {
-    console.log('click');
     preview(item);
   }, [preview]);
 
   const handleDownload = useCallback(() => {
-    console.log('저장');
-    downloadByToken(item.token, item.fileName, data => {
-      if (data.result != 'SUCCESS') {
-        openPopup(
-          {
-            type: 'Alert',
-            message: data.message,
-          },
-          dispatch,
-        );
-      } else {
-        if (DEVICE_TYPE == 'd') {
-          setDownloaded(true);
+    downloadByToken(
+      item.token,
+      item.fileName,
+      data => {
+        if (data.result !== 'SUCCESS') {
+          openPopup(
+            {
+              type: 'Alert',
+              message: data.message,
+            },
+            dispatch,
+          );
+        } else {
+          if (DEVICE_TYPE === 'd') setDownloaded(true);
         }
-      }
-    });
+      },
+      e => {
+        handleProgress(e.loaded, e.total);
+      },
+    );
   }, [dispatch]);
 
   const handleProgress = useCallback((load, total) => {
@@ -97,8 +99,6 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
   const handleViewer = useCallback(() => {
     let fileType = 'URL';
     let token = localStorage.getItem('covi_user_access_token');
-
-    console.log('item.token', item.token);
     token = token.replace(/\^/gi, '-');
 
     //filePath 사이냅 서버가 문서를 변환하기 위해 다운받을 주소
@@ -181,8 +181,7 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
 
   const handleOpenFile = useCallback(
     isFinder => {
-      console.log('isFinder', isFinder);
-      if (DEVICE_TYPE == 'd') {
+      if (DEVICE_TYPE === 'd') {
         try {
           get('files', item.token, result => {
             try {
@@ -271,23 +270,6 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
             ></FileMenuBox>
           )}
         </div>
-        {progressData && (
-          <div
-            style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              top: '-5px',
-              left: '0px',
-            }}
-          >
-            <Progress
-              load={progressData.load}
-              total={progressData.total}
-              handleFinish={finishProgress}
-            ></Progress>
-          </div>
-        )}
       </li>
     );
   } else {
@@ -317,7 +299,11 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
         });
 
       return (
-        <p className="msgtxt" id={id || ''}>
+        <div
+          className="msgtxt"
+          id={id || ''}
+          style={{ opacity: progressData ? 0.5 : 1 }}
+        >
           <img
             id={item.token}
             src={`${Config.ServerURL.HOST}/storage/no_image.jpg`}
@@ -325,8 +311,21 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
             height={200}
             onClick={handlePreview}
           ></img>
-
-          {!isTemp && DEVICE_TYPE == 'd' && (
+          {progressData && (
+            <div>
+              <Progress
+                load={progressData.load}
+                total={progressData.total}
+                handleFinish={finishProgress}
+              ></Progress>
+              <p style={{ textAlign: 'center' }}>
+                {` ( ${convertFileSize(progressData.load)} / ${convertFileSize(
+                  progressData.total,
+                )} )`}
+              </p>
+            </div>
+          )}
+          {!progressData && !isTemp && DEVICE_TYPE === 'd' && (
             <FileMenuBox
               onPreview={handlePreview}
               onDownload={handleDownload}
@@ -336,14 +335,14 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
             ></FileMenuBox>
           )}
 
-          {!isTemp && DEVICE_TYPE == 'b' && (
+          {!progressData && !isTemp && DEVICE_TYPE === 'b' && (
             <FileMenuBox
               onDownload={handleDownload}
               onViewer={handleViewer}
               downloaded={false}
             ></FileMenuBox>
           )}
-        </p>
+        </div>
       );
     } else {
       return (
