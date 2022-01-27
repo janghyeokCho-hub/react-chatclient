@@ -38,28 +38,13 @@ import NoteHeader from '@/pages/note/NoteHeader';
 import { openPopup } from '@/lib/common';
 import ProfileBox from '@/components/common/ProfileBox';
 import { openProfilePopup } from '@/lib/profileUtil';
-import { convertFileSize, downloadByTokenAll } from '@/lib/fileUpload/coviFile';
+import { convertFileSize } from '@/lib/fileUpload/coviFile';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import Progress from '@C/common/buttons/Progress';
 
 // WYSIWYG Editor
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Viewer } from '@toast-ui/react-editor';
-
-// 텍스트 줄넘김 기본 css
-const plainTextStyle = {
-  /**
-   * 공백이 긴 경우 메시지가 auto newline 무시하는 현상 방지
-   *
-   * !! NOTE !!
-   * 현재 Electron의 chromium 버전에서는 break-spaces 지원 안함
-   * => 연속된 공백을 자동 newline 처리 대신 한칸의 공백으로 표현됨
-   * 추후개선 필요
-   */
-  whiteSpace: 'break-spaces',
-  // '!', '$', '(', ')' 등 break-all 스타일에서 auto newline 무시하는 문자 대응
-  wordBreak: 'break-word',
-};
 
 function _popupResult(dispatch, message, cb) {
   openPopup(
@@ -112,6 +97,17 @@ function _DrawFile({
       if (isSaving === true) {
         return;
       }
+
+      let savePath = '';
+
+      if (DEVICE_TYPE === 'd') {
+        savePath = await getDownloadPath({
+          defaultFileName: opts?.fileName,
+        });
+      }
+      // 지정된 파일 경로가 없을경우 다운로드 중단
+      if (savePath?.canceled) return;
+
       setIsSaving(true);
       try {
         const { fileName, accessKey: fileID } = opts;
@@ -125,13 +121,6 @@ function _DrawFile({
           if (DEVICE_TYPE === 'b') {
             fileDownload(response.data, fileName);
           } else if (DEVICE_TYPE === 'd') {
-            const savePath = await getDownloadPath({
-              defaultFileName: opts?.fileName,
-            });
-            if (savePath?.canceled) {
-              // 지정된 파일 경로가 없을경우 다운로드 중단
-              return;
-            }
             saveFile(savePath.filePath, fileName, response.data, {
               token: fileID,
               execute: true,
@@ -161,51 +150,48 @@ function _DrawFile({
       savePath.filePaths = [savePath.filePath];
     }
 
-    const { results, JSZip } = await makeZipFile(
-      { userId: loginId },
-      files,
-      handleProgress,
-    );
-    let check = true;
-    let message = '';
+    try {
+      const { results, JSZip } = await makeZipFile(
+        loginId,
+        files,
+        handleProgress,
+      );
+      let check = true;
+      let message = '';
 
-    // 모두 만료된 파일인가 확인
-    const expiredCheck = results.every(result => {
-      return result.status === 204;
-    });
-    // 모두 권한이 없는 파일인가 확인
-    const permissionCheck = results.every(result => {
-      return result.status === 403;
-    });
+      // 모두 만료된 파일인가 확인
+      const expiredCheck = results.every(result => {
+        return result.status === 204;
+      });
+      // 모두 권한이 없는 파일인가 확인
+      const permissionCheck = results.every(result => {
+        return result.status === 403;
+      });
 
-    if (expiredCheck) {
-      check = false;
-      message = covi.getDic('Msg_FileExpired');
-    } else if (permissionCheck) {
-      check = false;
-      message = covi.getDic('Msg_FilePermission');
-    } else {
-      if (Object.keys(JSZip?.files).length) {
-        const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
-        JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
-          if (DEVICE_TYPE === 'b') {
-            fileDownload(data, fileName);
-          } else {
-            saveFile(savePath?.filePaths, fileName, data, { isZip: true });
-          }
-        });
+      if (expiredCheck) {
+        check = false;
+        message = covi.getDic('Msg_FileExpired');
+      } else if (permissionCheck) {
+        check = false;
+        message = covi.getDic('Msg_FilePermission');
+      } else {
+        if (Object.keys(JSZip?.files).length) {
+          const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
+          JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
+            if (DEVICE_TYPE === 'b') {
+              fileDownload(data, fileName);
+            } else {
+              saveFile(savePath?.filePaths, fileName, data, { isZip: true });
+            }
+          });
+        }
       }
+      _popupResult(dispatch, check ? covi.getDic('Msg_Save') : message);
+    } catch (err) {
+      _popupResult(dispatch, covi.getDic('Msg_Error'));
+    } finally {
+      setProgressData(null);
     }
-
-    openPopup(
-      {
-        type: 'Alert',
-        message: check ? covi.getDic('Msg_Save') : message,
-      },
-      dispatch,
-    );
-    // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
-    setProgressData(null);
   };
 
   // < div style={{}}/>
@@ -337,16 +323,10 @@ function _DrawNote({
                                 <img src="../common/image/common/img-3.jpg" alt="" />
                                 <div className="status online"></div>
                             </div> */}
-              <span
-                className="rtxt"
-                style={{ cursor: 'auto', ...plainTextStyle }}
-              >
+              <span className="rtxt" style={{ cursor: 'auto' }}>
                 {covi.getDic('Note_Recipient', '받는사람')}
               </span>
-              <span
-                className="name"
-                style={{ overflow: 'unset', ...plainTextStyle }}
-              >
+              <span className="name" style={{ overflow: 'unset' }}>
                 {data.senderInfo.receivers &&
                   data.senderInfo.receivers.map((receiver, i, arr) => {
                     const appendix = arr.length - 1 !== i ? ', ' : '';
@@ -385,7 +365,7 @@ function _DrawNote({
               userSelect: 'text',
             }}
           >
-            <span style={{ lineHeight: '1.5', ...plainTextStyle }}>
+            <span style={{ lineHeight: '1.5' }}>
               {noteInfo?.emergency === 'Y' && emergencyMark}
               {noteInfo.subject}
             </span>
@@ -395,7 +375,6 @@ function _DrawNote({
             style={{
               userSelect: 'text',
               minHeight: '50px',
-              ...plainTextStyle,
             }}
           >
             {/* {noteInfo.context} */}
@@ -599,7 +578,7 @@ export default function NoteView({ match }) {
               <span>
                 {`${covi.getDic('Downloading')} ( ${convertFileSize(
                   progressData.load,
-                )} / ${convertFileSize(progressData.total)} )`}
+                )} / ${_convertFileSize(progressData.total)} )`}
               </span>
             </div>
             <div style={{ width: '100%' }}>
@@ -612,6 +591,7 @@ export default function NoteView({ match }) {
             </div>
           </div>
         )}
+
         <div className="layer-bottom-btn-wrap right">
           <a className="btn_delete" onClick={handleDeleteNote}>
             {covi.getDic('Delete')}
