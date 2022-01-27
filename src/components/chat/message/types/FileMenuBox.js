@@ -11,7 +11,7 @@ const FileMenuBox = ({
   onDownloadWithOpen,
   downloaded,
   onOpen,
-  fontSize
+  fontSize,
 }) => {
   const handleOpenFile = useCallback(() => {
     onOpen(false);
