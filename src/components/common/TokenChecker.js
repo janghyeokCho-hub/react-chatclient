@@ -45,6 +45,7 @@ const TokenChecker = ({ history, returnURL }) => {
 
   useEffect(() => {
     if (authFail) {
+      localStorage.removeItem('lockHash');
       if (returnURL.indexOf('/nw/') > -1) {
         window.close();
       } else {

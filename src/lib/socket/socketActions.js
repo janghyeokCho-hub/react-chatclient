@@ -27,24 +27,20 @@ import {
 } from '@/modules/channel';
 
 import { setUsersPresence, addFixedUsers } from '@/modules/presence';
-const { closeSocket } = require(`@/lib/socket/socketConnect.${DEVICE_TYPE}`);
 import { logout, changeSocketConnect } from '@/modules/login';
+import { getJobInfo } from '@/lib/common';
+import { clearUserData } from '@/lib/util/localStorageUtil';
+
 import * as common from '@/lib/common';
 import * as deviceConnector from '@/lib/deviceConnector';
-import { getDictionary, getJobInfo } from '@/lib/common';
-import { clearUserData } from '@/lib/util/localStorageUtil';
+
+const { closeSocket } = require(`@/lib/socket/socketConnect.${DEVICE_TYPE}`);
 
 // 새메시지 도착
 export const handleNewMessage = (dispatch, userInfo) => {
   return data => {
     const json_data = JSON.parse(data);
     json_data.senderInfo = JSON.parse(json_data.senderInfo);
-    // if (json_data.context.includes('"context":')) {
-    //   let text = JSON.parse(json_data.context);
-    //   text = JSON.stringify(text.context);
-    //   text = text.replace(/\"/gi, '');
-    //   json_data.context = text;
-    // }
 
     if (json_data.sender == userInfo.id) json_data.isMine = 'Y';
     json_data.isNotice = false;
@@ -64,8 +60,6 @@ export const handleNewMessage = (dispatch, userInfo) => {
         Notification.requestPermission();
       }
     }
-
-    console.log(json_data);
 
     dispatch(receiveMessage(json_data));
   };

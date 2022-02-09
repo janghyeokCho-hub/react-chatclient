@@ -84,23 +84,27 @@ function createGetContactsSaga(type) {
         };
       });
       const data = [];
-      const customGroups = filteredContacts.filter(contact => {
-        if (contact.folderType != 'R' || contact.ownerID === '') {
-          data.push(contact);
-        }
-        return (
-          contact.folderType === 'R' && contact.ownerID && contact.ownerID != ''
-        );
-      }).map(contact => {
-        // jobKey 데이터타입 Number > string 변환 (뷰에서 체크박스 여부 검사시 오류방지)
-        if (Array.isArray(contact?.sub) === true) {
-          contact.sub = contact.sub.map(c => ({
-            ...c,
-            jobKey: `${c.jobKey}` || c?.jobKey
-          }));
-        }
-        return contact;
-      });
+      const customGroups = filteredContacts
+        .filter(contact => {
+          if (contact.folderType != 'R' || contact.ownerID === '') {
+            data.push(contact);
+          }
+          return (
+            contact.folderType === 'R' &&
+            contact.ownerID &&
+            contact.ownerID != ''
+          );
+        })
+        .map(contact => {
+          // jobKey 데이터타입 Number > string 변환 (뷰에서 체크박스 여부 검사시 오류방지)
+          if (Array.isArray(contact?.sub) === true) {
+            contact.sub = contact.sub.map(c => ({
+              ...c,
+              jobKey: `${c.jobKey}` || c?.jobKey,
+            }));
+          }
+          return contact;
+        });
       data.map(contact => {
         if (contact.ownerID === '' && contact.folderType === 'R') {
           contact.sub = [];
@@ -112,10 +116,10 @@ function createGetContactsSaga(type) {
         type: success ? SUCCESS : FAILURE,
         payload: {
           ...response.data,
-          result: data
-        }
+          result: data,
+        },
       });
-    } catch(err) {
+    } catch (err) {
       yield put({
         type: FAILURE,
         payload: action.payload,
@@ -123,7 +127,7 @@ function createGetContactsSaga(type) {
         errMessage: err,
       });
     }
-  }
+  };
 }
 const getContactsSaga = createGetContactsSaga(GET_CONTACTS);
 // const getContactsSaga = createRequestSaga(
@@ -374,7 +378,9 @@ const contact = handleActions(
             if (!parent.sub) {
               parent.sub = [userInfo];
             } else {
-              const duplicatedItemIdx = parent?.sub?.findIndex(item => item.id === userInfo.id);
+              const duplicatedItemIdx = parent?.sub?.findIndex(
+                item => item.id === userInfo.id,
+              );
               if (duplicatedItemIdx === -1) {
                 parent.sub.push(userInfo);
               }
@@ -463,8 +469,6 @@ const contact = handleActions(
        * action.payload[i].sub => 해당 그룹의 유저목록
        */
 
-      console.log('payload >> ', action.payload.result);
-
       // 그룹 iteration
       const filteredContacts = action.payload.result.map(list => {
         // 그룹 내의 contact list iteration
@@ -491,23 +495,27 @@ const contact = handleActions(
       */
       /* 사용자그룹 데이터 처리 */
       let data = [];
-      const customGroups = filteredContacts.filter(contact => {
-        if (contact.folderType != 'R' || contact.ownerID === ''){
-          data.push(contact);
-        }
-        return (
-          contact.folderType === 'R' && contact.ownerID && contact.ownerID != ''
-        );
-      }).map(contact => {
-        // jobKey 데이터타입 Number > string 변환 (뷰에서 체크박스 여부 검사시 오류방지)
-        if (Array.isArray(contact?.sub) === true) {
-          contact.sub = contact.sub.map(c => ({
-            ...c,
-            jobKey: `${c.jobKey}` || c?.jobKey
-          }));
-        }
-        return contact;
-      });
+      const customGroups = filteredContacts
+        .filter(contact => {
+          if (contact.folderType != 'R' || contact.ownerID === '') {
+            data.push(contact);
+          }
+          return (
+            contact.folderType === 'R' &&
+            contact.ownerID &&
+            contact.ownerID != ''
+          );
+        })
+        .map(contact => {
+          // jobKey 데이터타입 Number > string 변환 (뷰에서 체크박스 여부 검사시 오류방지)
+          if (Array.isArray(contact?.sub) === true) {
+            contact.sub = contact.sub.map(c => ({
+              ...c,
+              jobKey: `${c.jobKey}` || c?.jobKey,
+            }));
+          }
+          return contact;
+        });
 
       data.map(contact => {
         if (contact.ownerID === '' && contact.folderType === 'R') {
