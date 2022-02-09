@@ -33,6 +33,7 @@ import installExtension, { REDUX_DEVTOOLS } from 'electron-devtools-installer';
 import {
   clearCache,
   reloadApp,
+  lockApp,
   makeCustomAlarmPop,
   getMacAddr,
   getPublicIPAddr,
@@ -165,7 +166,7 @@ const appReady = async () => {
   if (APP_SECURITY_SETTING.initFile) {
     APP_SECURITY_SETTING.setBulk({
       // 초기 값 설정
-      // domain: 'http://192.168.11.80'
+      isScreenLock: false,
     });
   } else {
     // update 이후 clearLocalData 호출 시
@@ -366,45 +367,52 @@ const lockScreenEvt = () => {
 const unlockScreenEvt = () => {
   POWER = 'ACTIVE';
 
-  if (win && !loginInfo.isNull() && CONN_SOCKET != null) {
-    if (CONN_SOCKET.connected) {
-      logger.info('unlock screen :: change presence status');
-      // connection이 살아있는 경우
-      win.webContents.send(
-        'onSystemIdleTimeInit',
-        BEFORE_PRESENCE ? BEFORE_PRESENCE : 'online',
-      ); // idle init 전파
+  const lock = USER_SETTING.get('useSecondPassword');
 
-      // 기존 idle checker 시작
-      setIdleChecker(); // idle check 시작
+  // 화면 잠금 체크
+  if (lock) {
+    lockApp();
+  } else {
+    if (win && !loginInfo.isNull() && CONN_SOCKET != null) {
+      if (CONN_SOCKET.connected) {
+        logger.info('unlock screen :: change presence status');
+        // connection이 살아있는 경우
+        win.webContents.send(
+          'onSystemIdleTimeInit',
+          BEFORE_PRESENCE ? BEFORE_PRESENCE : 'online',
+        ); // idle init 전파
 
-      // re-sync
-      Promise.all([
-        appDataEvt.reqRoomForSync(),
-        appDataEvt.reqUsersForSync(),
-        appDataEvt.syncAllRoomsMessages(),
-      ]).then(() => {
-        logger.info('resync success');
-        win.webContents.send('onReSync', null);
+        // 기존 idle checker 시작
+        setIdleChecker(); // idle check 시작
 
-        // 활성창 message sync 유도
-        openRoomList.clearData();
-        notReadList.clearData();
-        win.webContents.send('onReSyncMessage', null);
-        Object.keys(ROOM_WIN_MAP).forEach(key => {
-          const openWindowID = ROOM_WIN_MAP[key];
-          const openWin = BrowserWindow.fromId(openWindowID);
-          if (openWin) {
-            openWin.webContents.send('onReSyncMessage', null);
-          }
+        // re-sync
+        Promise.all([
+          appDataEvt.reqRoomForSync(),
+          appDataEvt.reqUsersForSync(),
+          appDataEvt.syncAllRoomsMessages(),
+        ]).then(() => {
+          logger.info('resync success');
+          win.webContents.send('onReSync', null);
+
+          // 활성창 message sync 유도
+          openRoomList.clearData();
+          notReadList.clearData();
+          win.webContents.send('onReSyncMessage', null);
+          Object.keys(ROOM_WIN_MAP).forEach(key => {
+            const openWindowID = ROOM_WIN_MAP[key];
+            const openWin = BrowserWindow.fromId(openWindowID);
+            if (openWin) {
+              openWin.webContents.send('onReSyncMessage', null);
+            }
+          });
+
+          logger.info('resync message call success');
         });
-
-        logger.info('resync message call success');
-      });
-    } else {
-      logger.info(
-        'unlock screen :: disconnected socket :: check network & redirect auto login',
-      );
+      } else {
+        logger.info(
+          'unlock screen :: disconnected socket :: check network & redirect auto login',
+        );
+      }
     }
   }
 
@@ -786,6 +794,7 @@ ipcMain.on('req-login', async (event, args) => {
       idleTime: 900,
       desktopNoti: true,
       showNotiContent: true,
+      useSecondPassword: false,
       notiExRooms: {},
     });
 
@@ -1047,7 +1056,7 @@ ipcMain.on('clear-domain', e => {
 
 ipcMain.on('get-server-configs', async (event, args) => {
   try {
-    let lang = APP_SECURITY_ASETTING.get('lang');
+    let lang = APP_SECURITY_SETTING.get('lang');
     lang = lang ? lang : '';
 
     const response = await managesvr(

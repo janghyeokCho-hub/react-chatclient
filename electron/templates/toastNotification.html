@@ -107,7 +107,11 @@
 
     <script>
       const { ipcRenderer } = require('electron');
-      const { getCurrentWindow, getGlobal, BrowserWindow } = require('@electron/remote');
+      const {
+        getCurrentWindow,
+        getGlobal,
+        BrowserWindow,
+      } = require('@electron/remote');
       let HOST = '';
       let clickTarget = null;
       let alarmWin = getCurrentWindow();
@@ -205,6 +209,18 @@
         const title = document.querySelector('#toastTitle');
         const message = document.querySelector('#toastMessage');
 
+        const appConfigs = getGlobal('APP_SECURITY_SETTING');
+        const serverConfigs = getGlobal('SERVER_SECURITY_SETTING');
+
+        let alramMsg = data.message;
+
+        if (appConfigs.get('isScreenLock')) {
+          alramMsg = serverConfigs.getDic(
+            'Msg_ReceiveMsg',
+            '새로운 메시지가 도착했습니다.',
+          );
+        }
+
         if (data.photoPath) {
           // img.src = `${HOST}/${data.photoPath}`;
           img.src = data.photoPath;
@@ -213,7 +229,7 @@
         }
 
         title.innerText = data.title;
-        message.innerText = data.message;
+        message.innerText = alramMsg;
       };
 
       const openFocusRoom = (roomID, isChannel) => {

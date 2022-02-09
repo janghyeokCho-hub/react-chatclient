@@ -6,6 +6,7 @@ import {
   showVersionInfo,
   clearCache,
   initApp,
+  lockApp,
   showConnectInfo,
   getDictionary,
 } from './commonUtils';
@@ -78,6 +79,13 @@ export const setContextMenu = parentWin => {
           ),
           click: initApp,
         },
+        {
+          label: getDictionary(
+            '앱 잠금;Lock App;Lock App;Lock App;Lock App;Lock App;Lock App;Lock App;Lock App;',
+          ),
+          click: lockApp,
+        },
+
         {
           label: getDictionary(
             '상태확인;Check Status;Check Status;Check Status;Check Status;Check Status;Check Status;Check Status;Check Status',
