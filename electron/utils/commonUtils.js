@@ -113,6 +113,15 @@ export const notifyMessage = (payload, focusWin) => {
       );
     }
 
+    const lock = APP_SECURITY_SETTING.get('isScreenLock');
+
+    if (lock) {
+      message = SERVER_SECURITY_SETTING.getDic(
+        'Msg_ReceiveMsg',
+        '새로운 메시지가 도착했습니다.',
+      );
+    }
+
     const roomID = String(payload.roomID);
 
     const isNoti = !USER_SETTING.config.notiExRooms[roomID];
@@ -357,6 +366,23 @@ export const initApp = () => {
     },
     cancel: () => {},
   });
+};
+
+export const lockApp = () => {
+  const win = BrowserWindow.fromId(1);
+
+  const allWindows = BrowserWindow.getAllWindows();
+
+  allWindows.forEach(child => {
+    if (child.id != 1) {
+      child.close();
+    }
+  });
+
+  // update isScreenLock
+  APP_SECURITY_SETTING.set('isScreenLock', true);
+
+  win.webContents.reloadIgnoringCache();
 };
 
 export const showVersionInfo = () => {
