@@ -1,6 +1,7 @@
-import React, { Component, Fragment, useState } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch } from 'react-router-dom';
+import { evalConnector } from '@/lib/deviceConnector';
 
 import TokenChecker from '@COMMON/TokenChecker';
 import URLChecker from '@COMMON/URLChecker';
@@ -15,7 +16,7 @@ import {
   AutoLogin,
   AppTemplate,
   ChatRoom,
-  Channel, // 채널
+  Channel,
   MakeRoom,
   UserSetting,
   FileLayer,
@@ -31,6 +32,8 @@ import {
 
 import SimplePopup from '@COMMON/popup/SimplePopup';
 import PresenceContainer from '@/containers/presence/PresenceContainer';
+import SecondLockContainer from '@/containers/login/SecondLockContainer';
+
 import Titlebar from '@C/Titlebar';
 import { Helmet } from 'react-helmet';
 
@@ -42,6 +45,7 @@ class App extends Component {
     super(props);
     this.state = {
       view: this.getContext(),
+      unlockSecondPassword: false,
     };
   }
 
@@ -74,8 +78,19 @@ class App extends Component {
 
   render() {
     const { tokenCheckFlag, gotoURL } = this.tokenCheck();
-    const { theme, error } = this.props;
+    const { theme, token, error } = this.props;
     if (theme) window.covi.settings.theme = theme;
+
+    const appConfig = evalConnector({
+      method: 'getGlobal',
+      name: 'APP_SECURITY_SETTING',
+    });
+
+    const lock = appConfig?.get('isScreenLock');
+
+    const themeColor = window?.covi?.config?.ClientThemeList?.find(
+      t => t.name === this.getInitTheme(),
+    );
 
     return (
       <>
@@ -95,15 +110,22 @@ class App extends Component {
                 <Titlebar></Titlebar>
               </>
             )}
-
-            {/* <div
-              style={{
-                width: '100%',
-                height: DEVICE_TYPE == 'b' ? '100%' : 'calc(100% - 30px)',
-                position: 'relative',
-              }}
-            > */}
-
+            {DEVICE_TYPE === 'd' &&
+              lock &&
+              token &&
+              !this.state.unlockSecondPassword && (
+                <SecondLockContainer
+                  theme={themeColor?.value}
+                  secondLockHandler={() => {
+                    appConfig?.set('isScreenLock', false);
+                    this.setState({
+                      ...this.state,
+                      unlockSecondPassword: true,
+                    });
+                  }}
+                />
+              )}
+            {/* 2차 잠금 관리 */}
             {this.state.view == 'snip' ? (
               <div
                 style={{
@@ -274,7 +296,6 @@ class App extends Component {
                           path="/client/nw/note/:noteId/:viewType"
                           component={NoteReceive}
                         />
-                        {/* */}
 
                         <Route
                           component={props => (

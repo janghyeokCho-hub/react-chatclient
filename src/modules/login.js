@@ -136,6 +136,10 @@ function createLoginRequestSaga(loginType, syncType) {
             // login 후처리 시작
             // 동기화 시작
             yield put(startLoading(syncType));
+
+            // 화면 잠금
+            yield localStorage.setItem('lockHash', action.payload.pw);
+
             // 1. presence online 처리
             if (DEVICE_TYPE == 'd') {
               yield call(presenceApi.pubPresence, {
@@ -591,6 +595,7 @@ export function* loginSaga() {
 
 const initialState = {
   id: '',
+  pw: '',
   token: null,
   userInfo: null,
   registDate: null,
@@ -611,6 +616,14 @@ const login = handleActions(
           // SaaS버전 대응을 위해 token에서 id값 추출->result.id로 대체
           draft.id = action.payload.result.id; //draft.id = action.payload.token.split('^')[0];
           draft.registDate = action.payload.createDate;
+
+          const appConfig = evalConnector({
+            method: 'getGlobal',
+            name: 'APP_SECURITY_SETTING',
+          });
+
+          // login 성공시에는 잠금을 무조건 false로 변경
+          appConfig?.set('isScreenLock', false);
         } else {
           draft.authFail = true;
           draft.token = initialState.token;
@@ -621,6 +634,7 @@ const login = handleActions(
       return {
         ...state,
         authFail: true,
+        pw: '',
         ...(action.errMessage && { errMessage: action.errMessage }),
         ...(action.errStatus && { errStatus: action.errStatus }),
         token: initialState.token,
@@ -645,6 +659,7 @@ const login = handleActions(
       return {
         ...state,
         authFail: true,
+        pw: '',
         ...(action.errMessage && { errMessage: action.errMessage }),
         ...(action.errStatus && { errStatus: action.errStatus }),
         token: initialState.token,
