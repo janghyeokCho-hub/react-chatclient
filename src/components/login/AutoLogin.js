@@ -35,6 +35,21 @@ const AutoLogin = ({ history }) => {
       console.log('changeNetwork >>> ', location?.changeNetwork);
 
       if (appConfig.get('autoLogin')) {
+        const isSecurityLevel1 = appConfig.get('securityLevel');
+        console.log('isSecurityLevel1', isSecurityLevel1);
+
+        let nip_slevel = -1;
+        switch (isSecurityLevel1) {
+          case -1:
+            nip_slevel = -1;
+            break;
+          case 1:
+            nip_slevel = 1;
+            break;
+          case 2:
+            nip_slevel = 2;
+            break;
+        }
         data = {
           id: appConfig.get('autoLoginId'),
           pw: appConfig.get('autoLoginPw'),
@@ -42,6 +57,7 @@ const AutoLogin = ({ history }) => {
           da: process.arch,
           al: 'Y',
           isAuto: true,
+          nip_slevel: `${nip_slevel}`
         };
       } else {
         data = {
@@ -73,7 +89,7 @@ const AutoLogin = ({ history }) => {
       let defaultMenu = isExtUser ? 'channellist' : 'contactlist';
       if (DEVICE_TYPE == 'd') {
         const data = {
-          tk: token,
+          tk: token
         };
 
         evalConnector({

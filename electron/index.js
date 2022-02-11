@@ -206,9 +206,9 @@ const appReady = async () => {
           }
           createWindow(true, domainInfo).then(loadMainWindow);
         })
-        .catch(() => {
+        .catch((err) => {
           logger.info('server config load error');
-
+          console.log(err)
           setTimeout(() => {
             if (count !== 60) {
               setConfigAfter(count + 1);

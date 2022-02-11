@@ -6,6 +6,7 @@ import { getConfig } from '@/lib/util/configUtil';
 import { evalConnector } from '@/lib/deviceConnector';
 import { useDispatch } from 'react-redux';
 import { openPopup } from '@/lib/common';
+import SecurityPopup from '@COMMON/popup/SecurityPopup';
 
 const LoginBox = forwardRef(
   (
@@ -25,8 +26,17 @@ const LoginBox = forwardRef(
     const [autoLaunch, setAutoLaunch] = useState(false);
     const [lang, setLang] = useState(covi.settings.lang);
 
+    const [popUpVisible, setPopUpVisible] = useState(false);
+
     const autoLoginLock = getConfig('ForceAutoLogin', 'N') === 'Y';
     const autoLaunchLock = getConfig('ForceAutoLaunch', 'N') === 'Y';
+    const IpSecurityCheck = getConfig('UseIpSecurity', {forcePolicyUse :false, forceValue: 0});
+      const [securityLevel, setSecurityLevel] = useState(
+    IpSecurityCheck?.forceValue || IpSecurityCheck.forceValue ,
+  );
+
+
+
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -41,8 +51,8 @@ const LoginBox = forwardRef(
             method: 'sendSync',
             channel: 'save-static-config',
             message: {
-              autoLogin: true
-            }
+              autoLogin: true,
+            },
           });
         }
         if (!autoLaunch && autoLaunchLock) {
@@ -51,13 +61,17 @@ const LoginBox = forwardRef(
             method: 'sendSync',
             channel: 'save-static-config',
             message: {
-              autoLaunch: true
-            }
+              autoLaunch: true,
+            },
           });
         }
 
-        setAutoLogin(autoLoginLock || appConfig.get('autoLogin') ? true : false);
-        setAutoLaunch(autoLaunchLock || appConfig.get('autoLaunch') ? true : false);
+        setAutoLogin(
+          autoLoginLock || appConfig.get('autoLogin') ? true : false,
+        );
+        setAutoLaunch(
+          autoLaunchLock || appConfig.get('autoLaunch') ? true : false,
+        );
       }
     }, []);
 
@@ -81,6 +95,10 @@ const LoginBox = forwardRef(
       if (typeof langList == 'object') return langList;
       else return [{ name: '한국어', value: 'ko' }];
     }, []);
+
+    const popUpOpen = () => {
+      setPopUpVisible(!popUpVisible);
+    };
 
     return (
       <>
@@ -109,6 +127,33 @@ const LoginBox = forwardRef(
 
         <div className="LoginBox">
           <h1 className="logo-img"></h1>
+
+          {/* IP 보안 */}
+          {DEVICE_TYPE == 'd' && (
+            <>
+              <div className="IpSecurityBox">
+                <button  className="IpSecurityBtn" onClick={popUpOpen}>
+                  {securityLevel == - 1 ? (
+                    <span className='offBtn'>OFF</span>
+                  ):(
+                    <span className='onBtn'>
+                      ON
+                    </span>
+                  )}
+                </button>
+                <div className="IpSecurityText">{covi.getDic('IpSecurity')}</div>
+              </div>
+              {popUpVisible && (
+                <SecurityPopup
+                  popUpVisible={popUpVisible}
+                  setPopUpVisible={setPopUpVisible}
+                  securityLevel={securityLevel}
+                  setSecurityLevel={setSecurityLevel}
+                />
+              )}
+            </>
+          )}
+
           <div className="LoginInputBox">
             {/*}
             <input
@@ -202,8 +247,8 @@ const LoginBox = forwardRef(
                   disabled={autoLoginLock === true}
                   checked={autoLogin}
                   onChange={e => {
-                    // 자동로그인 강젝설정일 경우 자동로그인 변경 X
-                    if(autoLoginLock) {
+                    // 자동로그인 강제설정일 경우 자동로그인 변경 X
+                    if (autoLoginLock) {
                       return;
                     }
 
@@ -212,7 +257,9 @@ const LoginBox = forwardRef(
                   }}
                 />
                 <label htmlFor="chk01">
-                  <span style={{ backgroundColor: autoLoginLock ? '#999' : '' }}></span>
+                  <span
+                    style={{ backgroundColor: autoLoginLock ? '#999' : '' }}
+                  ></span>
                   {covi.getDic('AutoLogin')}
                 </label>
               </div>
@@ -230,7 +277,9 @@ const LoginBox = forwardRef(
                   }}
                 />
                 <label htmlFor="chk02">
-                  <span style={{ backgroundColor: autoLaunchLock ? '#999' : '' }}></span>
+                  <span
+                    style={{ backgroundColor: autoLaunchLock ? '#999' : '' }}
+                  ></span>
                   {covi.getDic('AutoLaunch')}
                 </label>
               </div>
