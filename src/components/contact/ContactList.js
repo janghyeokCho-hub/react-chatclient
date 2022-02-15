@@ -27,7 +27,7 @@ const ContactList = ({ viewType, checkObj }) => {
 
   const RENDER_INIT = Math.ceil(window.innerHeight / 60);
   const RENDER_UNIT = 10;
-  const { renderOffset, isDone, nextStep, handleScrollUpdate } = useOffset(
+  const { items, handleScrollUpdate } = useOffset(
     searchResult,
     { renderPerBatch: RENDER_UNIT },
   );
@@ -139,10 +139,7 @@ const ContactList = ({ viewType, checkObj }) => {
         <SearchOrgChart
           viewType={type}
           checkObj={checkObj}
-          searchData={searchResult}
-          offset={{
-            renderOffset,
-          }}
+          searchData={items}
         />
       </Scrollbars>
       <Scrollbars

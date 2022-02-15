@@ -25,7 +25,7 @@ const OrgChart = ({ viewType, checkObj, group }) => {
   const [searchResult, setSearchResult] = useState([]);
   const [searchGroup, setSearchGroup] = useState('');
   const [searchCompanyCode, setCompanyCode] = useState('');
-  const { renderOffset, handleScrollUpdate } = useOffset(searchResult, { renderPerBatch: RENDER_UNIT });
+  const { items, handleScrollUpdate } = useOffset(searchResult, { renderPerBatch: RENDER_UNIT });
   const [type, setType] = useState(viewType);
 
   const dispatch = useDispatch();
@@ -127,11 +127,8 @@ const OrgChart = ({ viewType, checkObj, group }) => {
           <SearchOrgChart
             viewType={type}
             checkObj={checkObj}
-            searchData={searchResult}
+            searchData={items}
             handleGroup={handleSearchGroup}
-            offset= {{
-              renderOffset,
-            }}
           />
         </Scrollbars>
       )}
