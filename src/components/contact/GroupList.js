@@ -14,7 +14,7 @@ const GroupList = ({checkObj, group }) => {
   const userID = useSelector(({ login }) => login.id);
   const [searchText, setSearchText] = useState('');
   const [searchResult, setSearchResult] = useState([]);
-  const { renderOffset, handleScrollUpdate } = useOffset(searchResult, { renderPerBatch: RENDER_UNIT });
+  const { items, handleScrollUpdate } = useOffset(searchResult, { renderPerBatch: RENDER_UNIT });
   const searchListEl = useRef(null);
   const contactListEl = useRef(null);
   const dispatch = useDispatch();
@@ -70,10 +70,7 @@ const GroupList = ({checkObj, group }) => {
         <SearchOrgChart
             viewType="checklist"
             checkObj={checkObj}
-            searchData={searchResult}
-            offset = {{
-            renderOffset
-            }}
+            searchData={items}
         />
         </Scrollbars>
         <Scrollbars
