@@ -7,10 +7,10 @@ import { sendMain, isMainWindow } from '@/lib/deviceConnector';
 import { evalConnector } from '@/lib/deviceConnector';
 
 export function useSyncFavorite() {
-    const contactList = useSelector(({ contact }) => contact.contacts);
-    const dispatch = useDispatch();
-    const _syncFavorite = useCallback((args) => {
-      console.log('Sync Favorite@#@#', args);
+  const contactList = useSelector(({ contact }) => contact.contacts);
+  const dispatch = useDispatch();
+  const _syncFavorite = useCallback(
+    args => {
       const { userInfo } = args;
       if (args.op === 'add') {
         const otherContacts =
@@ -22,12 +22,12 @@ export function useSyncFavorite() {
           otherContacts.sub.map(data => {
             if (userInfo.id == data.id) {
               // 만약 다른 연락처에 사용자가 있다면....
-              addFavorite(dispatch, userInfo, otherContacts.folderType, "2");
+              addFavorite(dispatch, userInfo, otherContacts.folderType, '2');
               flag = true;
             }
           });
           if (!flag) {
-            addFavorite(dispatch, userInfo, args?.folderType || '', "2");
+            addFavorite(dispatch, userInfo, args?.folderType || '', '2');
           }
         } else {
           addFavorite(dispatch, userInfo, args?.folderType || '');
@@ -35,25 +35,44 @@ export function useSyncFavorite() {
       } else if (args.op === 'del') {
         deleteFavorite(dispatch, args.userId);
       }
-    }, [contactList]);
-    /**
-     * !!파라미터 주의!!
-     * Electron IPC 리스너에서 실행될 때와 함수를 직접 호출할 때의 파라미터가 다름
-     * 
-     * Electorn IPC listener: (event, args) => {}
-     * non-electron function call: (args) => {}
-     */
-    const syncFavorite = (args, IPCargs) => {
-      // electron 
-      if (DEVICE_TYPE === 'd' && (isMainWindow() === false)) {
-        sendMain('sync-favorite', IPCargs);
+    },
+    [contactList],
+  );
+  /**
+   * !!파라미터 주의!!
+   * Electron IPC 리스너에서 실행될 때와 함수를 직접 호출할 때의 파라미터가 다름
+   *
+   * Electorn IPC listener: (event, args) => {}
+   * non-electron function call: (args) => {}
+   */
+  const syncFavorite = (args, IPCargs) => {
+    if (DEVICE_TYPE === 'd') {
+      if (IPCargs && isMainWindow() === true) {
+        /**
+         * Context: electron main window
+         * invoked by electron sub window via Electron IPC
+         */
+        // Send add/del fovorite request
+        _syncFavorite(IPCargs);  
       } else {
-        _syncFavorite(args);
+        /**
+         * Context: electron sub window
+         * invoked by user interaction
+         */
+        // Pass(emit) sync-favorite event to the main window
+        sendMain('sync-favorite', args);   
       }
+    } else {
+      /**
+       * Context: Web browser
+       */
+      // Send add/del fovorite request
+      _syncFavorite(args);
     }
-    return {
-        syncFavorite,
-    };
+  };
+  return {
+    syncFavorite,
+  };
 }
 
 export function SyncFavoriteIPC() {
@@ -71,6 +90,12 @@ export function SyncFavoriteIPC() {
       channel: 'sync-favorite',
       callback: syncFavorite,
     });
+    return () => {
+      evalConnector({
+        method: 'removeListener',
+        channel: 'sync-favorite',
+      });
+    };
   }, [contactList]);
 
   return <></>;
