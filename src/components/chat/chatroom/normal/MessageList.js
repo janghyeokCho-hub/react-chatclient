@@ -19,6 +19,7 @@ const ListScrollBox = loadable(() =>
 import { format } from 'date-fns';
 import {
   openPopup,
+  openLayer,
   eumTalkRegularExp,
   convertEumTalkProtocol,
 } from '@/lib/common';
@@ -34,6 +35,7 @@ import { hasClass, messageCopy, getMsgElement } from '@/lib/util/domUtil';
 import { evalConnector } from '@/lib/deviceConnector';
 import { getMessage } from '@/lib/messageUtil';
 import LoadingWrap from '@COMMON/LoadingWrap';
+import ShareContainer from '@C/share/ShareContainer';
 
 const MessageList = ({ onExtension, viewExtension }) => {
   const tempMessage = useSelector(({ message }) => message.tempMessage);
@@ -376,6 +378,24 @@ const MessageList = ({ onExtension, viewExtension }) => {
               );
             },
             name: covi.getDic('Copy'),
+          });
+          menus.push({
+            code: 'shareMessage',
+            isline: false,
+            onClick: () => {
+              openLayer(
+                {
+                  component: (
+                    <ShareContainer
+                      headerName={covi.getDic('Msg_Note_Forward')}
+                      message={message.context}
+                    />
+                  ),
+                },
+                dispatch,
+              );
+            },
+            name: covi.getDic('Forward'),
           });
         }
       }

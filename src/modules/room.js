@@ -1,5 +1,5 @@
 import { createAction, handleActions } from 'redux-actions';
-import { takeLatest, call, put, throttle } from 'redux-saga/effects';
+import { takeLatest, call, put, throttle, delay } from 'redux-saga/effects';
 import * as roomApi from '@/lib/room';
 import * as messageApi from '@/lib/message';
 import createRequestSaga, {
@@ -361,8 +361,12 @@ function createUpdateRoomsSaga() {
     yield put(startLoading('room/UPDATE_ROOMS'));
     if (action.payload) {
       try {
-        const response = yield call(roomApi.getRoomList, action.payload);
-
+        let response = yield call(roomApi.getRoomList, action.payload);
+        if(response?.data?.rooms?.length === 0) {
+          // rooms 데이터가 비어있으면 retry
+          yield delay(750);
+          response = yield call(roomApi.getRoomList, action.payload);
+        }
         if (response.data.status == 'SUCCESS') {
           yield put({
             type: 'room/UPDATE_ROOMS_SUCCESS',
