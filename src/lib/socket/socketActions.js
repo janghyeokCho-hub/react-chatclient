@@ -33,6 +33,8 @@ import { clearUserData } from '@/lib/util/localStorageUtil';
 
 import * as common from '@/lib/common';
 import * as deviceConnector from '@/lib/deviceConnector';
+import { getDictionary, getJobInfo, openPopup } from '@/lib/common';
+import { clearUserData } from '@/lib/util/localStorageUtil';
 
 const { closeSocket } = require(`@/lib/socket/socketConnect.${DEVICE_TYPE}`);
 

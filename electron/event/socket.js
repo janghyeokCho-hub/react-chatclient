@@ -16,7 +16,8 @@ export const reqSocketConnect = (event, args) => {
     onReadCountChanged: socketAction.onReadCountChanged,
     onNewNotice: socketAction.onNewNotice,
     onNewChannelMessage: socketAction.onNewChannelMessage,
-    onNewChannelNotice: socketAction.onNewChannelMessage
+    onNewChannelNotice: socketAction.onNewChannelMessage,
+    onAppUpdateConfig: socketAction.onAppUpdateConfig
   };
 
   if (CONN_SOCKET == null || CONN_SOCKET.disconnect) {
@@ -40,7 +41,7 @@ export const reqSocketConnect = (event, args) => {
             });
         });
 
-        args.events.forEach((key) => {
+        Object.keys(preFuncs).forEach((key) => {
           if (CONN_SOCKET.hasListeners(key)) CONN_SOCKET.off(key);
 
           CONN_SOCKET.on(
