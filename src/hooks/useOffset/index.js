@@ -10,16 +10,10 @@ import useWindowDimensions from '@/hooks/useWindowDimensions';
  * @param {Number} renderPerBatch       페이징 업데이트 단위     (default 5)
  * @param {Number} heightPerItem        각 컴포넌트의 height    (default 60)
  */
-export default function useOffset(data = [], { initialNumToRender = Math.ceil(window.innerHeight) + 2, renderPerBatch, heightPerItem }) {
+export default function useOffset(data = [], { initialNumToRender = Math.ceil(window.innerHeight / 60) + 5, renderPerBatch, heightPerItem }) {
     const { height: windowHeight } = useWindowDimensions();
-    
-    // limit: 페이지네이션의 최대값. 데이터가 없을 경우 기본값 0
-    const limit = data.length;
-    // renderOffset: 페이지네이션 위치를 기록하는 offset
-    const [renderOffset, setRenderOffset] = useState(start || 0);
-    // isDone: offset의 현재값이 최대값을 초과했는지 확인하기 위한 플래그
-    const [isDone, setIsDone] = useState(renderOffset >= limit);
     const height = heightPerItem || 60;
+    const size = renderPerBatch || 5;
     const start = useMemo(() => {
         // 첫 렌더링은 (innerHeight/itemHeight)+@ 를 렌더링 해야 스크롤바가 생김
         const defaultNumToRender = Math.ceil(windowHeight / height) + 1;
@@ -29,7 +23,13 @@ export default function useOffset(data = [], { initialNumToRender = Math.ceil(wi
         // initialNumToRender가 default값보다 작을 경우 해당 옵션 무시
         return defaultNumToRender;
     }, [initialNumToRender, windowHeight]);
-    const size = renderPerBatch || 5;
+    // limit: 페이지네이션의 최대값. 데이터가 없을 경우 기본값 0
+    const limit = data.length;
+    // renderOffset: 페이지네이션 위치를 기록하는 offset
+    const [renderOffset, setRenderOffset] = useState(start || 0);
+    // isDone: offset의 현재값이 최대값을 초과했는지 확인하기 위한 플래그
+    const [isDone, setIsDone] = useState(renderOffset >= limit);
+    const items = useMemo(() => data.slice(0, renderOffset), [renderOffset, data, limit]);
 
     useEffect(() => {
         // 검색어가 바뀌어서 데이터가 변할때마다 offset 초기화
@@ -81,14 +81,15 @@ export default function useOffset(data = [], { initialNumToRender = Math.ceil(wi
     // 요구사항 변경시 function 추가 or 수정 필요
     // 2021.05.14 data 방어코드 추가
     const list = (func) => {
-        return data.slice ? data.slice(0, renderOffset).map(func) : [];
+        return items?.map?.(func) || [];
     };
 
     const filter = (func) => {
-        return data.slice ? data.slice(0, renderOffset).filter(func) : [];
+        return items?.filter?.(func) || [];
     };
 
     return {
+        items,
         renderOffset,
         setRenderOffset,
         isDone,
