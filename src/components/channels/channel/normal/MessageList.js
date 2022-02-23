@@ -25,6 +25,8 @@ import {
 } from '@/lib/common';
 import { scrollIntoView } from '@/lib/util/domUtil';
 import { updateChannelLastMessage } from '@/modules/channel';
+import { openLayer } from '@/lib/common';
+import ShareContainer from '@C/share/ShareContainer';
 
 const makeMessage = async msg => {
   const flag = eumTalkRegularExp.test(msg);
@@ -191,6 +193,24 @@ const MessageList = ({ onExtension, viewExtension }) => {
                   );
                 },
                 name: covi.getDic('Copy'),
+              },
+              {
+                code: 'shareMessage',
+                isline: false,
+                onClick: () => {
+                  openLayer(
+                    {
+                      component: (
+                        <ShareContainer
+                          headerName={covi.getDic('Msg_Note_Forward')}
+                          message={message.context}
+                        />
+                      ),
+                    },
+                    dispatch,
+                  );
+                },
+                name: covi.getDic('Forward'),
               },
               {
                 code: 'setNoticeMessage',
