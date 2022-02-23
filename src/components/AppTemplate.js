@@ -184,10 +184,6 @@ const AppTemplate = () => {
         method: 'removeListener',
         channel: 'onReSync',
       });
-      evalConnector({
-        method: 'removeListener',
-        channel: 'sync-favorite',
-      });
     };
   }, []);
 
