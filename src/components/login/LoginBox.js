@@ -30,7 +30,7 @@ const LoginBox = forwardRef(
 
     const autoLoginLock = getConfig('ForceAutoLogin', 'N') === 'Y';
     const autoLaunchLock = getConfig('ForceAutoLaunch', 'N') === 'Y';
-    const IpSecurityCheck = getConfig('UseIpSecurity', {forcePolicyUse :false, forceValue: 0});
+    const IpSecurityCheck = getConfig('UseIpSecurity', {use: false, forcePolicyUse :false, forceValue: 0});
       const [securityLevel, setSecurityLevel] = useState(
     IpSecurityCheck?.forceValue || IpSecurityCheck.forceValue ,
   );
@@ -129,7 +129,7 @@ const LoginBox = forwardRef(
           <h1 className="logo-img"></h1>
 
           {/* IP 보안 */}
-          {DEVICE_TYPE == 'd' && (
+          {DEVICE_TYPE == 'd' && IpSecurityCheck?.use !== false && (
             <>
               <div className="IpSecurityBox">
                 <button  className="IpSecurityBtn" onClick={popUpOpen}>
