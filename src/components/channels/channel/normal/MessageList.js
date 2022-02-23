@@ -21,9 +21,25 @@ import {
   openPopup,
   eumTalkRegularExp,
   convertEumTalkProtocol,
+  convertEumTalkProtocolPreviewForChannelItem,
 } from '@/lib/common';
 import { scrollIntoView } from '@/lib/util/domUtil';
 import { updateChannelLastMessage } from '@/modules/channel';
+
+const makeMessage = async msg => {
+  const flag = eumTalkRegularExp.test(msg);
+  if (flag) {
+    const convertedMessage = await convertEumTalkProtocolPreviewForChannelItem(
+      msg,
+    );
+    if (!convertedMessage?.message) {
+      return msg;
+    }
+    return convertedMessage.message;
+  } else {
+    return msg;
+  }
+};
 
 const MessageList = ({ onExtension, viewExtension }) => {
   const tempMessage = useSelector(({ message }) => message.tempChannelMessage);
@@ -166,8 +182,9 @@ const MessageList = ({ onExtension, viewExtension }) => {
                     {
                       type: 'Alert',
                       message: covi.getDic('Msg_Copy'),
-                      callback: result => {
-                        navigator.clipboard.writeText(message.context);
+                      callback: async () => {
+                        const context = await makeMessage(message.context);
+                        navigator.clipboard.writeText(context);
                       },
                     },
                     dispatch,
