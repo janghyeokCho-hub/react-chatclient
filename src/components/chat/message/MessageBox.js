@@ -104,7 +104,10 @@ const MessageBox = ({
                 />
               )}
               {!message.fileInfos && (
-                <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
+                <div
+                  className="chatinfo"
+                  style={{ fontSize: smallFontSize, lineHeight: 'normal' }}
+                >
                   {message.unreadCnt > 0 && (
                     <span className="Unreadcount">{message.unreadCnt}</span>
                   )}
@@ -212,7 +215,10 @@ const MessageBox = ({
                 fileObj={fileInfoJSON}
                 id={!drawText && id}
               />
-              <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
+              <div
+                className="chatinfo"
+                style={{ fontSize: smallFontSize, lineHeight: 'normal' }}
+              >
                 {message.unreadCnt > 0 && (
                   <span className="Unreadcount">{message.unreadCnt}</span>
                 )}
@@ -231,7 +237,10 @@ const MessageBox = ({
                 nameBoxVisible && index == 0 ? 'replies' : 'text-only replies'
               }
             >
-              <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
+              <div
+                className="chatinfo"
+                style={{ fontSize: smallFontSize, lineHeight: 'normal' }}
+              >
                 {message.unreadCnt > 0 && (
                   <span className="Unreadcount">{message.unreadCnt}</span>
                 )}
@@ -261,12 +270,7 @@ const MessageBox = ({
 
         // Mention 처리
         if (mentionInfo.length > 0) {
-          mentionInfo.map((m, idx) => {
-            const member = currMember.find(item => item.id == m.id);
-            if (member) {
-              mentionInfo[idx] = { isMine: member.id == loginId, ...member };
-            }
-          });
+          drawText = message.context;
         }
       }
 
@@ -374,7 +378,10 @@ const MessageBox = ({
                   </Message>
                 </RightConxtMenu>
                 {!fileInfoJSX && !urlInfoJSX && (
-                  <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
+                  <div
+                    className="chatinfo"
+                    style={{ fontSize: smallFontSize, lineHeight: 'normal' }}
+                  >
                     {message.unreadCnt > 0 && (
                       <span className="Unreadcount">{message.unreadCnt}</span>
                     )}
@@ -412,7 +419,10 @@ const MessageBox = ({
                   ></div>
                 )}
                 {!fileInfoJSX && !urlInfoJSX && (
-                  <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
+                  <div
+                    className="chatinfo"
+                    style={{ fontSize: smallFontSize, lineHeight: 'normal' }}
+                  >
                     {message.unreadCnt > 0 && (
                       <span className="Unreadcount">{message.unreadCnt}</span>
                     )}
