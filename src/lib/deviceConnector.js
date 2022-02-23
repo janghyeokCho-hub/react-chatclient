@@ -18,6 +18,8 @@ const {
 // 스크린캡쳐 구현시 ${DEVICE_TYPE}/connector를 사용하기 위해 export
 export { getEmitter, getRemote, existsSync, writeFile };
 
+ 
+
 export const evalConnector = options => {
   if (DEVICE_TYPE == 'd') {
     const emitter = getEmitter();
