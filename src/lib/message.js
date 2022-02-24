@@ -182,6 +182,10 @@ export const deleteChannelMessage = params => {
   return chatsvr('delete', `/channel/message/${params.messageId}`, params);
 };
 
+export const deleteChatroomMessage = params => {
+  return chatsvr('delete', `/message`, params);
+}
+
 // 멘션 목록 리스트 조회
 export const getChannelMentionList = params => {
   return managesvr(

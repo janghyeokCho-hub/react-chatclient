@@ -458,7 +458,7 @@ const MessageBox = ({
         </>
       );
     }
-  }, [message, marking, startMessage, endMessage, fontSize]);
+  }, [message, marking, startMessage, endMessage, fontSize, timeBox, nameBox]);
 
   return drawMessage;
 };
