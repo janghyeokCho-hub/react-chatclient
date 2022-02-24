@@ -317,6 +317,21 @@ const ShareContainer = ({
               inviteMembers = inviteMembers.concat(
                 members.filter(item => item.type === 'U'),
               );
+              const shareMembers = inviteMembers.map(item => item.id);
+              shareMembers.push(userId);
+              shareData = {
+                name: '',
+                roomType: 'G',
+                message: messageText,
+                members: shareMembers,
+                memberType: 'G',
+                sendFileInfo: null,
+                linkInfo: null,
+                messageType: 'N',
+                targetType: 'NEWROOM',
+              };
+
+              handleMessage({ shareData });
             }
           } else {
             const groupIds = members
@@ -416,7 +431,7 @@ const ShareContainer = ({
             context: messageText,
             sender: userId,
             targetArr: [],
-            tempId: roomID * 10000,
+            tempId: target.roomId * 10000,
             targetType: 'CHANNEL',
             messageType: 'N',
             status: 'send',
