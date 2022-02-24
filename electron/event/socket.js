@@ -8,6 +8,7 @@ export const reqSocketConnect = (event, args) => {
   logger.info('socket connection : ' + args.token);
   const preFuncs = {
     onNewMessage: socketAction.onNewMessage,
+    onDelMessage: socketAction.onDelMessage,
     onNewNoteMessage: socketAction.onNewNoteMessage,
     onPresenceChanged: socketAction.onPresenceChanged,
     onChatRoomInvitation: socketAction.onChatRoomInvitation,

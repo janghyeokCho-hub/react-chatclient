@@ -9,6 +9,7 @@ import {
   roomLeaveOtherDevice,
   roomLeaveTargetUser,
   messageReadOtherDevice,
+  roomMessageDelete,
 } from '@/modules/room';
 
 import {
@@ -432,6 +433,18 @@ export const handleNewNotice = dispatch => {
     dispatch(receiveMessage(json_data));
   };
 };
+
+export const handleDelChatroomMessage = (dispatch) => {
+  return data => {
+    try {
+      const json_data = JSON.parse(data);
+      console.log('handleDelChatroomMessage payload :: ', json_data);
+      dispatch(roomMessageDelete(json_data));
+    } catch(err) {
+      console.log('handleDelMessage Error : ', err);
+    }
+  }
+}
 
 // 채널 메시지 삭제 (Broswer)
 export const handleDelChannelMessageInBrowser = dispatch => {

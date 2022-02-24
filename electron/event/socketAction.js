@@ -266,3 +266,7 @@ export const onNewNoteMessage = (payload) => {
   }
 
 }
+export const onDelMessage = (payload) => {
+  appData.deleteChatroomMessage(payload);
+  return;
+}
