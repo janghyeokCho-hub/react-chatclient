@@ -1,5 +1,5 @@
 import { createAction, handleActions } from 'redux-actions';
-import { takeLatest, call, put, throttle, delay } from 'redux-saga/effects';
+import { takeLatest, call, put, throttle, takeEvery, delay } from 'redux-saga/effects';
 import * as roomApi from '@/lib/room';
 import * as messageApi from '@/lib/message';
 import createRequestSaga, {
@@ -29,6 +29,7 @@ const [UPDATE_ROOMS, UPDATE_ROOMS_SUCCESS, UPDATE_ROOMS_FAILURE] =
   createRequestActionTypes('room/UPDATE_ROOMS');
 
 const ROOM_MESSAGE_ADD = 'room/ROOM_MESSAGE_ADD';
+const ROOM_MESSAGE_DELETE = 'room/ROOM_MESSAGE_DELETE';
 
 const OPEN_ROOM = 'room/OPEN_ROOM';
 const CHANGE_OPEN_ROOM = 'room/CHANGE_OPEN_ROOM';
@@ -99,6 +100,7 @@ export const getRooms = createAction(GET_ROOMS);
 export const updateRooms = createAction(UPDATE_ROOMS);
 export const getRoomInfo = createAction(GET_ROOM_INFO);
 export const roomMessageAdd = createAction(ROOM_MESSAGE_ADD);
+export const roomMessageDelete = createAction(ROOM_MESSAGE_DELETE);
 export const changeOpenRoom = createAction(CHANGE_OPEN_ROOM);
 export const newWinRoom = createAction(NEW_WIN_ROOM);
 export const closeWinRoom = createAction(CLOSE_WIN_ROOM);
@@ -653,6 +655,21 @@ function createReadMessageSaga() {
 const readMessageSaga = createReadMessageSaga();
 const readMessageFocusSaga = createReadMessageSaga();
 
+function* roomMessageDeleteSaga(action) {
+  const { payload } = action;
+  if (DEVICE_TYPE !== 'd' || Array.isArray(payload?.messageIds) === false) {
+    return;
+  }
+  yield call(evalConnector, {
+    method: 'send',
+    channel: 'req-del-chatroom-message',
+    message: {
+      roomID: payload.roomID,
+      messageIds: payload.messageIds,
+    },
+  });
+}
+
 export function* roomSaga() {
   yield takeLatest(GET_ROOMS, getRoomsSaga);
   yield takeLatest(UPDATE_ROOMS, updateRoomsSaga);
@@ -667,6 +684,7 @@ export function* roomSaga() {
   yield takeLatest(READ_MESSAGE, readMessageSaga);
   yield takeLatest(MODIFY_ROOMSETTING, modifyRoomSettingSaga);
   yield throttle(1000, READ_MESSAGE_FOCUS, readMessageFocusSaga);
+  yield takeEvery(ROOM_MESSAGE_DELETE, roomMessageDeleteSaga);
 }
 
 const initialState = {
@@ -915,6 +933,51 @@ const room = handleActions(
             unreadCnt: action.payload.isMine != 'Y' ? 1 : 0,
           });
         }
+      });
+    },
+    [ROOM_MESSAGE_DELETE]: (state, action) => {
+      /**
+       * 2022.01.19
+       * 대화방 대화삭제: redux store에서 삭제된 메시지 제거
+       */
+      return produce(state, draft => {
+        const { payload } = action;
+        console.log('ROOM_MESSAGE_DELETE  ', payload);
+        if (!payload) {
+          return;
+        }
+
+        /* Redux store에서 삭제된 message 제거 */
+        if (Array.isArray(payload?.deletedMessageIds) === true) {
+          payload.deletedMessageIds.forEach(mid => {
+            const idx = draft.messages.findIndex(msg => msg.messageID === mid);
+            // console.log('Delete Message  ', idx, messageLen, draft.messages[idx]);
+            if (idx !== -1) {
+              // message 목록에서 메시지 삭제처리
+              draft.messages.splice(idx, 1);
+            }
+          });
+        }
+        /* */
+
+        /* lastMessage 교체 */
+        if (payload.lastMessage) {
+          console.log('Update LastMessage   ', payload.lastMessage);
+          const room = draft.rooms.find(r => `${r.roomID}` === `${payload.roomID}`);
+          if (!room) {
+            return;
+          }
+          const lastMessage = {
+            Message: payload.lastMessage.context,
+            File: payload.lastMessage.fileInfos,
+          };
+          console.log(`Update lastMessage on Room ${room.roomID}: `, lastMessage);
+          if (draft.currentRoom && room.roomID === draft.currentRoom.roomID) {
+            draft.currentRoom.lastMessage = lastMessage;
+          }
+          room.lastMessage = lastMessage;
+        }
+        /*  */
       });
     },
     [CHANGE_OPEN_ROOM]: (state, action) => {

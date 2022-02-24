@@ -30,6 +30,7 @@ const MessageView = ({
   const zoomMeet = getConfig('ZoomMeet');
   const useMessageCopy = getConfig('UseMessageCopy', true);
   const remoteAssistance = getConfig('UseRemoteView', 'N');
+  const useMessageDelete = getConfig('UseChatroomDeleteMessage', false) === true;
 
   const getFilterMember = (members, id) => {
     if (members) {
@@ -387,7 +388,7 @@ const MessageView = ({
         onNewWin={onNewWin}
         isNewWin={isNewWin}
       />
-      <MessageList onExtension={onExtension} viewExtension={viewExtension} />
+      <MessageList onExtension={onExtension} viewExtension={viewExtension} useMessageDelete={useMessageDelete} />
       <MessagePostBox
         postAction={postAction}
         viewExtension={viewExtension}

@@ -34,10 +34,12 @@ import {
 import { hasClass, messageCopy, getMsgElement } from '@/lib/util/domUtil';
 import { evalConnector } from '@/lib/deviceConnector';
 import { getMessage } from '@/lib/messageUtil';
+import { deleteChatroomMessage } from '@/lib/message';
+import { roomMessageDelete } from '@/modules/room';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import ShareContainer from '@C/share/ShareContainer';
 
-const MessageList = ({ onExtension, viewExtension }) => {
+const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const tempMessage = useSelector(({ message }) => message.tempMessage);
   const tempFiles = useSelector(({ message }) => message.tempFiles);
   const messages = useSelector(({ room }) => room.messages);
@@ -355,6 +357,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
   const getMenuData = useCallback(
     message => {
       const menus = [];
+      // console.log(message);
       if (message.messageType != 'S' && message.messageType != 'I') {
         let messageType = 'message';
         if (eumTalkRegularExp.test(message.context)) {
@@ -396,6 +399,49 @@ const MessageList = ({ onExtension, viewExtension }) => {
               );
             },
             name: covi.getDic('Forward'),
+          });
+        }
+        if (useMessageDelete && message?.isMine === 'Y') {
+          menus.push({
+            name: covi.getDic('Delete'),
+            code: 'deleteMessage',
+            isline: false,
+            onClick() {
+              openPopup(
+                {
+                  type: 'Confirm',
+                  message: covi.getDic('Msg_ChatroomDeleteMsg'),
+                  async callback(result) {
+                    if (!result) {
+                      return;
+                    }
+                    if (!message?.messageID || !message?.roomID) {
+                      return;
+                    }
+                    try {
+                      await deleteChatroomMessage({
+                        roomID: message.roomID,
+                        messageIds: [message.messageID],
+                      });
+                      // 로컬 테스트용: onDelMessage 이벤트 대신 직접 dispatch
+                      // dispatch(
+                      //   roomMessageDelete({
+                      //     roomID: message.roomID,
+                      //     messageIds: [message.messageID],
+                      //   }),
+                      // );
+                    } catch (err) {
+                      console.log('deleteChatroomMessage occured an error: ', err);
+                      openPopup({
+                        type: 'Alert',
+                        message: covi.getDic('Msg_Error')
+                      }, dispatch);
+                    }
+                  },
+                },
+                dispatch,
+              );
+            },
           });
         }
       }

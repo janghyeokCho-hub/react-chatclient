@@ -930,6 +930,9 @@ ipcMain.on('req-get-roomInfo', async (event, args) => {
   }
 });
 ipcMain.on('req-get-messages', async (event, args) => {
+  // 삭제된 메시지 동기화
+  await appDataEvt.syncChatroomDeletedMessages(args);
+
   const returnValue = await appDataEvt.reqGetMessages(event, args);
   event.returnValue = returnValue;
 
@@ -1218,4 +1221,16 @@ ipcMain.on('onVNCRemote', (event, args) => {
 
 ipcMain.on('onVNCRemoteHost', (event, args) => {
   createRemoteVNCHost(args.options);
+});
+
+ipcMain.on('req-del-chatroom-message', (_, args) => {
+  // Validate data
+  if (!args?.roomID) {
+    logger.info(`Delete Chatroom Message Error: Empty args.roomID ${JSON.stringify(args)}`);
+    return;
+  } else if (Array.isArray(args?.messageIds) === false) {
+    logger.info(`Delete Chatroom Message Error: args.messageIds is not array ${JSON.stringify(args)}`);
+    return;
+  }
+  appDataEvt.deleteChatroomMessage(args);
 });

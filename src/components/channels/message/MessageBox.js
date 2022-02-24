@@ -418,7 +418,7 @@ const MessageBox = ({
         </>
       );
     }
-  }, [message, marking, fontSize]);
+  }, [message, marking, fontSize, nameBox, timeBox]);
 
   return drawMessage;
 };
