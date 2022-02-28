@@ -349,7 +349,7 @@ const ShareContainer = ({
 
                 if (inviteMembers.length) {
                   const shareMembers = inviteMembers.map(item => item.id);
-                  shareMembers.push(userId);
+                  if (!shareMembers.includes(userId)) shareMembers.push(userId);
                   shareData = {
                     name: '',
                     roomType: 'G',
@@ -366,9 +366,11 @@ const ShareContainer = ({
                 }
               });
             } else {
-              target = roomList.filter(
-                r => r.roomType === 'M' && r.targetCode === members[0].id,
-              )[0];
+              target = roomList.filter(r => {
+                if (userId === members[0].id) return r.roomType === 'O';
+                else
+                  return r.roomType === 'M' && r.targetCode === members[0].id;
+              })[0];
 
               // 1:1 대화방이 존재하는지 확인하고 없을 경우 새로 만든다.
               if (target) {
@@ -388,10 +390,10 @@ const ShareContainer = ({
                 handleMessage({ shareData });
               } else {
                 const shareMembers = members.map(item => item.id);
-                shareMembers.push(userId);
+                if (!shareMembers.includes(userId)) shareMembers.push(userId);
                 shareData = {
                   name: '',
-                  roomType: 'M',
+                  roomType: userId === members[0].id ? 'O' : 'M',
                   message: messageText,
                   members: shareMembers,
                   sendFileInfo: null,
