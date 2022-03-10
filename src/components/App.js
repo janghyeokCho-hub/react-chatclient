@@ -19,6 +19,7 @@ import {
   Channel,
   MakeRoom,
   UserSetting,
+  NoticeTalk,
   FileLayer,
   Offline,
   Versions,
@@ -186,6 +187,10 @@ class App extends Component {
                           component={UserSetting}
                         />
                         <Route
+                          path="/client/nw/noticetalk"
+                          component={NoticeTalk}
+                        />
+                        <Route
                           path="/client/nw/preview"
                           component={FileLayer}
                         />
@@ -272,6 +277,10 @@ class App extends Component {
                         <Route
                           path="/client/nw/usersetting"
                           component={UserSetting}
+                        />
+                        <Route
+                          path="/client/nw/noticetalk"
+                          component={NoticeTalk}
                         />
                         <Route
                           path="/client/nw/preview"
