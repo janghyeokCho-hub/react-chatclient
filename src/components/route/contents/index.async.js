@@ -15,3 +15,7 @@ export const ExternalUserList = asyncRoute(() =>
 export const UserSetting = asyncRoute(() =>
   import('@C/usersetting/UserSetting'),
 );
+
+export const NoticeTalk = asyncRoute(() =>
+  import('@C/noticetalk/NoticeTalk'),
+);

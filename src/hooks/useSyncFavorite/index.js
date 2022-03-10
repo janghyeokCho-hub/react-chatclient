@@ -2,7 +2,7 @@
 import React from 'react';
 import { useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addFavorite, deleteFavorite } from '@/lib/contactUtil';
+import { addFavorite, addNotificationAction, deleteFavorite } from '@/lib/contactUtil';
 import { sendMain, isMainWindow } from '@/lib/deviceConnector';
 import { evalConnector } from '@/lib/deviceConnector';
 

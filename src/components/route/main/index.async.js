@@ -16,6 +16,12 @@ export const MakeRoom = asyncRoute(() =>
 export const UserSetting = asyncRoute(() =>
   import('@C/usersetting/UserSetting'),
 );
+
+export const NoticeTalk = asyncRoute(() =>
+  import('@C/noticetalk/NoticeTalk'),
+);
+
+
 export const FileLayer = asyncRoute(() => import('@COMMON/layer/FileLayer'));
 
 export const Snipper = asyncRoute(() =>
