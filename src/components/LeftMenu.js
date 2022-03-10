@@ -27,6 +27,7 @@ import OrgchartIcon from '@/icons/svg/Orgchart';
 import NoteIcon from '@/icons/svg/note/Note';
 
 import { extensionAdd, setCurrentExtension } from '@/modules/extension';
+import { convertFileSize } from '@/lib/fileUpload/coviFile';
 
 const handleUserConfig = data => {
   evalConnector({
@@ -188,6 +189,27 @@ const LeftMenu = ({ history }) => {
   const menus = useMemo(() => {
     const setMenus = [
       {
+        code: 'noticetalk',
+        isline: false,
+        onClick: () => {
+          if (DEVICE_TYPE == 'b') {
+            history.push('/client/main/noticetalk');
+          } else {
+            openSubPop(
+              'noticetalk',
+              '#/client/nw/noticetalk',
+              {},
+              800,
+              600,
+              'sticky',
+              false,
+              { resize: true },
+            );
+          }
+        },
+        name: covi.getDic('NoticeTalk'),
+      },
+      {
         code: 'setting',
         isline: false,
         onClick: () => {
@@ -234,6 +256,9 @@ const LeftMenu = ({ history }) => {
         name: covi.getDic('Quit'),
       });
 
+    if (userInfo.noticeTalkAuth == 'N') {
+      setMenus.shift();
+    }
     return setMenus;
   }, [dispatch, history]);
 

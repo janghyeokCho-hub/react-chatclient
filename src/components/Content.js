@@ -11,6 +11,7 @@ import {
   UserSetting,
   ExtensionLayer,
   ZoomOAuthSuccess,
+  NoticeTalk
 } from '@C/route/contents/index.async';
 
 const Content = () => {
@@ -31,6 +32,7 @@ const Content = () => {
         component={ExternalUserList}
       />
       <Route path="/client/main/usersetting" component={UserSetting} />
+      <Route path="/client/main/noticeTalk" component={NoticeTalk} />
     </>
   );
 };

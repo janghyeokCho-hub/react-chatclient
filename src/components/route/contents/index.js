@@ -3,3 +3,4 @@ export { default as ChatList } from '@C/chat/ChatList';
 export { default as OrgChart } from '@C/orgchart/OrgChart';
 export { default as ExternalUserList } from '@C/externaluserlist/ExternalUserList';
 export { default as UserSetting } from '@C/usersetting/UserSetting';
+export { default as NoticeTalk } from '@C/noticetalk/NoticeTalk';
