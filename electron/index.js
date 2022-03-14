@@ -93,6 +93,11 @@ let activeChecker = null;
 let appIdleTime = 900; // idle check 관련 시간 (second) (default : 15분)
 /********** SERVER VARIABLE *********/
 
+const autoLaunchSetting = new AutoLaunch({
+  name: app.getName(),
+  path: app.getPath('exe'),
+});
+
 // AUMID SETTING ( window alarm )
 app.setAppUserModelId(exportProps.appId);
 
@@ -318,15 +323,12 @@ const appReady = async () => {
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   }
 
-  // 설정데이터가 초기화되어도 auto-launch 활성여부는 앱 실행시점에 다시 업데이트함
-  const autoLaunchEnabled = APP_SECURITY_SETTING.get('autoLaunch');
-  if (autoLaunchEnabled !== true) {
+  // 앱 실행마다 auto-launch flag 저장값이 실제 활성여부와 다르면 값을 업데이트함
+  const autoLaunchConfig = APP_SECURITY_SETTING.get('autoLaunch');
+  if (autoLaunchConfig === false) {
     logger.info('autoLaunch config: disabled');
-    const autoLaunchSetting = new AutoLaunch({
-      name: app.getName(),
-      path: app.getPath('exe'),
-    });
-    if (autoLaunchSetting.isEnabled()) {
+    const autoLaunchEnabled = await autoLaunchSetting.isEnabled();
+    if (autoLaunchEnabled === true) {
       APP_SECURITY_SETTING.set('autoLaunch', true);
       logger.info('AutoLaunch is already enabled. Update config "autoLaunch"');
     }
@@ -982,11 +984,6 @@ ipcMain.on('save-static-config', (event, data) => {
   });
 
   if (data['autoLaunch'] !== undefined && data['autoLaunch'] !== null) {
-    const autoLaunchSetting = new AutoLaunch({
-      name: app.getName(),
-      path: app.getPath('exe'),
-    });
-
     if (data.autoLaunch) {
       autoLaunchSetting.enable();
     } else {
