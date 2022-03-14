@@ -8,11 +8,16 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
   bgcolor: 'background.paper',
   border: '2px solid #999',
   boxShadow: 34,
+  maxWidth : '100%',
+  minWidth : '300px',
+  width : 'auto',
   p: 4,
+  display : 'table',
+  padding: 25
+
 };
 
 const SecurityPopup = props => {
