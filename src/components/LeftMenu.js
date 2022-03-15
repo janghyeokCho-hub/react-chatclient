@@ -256,7 +256,7 @@ const LeftMenu = ({ history }) => {
         name: covi.getDic('Quit'),
       });
 
-    if (userInfo?.noticeTalkAuth !== 'Y') {
+    if (!userInfo?.noticeTalkAuth || userInfo?.noticeTalkAuth !== 'Y') {
       setMenus.shift();
     }
     return setMenus;
