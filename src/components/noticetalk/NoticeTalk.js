@@ -48,6 +48,7 @@ export default function NoticeTalk({ match, location, history }) {
   const [noticeSubject, setNoticeSubject] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [context, setContext] = useState('');
+  const [checkAll, setCheckAll] = useState(false);
 
   useLayoutEffect(() => {
     const { noteId, noteInfo } = viewState;
@@ -114,6 +115,10 @@ export default function NoticeTalk({ match, location, history }) {
     setTargets(filtered);
   }
 
+  const checkedAll = () => {
+    setCheckAll(!checkAll);
+  };
+
   async function handleSend() {
     if (isSending === true) {
       return;
@@ -138,7 +143,7 @@ export default function NoticeTalk({ match, location, history }) {
       return;
     }
 
-    if (selectTargets.length === 0) {
+    if (selectTargets.length === 0 && !checkAll) {
       _popupResult(
         dispatch,
         covi.getDic('Msg_Note_EnterRecipient', '받는사람을 선택하세요.'),
@@ -153,11 +158,13 @@ export default function NoticeTalk({ match, location, history }) {
       return;
     }
 
+    let selectAll = [{ targetCode: myInfo.CompanyCode, targetType: 'G' }];
+
     try {
       setIsSending(true);
       const sendData = {
         subjectId: subjectId.toString(),
-        targets: selectTargets,
+        targets: checkAll ? selectAll : selectTargets,
         message: context.trim(),
         companyCode: myInfo.CompanyCode,
         push: 'Y',
@@ -170,7 +177,7 @@ export default function NoticeTalk({ match, location, history }) {
 
         _popupResult(
           dispatch,
-          covi.getDic('Msg_Noti_SendSuccess', '알림 전송에 성공했습니다.'),
+          covi.getDic('Msg_Noti_SendSuccess', '알림톡 전송에 성공했습니다.'),
           () => {
             if (DEVICE_TYPE === 'b') {
               window.location.reload();
@@ -185,7 +192,7 @@ export default function NoticeTalk({ match, location, history }) {
       } else {
         _popupResult(
           dispatch,
-          covi.getDic('Msg_Note_SendFail', '쪽지 전송에 실패했습니다.'),
+          covi.getDic('Msg_Note_SendFail', '알림톡 전송에 실패했습니다.'),
         );
       }
     } catch (err) {
@@ -248,21 +255,34 @@ export default function NoticeTalk({ match, location, history }) {
 
           {/* 받는 사람 */}
 
-          <div className="txtBox" style={{ padding: '0 30px' }}>
-            <p>{covi.getDic('Note_Recipient', '받는사람')}</p>
+          <div className="txtBox org_select_wrap_txtBox">
+            <div>
+              <p>{covi.getDic('Note_Recipient', '받는사람')}</p>
+            </div>
+            <div style={{ display: 'flex' }}>
+              <input
+                id="chkStyle03"
+                className="chkStyle03"
+                type="checkbox"
+                onClick={checkedAll}
+                checked={checkAll}
+              />
+
+              <label for="chkStyle03" className="Style03" />
+              <p> {covi.getDic('All_Recipient', '전체공지')}</p>
+            </div>
           </div>
           <div
-            className="org_select_wrap"
+            className={
+              checkAll ? 'org_select_wrap disabled_box' : 'org_select_wrap'
+            }
             style={{ marginRight: '30px', marginLeft: '30px' }}
           >
             <ul>
               {targets.map((target, idx) => {
                 return (
                   <li key={idx}>
-                    <a
-                      className="ui-link"
-                      onClick={() => removeTarget(target.name)}
-                    >
+                    <a className="ui-link">
                       <ProfileBox
                         userId={target.id}
                         img={target.photoPath}
@@ -270,18 +290,36 @@ export default function NoticeTalk({ match, location, history }) {
                         isInherit={true}
                         userName={target.name}
                         handleClick={false}
+                        checkAll={checkAll}
                       />
                       <p className="name">{getJobInfo(target)}</p>
-                      <span className="del"></span>
+                      <span
+                        onClick={
+                          !checkAll ? () => removeTarget(target.name) : ''
+                        }
+                        className={'del'}
+                      ></span>
                     </a>
                   </li>
                 );
               })}
-              <li className="add" onClick={addTarget}>
-                <a className="ui-link">
-                  <div className="profile-photo add"></div>
-                </a>
-              </li>
+              {checkAll ? (
+                <>
+                  <li className="add-disable">
+                    <a className="ui-link">
+                      <div className="profile-photo add-disable"></div>
+                    </a>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="add" onClick={addTarget}>
+                    <a className="ui-link">
+                      <div className="profile-photo add"></div>
+                    </a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
           {/* 내용 */}
