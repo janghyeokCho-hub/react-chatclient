@@ -13,6 +13,7 @@ const ProfileBox = ({
   presence,
   handleClick,
   isInherit,
+  checkAll,
 }) => {
   const dispatch = useDispatch();
   const id = useSelector(({ login }) => login.id, shallowEqual);
@@ -78,11 +79,15 @@ const ProfileBox = ({
   }, [img, userName, imgVisible]);
 
   if (userId == 'eumbot-758f37d1-f6a6-4bc2-bb5b-0376da769697') {
-    return <div className="profile-photo">{profileBox}</div>;
+    return (
+      <div className={checkAll ? 'profile-photo-disable' : 'profile-photo'}>
+        {profileBox}
+      </div>
+    );
   } else {
     return (
       <div
-        className="profile-photo"
+        className={checkAll ? 'profile-photo-disable' : 'profile-photo'}
         onClick={e => {
           if (handleClick === undefined) openProfile();
           else if (handleClick) handleClick();
