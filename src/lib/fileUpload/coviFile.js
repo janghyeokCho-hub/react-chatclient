@@ -7,6 +7,7 @@ import { getSysMsgFormatStr } from '@/lib/common';
 import EXIF from 'exif-js';
 import exif2css from 'exif2css';
 import imageExtensions from 'image-extensions';
+import { filesvr } from '../api';
 
 const extensionImage = new Set(imageExtensions);
 
@@ -535,6 +536,11 @@ const downloadFiles = (
       callback({ result: 'SUCCESS', message: '' });
     }
   });
+};
+
+export const checkFileTokenValidation = async ({ token, serviceType }) => {
+  const url = `/check/${serviceType}/${token}`;
+  return await filesvr('get', url);
 };
 
 export const downloadByToken = async (

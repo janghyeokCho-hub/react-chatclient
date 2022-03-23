@@ -11,7 +11,7 @@ import {
   convertEumTalkProtocolPreviewForChannelItem,
 } from '@/lib/common';
 import { createRoom } from '@/lib/room';
-import { sendMessage, sendChannelMessage } from '@/lib/message';
+import { sendMessage, sendChannelMessage, shareFile } from '@/lib/message';
 import { rematchingMember, getRooms } from '@/modules/room';
 import { getChannels } from '@/modules/channel';
 import OrgChart from '@C/orgchart/OrgChart';
@@ -37,8 +37,9 @@ const makeMessage = async msg => {
 };
 
 const ShareContainer = ({
-  headerName = covi.getDic('Msg_Note_Forward'),
+  headerName = covi.getDic('Msg_Note_Forward', '전달하기'),
   message,
+  messageType,
 }) => {
   const dispatch = useDispatch();
 
@@ -65,9 +66,11 @@ const ShareContainer = ({
   }, []);
 
   useLayoutEffect(() => {
-    makeMessage(message).then(result => {
-      setMessageText(result);
-    });
+    if (messageType === 'message') {
+      makeMessage(message.context).then(result => {
+        setMessageText(result);
+      });
+    }
   }, [message]);
 
   const memberCheckObj = useMemo(
@@ -78,9 +81,19 @@ const ShareContainer = ({
           const groups = members.filter(item => item.type === 'G');
           const discord = members.filter(item => item.type !== userInfo.type);
           if (userInfo.type === 'G' && groups?.length) {
-            sharePopup({ msg: covi.getDic('Msg_GroupSelectOne') });
+            sharePopup({
+              msg: covi.getDic(
+                'Msg_GroupSelectOne',
+                '부서에 대한 그룹채팅은 한 부서만 선택할 수 있습니다.',
+              ),
+            });
           } else if (discord?.length) {
-            sharePopup({ msg: covi.getDic('Msg_GroupAndUserSelect') });
+            sharePopup({
+              msg: covi.getDic(
+                'Msg_GroupAndUserSelect',
+                '부서와 사용자는 동시에 선택할 수 없습니다.',
+              ),
+            });
           } else {
             addInviteMember({
               id: userInfo.id,
@@ -119,9 +132,14 @@ const ShareContainer = ({
       name: 'invite_',
       onChange: (e, room, filterMember) => {
         if (e.target.checked) {
-          if (rooms.length)
-            sharePopup({ msg: covi.getDic('Msg_SelectOnlyOneChatRoom') });
-          else {
+          if (rooms.length) {
+            sharePopup({
+              msg: covi.getDic(
+                'Msg_SelectOnlyOneChatRoom',
+                '대화방은 1개만 선택할 수 있습니다.',
+              ),
+            });
+          } else {
             addInviteRooms({
               roomID: room.roomID,
               roomType: room.roomType,
@@ -151,9 +169,14 @@ const ShareContainer = ({
       name: 'invite_',
       onChange: (e, channel, isJoin) => {
         if (e.target.checked) {
-          if (channels.length)
-            sharePopup({ msg: covi.getDic('Msg_SelectOnlyOneChannel') });
-          else {
+          if (channels.length) {
+            sharePopup({
+              msg: covi.getDic(
+                'Msg_SelectOnlyOneChannel',
+                '채널은 1개만 선택할 수 있습니다.',
+              ),
+            });
+          } else {
             addInviteChannels({
               roomId: channel.roomId,
               iconPath: channel.iconPath,
@@ -226,9 +249,9 @@ const ShareContainer = ({
 
   const makeRoomName = useCallback(room => {
     const filterMember = room.filterMember;
-    if (room.roomType === 'M' || room.roomType === 'O')
+    if (room.roomType === 'M' || room.roomType === 'O') {
       return <>{getJobInfo(filterMember[0])}</>;
-    else {
+    } else {
       if (room.roomName && room.roomName !== '') {
         return (
           <>
@@ -250,7 +273,9 @@ const ShareContainer = ({
         }
       }
 
-      if (!filterMember.length) return <>{covi.getDic('NoChatMembers')}</>;
+      if (!filterMember.length) {
+        return <>{covi.getDic('NoChatMembers', '대화상대없음')}</>;
+      }
 
       return (
         <>
@@ -273,11 +298,10 @@ const ShareContainer = ({
     [selectTab],
   );
 
-  const sharePopup = ({ status = 'FAIL', tit, msg }) => {
+  const sharePopup = ({ status = 'FAIL', msg }) => {
     openPopup(
       {
         type: 'Alert',
-        title: tit,
         message: msg,
         callback: () => {
           if (status === 'SUCCESS') {
@@ -300,174 +324,218 @@ const ShareContainer = ({
     );
   };
 
-  const handleShare = useCallback(() => {
-    let target;
-    let shareData;
-    const failPopup = {
-      tit: covi.getDic('Msg_ForwardingFail'),
-      msg: covi.getDic('Msg_NoTargetSelected'),
-    };
+  const hasSelectedData = useCallback(() => {
     switch (selectTab) {
       case 'orgchart':
-        if (members.length) {
-          // 선택한 대상이 2명 이상일 경우 채팅방을 새로 만든다.
-          let inviteMembers = [];
-          if (members.length > 1) {
-            if (members.find(item => item.isShow === true) !== undefined) {
-              inviteMembers = inviteMembers.concat(
-                members.filter(item => item.type === 'U'),
-              );
-              const shareMembers = inviteMembers.map(item => item.id);
-              shareMembers.push(userId);
-              shareData = {
-                name: '',
-                roomType: 'G',
-                message: messageText,
-                members: shareMembers,
-                memberType: 'G',
-                sendFileInfo: null,
-                linkInfo: null,
-                messageType: 'N',
-                targetType: 'NEWROOM',
-              };
+        return Boolean(members.length);
+      case 'chat':
+        return Boolean(rooms.length);
+      case 'channel':
+        return Boolean(channels.length);
+      default:
+        return false;
+    }
+  });
 
-              handleMessage({ shareData });
-            }
-          } else {
-            const groupIds = members
-              .filter(item => item.type === 'G')
-              .map(item => item.id);
-            if (groupIds.length > 0) {
-              getAllUserWithGroupList(groupIds).then(({ data }) => {
-                if (data.result && data.result.length) {
-                  inviteMembers = inviteMembers.concat(data.result);
-                  inviteMembers = inviteMembers.filter(
-                    (item, idx) =>
-                      inviteMembers.findIndex(i => i.id == item.id) === idx,
-                  );
-                }
+  const handleShare = useCallback(async () => {
+    // 선택한 대상이 있는지 확인
+    if (!hasSelectedData()) {
+      sharePopup({
+        msg: covi.getDic('Msg_NoTargetSelected', '선택한 대상이 없습니다.'),
+      });
+      return;
+    }
 
-                if (inviteMembers.length) {
-                  const shareMembers = inviteMembers.map(item => item.id);
-                  if (!shareMembers.includes(userId)) shareMembers.push(userId);
-                  shareData = {
-                    name: '',
-                    roomType: 'G',
-                    message: messageText,
-                    members: shareMembers,
-                    memberType: 'G',
-                    sendFileInfo: null,
-                    linkInfo: null,
-                    messageType: 'N',
-                    targetType: 'NEWROOM',
-                  };
+    let params = await makeParams();
+    if (
+      params.targetType === 'CHAT' &&
+      params.roomType === 'M' &&
+      params.realMemberCnt === 1
+    ) {
+      // sendMessage 하기 전에 RoomType이 M인데 참가자가 자기자신밖에 없는경우 상대를 먼저 초대함.
+      dispatch(rematchingMember(params));
+    }
 
-                  handleMessage({ shareData });
-                }
-              });
-            } else {
-              target = roomList.filter(r => {
-                if (userId === members[0].id) return r.roomType === 'O';
-                else
-                  return r.roomType === 'M' && r.targetCode === members[0].id;
-              })[0];
+    if (messageType === 'message') {
+      handleMessage(params);
+    } else {
+      handleShareFile(params);
+    }
+  });
 
-              // 1:1 대화방이 존재하는지 확인하고 없을 경우 새로 만든다.
-              if (target) {
-                shareData = {
-                  roomID: target.roomID,
-                  roomType: target.roomType,
-                  context: messageText,
-                  realMemberCnt: target.realMemberCnt,
-                  targetType: 'CHAT',
-                  messageType: 'N',
-                  status: 'send',
-                };
-                // sendMessage 하기 전에 RoomType이 M인데 참가자가 자기자신밖에 없는경우 상대를 먼저 초대함.
-                if (target.roomType === 'M' && target.realMemberCnt === 1) {
-                  dispatch(rematchingMember(shareData));
-                }
-                handleMessage({ shareData });
-              } else {
-                const shareMembers = members.map(item => item.id);
-                if (!shareMembers.includes(userId)) shareMembers.push(userId);
-                shareData = {
-                  name: '',
-                  roomType: userId === members[0].id ? 'O' : 'M',
-                  message: messageText,
-                  members: shareMembers,
-                  sendFileInfo: null,
-                  linkInfo: null,
-                  messageType: 'N',
-                  targetType: 'NEWROOM',
-                };
-                handleMessage({ shareData });
-              }
-            }
+  const handleShareFile = useCallback(async params => {
+    let fileInfos = JSON.parse(params.fileInfos);
+    if (!Array.isArray(fileInfos)) {
+      // 단일 파일일 경우 Array 로 변환 후 전송하기 위함
+      fileInfos = new Array(fileInfos);
+    }
+    params.fileInfos = JSON.stringify(fileInfos);
+
+    const formData = new FormData();
+    for (const key in params) {
+      formData.append(key, params[key]);
+    }
+
+    const { data } = await shareFile(formData);
+    if (data.state !== 'SUCCESS') {
+      sharePopup({
+        msg: covi.getDic('Msg_ForwardingWasFailed', '전달에 실패 하였습니다.'),
+      });
+      return;
+    }
+    params.roomID = data.roomID;
+    params.roomType = data.roomType;
+    params.fileInfos = JSON.stringify(data.fileInfos);
+    // 파일 전송의 경우 서버에서 채팅방 생성 후 파일 업로드까지 진행
+    params.targetType =
+      params.targetType === 'NEWROOM' ? 'CHAT' : params.targetType;
+    handleMessage(params);
+  });
+
+  const makeParams = useCallback(async () => {
+    // type의 정의
+    // UR : 유저
+    // GR : 부서
+    // CR : 채팅방 또는 채널
+    let params = {
+      name: '',
+      messageType: 'N',
+      status: 'send',
+      type: 'CR',
+      message: messageText,
+      context: messageText,
+      fileInfos: message.fileInfos,
+      sendFileInfo: null,
+      linkInfo: null,
+      sender: userId,
+    };
+
+    switch (selectTab) {
+      case 'orgchart':
+        let inviteMembers = [];
+        const groupIds = members
+          .filter(item => item.type === 'G')
+          .map(item => item.id);
+        if (groupIds.length) {
+          // 선택한 부서에 해당되는 유저 ID List
+          const { data } = await getAllUserWithGroupList(groupIds);
+          const { result, status } = data;
+
+          if (status !== 'SUCCESS') {
+            sharePopup({
+              msg: covi.getDic(
+                'Msg_Error',
+                '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+              ),
+            });
+            return;
           }
-        } else sharePopup(failPopup);
 
+          if (status === 'SUCCESS' && (!result || !result.length)) {
+            // 선택한 부서에 사람이 없을 경우
+            sharePopup({
+              msg: covi.getDic(
+                'Msg_NoUsersDepartment',
+                '선택된 부서에 사용자가 없습니다.',
+              ),
+            });
+            return;
+          }
+
+          if (result && result.length) {
+            // 부서를 선택할 경우 type = 'GR'
+            params.type = 'GR';
+            params.groupCode = groupIds[0];
+            inviteMembers = inviteMembers.concat(result);
+            inviteMembers = inviteMembers.filter(
+              (item, idx) =>
+                inviteMembers.findIndex(i => i.id == item.id) === idx,
+            );
+          }
+        }
+
+        inviteMembers = inviteMembers.concat(
+          members.filter(item => item.type === 'U' && item.isShow === true),
+        );
+
+        // 자기 자신의 ID 추가
+        const targetMembers = inviteMembers.map(item => item.id);
+        if (!targetMembers.includes(userId)) {
+          targetMembers.push(userId);
+        }
+
+        if (inviteMembers.length > 1) {
+          // 선택한 대상이 2명 이상일 경우 채팅방을 새로 만든다.
+          params.targetType = 'NEWROOM';
+          params.type = 'UR';
+          params.memberType = 'G';
+          params.roomType = 'G';
+          params.members = targetMembers;
+          params.targets = targetMembers.join(';');
+        } else {
+          const target = roomList.filter(r => {
+            if (userId === members[0].id) {
+              return r.roomType === 'O';
+            } else {
+              return r.roomType === 'M' && r.targetCode === members[0].id;
+            }
+          })[0];
+
+          params.targets = targetMembers.join(';');
+          if (target) {
+            params.targetType = 'CHAT';
+            params = {
+              ...params,
+              ...target,
+            };
+          } else {
+            params.targetType = 'NEWROOM';
+            params.type = 'UR';
+            params.roomType = userId === members[0].id ? 'O' : 'M';
+            params.members = targetMembers;
+          }
+        }
         break;
       case 'chat':
-        if (rooms.length) {
-          target = rooms[0];
-          shareData = {
-            roomID: target.roomID,
-            roomType: target.roomType,
-            realMemberCnt: target.realMemberCnt,
-            context: messageText,
-            targetType: 'CHAT',
-            messageType: 'N',
-            status: 'send',
-          };
-          handleMessage({ shareData });
-        } else sharePopup(failPopup);
-
+        params.roomID = rooms[0].roomID;
+        params.roomType = rooms[0].roomType;
+        params.realMemberCnt = rooms[0].realMemberCnt;
+        params.targetType = 'CHAT';
         break;
       case 'channel':
-        if (channels.length) {
-          target = channels[0];
-          shareData = {
-            roomID: target.roomId,
-            roomType: 'C',
-            context: messageText,
-            sender: userId,
-            targetArr: [],
-            tempId: target.roomId * 10000,
-            targetType: 'CHANNEL',
-            messageType: 'N',
-            status: 'send',
-          };
-          handleMessage({ shareData });
-        } else sharePopup(failPopup);
-
+        params.roomID = channels[0].roomId;
+        params.roomType = 'C';
+        params.targetArr = [];
+        params.tempId = channels[0].roomId * 10000;
+        params.targetType = 'CHANNEL';
         break;
     }
+    return params;
   }, [dispatch, selectTab, members, rooms, channels]);
 
-  const handleMessage = async ({ shareData }) => {
+  const handleMessage = async params => {
     let result;
-    let tit = covi.getDic('Msg_ForwardingSuccess');
-    let msg = covi.getDic('Msg_ForwardingWasSuccessful');
+    let msg = covi.getDic(
+      'Msg_ForwardingWasSuccessful',
+      '전달에 성공 하였습니다.',
+    );
 
-    switch (shareData.targetType) {
+    switch (params.targetType) {
       case 'CHAT':
-        result = await sendMessage(shareData);
+        result = await sendMessage(params);
         break;
       case 'CHANNEL':
-        result = await sendChannelMessage(shareData);
+        result = await sendChannelMessage(params);
         break;
       case 'NEWROOM':
-        result = await createRoom(shareData);
+        result = await createRoom(params);
         break;
-      default:
     }
 
-    if (result?.data?.status === 'ERROR') {
-      tit = covi.getDic('Msg_ForwardingFail');
-      msg = covi.getDic('Msg_ForwardingWasFailed');
+    if (result?.data?.status !== 'SUCCESS') {
+      msg = covi.getDic('Msg_ForwardingWasFailed', '전달에 실패 하였습니다.');
     }
-    sharePopup({ status: result?.data?.status, tit, msg });
+    sharePopup({ status: result?.data?.status, msg });
   };
 
   return (
@@ -483,7 +551,7 @@ const ShareContainer = ({
             {selectTab === 'chat' && rooms.length}
             {selectTab === 'channel' && channels.length}
           </span>
-          {covi.getDic('Ok')}
+          {covi.getDic('Ok', '확인')}
         </a>
       </div>
       <div className="container AddUser">
@@ -572,7 +640,7 @@ const ShareContainer = ({
                         )}
                         <span className="name">
                           {channel.roomName === ''
-                            ? covi.getDic('NoTitle')
+                            ? covi.getDic('NoTitle', '제목없음')
                             : channel.roomName}
                         </span>
                         <span className="del"></span>
@@ -618,7 +686,7 @@ const ShareContainer = ({
                 handleTabChange('orgchart');
               }}
             >
-              {covi.getDic('OrgChart')}
+              {covi.getDic('OrgChart', '조직도')}
             </a>
           </li>
           <li className={selectTab === 'chat' ? 'active' : ''} data-tab="tab3">
@@ -627,7 +695,7 @@ const ShareContainer = ({
                 handleTabChange('chat');
               }}
             >
-              {covi.getDic('Chat')}
+              {covi.getDic('Chat', '채팅방')}
             </a>
           </li>
           <li
@@ -639,7 +707,7 @@ const ShareContainer = ({
                 handleTabChange('channel');
               }}
             >
-              {covi.getDic('Channel')}
+              {covi.getDic('Channel', '채널')}
             </a>
           </li>
         </ul>

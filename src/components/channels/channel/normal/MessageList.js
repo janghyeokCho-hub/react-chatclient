@@ -27,6 +27,7 @@ import { scrollIntoView } from '@/lib/util/domUtil';
 import { updateChannelLastMessage } from '@/modules/channel';
 import { openLayer } from '@/lib/common';
 import ShareContainer from '@C/share/ShareContainer';
+import { checkFileTokenValidation } from '@/lib/fileUpload/coviFile';
 
 const makeMessage = async msg => {
   const flag = eumTalkRegularExp.test(msg);
@@ -173,6 +174,11 @@ const MessageList = ({ onExtension, viewExtension }) => {
           const processMsg = convertEumTalkProtocol(message.context);
           messageType = processMsg.type;
         }
+
+        if (message.fileInfos !== null) {
+          messageType = 'files';
+        }
+
         if (messageType == 'message') {
           if (!message.fileInfos) {
             menus.push(
@@ -202,6 +208,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
                     {
                       component: (
                         <ShareContainer
+                          messageType={messageType}
                           headerName={covi.getDic(
                             'Msg_Note_Forward',
                             '전달하기',
@@ -241,9 +248,58 @@ const MessageList = ({ onExtension, viewExtension }) => {
               },
             );
           }
+        } else if (messageType === 'files') {
+          menus.push({
+            code: 'shareMessage',
+            isline: false,
+            onClick: async () => {
+              let files = JSON.parse(message.fileInfos);
+              if (!Array.isArray(files) && files) {
+                files = Array(files);
+              }
+              files = files.map(item => item.token);
+              const result = await checkFileTokenValidation({
+                token: files,
+                serviceType: 'CHAT',
+              });
+              if (result.status === 204) {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: covi.getDic('Msg_FileExpired'),
+                  },
+                  dispatch,
+                );
+                return;
+              } else if (result.status === 403) {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: covi.getDic('Msg_FilePermission'),
+                  },
+                  dispatch,
+                );
+                return;
+              } else {
+                openLayer(
+                  {
+                    component: (
+                      <ShareContainer
+                        headerName={covi.getDic('Msg_Note_Forward')}
+                        message={message}
+                        messageType={messageType}
+                      />
+                    ),
+                  },
+                  dispatch,
+                );
+              }
+            },
+            name: covi.getDic('Forward'),
+          });
         }
 
-        if (message.isMine == 'Y') {
+        if (messageType !== 'files' && message.isMine == 'Y') {
           menus.push({
             code: 'deleteMessage',
             isline: false,

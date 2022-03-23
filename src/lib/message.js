@@ -71,6 +71,10 @@ export const uploadFile = params => {
   );
 };
 
+export const shareFile = formData => {
+  return filesvr('post', '/shareFiles', formData, {}, {}, 'json');
+};
+
 export const getThumbnail = params => {
   return imgsvr(
     'get',
@@ -184,7 +188,7 @@ export const deleteChannelMessage = params => {
 
 export const deleteChatroomMessage = params => {
   return chatsvr('delete', `/message`, params);
-}
+};
 
 // 멘션 목록 리스트 조회
 export const getChannelMentionList = params => {
