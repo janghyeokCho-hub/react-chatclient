@@ -315,6 +315,11 @@ const MessagePostBox = forwardRef(
 
     const handleKeyDown = useCallback(
       e => {
+        if (e.key === 'PageUp' || e.key === 'PageDown') {
+          const cursorPosition = e.key === 'PageUp' ? 0 : e.target.textLength;
+          e.preventDefault();
+          e.target.setSelectionRange(cursorPosition, cursorPosition);
+        }
         if (!e.shiftKey && e.keyCode == 13) {
           sendBtn.current.click();
           e.preventDefault();
@@ -323,7 +328,6 @@ const MessagePostBox = forwardRef(
         } else if (e.ctrlKey && (e.keyCode == 38 || e.keyCode == 40)) {
           if (history.length > 0) {
             const nextIndex = (historyIndex + 1) % history.length;
-
             setContext(history[nextIndex]);
             setHistoryIndex(nextIndex);
             return false;
