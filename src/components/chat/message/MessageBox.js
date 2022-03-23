@@ -54,6 +54,13 @@ const MessageBox = ({
     let messageType = 'message';
     let mentionInfo = [];
 
+    let menus = [];
+    let menuId = '';
+    if (getMenuData) {
+      menus = getMenuData(message);
+      menuId = `channelmessage_${message.messageID}`;
+    }
+
     const smallFontSize = Math.max(10, fontSize - 2);
 
     // 처리가 필요한 message의 경우 ( protocol 이 포함된 경우 )
@@ -210,11 +217,13 @@ const MessageBox = ({
                   </p>
                 </>
               )}
-              <FileMessageBox
-                messageId={message.messageID}
-                fileObj={fileInfoJSON}
-                id={!drawText && id}
-              />
+              <RightConxtMenu menuId={menuId} menus={menus}>
+                <FileMessageBox
+                  messageId={message.messageID}
+                  fileObj={fileInfoJSON}
+                  id={!drawText && id}
+                />
+              </RightConxtMenu>
               <div
                 className="chatinfo"
                 style={{ fontSize: smallFontSize, lineHeight: 'normal' }}
@@ -250,11 +259,13 @@ const MessageBox = ({
                   </span>
                 )}
               </div>
-              <FileMessageBox
-                messageId={message.messageID}
-                fileObj={fileInfoJSON}
-                id={!drawText && id}
-              />
+              <RightConxtMenu menuId={menuId} menus={menus}>
+                <FileMessageBox
+                  messageId={message.messageID}
+                  fileObj={fileInfoJSON}
+                  id={!drawText && id}
+                />
+              </RightConxtMenu>
             </li>
           );
         }
@@ -276,13 +287,6 @@ const MessageBox = ({
 
       // NEW LINE 처리
       drawText = drawText.replace(/(\r\n|\n|\r)/gi, '<NEWLINE />');
-    }
-
-    let menus = [];
-    let menuId = '';
-    if (getMenuData) {
-      menus = getMenuData(message);
-      menuId = `channelmessage_${message.messageID}`;
     }
 
     let copy = false;
