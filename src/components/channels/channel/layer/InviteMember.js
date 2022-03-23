@@ -3,19 +3,24 @@ import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@C/common/ProfileBox';
 import { inviteMember } from '@/modules/channel';
 import ContactList from '@C/contact/ContactList';
-import { deleteLayer, clearLayer, openPopup, getJobInfo, getDictionary, getSysMsgFormatStr } from '@/lib/common';
+import {
+  deleteLayer,
+  clearLayer,
+  openPopup,
+  getJobInfo,
+  getDictionary,
+  getSysMsgFormatStr,
+} from '@/lib/common';
 import OrgChart from '@C/orgchart/OrgChart';
 import { getAllUserWithGroup } from '@/lib/room';
-import ExternalUserList from '@C/externaluserlist/ExternalUserList';
 
 const InviteMember = ({
   headerName,
   roomId,
-  openType,
   isNewRoom, // false
   oldMemberList,
 }) => {
-  const { channels, selectId, myInfo } = useSelector(({ channel, login }) => ({
+  const { myInfo } = useSelector(({ channel, login }) => ({
     channels: channel.channels,
     selectId: channel.selectId,
     myInfo: login.userInfo,
@@ -164,7 +169,10 @@ const InviteMember = ({
                     {
                       type: 'Alert',
                       message: getSysMsgFormatStr(
-                        covi.getDic('Tmp_exceptExistMember'),
+                        covi.getDic(
+                          'Tmp_exceptExistMember',
+                          '%s은 이미 추가된 사용자이므로 제외하고 진행합니다.',
+                        ),
                         [{ type: 'Plain', data: dupListTxt.join(', ') }],
                       ),
                       callback() {
@@ -181,7 +189,10 @@ const InviteMember = ({
                 openPopup(
                   {
                     type: 'Alert',
-                    message: covi.getDic('Msg_ExceptExistEmpty'),
+                    message: covi.getDic(
+                      'Msg_ExceptExistEmpty',
+                      '이미 초대된 사용자는 제외하여, 초대될 사용자가 없습니다.',
+                    ),
                     callback: () => {
                       handleClose();
                     },
@@ -199,7 +210,10 @@ const InviteMember = ({
       openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_InviteMemberError'),
+          message: covi.getDic(
+            'Msg_InviteMemberError',
+            '초대할 대상을 선택해주세요.',
+          ),
         },
         dispatch,
       );
@@ -225,7 +239,7 @@ const InviteMember = ({
         </div>
         <a className="Okbtn" onClick={handleAddBtn}>
           <span className="colortxt-point mr5">{members.length}</span>
-          {covi.getDic('Ok')}
+          {covi.getDic('Ok', '확인')}
         </a>
       </div>
       <div className="container AddUser">
@@ -266,7 +280,7 @@ const InviteMember = ({
                 setSelectTab('C');
               }}
             >
-              {covi.getDic('Contact')}
+              {covi.getDic('Contact', '내 대화상대')}
             </a>
           </li>
           <li className={selectTab == 'O' ? 'active' : ''} data-tab="tab2">
@@ -275,7 +289,7 @@ const InviteMember = ({
                 setSelectTab('O');
               }}
             >
-              {covi.getDic('OrgChart')}
+              {covi.getDic('OrgChart', '조직도')}
             </a>
           </li>
           {/*<li className={selectTab == 'E' ? 'active' : ''} data-tab="tab3">

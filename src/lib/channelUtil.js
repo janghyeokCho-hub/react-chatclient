@@ -11,7 +11,7 @@ export const leaveChannelUtil = (
   openPopup(
     {
       type: 'Confirm',
-      message: covi.getDic('Msg_ChannelLeave'),
+      message: covi.getDic('Msg_ChannelLeave', '채널을 나가시겠습니까?'),
       callback: result => {
         if (result) {
           if (!isNewWin) {
@@ -46,7 +46,7 @@ export const leaveChannelByAdminUtil = (
   openPopup(
     {
       type: 'Confirm',
-      message: covi.getDic('Msg_DeportUser'),
+      message: covi.getDic('Msg_DeportUser', '사용자를 내보내시겠습니까?'),
       callback: result => {
         if (result) {
           if (!isNewWin) {

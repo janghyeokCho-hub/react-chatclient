@@ -66,7 +66,7 @@ const Cropper = ({ props, snip, destroySnipView }) => {
           className="btn btn-primary"
           onClick={handdleStatepicker}
         >
-          {covi.getDic('Capture')}
+          {covi.getDic('Capture', '캡처')}
         </button>
         <button
           style={{
@@ -82,7 +82,7 @@ const Cropper = ({ props, snip, destroySnipView }) => {
           onClick={destroySnipView}
           className="btn btn-primary"
         >
-          {covi.getDic('Cancel')}
+          {covi.getDic('Cancel', '취소')}
         </button>
       </div>
     </Rnd>

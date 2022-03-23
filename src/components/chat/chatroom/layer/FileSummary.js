@@ -76,18 +76,24 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
           type: 'Select',
           buttons: [
             {
-              name: covi.getDic('Detail'),
+              name: covi.getDic('Detail', '상세정보'),
               callback: () => {
                 openPopup(
                   {
                     type: 'Alert',
                     message: `<ul className="menulist">
                     <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                    ${covi.getDic('FileName')} : ${
+                    ${covi.getDic('FileName', '파일명')} : ${
                       item.FileName
-                    }</li><li>${covi.getDic('FileSize')} : ${convertFileSize(
+                    }</li><li>${covi.getDic(
+                      'FileSize',
+                      '용량',
+                    )} : ${convertFileSize(
                       item.FileSize,
-                    )}</li><li>${covi.getDic('ReceiveDate')} : ${format(
+                    )}</li><li>${covi.getDic(
+                      'ReceiveDate',
+                      '수신일시',
+                    )} : ${format(
                       new Date(item.SendDate),
                       'yyyy.MM.dd HH:mm:ss',
                     )}</li>`,
@@ -97,7 +103,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
               },
             },
             {
-              name: covi.getDic('ShowChat'),
+              name: covi.getDic('ShowChat', '대화보기'),
               callback: () => {
                 dispatch(
                   setMoveView({
@@ -110,7 +116,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
               },
             },
             {
-              name: covi.getDic('RunViewer'),
+              name: covi.getDic('RunViewer', '뷰어로 열기'),
               callback: () => {
                 let fileType = 'URL';
                 let token = localStorage.getItem('covi_user_access_token');
@@ -149,7 +155,10 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
                       openPopup(
                         {
                           type: 'Alert',
-                          message: getDic('Msg_FileExpired'),
+                          message: getDic(
+                            'Msg_FileExpired',
+                            '만료된 파일입니다.',
+                          ),
                         },
                         dispatch,
                       );
@@ -158,7 +167,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
               },
             },
             {
-              name: covi.getDic('Download'),
+              name: covi.getDic('Download', '다운로드'),
               callback: () => {
                 downloadByToken(
                   item.FileID,
@@ -176,7 +185,10 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
                       openPopup(
                         {
                           type: 'Alert',
-                          message: covi.getDic('Msg_DownloadSuccess'),
+                          message: covi.getDic(
+                            'Msg_DownloadSuccess',
+                            '다운로드가 완료되었습니다.',
+                          ),
                         },
                         dispatch,
                       );
@@ -205,18 +217,24 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
           type: 'Select',
           buttons: [
             {
-              name: covi.getDic('Detail'),
+              name: covi.getDic('Detail', '상세정보'),
               callback: () => {
                 openPopup(
                   {
                     type: 'Alert',
                     message: `<ul className="menulist">
                     <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                    ${covi.getDic('FileName')} : ${
+                    ${covi.getDic('FileName', '파일명')} : ${
                       item.FileName
-                    }</li><li>${covi.getDic('FileSize')} : ${convertFileSize(
+                    }</li><li>${covi.getDic(
+                      'FileSize',
+                      '용량',
+                    )} : ${convertFileSize(
                       item.FileSize,
-                    )}</li><li>${covi.getDic('ReceiveDate')} : ${format(
+                    )}</li><li>${covi.getDic(
+                      'ReceiveDate',
+                      '수신일시',
+                    )} : ${format(
                       new Date(item.SendDate),
                       'yyyy.MM.dd HH:mm:ss',
                     )}</li>`,
@@ -226,7 +244,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
               },
             },
             {
-              name: covi.getDic('ShowChat'),
+              name: covi.getDic('ShowChat', '대화보기'),
               callback: () => {
                 dispatch(
                   setMoveView({
@@ -239,7 +257,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
               },
             },
             {
-              name: covi.getDic('Download'),
+              name: covi.getDic('Download', '다운로드'),
               callback: () => {
                 downloadByToken(
                   item.FileID,
@@ -257,7 +275,10 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
                       openPopup(
                         {
                           type: 'Alert',
-                          message: covi.getDic('Msg_DownloadSuccess'),
+                          message: covi.getDic(
+                            'Msg_DownloadSuccess',
+                            '다운로드가 완료되었습니다.',
+                          ),
                         },
                         dispatch,
                       );
@@ -287,18 +308,24 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
           type: 'Select',
           buttons: [
             {
-              name: covi.getDic('Detail'),
+              name: covi.getDic('Detail', '상세정보'),
               callback: () => {
                 openPopup(
                   {
                     type: 'Alert',
                     message: `<ul className="menulist">
                     <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                    ${covi.getDic('FileName')} : ${
+                    ${covi.getDic('FileName', '파일명')} : ${
                       item.FileName
-                    }</li><li>${covi.getDic('FileSize')} : ${convertFileSize(
+                    }</li><li>${covi.getDic(
+                      'FileSize',
+                      '용량',
+                    )} : ${convertFileSize(
                       item.FileSize,
-                    )}</li><li>${covi.getDic('ReceiveDate')} : ${format(
+                    )}</li><li>${covi.getDic(
+                      'ReceiveDate',
+                      '수신일시',
+                    )} : ${format(
                       new Date(item.SendDate),
                       'yyyy.MM.dd HH:mm:ss',
                     )}</li>`,
@@ -308,7 +335,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
               },
             },
             {
-              name: covi.getDic('ShowChat'),
+              name: covi.getDic('ShowChat', '대화보기'),
               callback: () => {
                 dispatch(
                   setMoveView({
@@ -321,7 +348,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
               },
             },
             {
-              name: covi.getDic('RunViewer'),
+              name: covi.getDic('RunViewer', '뷰어로 열기'),
               callback: () => {
                 let fileType = 'URL';
                 let token = localStorage.getItem('covi_user_access_token');
@@ -360,7 +387,10 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
                       openPopup(
                         {
                           type: 'Alert',
-                          message: getDic('Msg_FileExpired'),
+                          message: getDic(
+                            'Msg_FileExpired',
+                            '만료된 파일입니다.',
+                          ),
                         },
                         dispatch,
                       );
@@ -385,7 +415,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
           type: 'Select',
           buttons: [
             {
-              name: covi.getDic('Detail'),
+              name: covi.getDic('Detail', '상세정보'),
               callback: () => {
                 openPopup(
                   {
@@ -434,18 +464,24 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
           type: 'Select',
           buttons: [
             {
-              name: covi.getDic('Detail'),
+              name: covi.getDic('Detail', '상세정보'),
               callback: () => {
                 openPopup(
                   {
                     type: 'Alert',
                     message: `<ul className="menulist">
                     <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                    ${covi.getDic('FileName')} : ${
+                    ${covi.getDic('FileName', '파일명')} : ${
                       item.FileName
-                    }</li><li>${covi.getDic('FileSize')} : ${convertFileSize(
+                    }</li><li>${covi.getDic(
+                      'FileSize',
+                      '용량',
+                    )} : ${convertFileSize(
                       item.FileSize,
-                    )}</li><li>${covi.getDic('ReceiveDate')} : ${format(
+                    )}</li><li>${covi.getDic(
+                      'ReceiveDate',
+                      '수신일시',
+                    )} : ${format(
                       new Date(item.SendDate),
                       'yyyy.MM.dd HH:mm:ss',
                     )}</li>`,
@@ -455,7 +491,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
               },
             },
             {
-              name: covi.getDic('ShowChat'),
+              name: covi.getDic('ShowChat', '대화보기'),
               callback: () => {
                 dispatch(
                   setMoveView({
@@ -468,7 +504,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
               },
             },
             {
-              name: covi.getDic('Download'),
+              name: covi.getDic('Download', '다운로드'),
               callback: () => {
                 downloadByToken(item.FileID, item.FileName, data => {
                   if (data.result != 'SUCCESS') {
@@ -483,7 +519,10 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
                     openPopup(
                       {
                         type: 'Alert',
-                        message: covi.getDic('Msg_DownloadSuccess'),
+                        message: covi.getDic(
+                          'Msg_DownloadSuccess',
+                          '다운로드가 완료되었습니다.',
+                        ),
                       },
                       dispatch,
                     );
@@ -515,7 +554,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
         <div className="file-info-txt">
           <p className="file-name">{file.FileName}</p>
           <p className="file-size">
-            {covi.getDic('FileSize')} {convertFileSize(file.FileSize)}
+            {covi.getDic('FileSize', '용량')} {convertFileSize(file.FileSize)}
           </p>
         </div>
         {selectMode && (
@@ -587,7 +626,7 @@ const FileSummary = ({ roomId }) => {
               openPopup(
                 {
                   type: 'Alert',
-                  message: covi.getDic('Msg_Save'),
+                  message: covi.getDic('Msg_Save', '저장되었습니다.'),
                 },
                 dispatch,
               );
@@ -599,9 +638,13 @@ const FileSummary = ({ roomId }) => {
           openPopup(
             {
               type: 'Alert',
-              message: getSysMsgFormatStr(covi.getDic('Tmp_saveLimitCnt'), [
-                { type: 'Plain', data: '5' },
-              ]),
+              message: getSysMsgFormatStr(
+                covi.getDic(
+                  'Tmp_saveLimitCnt',
+                  '%s개 이상 다운로드할 수 없습니다.',
+                ),
+                [{ type: 'Plain', data: '5' }],
+              ),
             },
             dispatch,
           );
@@ -621,9 +664,10 @@ const FileSummary = ({ roomId }) => {
         openPopup(
           {
             type: 'Alert',
-            message: getSysMsgFormatStr(covi.getDic('Tmp_checkLimitCnt'), [
-              { type: 'Plain', data: '5' },
-            ]),
+            message: getSysMsgFormatStr(
+              covi.getDic('Tmp_checkLimitCnt', '%s개 이상 선택할 수 없습니다.'),
+              [{ type: 'Plain', data: '5' }],
+            ),
           },
           dispatch,
         );
@@ -668,7 +712,7 @@ const FileSummary = ({ roomId }) => {
         openPopup(
           {
             type: 'Alert',
-            message: covi.getDic('Msg_Save'),
+            message: covi.getDic('Msg_Save', '저장되었습니다.'),
           },
           dispatch,
         );
@@ -782,7 +826,7 @@ const FileSummary = ({ roomId }) => {
         <div className="modalheader">
           <a className="closebtn" onClick={handleClose}></a>
           <div className="modaltit">
-            <p>{covi.getDic('FileSummary')}</p>
+            <p>{covi.getDic('FileSummary', '파일 모아보기')}</p>
           </div>
           {(!select &&
             synapDocViewServer &&
@@ -797,7 +841,7 @@ const FileSummary = ({ roomId }) => {
                     fontWeight: 'bold',
                   }}
                 >
-                  {covi.getDic('chooseFile')}
+                  {covi.getDic('chooseFile', '파일 선택')}
                 </div>
               </a>
             )) ||
@@ -809,8 +853,8 @@ const FileSummary = ({ roomId }) => {
                       {selectItems.length}
                     </span>
                     {selectItems.length > 1
-                      ? covi.getDic('AllSave')
-                      : covi.getDic('Save')}
+                      ? covi.getDic('AllSave', '일괄저장')
+                      : covi.getDic('Save', '저장')}
                   </>
                 }
               </a>
@@ -829,16 +873,19 @@ const FileSummary = ({ roomId }) => {
           <div
             style={{ width: '100%', textAlign: 'center', marginTop: '30px' }}
           >
-            {covi.getDic('Msg_NoContent')}
+            {covi.getDic('Msg_NoContent', '조회할 내용이 없습니다.')}
           </div>
         )}
         {progressData && (
           <div className="progress-sticke">
             <div style={{ width: '100%' }}>
               <span>
-                {`${covi.getDic('Downloading')} ( ${convertFileSize(
-                  progressData.load,
-                )} / ${convertFileSize(progressData.total)} )`}
+                {`${covi.getDic(
+                  'Downloading',
+                  '다운로드중',
+                )} ( ${convertFileSize(progressData.load)} / ${convertFileSize(
+                  progressData.total,
+                )} )`}
               </span>
             </div>
             <div style={{ width: '100%' }}>

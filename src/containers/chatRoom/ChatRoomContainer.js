@@ -93,7 +93,7 @@ const ChatRoomContainer = () => {
   return (
     <>
       <SearchBar
-        placeholder={covi.getDic('Msg_chatSearch')}
+        placeholder={covi.getDic('Msg_chatSearch', '방 이름, 참여자 검색')}
         input={searchText}
         onChange={e => {
           handleSearch(e.target.value);
@@ -111,7 +111,12 @@ const ChatRoomContainer = () => {
           )}
           {roomList?.length == 0 && (
             <div className="nodataBox" style={{ marginTop: '80px' }}>
-              <p className="subtxt">{covi.getDic('Msg_NoChatRoom')}</p>
+              <p className="subtxt">
+                {covi.getDic(
+                  'Msg_NoChatRoom',
+                  '대화를 시작한 채팅방이 없습니다.',
+                )}
+              </p>
             </div>
           )}
         </>

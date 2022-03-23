@@ -65,7 +65,8 @@ const SocketContainer = ({ history, location }) => {
             onChannelInvitation: socketActions.handleChannelInvite(dispatch),
             onChannelExit: socketActions.handleChannelExit(dispatch, userInfo),
             onDelMessage: socketActions.handleDelChatroomMessage(dispatch),
-            onDelChannelMessage: socketActions.handleDelChannelMessageInBrowser(dispatch),
+            onDelChannelMessage:
+              socketActions.handleDelChannelMessageInBrowser(dispatch),
             onNewChannelNotice: socketActions.handleNewChannelNotice(
               dispatch,
               userInfo,
@@ -116,7 +117,8 @@ const SocketContainer = ({ history, location }) => {
             onChannelInvitation: socketActions.handleChannelInvite(dispatch),
             onChannelExit: socketActions.handleChannelExit(dispatch, userInfo),
             onDelMessage: socketActions.handleDelChatroomMessage(dispatch),
-            onDelChannelMessage: socketActions.handleDelChannelMessageInDesktop(dispatch),
+            onDelChannelMessage:
+              socketActions.handleDelChannelMessageInDesktop(dispatch),
             onChannelClosure: socketActions.handleChannelClosure(dispatch), //channel closure
             onNewChannelNotice: socketActions.handleNewChannelNotice(
               dispatch,
@@ -154,7 +156,10 @@ const SocketContainer = ({ history, location }) => {
       openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_NetworkConnect'),
+          message: covi.getDic(
+            'Msg_NetworkConnect',
+            '네트워크 문제로 연결이 종료되었습니다.',
+          ),
           callback: () => {
             // disconnected
             dispatch(logout());

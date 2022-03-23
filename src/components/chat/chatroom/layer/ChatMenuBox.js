@@ -2,7 +2,12 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import InviteMember from '@/components/chat/chatroom/layer/InviteMember';
 import UserInfoBox from '@/components/common/UserInfoBox';
-import { clearLayer, appendLayer, openPopup, getDictionary } from '@/lib/common';
+import {
+  clearLayer,
+  appendLayer,
+  openPopup,
+  getDictionary,
+} from '@/lib/common';
 import { Scrollbars } from 'react-custom-scrollbars';
 import PhotoSummary from '@/components/chat/chatroom/layer/PhotoSummary';
 import FileSummary from '@/components/chat/chatroom/layer/FileSummary';
@@ -31,9 +36,12 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
   const [isFix, setIsFix] = useState(false);
   const RENDER_INIT = 10;
   const RENDER_UNIT = 8;
-  const { isDone, nextStep, list, handleScrollUpdate } = useOffset(roomInfo.members, { initialNumToRender: RENDER_INIT, renderPerBatch: RENDER_UNIT });
+  const { isDone, nextStep, list, handleScrollUpdate } = useOffset(
+    roomInfo.members,
+    { initialNumToRender: RENDER_INIT, renderPerBatch: RENDER_UNIT },
+  );
   const handleUpdate = handleScrollUpdate({
-    threshold: 0.9
+    threshold: 0.9,
   });
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
@@ -69,7 +77,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
       {
         component: (
           <InviteMember
-            headerName={covi.getDic('AddChatMembers')}
+            headerName={covi.getDic('AddChatMembers', '대화상대 추가')}
             roomId={roomInfo.roomID}
             roomType={roomInfo.roomType}
             isNewRoom={false}
@@ -110,7 +118,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
       {
         component: (
           <InviteMember
-            headerName={covi.getDic('AddChatMembers')}
+            headerName={covi.getDic('AddChatMembers', '대화상대 추가')}
             roomId={roomInfo.roomID}
             roomType={roomInfo.roomType}
             isNewRoom={true}
@@ -150,8 +158,10 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
       openPopup(
         {
           type: 'Confirm',
-          message:
-            '알림이 켜져있는경우 사용자가 직접 닫지 않을경우 알림은 사라지지 않고 고정됩니다.',
+          message: covi.getDic(
+            'Msg_NotiNotDisappear',
+            '알림이 켜져 있으면 사용자가 직접 닫지 않는 한 알림이 사라지지 않고 수정됩니다.',
+          ),
           callback: result => {
             if (result) {
               const result = evalConnector({
@@ -173,8 +183,8 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     openPopup(
       {
         type: 'Prompt',
-        title: covi.getDic('ChangeRoomName'),
-        message: covi.getDic('Msg_InputRoomName'),
+        title: covi.getDic('ChangeRoomName', '채팅방 이름 바꾸기'),
+        message: covi.getDic('Msg_InputRoomName', '채팅방 이름을 입력하세요.'),
         initValue: roomInfo.roomName,
         callback: result => {
           dispatch(
@@ -213,7 +223,10 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     openPopup(
       {
         type: 'Confirm',
-        message: covi.getDic('Msg_SaveChat'),
+        message: covi.getDic(
+          'Msg_SaveChat',
+          '채팅방 내용을 텍스트 파일로 저장합니다. 저장하시겠습니까?',
+        ),
         callback: result => {
           if (result) {
             let fileName = roomInfo.roomName;
@@ -221,9 +234,10 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
             if (fileName == '') {
               if (roomInfo.roomType == 'G') {
                 fileName = `groupchat_(${roomInfo.members.length})`;
-              }
-              else if (roomInfo.roomType == 'M') {
-                const userName = roomInfo.members.find(item => item.id != id).name;
+              } else if (roomInfo.roomType == 'M') {
+                const userName = roomInfo.members.find(
+                  item => item.id != id,
+                ).name;
                 fileName = getDictionary(userName) || userName;
               }
             }
@@ -328,9 +342,10 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                   <li className="divideline">
                     <a onClick={handleAlarm}>
                       <span className="c_menu_ico c_menu_ico_01"></span>
-                      <span>{covi.getDic('Notification')}</span>
+                      <span>{covi.getDic('Notification', '알림')}</span>
                       <span className="colortxt-point control-loc-right">
-                        {(isNoti && covi.getDic('On')) || covi.getDic('Off')}
+                        {(isNoti && covi.getDic('On', '켜짐')) ||
+                          covi.getDic('Off', '꺼짐')}
                       </span>
                     </a>
                   </li>
@@ -339,7 +354,9 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                   <li className="divideline">
                     <a onClick={handleModifyRoomName}>
                       <span className="c_menu_ico c_menu_ico_06"></span>
-                      <span>{covi.getDic('ChangeRoomName')}</span>
+                      <span>
+                        {covi.getDic('ChangeRoomName', '채팅방 이름 바꾸기')}
+                      </span>
                     </a>
                   </li>
                 )}
@@ -348,20 +365,20 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                     <li>
                       <a onClick={handlePhotoSummary}>
                         <span className="c_menu_ico c_menu_ico_02"></span>
-                        {covi.getDic('PhotoSummary')}
+                        {covi.getDic('PhotoSummary', '사진 모아보기')}
                       </a>
                     </li>
                     <li className="divideline">
                       <a onClick={handleFileSummary}>
                         <span className="c_menu_ico c_menu_ico_03"></span>
-                        {covi.getDic('FileSummary')}
+                        {covi.getDic('FileSummary', '사진 모아보기')}
                       </a>
                     </li>
                     {getConfig('UseMsgExport', false) && (
                       <li>
                         <a onClick={handleSaveChat}>
                           <span className="c_menu_ico c_menu_ico_04"></span>
-                          {covi.getDic('SaveChat')}
+                          {covi.getDic('SaveChat', '대화내용 저장하기')}
                         </a>
                       </li>
                     )}
@@ -393,11 +410,9 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
           </>
         )}
         {roomInfo && roomInfo.roomType != 'A' && roomInfo.members && (
-          <div
-            className="AddnPersonlist"
-          >
+          <div className="AddnPersonlist">
             <span className="titletype01 mb10">
-              {covi.getDic('ChatMembers')}
+              {covi.getDic('ChatMembers', '대화상대')}
               <span className="colortxt-point ml5">
                 {roomInfo.members.length}
               </span>
@@ -409,27 +424,24 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                     <a onClick={isMakeRoom ? handleCreateInvite : handleInvite}>
                       <div className="AddBoxIco mr15"></div>
                       <span className="Addusertxt">
-                        {covi.getDic('AddChatMembers')}
+                        {covi.getDic('AddChatMembers', '대화상대 추가')}
                       </span>
                     </a>
                   )}
                   <ul className="people">
-                    {
-                      roomInfo.members && (
-                        list((member, _) => {
-                          return (
-                            <UserInfoBox
-                              key={member.id}
-                              userInfo={member}
-                              isInherit={true}
-                              isClick={false}
-                              isMine={id === member.id}
-                              removeWork={true}
-                            />
-                          )
-                        })
-                      )
-                    }
+                    {roomInfo.members &&
+                      list((member, _) => {
+                        return (
+                          <UserInfoBox
+                            key={member.id}
+                            userInfo={member}
+                            isInherit={true}
+                            isClick={false}
+                            isMine={id === member.id}
+                            removeWork={true}
+                          />
+                        );
+                      })}
                   </ul>
                 </>
               )}
@@ -439,12 +451,14 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
 
         <div className="BottomContent" style={{ position: 'relative' }}>
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-            { roomInfo?.roomType !== 'A' && <a
-              className="ico_chatout"
-              onClick={isMakeRoom ? handleCreateLeaveRoom : handleLeaveRoom}
-              alt={covi.getDic('LeaveChat')}
-              title={covi.getDic('LeaveChat')}
-            ></a> }
+            {roomInfo?.roomType !== 'A' && (
+              <a
+                className="ico_chatout"
+                onClick={isMakeRoom ? handleCreateLeaveRoom : handleLeaveRoom}
+                alt={covi.getDic('LeaveChat', '채팅방 나가기')}
+                title={covi.getDic('LeaveChat', '채팅방 나가기')}
+              ></a>
+            )}
             {DEVICE_TYPE == 'd' && (
               <div
                 style={{

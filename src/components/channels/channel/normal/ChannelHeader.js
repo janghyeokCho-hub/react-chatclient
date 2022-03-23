@@ -20,7 +20,7 @@ const useTitle = room => {
         if (room.roomName && room.roomName !== '') {
           roomName.current = room.roomName;
         } else if (filterMember.length == 0) {
-          roomName.current = covi.getDic('NoChatMembers');
+          roomName.current = covi.getDic('NoChatMembers', '대화상대없음');
         }
 
         roomName.current && setWindowTitle(roomName.current);
@@ -109,8 +109,8 @@ const ChannelHeader = ({ channelInfo, onSearchBox, onNewWin, isNewWin }) => {
               >
                 <button
                   style={{ lineHeight: '60px' }}
-                  title={covi.getDic('Back')}
-                  alt={covi.getDic('Back')}
+                  title={covi.getDic('Back', '뒤로')}
+                  alt={covi.getDic('Back', '뒤로')}
                   onClick={handleClose}
                 >
                   <svg
@@ -172,8 +172,8 @@ const ChannelHeader = ({ channelInfo, onSearchBox, onNewWin, isNewWin }) => {
               {onNewWin && SCREEN_OPTION != 'G' && (
                 <button
                   type="button"
-                  alt={covi.getDic('ShowNewWindow')}
-                  title={covi.getDic('ShowNewWindow')}
+                  alt={covi.getDic('ShowNewWindow', '새창보기')}
+                  title={covi.getDic('ShowNewWindow', '새창보기')}
                   onClick={e => {
                     onNewWin();
                   }}

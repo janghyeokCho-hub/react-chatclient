@@ -209,7 +209,10 @@ const ChatRoom = ({ match, roomInfo }) => {
       {!loading && roomID && (
         <>
           {isNewWin && (
-            <div className="Chat Newwindow" style={{ fontFamily: fontType === 'Default' ? null : fontType }}>
+            <div
+              className="Chat Newwindow"
+              style={{ fontFamily: fontType === 'Default' ? null : fontType }}
+            >
               {DEVICE_TYPE == 'd' && room && (
                 <ChatBackground background={room.background} />
               )}
@@ -295,7 +298,9 @@ const ChatRoom = ({ match, roomInfo }) => {
           )}
         </>
       )}
-      {!loading && !roomID && <div>{covi.getDic('Msg_InvalidApproach')}</div>}
+      {!loading && !roomID && (
+        <div>{covi.getDic('Msg_InvalidApproach', '잘못된 접근입니다.')}</div>
+      )}
     </>
   );
 };

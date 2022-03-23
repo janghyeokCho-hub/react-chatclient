@@ -7,7 +7,7 @@ import {
   downloadByToken,
   convertFileSize,
   getOrientation,
- // getOrientationFixedStyles,
+  // getOrientationFixedStyles,
 } from '@/lib/fileUpload/coviFile';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import Config from '@/config/config';
@@ -71,7 +71,7 @@ const FileLayer = () => {
   const [loading, setLoading] = useState(false);
 
   const [infoBox, setInfoBox] = useState(true);
-  
+
   const [orientationStyle, setOrientationStyle] = useState({});
 
   const dispatch = useDispatch();
@@ -191,7 +191,7 @@ const FileLayer = () => {
           openPopup(
             {
               type: 'Alert',
-              message: covi.getDic('Msg_Save'),
+              message: covi.getDic('Msg_Save', '저장되었습니다.'),
             },
             dispatch,
           );
@@ -208,10 +208,13 @@ const FileLayer = () => {
             type: 'Alert',
             message: `<ul className="menulist"><li>${covi.getDic(
               'FileName',
+              '파일명',
             )} : ${data.result.fileName}</li><li>${covi.getDic(
               'FileSize',
+              '용량',
             )} : ${convertFileSize(data.result.fileSize)}</li><li>${covi.getDic(
               'ReceiveDate',
+              '수신일시',
             )} : ${format(
               new Date(data.result.sendDate),
               'yyyy.MM.dd HH:mm:ss',
@@ -347,10 +350,8 @@ const FileLayer = () => {
 
     imageBox.current.onmousemove = event => {
       if (isDown) {
-        const {
-          offsetHeight: parentHeight,
-          offsetWidth: parentWidth,
-        } = event.target.offsetParent;
+        const { offsetHeight: parentHeight, offsetWidth: parentWidth } =
+          event.target.offsetParent;
         const {
           height: height,
           width: width,
@@ -393,8 +394,8 @@ const FileLayer = () => {
         .getOriginalImage({
           token: previewFile.token,
         })
-        .then(async(response) => {
-          console.log("response!!");
+        .then(async response => {
+          console.log('response!!');
           const data = Buffer.from(response.data, 'binary').toString('base64');
           const image = new Image();
           image.src = `data:image/png;base64,${data}`;
@@ -402,15 +403,20 @@ const FileLayer = () => {
             const imgBox = imageBox.current;
             try {
               const fileCtrl = coviFile.getInstance();
-              let orientation = await  getOrientation(image);
+              let orientation = await getOrientation(image);
               const resize = resizeImage(image.width, image.height, 650, 650);
-              const rotatedImage = fileCtrl.makeThumb(image, resize.resizeWidth * 3, resize.resizeHeight * 3,orientation);
+              const rotatedImage = fileCtrl.makeThumb(
+                image,
+                resize.resizeWidth * 3,
+                resize.resizeHeight * 3,
+                orientation,
+              );
               imgBox.setAttribute('data-width', rotatedImage.width / 3);
               imgBox.setAttribute('data-height', rotatedImage.height / 3);
-              imgBox.width =rotatedImage.width / 3;
+              imgBox.width = rotatedImage.width / 3;
               imgBox.height = rotatedImage.height / 3;
               imgBox.src = rotatedImage.data;
-              
+
               /*
               // 미리보기 성능 이슈로 css rotate로 변경 필요
               // css로  rotate시 position 트러짐. top margin 수정 필요.  
@@ -474,10 +480,8 @@ const FileLayer = () => {
   const handleViewCenter = () => {
     const box = imageBox.current;
     try {
-      const {
-        offsetHeight: parentHeight,
-        offsetWidth: parentWidth,
-      } = box.offsetParent;
+      const { offsetHeight: parentHeight, offsetWidth: parentWidth } =
+        box.offsetParent;
       const { height: height, width: width } = box;
 
       box.style.top = `${Math.floor(parentHeight / 2 - height / 2)}px`;
@@ -492,10 +496,9 @@ const FileLayer = () => {
    * 휠스크롤 줌인/줌아웃 구현
    * Notes:
    *  1. 추후 성능이슈 발생시 throttle 적용 예정
-   * @param {*} e 
+   * @param {*} e
    */
-  const handleWheelScroll = (e) => {
-
+  const handleWheelScroll = e => {
     /**
      * e.deltaY
      * wheel-up => negative
@@ -528,7 +531,11 @@ const FileLayer = () => {
           {loading && <LoadingWrap></LoadingWrap>}
           <img
             ref={imageBox}
-            style={{ position: 'absolute', display: 'block', ...orientationStyle}}
+            style={{
+              position: 'absolute',
+              display: 'block',
+              ...orientationStyle,
+            }}
             src={`${Config.ServerURL.HOST}/storage/no_image.jpg`}
             width={200}
             height={200}
@@ -561,37 +568,39 @@ const FileLayer = () => {
               className="zoomin"
               onClick={e => handleViewSize(1)}
               disabled={loading}
-              title={covi.getDic('ZoomIn')}
+              title={covi.getDic('ZoomIn', '확대')}
             ></button>
             <button
               type="button"
               className="zoomout"
               onClick={e => handleViewSize(-1)}
               disabled={loading}
-              title={covi.getDic('ZoomOut')}
+              title={covi.getDic('ZoomOut', '축소')}
             ></button>
-            { fileAttachViewMode && fileAttachViewMode[0].type === 'PC' && fileAttachViewMode[0].Download === true && (
-              <button
-                type="button"
-                className="download"
-                onClick={handleSave}
-                disabled={loading}
-                title={covi.getDic('Save')}
-              ></button>
-            )}
+            {fileAttachViewMode &&
+              fileAttachViewMode[0].type === 'PC' &&
+              fileAttachViewMode[0].Download === true && (
+                <button
+                  type="button"
+                  className="download"
+                  onClick={handleSave}
+                  disabled={loading}
+                  title={covi.getDic('Save', '저장')}
+                ></button>
+              )}
             <button
               type="button"
               className="info"
               onClick={handleInfo}
               disabled={loading}
-              title={covi.getDic('Detail')}
+              title={covi.getDic('Detail', '상세정보')}
             ></button>
             <button
               type="button"
               className="chat"
               onClick={handleMoveContent}
               disabled={loading}
-              title={covi.getDic('ShowChat')}
+              title={covi.getDic('ShowChat', '대화보기')}
             ></button>
           </div>
         </div>

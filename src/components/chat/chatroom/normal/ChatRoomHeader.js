@@ -33,7 +33,7 @@ const useTitle = (room, id) => {
           }
 
           if (filterMember.length == 0)
-            roomName.current = covi.getDic('NoChatMembers');
+            roomName.current = covi.getDic('NoChatMembers', '대화상대없음');
 
           const memberTextArr = filterMember.map(item => getJobInfo(item));
 
@@ -149,7 +149,7 @@ const makeRoomName = (room, id, isInherit) => {
           <>
             <span className="name">
               {!room.roomName || room.roomName == ''
-                ? covi.getDic('GroupChatRoom')
+                ? covi.getDic('GroupChatRoom', '그룹채팅방')
                 : room.roomName}{' '}
               ({room.members.length})
             </span>
@@ -256,8 +256,8 @@ const ChatRoomHeader = ({
             >
               <button
                 style={{ lineHeight: '60px' }}
-                title={covi.getDic('Back')}
-                alt={covi.getDic('Back')}
+                title={covi.getDic('Back', '뒤로')}
+                alt={covi.getDic('Back', '뒤로')}
                 onClick={handleClose}
               >
                 <svg
@@ -284,8 +284,8 @@ const ChatRoomHeader = ({
                 <button
                   type="button"
                   onClick={viewSearchBox}
-                  alt={covi.getDic('Search')}
-                  title={covi.getDic('Search')}
+                  alt={covi.getDic('Search', '검색')}
+                  title={covi.getDic('Search', '검색')}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -305,8 +305,8 @@ const ChatRoomHeader = ({
               {onNewWin && SCREEN_OPTION != 'G' && (
                 <button
                   type="button"
-                  alt={covi.getDic('ShowNewWindow')}
-                  title={covi.getDic('ShowNewWindow')}
+                  alt={covi.getDic('ShowNewWindow', '새창보기')}
+                  title={covi.getDic('ShowNewWindow', '새창보기')}
                   onClick={e => {
                     onNewWin();
                   }}
@@ -352,8 +352,8 @@ const ChatRoomHeader = ({
                   <button
                     type="button"
                     onClick={handleLayerBox}
-                    alt={covi.getDic('ExtensionMenu')}
-                    title={covi.getDic('ExtensionMenu')}
+                    alt={covi.getDic('ExtensionMenu', '확장메뉴')}
+                    title={covi.getDic('ExtensionMenu', '확장메뉴')}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

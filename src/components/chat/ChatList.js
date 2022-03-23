@@ -98,14 +98,14 @@ const ChatList = () => {
       }
     }
 
-    dispatch(bound({ name: covi.getDic('Chat'), type: 'chatlist' }));
+    dispatch(bound({ name: covi.getDic('Chat', '채팅방'), type: 'chatlist' }));
     if (isExtUser && isExtUser != 'Y') {
       if (chatBotAddFlag) {
         dispatch(
           setTopButton([
             {
               code: 'startChatBot',
-              alt: covi.getDic('StartChatBot'),
+              alt: covi.getDic('StartChatBot', '이음봇 시작'),
               onClick: () => {
                 handleNewChatBotRoom();
               },
@@ -113,13 +113,13 @@ const ChatList = () => {
             },
             {
               code: 'startChat',
-              alt: covi.getDic('StartChat'),
+              alt: covi.getDic('StartChat', '대화시작'),
               onClick: () => {
                 openLayer(
                   {
                     component: (
                       <InviteMember
-                        headerName={covi.getDic('NewChatRoom')}
+                        headerName={covi.getDic('NewChatRoom', '새로운 채팅방')}
                         isNewRoom={true}
                       />
                     ),
@@ -136,13 +136,13 @@ const ChatList = () => {
           setTopButton([
             {
               code: 'startChat',
-              alt: covi.getDic('StartChat'),
+              alt: covi.getDic('StartChat', '대화시작'),
               onClick: () => {
                 openLayer(
                   {
                     component: (
                       <InviteMember
-                        headerName={covi.getDic('NewChatRoom')}
+                        headerName={covi.getDic('NewChatRoom', '새로운 채팅방')}
                         isNewRoom={true}
                       />
                     ),

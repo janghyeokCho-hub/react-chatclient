@@ -135,15 +135,15 @@ const ChannelContainer = () => {
   return (
     <>
       <SearchBar
-        placeholder={covi.getDic('Msg_channelSearch')}
+        placeholder={covi.getDic('Msg_channelSearch', '채널이름 검색')}
         input={searchText}
         onChange={handleSearchChange}
         disabled={isExtUser == 'Y'}
       />
       <div className="ListDivisionLine noarrow">
         {listMode == 'N'
-          ? covi.getDic('SubscribedChannel')
-          : covi.getDic('SearchResult')}
+          ? covi.getDic('SubscribedChannel', '가입한 채널')
+          : covi.getDic('SearchResult', '검색 결과')}
       </div>
       {listMode == 'N' && (
         <ChannelItems

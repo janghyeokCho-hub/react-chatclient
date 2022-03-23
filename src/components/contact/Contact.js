@@ -39,12 +39,13 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
             syncFavorite({
               op: 'add',
               userInfo: subItem,
-              folderType: subItem.isContact && subItem.isContact != ''
-              ? subItem.isContact
-              : contact.folderType,
+              folderType:
+                subItem.isContact && subItem.isContact != ''
+                  ? subItem.isContact
+                  : contact.folderType,
             });
           },
-          name: covi.getDic('AddFavorite'),
+          name: covi.getDic('AddFavorite', '즐겨찾기 추가'),
         });
 
         if (contact.folderType != 'M' && contact.folderType != 'G') {
@@ -59,7 +60,7 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
                 contact.folderType,
               );
             },
-            name: covi.getDic('DelContact'),
+            name: covi.getDic('DelContact', '내 대화상대 삭제'),
           });
         }
       } else {
@@ -72,9 +73,9 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
              * 부서탭에서 '즐겨찾기 삭제'시 folderID 파라미터가 부서코드로 넘어가면 삭제오류 발생
              * => folderID 파라미터 "1"로 고정
              */
-            deleteContact(dispatch, subItem.id, "1", 'F');
+            deleteContact(dispatch, subItem.id, '1', 'F');
           },
-          name: covi.getDic('DelFavorite'),
+          name: covi.getDic('DelFavorite', '즐겨찾기 삭제'),
         });
       }
     }
@@ -104,12 +105,15 @@ const ContactItem = React.memo(({ contact, subItem, isMine }) => {
           openPopup(
             {
               type: 'Alert',
-              message: covi.getDic('Msg_GroupInviteError'),
+              message: covi.getDic(
+                'Msg_GroupInviteError',
+                '해당 그룹은 그룹채팅을 시작할 수 없습니다.',
+              ),
             },
             dispatch,
           );
       },
-      name: covi.getDic('StartChat'),
+      name: covi.getDic('StartChat', '대화시작'),
     });
 
     return returnMenu;
@@ -202,7 +206,10 @@ const Contact = ({ contact, viewType, checkObj }) => {
               openPopup(
                 {
                   type: 'Alert',
-                  message: covi.getDic('Msg_EmptyChatMember'),
+                  message: covi.getDic(
+                    'Msg_EmptyChatMember',
+                    '대화를 시작할 상대가 없습니다.',
+                  ),
                 },
                 dispatch,
               );
@@ -220,12 +227,15 @@ const Contact = ({ contact, viewType, checkObj }) => {
             openPopup(
               {
                 type: 'Alert',
-                message: covi.getDic('Msg_EmptyChatMember'),
+                message: covi.getDic(
+                  'Msg_EmptyChatMember',
+                  '대화를 시작할 상대가 없습니다.',
+                ),
               },
               dispatch,
             );
         },
-        name: covi.getDic('StartChat'),
+        name: covi.getDic('StartChat', '대화시작'),
       });
     }
 
@@ -236,7 +246,7 @@ const Contact = ({ contact, viewType, checkObj }) => {
         onClick: () => {
           deleteContact(dispatch, null, contact.folderID, contact.folderType);
         },
-        name: covi.getDic('DelContact'),
+        name: covi.getDic('DelContact', '내 대화상대 삭제'),
       });
     }
 

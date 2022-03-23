@@ -15,7 +15,7 @@ const OrgchartContainer = ({
   searchGroup,
   handleGroup,
   searchCompanyCode,
-  group
+  group,
 }) => {
   const { userInfo, userID } = useSelector(({ login }) => ({
     userInfo: login.userInfo,
@@ -26,22 +26,29 @@ const OrgchartContainer = ({
   const [orgpathList, setOrgpathList] = useState([]);
   const [oldGroupMember, setOldGroupMember] = useState([]);
 
-  const handleDept = useCallback((deptCode, companyCode) => {
-    getOrgChart({ deptID: deptCode }, { CompanyCode: companyCode }).then(
-      ({ data }) => {
-        if (data.status == 'SUCCESS') {
-          //임의그룹화면: 그룹멤버 제외하고 목록나오도록 수정.
-          if(group)
-            data.result.sub = filterSearchGroupMember(data.result.sub, group, userID);
+  const handleDept = useCallback(
+    (deptCode, companyCode) => {
+      getOrgChart({ deptID: deptCode }, { CompanyCode: companyCode }).then(
+        ({ data }) => {
+          if (data.status == 'SUCCESS') {
+            //임의그룹화면: 그룹멤버 제외하고 목록나오도록 수정.
+            if (group)
+              data.result.sub = filterSearchGroupMember(
+                data.result.sub,
+                group,
+                userID,
+              );
 
-          setOrgpathList(data.result.path);
-          setDeptProfileList(data.result.sub);
+            setOrgpathList(data.result.path);
+            setDeptProfileList(data.result.sub);
 
-          if (handleGroup) handleGroup('');
-        }
-      },
-    );
-  }, [group])
+            if (handleGroup) handleGroup('');
+          }
+        },
+      );
+    },
+    [group],
+  );
 
   // 최상위로
   const handleDeptLevel = () => {
@@ -50,10 +57,7 @@ const OrgchartContainer = ({
       return;
     } else {
       const { GroupCode, CompanyCode } = orgpathList[orgpathListLength - 2];
-      handleDept(
-        GroupCode,
-        CompanyCode,
-      );
+      handleDept(GroupCode, CompanyCode);
     }
   };
 
@@ -77,12 +81,12 @@ const OrgchartContainer = ({
   }, [searchGroup]);
 
   useEffect(() => {
-    if(group?.sub){
-      if(oldGroupMember.length != group.sub.length){
-        setOldGroupMember(group.sub)
+    if (group?.sub) {
+      if (oldGroupMember.length != group.sub.length) {
+        setOldGroupMember(group.sub);
         handleDept(userInfo.DeptCode, userInfo.CompanyCode);
-      }else{
-        setOldGroupMember(group.sub)
+      } else {
+        setOldGroupMember(group.sub);
       }
     }
   }, [group]);
@@ -92,7 +96,7 @@ const OrgchartContainer = ({
       <div className="OrgList">
         <div className="org_tree_wrap">
           <a className="top_folder" onClick={handleDeptLevel}>
-            {covi.getDic('Top')}
+            {covi.getDic('Top', '최상위로')}
           </a>
           <Scrollbars
             style={{ height: '43px', padding: '0px' }}

@@ -141,7 +141,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                   openPopup(
                     {
                       type: 'Alert',
-                      message: covi.getDic('Msg_Copy'),
+                      message: covi.getDic('Msg_Copy', '복사되었습니다.'),
                       callback: result => {
                         navigator.clipboard.writeText(message.context);
                       },
@@ -149,7 +149,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                     dispatch,
                   );
                 },
-                name: covi.getDic('Copy'),
+                name: covi.getDic('Copy', '내용 복사'),
               },
               {
                 code: 'setNoticeMessage',
@@ -158,7 +158,10 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                   openPopup(
                     {
                       type: 'Confirm',
-                      message: covi.getDic('Msg_RegNotice'),
+                      message: covi.getDic(
+                        'Msg_RegNotice',
+                        '공지는 1건만 등록됩니다. 해당 메시지를 공지로 등록하시겠습니까?',
+                      ),
                       callback: result => {
                         if (result) {
                           setChannelNotice({
@@ -170,7 +173,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                     dispatch,
                   );
                 },
-                name: covi.getDic('Notice'),
+                name: covi.getDic('Notice', '공지'),
               },
             );
           }

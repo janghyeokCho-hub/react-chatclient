@@ -30,12 +30,14 @@ const LoginBox = forwardRef(
 
     const autoLoginLock = getConfig('ForceAutoLogin', 'N') === 'Y';
     const autoLaunchLock = getConfig('ForceAutoLaunch', 'N') === 'Y';
-    const IpSecurityCheck = getConfig('UseIpSecurity', {use: false, forcePolicyUse :false, forceValue: 0});
-      const [securityLevel, setSecurityLevel] = useState(
-    IpSecurityCheck?.forceValue || IpSecurityCheck.forceValue ,
-  );
-
-
+    const IpSecurityCheck = getConfig('UseIpSecurity', {
+      use: false,
+      forcePolicyUse: false,
+      forceValue: 0,
+    });
+    const [securityLevel, setSecurityLevel] = useState(
+      IpSecurityCheck?.forceValue || IpSecurityCheck.forceValue,
+    );
 
     const dispatch = useDispatch();
 
@@ -132,16 +134,16 @@ const LoginBox = forwardRef(
           {DEVICE_TYPE == 'd' && IpSecurityCheck?.use !== false && (
             <>
               <div className="IpSecurityBox">
-                <button  className="IpSecurityBtn" onClick={popUpOpen}>
-                  {securityLevel == - 1 ? (
-                    <span className='offBtn'>OFF</span>
-                  ):(
-                    <span className='onBtn'>
-                      ON
-                    </span>
+                <button className="IpSecurityBtn" onClick={popUpOpen}>
+                  {securityLevel == -1 ? (
+                    <span className="offBtn">OFF</span>
+                  ) : (
+                    <span className="onBtn">ON</span>
                   )}
                 </button>
-                <div className="IpSecurityText">{covi.getDic('IpSecurity')}</div>
+                <div className="IpSecurityText">
+                  {covi.getDic('IpSecurity', 'IP 보안')}
+                </div>
               </div>
               {popUpVisible && (
                 <SecurityPopup
@@ -173,7 +175,9 @@ const LoginBox = forwardRef(
               changeValue={onChangeId}
               value={userId}
               placeholder={
-                isExtUser ? covi.getDic('Email') : covi.getDic('LoginID')
+                isExtUser
+                  ? covi.getDic('Email', '이메일')
+                  : covi.getDic('LoginID', '아이디')
               }
               onKeyPress={handleKeyPress}
               className="LoginInput"
@@ -184,7 +188,7 @@ const LoginBox = forwardRef(
               ref={ref}
               type="password"
               value={password}
-              placeholder={covi.getDic('Password')}
+              placeholder={covi.getDic('Password', '비밀번호')}
               onChange={e => onChangePw(e.target.value)}
               onKeyPress={handleKeyPress}
               className="LoginInput mb10"
@@ -201,8 +205,8 @@ const LoginBox = forwardRef(
               disabled={loading}
             >
               {isExtUser
-                ? covi.getDic('ExternalLogin')
-                : covi.getDic('EmployeeLogin')}
+                ? covi.getDic('ExternalLogin', '외부사용자 로그인')
+                : covi.getDic('EmployeeLogin', '임직원 로그인')}
             </button>
           </div>
           <SelectBox
@@ -213,7 +217,10 @@ const LoginBox = forwardRef(
               openPopup(
                 {
                   type: 'Confirm',
-                  message: covi.getDic('Msg_ApplyAndRefresh'),
+                  message: covi.getDic(
+                    'Msg_ApplyAndRefresh',
+                    '적용을 위해 모든창이 닫히고 앱이 새로고침 됩니다. 진행하시겠습니까?',
+                  ),
                   callback: result => {
                     if (result) {
                       localStorage.setItem('covi_user_lang', item.value);
@@ -260,7 +267,7 @@ const LoginBox = forwardRef(
                   <span
                     style={{ backgroundColor: autoLoginLock ? '#999' : '' }}
                   ></span>
-                  {covi.getDic('AutoLogin')}
+                  {covi.getDic('AutoLogin', '자동로그인')}
                 </label>
               </div>
               <div className="chkStyle01 mt10" style={{ display: 'block' }}>
@@ -280,7 +287,7 @@ const LoginBox = forwardRef(
                   <span
                     style={{ backgroundColor: autoLaunchLock ? '#999' : '' }}
                   ></span>
-                  {covi.getDic('AutoLaunch')}
+                  {covi.getDic('AutoLaunch', '시작 시 자동실행')}
                 </label>
               </div>
             </>

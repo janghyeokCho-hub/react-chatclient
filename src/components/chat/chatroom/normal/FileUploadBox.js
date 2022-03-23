@@ -16,11 +16,18 @@ const FileUploadBox = ({ view, onView }) => {
       const files = target.files;
 
       if (files.length > 0) {
-        if (fileAttachMode && fileAttachMode.PC && fileAttachMode.PC.upload === false) {
+        if (
+          fileAttachMode &&
+          fileAttachMode.PC &&
+          fileAttachMode.PC.upload === false
+        ) {
           openPopup(
             {
               type: 'Alert',
-              message: covi.getDic('Block_FileUpload', '파일 첨부가 금지되어 있습니다.')
+              message: covi.getDic(
+                'Block_FileUpload',
+                '파일 첨부가 금지되어 있습니다.',
+              ),
             },
             dispatch,
           );
@@ -119,7 +126,12 @@ const FileUploadBox = ({ view, onView }) => {
       >
         <div className="posi-center">
           <div className="file-upload-ico"></div>
-          <p className="infotxt">{covi.getDic('Msg_FileDragAndDrop')}</p>
+          <p className="infotxt">
+            {covi.getDic(
+              'Msg_FileDragAndDrop',
+              '파일을 이곳에 드래그 & 드롭하여 업로드하세요.',
+            )}
+          </p>
         </div>
         <input
           type="file"

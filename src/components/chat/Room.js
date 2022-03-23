@@ -34,7 +34,7 @@ const getFilterMember = (members, id, roomType) => {
 };
 
 const makeMessageText = lastMessage => {
-  let returnText = covi.getDic('Msg_NoMessages');
+  let returnText = covi.getDic('Msg_NoMessages', '대화내용 없음');
   try {
     let msgObj = null;
 
@@ -62,7 +62,8 @@ const makeMessageText = lastMessage => {
       // protocol check
       if (common.eumTalkRegularExp.test(drawText)) {
         const messageObj = common.convertEumTalkProtocolPreview(drawText);
-        if (messageObj.type == 'emoticon') returnText = covi.getDic('Emoticon');
+        if (messageObj.type == 'emoticon')
+          returnText = covi.getDic('Emoticon', '이모티콘');
         else returnText = messageObj.message.split('\n')[0];
       } else {
         // 첫줄만 노출
@@ -89,14 +90,16 @@ const makeMessageText = lastMessage => {
           firstObj.ext == 'bmp'
         ) {
           // 사진 외 %s건
-          returnText = common.getSysMsgFormatStr(covi.getDic('Tmp_imgExCnt'), [
-            { type: 'Plain', data: fileObj.length - 1 },
-          ]);
+          returnText = common.getSysMsgFormatStr(
+            covi.getDic('Tmp_imgExCnt', '사진 외 %s건'),
+            [{ type: 'Plain', data: fileObj.length - 1 }],
+          );
         } else {
           // 파일 외 %s건
-          returnText = common.getSysMsgFormatStr(covi.getDic('Tmp_fileExCnt'), [
-            { type: 'Plain', data: fileObj.length - 1 },
-          ]);
+          returnText = common.getSysMsgFormatStr(
+            covi.getDic('Tmp_fileExCnt', '파일 외 %s건'),
+            [{ type: 'Plain', data: fileObj.length - 1 }],
+          );
         }
       } else {
         if (
@@ -105,9 +108,9 @@ const makeMessageText = lastMessage => {
           fileObj.ext == 'jpeg' ||
           fileObj.ext == 'bmp'
         ) {
-          returnText = covi.getDic('Image');
+          returnText = covi.getDic('Image', '사진');
         } else {
-          returnText = covi.getDic('File');
+          returnText = covi.getDic('File', '파일');
         }
       }
     }
@@ -206,7 +209,7 @@ const Room = ({
         }
 
         if (filterMember.length == 0)
-          return <>{covi.getDic('NoChatMembers')}</>;
+          return <>{covi.getDic('NoChatMembers', '대화상대없음')}</>;
 
         return (
           <>
@@ -294,7 +297,7 @@ const Room = ({
             if (!isSelect) onRoomChange(room.roomID);
           }
         },
-        name: covi.getDic('OpenChat'),
+        name: covi.getDic('OpenChat', '채팅방 열기'),
       },
       pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop),
       room?.roomType !== 'A' &&
@@ -304,7 +307,7 @@ const Room = ({
           onClick: () => {
             leaveRoomUtil(dispatch, room, id);
           },
-          name: covi.getDic('LeaveChat'),
+          name: covi.getDic('LeaveChat', '채팅방 나가기'),
         },
     ];
 
@@ -328,7 +331,9 @@ const Room = ({
 
           setIsNoti(!isNoti);
         },
-        name: !isNoti ? covi.getDic('AlarmOn') : covi.getDic('AlarmOff'),
+        name: !isNoti
+          ? covi.getDic('AlarmOn', '알림 켜기')
+          : covi.getDic('AlarmOff', '알림 끄기'),
       });
     }
 
