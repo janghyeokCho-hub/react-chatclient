@@ -387,7 +387,10 @@ const MessagePostBox = forwardRef(
       commonApi.openPopup(
         {
           type: 'Confirm',
-          message: '화상회의 초대장이 발송됩니다. 발송하시겠습니까?',
+          message: covi.getDic(
+            'Msg_VideoConferenceSend',
+            '화상회의 초대장이 발송됩니다. 발송하시겠습니까?',
+          ),
           callback: result => {
             if (result) {
               liveMeet();
@@ -423,9 +426,21 @@ const MessagePostBox = forwardRef(
               onKeyDown={handleKeyDown}
               className="message-to-send"
               placeholder={
-                !inputLock ? placeholder : covi.getDic('Msg_LockInput')
+                !inputLock
+                  ? placeholder
+                  : covi.getDic(
+                      'Msg_LockInput',
+                      '대화가 잠긴 방입니다. 해제버튼을 누른 후 사용할 수 있습니다.',
+                    )
               }
-              value={disabled ? covi.getDic('Msg_CloseChannel') : context}
+              value={
+                disabled
+                  ? covi.getDic(
+                      'Msg_CloseChannel',
+                      '채널이 폐쇄되었습니다. 메시지 전송 및 수신이 불가능하며, 동기화 후 해당 채널에 접속하실 수 없습니다.',
+                    )
+                  : context
+              }
               style={{ backgroundColor: inputLock ? '#f9f9f9' : '' }}
             ></textarea>
             {!disabled && (

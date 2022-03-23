@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 
 import {
   format,
@@ -39,25 +45,25 @@ const NoticeBox = () => {
     );
     let attrs = {};
     const match = tag.match(attrPattern);
-  
+
     if (match && match.length > 0) {
       match.forEach(item => {
         try {
           const key = item.split('=')[0];
           let value = decodeURIComponent(item.split('=')[1]);
-  
+
           if (
             (value[0] == '"' && value[value.length - 1] == '"') ||
             (value[0] == "'" && value[value.length - 1] == "'")
           ) {
             value = value.substring(1, value.length - 1);
           }
-  
+
           attrs[key] = value;
         } catch (e) {}
       });
     }
-  
+
     return attrs;
   };
 
@@ -78,7 +84,7 @@ const NoticeBox = () => {
       setIsNew(null);
       setOpenNotice(null);
       setNoticeContext(null);
-    }
+    };
   }, []);
 
   useEffect(() => {
@@ -200,7 +206,14 @@ const NoticeBox = () => {
                 )}
                 {!message.fileInfos && (
                   <div className="chatinfo">
-                    {timeBox && <span className="Sendtime" style={{ fontSize: smallFontSize }}>{}</span>}
+                    {timeBox && (
+                      <span
+                        className="Sendtime"
+                        style={{ fontSize: smallFontSize }}
+                      >
+                        {}
+                      </span>
+                    )}
                   </div>
                 )}
                 {isMine && (
@@ -257,7 +270,9 @@ const NoticeBox = () => {
                       isInherit={true}
                       img={senderInfo.photoPath}
                     ></ProfileBox>
-                    <p className="msgname" style={{ fontSize }}>{common.getJobInfo(senderInfo)}</p>
+                    <p className="msgname" style={{ fontSize }}>
+                      {common.getJobInfo(senderInfo)}
+                    </p>
                   </>
                 )}
                 <FileMessageBox
@@ -266,7 +281,14 @@ const NoticeBox = () => {
                   id={!drawText && id}
                 />
                 <div className="chatinfo">
-                  {timeBox && <span className="Sendtime" style={{ fontSize: smallFontSize}}>{dateText}</span>}
+                  {timeBox && (
+                    <span
+                      className="Sendtime"
+                      style={{ fontSize: smallFontSize }}
+                    >
+                      {dateText}
+                    </span>
+                  )}
                 </div>
               </li>
             );
@@ -278,7 +300,14 @@ const NoticeBox = () => {
                 }
               >
                 <div className="chatinfo">
-                  {timeBox && <span className="Sendtime" style={{ fontSize: smallFontSize}}>{dateText}</span>}
+                  {timeBox && (
+                    <span
+                      className="Sendtime"
+                      style={{ fontSize: smallFontSize }}
+                    >
+                      {dateText}
+                    </span>
+                  )}
                 </div>
                 <FileMessageBox
                   messageId={message.messageID}
@@ -341,13 +370,10 @@ const NoticeBox = () => {
     [openNotice, currentChannel, fontSize],
   );
 
-  const processContext = async() => {
+  const processContext = async () => {
     const { context, senderInfo, sendDate } = currentChannel.notice;
     const _context = common.convertURLMessage(context);
-    const pattern = new RegExp(
-      /[<](MENTION|LINK)[^>]*[/>]/,
-      'gi',
-    );
+    const pattern = new RegExp(/[<](MENTION|LINK)[^>]*[/>]/, 'gi');
     const returnJSX = [];
     let match = null;
     let beforeLastIndex = 0;
@@ -356,18 +382,19 @@ const NoticeBox = () => {
 
     // eumtalk:// http(s)?:// \n
     // console.log('0000002', common.eumTalkRegularExp.test(_context));
-    if(common.eumTalkRegularExp.test(_context) || /[<](LINK)[^>]*[/>]/.test(_context)) {
-    // if(common.eumTalkRegularExp.test(_context)) {
+    if (
+      common.eumTalkRegularExp.test(_context) ||
+      /[<](LINK)[^>]*[/>]/.test(_context)
+    ) {
+      // if(common.eumTalkRegularExp.test(_context)) {
       const { message, mentionInfo } = common.convertEumTalkProtocol(_context);
       while ((match = pattern.exec(message)) !== null) {
         maxContext = match.input;
         if (match.index > 0 && match.index > beforeLastIndex) {
           const txt = message.substring(beforeLastIndex, match.index);
-          returnJSX.push(
-            `${txt}`,
-          );
+          returnJSX.push(`${txt}`);
         }
-        
+
         const attrs = getAttribute(match[0]);
         if (match[1] === 'MENTION') {
           const memberInfo = await findMemberInfo(mentionInfo, attrs.targetId);
@@ -377,43 +404,36 @@ const NoticeBox = () => {
           } else if (memberInfo.id) {
             mention = `@${memberInfo.id}`;
           }
-          returnJSX.push(
-            `${mention}`
-          );
-
+          returnJSX.push(`${mention}`);
         } else if (match[1] === 'LINK') {
-          const _attrs = DEVICE_TYPE === 'd' ? 
-          `onClick="window.openExternalPopup('${attrs.link}'); return false;"` :
-          `href='${attrs.link}' target="_blank"`
-          returnJSX.push(
-            `<a ${_attrs}>${attrs.link}</a>`
-          );
+          const _attrs =
+            DEVICE_TYPE === 'd'
+              ? `onClick="window.openExternalPopup('${attrs.link}'); return false;"`
+              : `href='${attrs.link}' target="_blank"`;
+          returnJSX.push(`<a ${_attrs}>${attrs.link}</a>`);
         }
         beforeLastIndex = match.index + match[0].length;
         maxLength = match.input.length;
       }
 
-      if (beforeLastIndex < maxLength){
-          returnJSX.push(
-            `${maxContext.substring(beforeLastIndex)}`
-          );
+      if (beforeLastIndex < maxLength) {
+        returnJSX.push(`${maxContext.substring(beforeLastIndex)}`);
       }
-    }
-    else {
+    } else {
       // URL 또는 멘션이 없는 plain message는 그대로 push
       returnJSX.push(_context);
     }
 
     let stringString = '';
     returnJSX.forEach(element => {
-      stringString += element.toString()
+      stringString += element.toString();
       return stringString;
     });
     return `<span>${stringString}</span>`;
   };
   useEffect(() => {
     processContext().then(str => {
-        _isMounted.current && setNoticeContext(str);
+      _isMounted.current && setNoticeContext(str);
     });
   }, [currentChannel.notice, _isMounted]);
 
@@ -436,9 +456,8 @@ const NoticeBox = () => {
               type: 'Alert',
               message: `<p class="normaltxt"><b style="font-size: 16px;">${covi.getDic(
                 'Notice',
-              )}</b><br><br>${
-                noticeContext
-              }<br/><br><font style="color:#999;float: right;">${format(
+                '공지',
+              )}</b><br><br>${noticeContext}<br/><br><font style="color:#999;float: right;">${format(
                 new Date(notice.sendDate),
                 'yyyy.MM.dd HH:mm:ss',
               )} ${common.getJobInfo(senderInfo)}</font>`,
@@ -446,7 +465,7 @@ const NoticeBox = () => {
             dispatch,
           );
         },
-        name: covi.getDic('ShowDetail'),
+        name: covi.getDic('ShowDetail', '자세히보기'),
       },
       {
         code: 'keep',
@@ -455,7 +474,7 @@ const NoticeBox = () => {
           setOpenNotice(false);
           setIsNew(false);
         },
-        name: covi.getDic('FlipNotice'),
+        name: covi.getDic('FlipNotice', '접어두기'),
       },
       {
         code: 'hide',
@@ -472,7 +491,7 @@ const NoticeBox = () => {
             JSON.stringify(tempHideChannelNotices),
           );
         },
-        name: covi.getDic('CloseNotice'),
+        name: covi.getDic('CloseNotice', '다시보지 않기'),
       },
     ];
 
@@ -495,7 +514,10 @@ const NoticeBox = () => {
             common.openPopup(
               {
                 type: 'Confirm',
-                message: covi.getDic('Msg_DeleteNotice'),
+                message: covi.getDic(
+                  'Msg_DeleteNotice',
+                  '공지를 내리시겠습니까?',
+                ),
                 callback: result => {
                   if (result) {
                     dispatch(
@@ -511,7 +533,7 @@ const NoticeBox = () => {
               dispatch,
             );
           },
-          name: covi.getDic('RemoveNotice'),
+          name: covi.getDic('RemoveNotice', '공지 내리기'),
         });
       }
     }

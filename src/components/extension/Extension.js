@@ -9,8 +9,11 @@ import { extensionAdd, extensionSet } from '@/modules/extension';
 const extensionItemList = [
   {
     extensionId: 1,
-    title: '그룹웨어',
-    description: '메신저에서 그룹웨어를 사용해보세요',
+    title: covi.getDic('Groupware', '그룹웨어'),
+    description: covi.getDic(
+      'Msg_tryGroupwareMessenger',
+      '메신저에서 그룹웨어를 사용해보세요',
+    ),
     type: 'I',
     downloadURL: 'http://192.168.11.126:8080',
     photoPath: 'http://192.168.11.80/storage/no_image.jpg',
@@ -55,13 +58,16 @@ const Extension = () => {
             marginBottom: 15,
           }}
         >
-          익스텐션
+          {covi.getDic('Extension', '익스텐션')}
         </span>
         <div className="Searchbar">
           <input
             ref={searchInput}
             type="text"
-            placeholder={'검색할 익스텐션 이름/카테고리를 입력하세요'}
+            placeholder={covi.getDic(
+              'Msg_extensionSearch',
+              '검색할 익스텐션 이름/카테고리를 입력하세요',
+            )}
             onChange={e => {
               onChange(e.target.value);
             }}
@@ -75,7 +81,7 @@ const Extension = () => {
         </div>
         <p
           style={{ color: '#999', fontWeight: 'bold', margin: '5px 0px' }}
-        >{`익스텐션 목록 (${extensionItemList.length})`}</p>
+        >{`${covi.getDic('ExtensionList')} (${extensionItemList.length})`}</p>
         <ul>
           {extensionItemList &&
             extensionItemList.map(extension => {
@@ -130,13 +136,16 @@ const Extension = () => {
             marginBottom: 15,
           }}
         >
-          익스텐션
+          {covi.getDic('Extension', '익스텐션')}
         </span>
         <div className="Searchbar">
           <input
             ref={searchInput}
             type="text"
-            placeholder={'검색할 익스텐션 이름/카테고리를 입력하세요'}
+            placeholder={covi.getDic(
+              'Msg_extensionSearch',
+              '검색할 익스텐션 이름/카테고리를 입력하세요',
+            )}
             onChange={e => {
               onChange(e.target.value);
             }}
@@ -150,7 +159,9 @@ const Extension = () => {
         </div>
         <p
           style={{ color: '#999', fontWeight: 'bold', margin: '5px 0px' }}
-        >{`익스텐션 목록 (${extensionItemList.length})`}</p>
+        >{`${covi.getDic('ExtensionList', '익스텐션 목록')} (${
+          extensionItemList.length
+        })`}</p>
         <ul>
           {extensionItemList &&
             extensionItemList.map(extension => {

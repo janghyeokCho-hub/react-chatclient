@@ -57,7 +57,7 @@ const NoticeList = () => {
         evalConnector({
           method: 'on',
           channel: 'onSyncUnreadCount',
-          callback: (event, data) => {
+          callback: (_, data) => {
             dispatch(
               setUnreadCountForSync({ roomID, unreadCnts: data.unreadCnts }),
             );
@@ -80,7 +80,7 @@ const NoticeList = () => {
         evalConnector({
           method: 'once',
           channel: 'onSyncMessageSuccess',
-          callback: (event, roomId) => {
+          callback: (_, roomId) => {
             if (roomID == roomId) {
               const response = evalConnector({
                 method: 'sendSync',

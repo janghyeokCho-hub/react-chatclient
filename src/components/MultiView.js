@@ -63,12 +63,12 @@ const MultiView = () => {
             <div className="posi-center">
               <div className="start-chat-img"></div>
               <p className="infotxt mt10">
-                {covi.getDic('Msg_newWindow')}
+                {covi.getDic('Msg_newWindow', '새창으로 열려있습니다.')}
                 <button
                   className="loading-newwindow"
                   onClick={handleLoadChannelWindow}
                 >
-                  {covi.getDic('Msg_loadWindow')}
+                  {covi.getDic('Msg_loadWindow', '불러오기')}
                 </button>
               </p>
             </div>
@@ -83,15 +83,18 @@ const MultiView = () => {
     if (currentRoom) {
       if (currentRoom.newRoom) {
         return <MakeRoom></MakeRoom>;
-      } else if(currentRoom.newWin) {
+      } else if (currentRoom.newWin) {
         return (
           <div className="start-chat-wrap">
             <div className="posi-center">
               <div className="start-chat-img"></div>
               <p className="infotxt mt10">
-                {covi.getDic('Msg_newWindow')}
-                <button className="loading-newwindow" onClick={handleLoadWindow}>
-                  {covi.getDic('Msg_loadWindow')}
+                {covi.getDic('Msg_newWindow', '새창으로 열려있습니다.')}
+                <button
+                  className="loading-newwindow"
+                  onClick={handleLoadWindow}
+                >
+                  {covi.getDic('Msg_loadWindow', '불러오기')}
                 </button>
               </p>
             </div>
@@ -102,9 +105,9 @@ const MultiView = () => {
       }
     }
 
-    if( noteViewState.type !== null) {
+    if (noteViewState.type !== null) {
       return <NewNote />;
-    } 
+    }
 
     // 쪽지
     if (noteInfo) {
@@ -116,7 +119,9 @@ const MultiView = () => {
       <div className="start-chat-wrap">
         <div className="posi-center">
           <div className="start-chat-img"></div>
-          <p className="infotxt mt10">{covi.getDic('Msg_startChat')}</p>
+          <p className="infotxt mt10">
+            {covi.getDic('Msg_startChat', '대화를 시작해보세요!')}
+          </p>
         </div>
       </div>
     );

@@ -23,7 +23,12 @@ import {
 } from '@/modules/channel';
 import { clearLayer, openPopup } from '@/lib/common';
 import Header from '@C/Header';
-import { evalConnector, newChatRoom, focusWin, closeAllChildWindow } from '@/lib/deviceConnector';
+import {
+  evalConnector,
+  newChatRoom,
+  focusWin,
+  closeAllChildWindow,
+} from '@/lib/deviceConnector';
 import { leaveRoomUtilAfter } from '@/lib/roomUtil';
 import {
   leaveChannelUtilAfter,
@@ -31,9 +36,6 @@ import {
 } from '@/lib/channelUtil';
 import { useChatFontType } from '../hooks/useChat';
 import { SyncFavoriteIPC } from '../hooks/useSyncFavorite';
-
-
-
 
 const AppTemplate = () => {
   const viewType = useSelector(({ room }) => room.viewType);
@@ -53,7 +55,6 @@ const AppTemplate = () => {
 
   const menu = useSelector(({ menu }) => menu.menu);
 
-  
   useEffect(() => {
     // static 함수 등록
 
@@ -149,27 +150,33 @@ const AppTemplate = () => {
         method: 'on',
         channel: 'sync-alert',
         callback: (event, data) => {
-          if(DEVICE_TYPE === 'd'){
+          if (DEVICE_TYPE === 'd') {
             openPopup(
               {
                 type: 'Alert',
-                message: covi.getDic("Msg_App_Resync", '관리자 정책에 의한 앱 자동 동기화를 실행합니다.'),
+                message: covi.getDic(
+                  'Msg_App_Resync',
+                  '관리자 정책에 의한 앱 자동 동기화를 실행합니다.',
+                ),
                 callback: () => {
                   closeAllChildWindow();
                   openPopup(
                     {
                       type: 'Alert',
-                      message: covi.getDic('Msg_InitSettinfInforResult'),
+                      message: covi.getDic(
+                        'Msg_InitSettinfInforResult',
+                        '서버 설정 정보가 초기화되었습니다.\r\n정상적인 사용을 위해 앱을 완전 종료합니다.',
+                      ),
                       callback: () => {
                         evalConnector({
                           method: 'send',
-                          channel: 'relaunch-app'
+                          channel: 'relaunch-app',
                         });
-                      }
+                      },
                     },
                     dispatch,
                   );
-                }
+                },
               },
               dispatch,
             );
@@ -177,7 +184,6 @@ const AppTemplate = () => {
         },
       });
     }
-
 
     window.onresize = windowSizeChange;
 
@@ -289,7 +295,7 @@ const AppTemplate = () => {
 
   return (
     <>
-      <SyncFavoriteIPC /> 
+      <SyncFavoriteIPC />
       <div id="wrap">
         <nav className="menu">
           <LeftMenu />

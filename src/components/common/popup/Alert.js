@@ -17,27 +17,28 @@ const Alert = ({ popObj }) => {
   // 팝업 내에 텍스트와 스크롤바가 서로 겹치지 않도록 좌우 padding 적용순서 조정
   const zeroPadding = {
     paddingRight: 0,
-    paddingLeft: 0
-  }
+    paddingLeft: 0,
+  };
   const withPadding = {
     paddingRight: '20px',
-    paddingLeft: '20px'
-  }
+    paddingLeft: '20px',
+  };
   return (
     <>
       <div className="popup-layer-wrap">
-        <div className="popup-layer type02" style={ zeroPadding }>
-            <Scrollbars autoHeight autoHeightMax={height/3}>
+        <div className="popup-layer type02" style={zeroPadding}>
+          <Scrollbars autoHeight autoHeightMax={height / 3}>
             <p
               className="normaltxt"
-              style={ withPadding }
+              style={withPadding}
               dangerouslySetInnerHTML={{ __html: popObj.message }}
-            >
-            </p>
-            </Scrollbars>
+            ></p>
+          </Scrollbars>
           <div className="btnbox">
-            <a onClick={handleClose} style={ withPadding }>
-              <span className="colortxt-point">{covi.getDic('Ok')}</span>
+            <a onClick={handleClose} style={withPadding}>
+              <span className="colortxt-point">
+                {covi.getDic('Ok', '확인')}
+              </span>
             </a>
           </div>
         </div>

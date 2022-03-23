@@ -13,7 +13,14 @@ import { format } from 'date-fns';
 import useTyping from '@/hooks/useTyping';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
 
-const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine, removeWork }) => {
+const UserInfoBox = ({
+  userInfo,
+  isInherit,
+  isClick,
+  checkObj,
+  isMine,
+  removeWork,
+}) => {
   const viewType = useSelector(({ room }) => room.viewType);
   const rooms = useSelector(({ room }) => room.rooms);
   const selectId = useSelector(({ room }) => room.selectId);
@@ -28,7 +35,11 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine, removeWor
 
   // removeWork: 사용자의 업무 표기박스 미표기 플래그
   const info = isMine
-    ? { ...myInfo, absenceInfo: userInfo.absenceInfo, work: removeWork ? undefined : myInfo?.work }
+    ? {
+        ...myInfo,
+        absenceInfo: userInfo.absenceInfo,
+        work: removeWork ? undefined : myInfo?.work,
+      }
     : { ...userInfo, work: removeWork ? undefined : userInfo?.work };
 
   useEffect(() => {
@@ -101,7 +112,10 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine, removeWor
             openPopup(
               {
                 type: 'Alert',
-                message: covi.getDic('Msg_GroupInviteError'),
+                message: covi.getDic(
+                  'Msg_GroupInviteError',
+                  '해당 그룹은 그룹채팅을 시작할 수 없습니다.',
+                ),
               },
               dispatch,
             );
@@ -193,7 +207,7 @@ const UserInfoBox = ({ userInfo, isInherit, isClick, checkObj, isMine, removeWor
             {getJobInfo(info)}
           </span>
           {info.channelAuth && info.channelAuth === 'Y' && (
-            <span className="admintag">{covi.getDic('Admin')}</span>
+            <span className="admintag">{covi.getDic('Admin', '관리자')}</span>
           )}
           {info.isMobile === 'Y' && <span className="mobileico ml5"></span>}
           <span className="team">{getDeptName()}</span>

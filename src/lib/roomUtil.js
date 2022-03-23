@@ -50,7 +50,10 @@ export const openChatRoomView = (
         openPopup(
           {
             type: 'Alert',
-            message: covi.getDic('Msg_EmptyChatMember'),
+            message: covi.getDic(
+              'Msg_EmptyChatMember',
+              '대화를 시작할 상대가 없습니다.',
+            ),
           },
           dispatch,
         );
@@ -82,16 +85,19 @@ export const openChatRoomView = (
       members,
       isDoubleClick,
     );
-  } else if(userInfo.type == 'R'){
-    getAllUserWithCustomGroup({folderId: userInfo.id}).then(({data}) =>{
-      if(data.status == 'SUCCESS'){
+  } else if (userInfo.type == 'R') {
+    getAllUserWithCustomGroup({ folderId: userInfo.id }).then(({ data }) => {
+      if (data.status == 'SUCCESS') {
         members = members.concat(data.result);
 
         if (members.length == 0) {
           openPopup(
             {
               type: 'Alert',
-              message: covi.getDic('Msg_EmptyChatMember'),
+              message: covi.getDic(
+                'Msg_EmptyChatMember',
+                '대화를 시작할 상대가 없습니다.',
+              ),
             },
             dispatch,
           );
@@ -146,7 +152,7 @@ const openChatRoomViewCallback = (
   members,
   isDoubleClick,
 ) => {
-  console.log("openChatRoomViewCallback")
+  console.log('openChatRoomViewCallback');
   let roomId;
   if (userId != targetId) {
     const room = rooms.find(
@@ -272,7 +278,10 @@ export const leaveRoomUtil = (
   openPopup(
     {
       type: 'Confirm',
-      message: covi.getDic('Msg_ConfirmLeave'),
+      message: covi.getDic(
+        'Msg_ConfirmLeave',
+        '채팅방을 나가면 대화내용이 모두 삭제됩니다. 나가시겠습니까?',
+      ),
       callback: result => {
         if (result) {
           if (!isNewWin) {

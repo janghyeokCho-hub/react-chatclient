@@ -42,14 +42,18 @@ const Prompt = ({ popObj }) => {
                 handleClose(true);
               }}
             >
-              <span className="colortxt-point">{covi.getDic('Ok')}</span>
+              <span className="colortxt-point">
+                {covi.getDic('Ok', '확인')}
+              </span>
             </a>
             <a
               onClick={() => {
                 handleClose(false);
               }}
             >
-              <span className="colortxt-grey">{covi.getDic('Cancel')}</span>
+              <span className="colortxt-grey">
+                {covi.getDic('Cancel', '취소')}
+              </span>
             </a>
           </div>
         </div>

@@ -283,7 +283,7 @@ const Snipper = ({ props }) => {
                 marginTop: '15px',
               }}
             >
-              {covi.getDic('Snipper')}
+              {covi.getDic('Snipper', '캡처도구')}
             </h2>
           </div>
 
@@ -303,7 +303,7 @@ const Snipper = ({ props }) => {
                 className="btn btn-primary mr-1"
                 onClick={() => captureScreen()}
               >
-                {covi.getDic('Fullscreen')}
+                {covi.getDic('Fullscreen', '전체화면')}
               </button>
 
               <button
@@ -320,7 +320,7 @@ const Snipper = ({ props }) => {
                 className="btn btn-primary mr-1"
                 onClick={() => initCropper()}
               >
-                {covi.getDic('CropImage')}
+                {covi.getDic('CropImage', '부분화면')}
               </button>
             </div>
           ) : (
@@ -339,7 +339,7 @@ const Snipper = ({ props }) => {
                 className="btn btn-primary mr-1"
                 onClick={saveToDisk}
               >
-                {covi.getDic('SaveToDisk')}
+                {covi.getDic('SaveToDisk', '사진폴더에 저장')}
               </button>
 
               <button
@@ -356,7 +356,7 @@ const Snipper = ({ props }) => {
                 className="btn btn-primary mr-1"
                 onClick={discardSnip}
               >
-                {covi.getDic('Cancel')}
+                {covi.getDic('Cancel', '취소')}
               </button>
             </div>
           )}

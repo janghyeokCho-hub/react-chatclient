@@ -19,24 +19,28 @@ const ChannelList = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(bound({ name: covi.getDic('Channel'), type: 'channellist' }));
+    dispatch(
+      bound({ name: covi.getDic('Channel', '채널'), type: 'channellist' }),
+    );
     if (isExtUser && isExtUser != 'Y') {
       dispatch(
         setTopButton([
           {
             code: 'showChannelCategory',
-            alt: covi.getDic('Category'),
+            alt: covi.getDic('Category', '카테고리'),
             onClick: () => {
               openLayer(
                 {
                   component: (
-                    <ChannelCategoryList headerName={covi.getDic('Category')} />
+                    <ChannelCategoryList
+                      headerName={covi.getDic('Category', '카테고리')}
+                    />
                   ),
                 },
                 dispatch,
               );
             },
-            svg: <ChannelCategoryIcon />
+            svg: <ChannelCategoryIcon />,
           },
           {
             code: 'crateChannel',
@@ -45,13 +49,15 @@ const ChannelList = () => {
               openLayer(
                 {
                   component: (
-                    <CreateChannel headerName={covi.getDic('CreateChannel')} />
+                    <CreateChannel
+                      headerName={covi.getDic('CreateChannel', '채널 생성')}
+                    />
                   ),
                 },
                 dispatch,
               );
             },
-            svg: <PlusIcon />
+            svg: <PlusIcon />,
           },
         ]),
       );

@@ -10,7 +10,7 @@ const SyncWrap = () => {
             className="infotxt mt10"
             style={{ color: '#000', fontWeight: 'bold' }}
           >
-            {covi.getDic('Msg_syncLoading')}
+            {covi.getDic('Msg_syncLoading', '동기화중입니다.')}
           </p>
         </div>
       </div>

@@ -77,7 +77,10 @@ const MakeRoom = ({ history }) => {
         common.openPopup(
           {
             type: 'Alert',
-            message: covi.getDic('Msg_RetryMakeRoom'),
+            message: covi.getDic(
+              'Msg_RetryMakeRoom',
+              '대화를 시작할 수 없습니다. 다시 시도해주세요.',
+            ),
             callback: () => {
               window.close();
             },
@@ -115,10 +118,10 @@ const MakeRoom = ({ history }) => {
 
   const remoteHost = sessionKey => {
     const msgObj = {
-      title: '원격지원',
-      context: '원격지원 요청입니다.',
+      title: covi.getDic('RemoteSupport', 'RemoteSupport'),
+      context: covi.getDic('Msg_RequestRemoteSupport', '원격지원 요청입니다.'),
       func: {
-        name: '원격지원 수락',
+        name: covi.getDic('AcceptRemoteSupport', '원격지원 수락'),
         type: 'remote',
         data: {
           sessionKey: sessionKey,
@@ -255,7 +258,8 @@ const MakeRoom = ({ history }) => {
       }
       const refWord = `(Enter ${covi.getDic(
         'Send',
-      )} / Shift + Enter ${covi.getDic('NewLine')})`;
+        '전송',
+      )} / Shift + Enter ${covi.getDic('NewLine', '개행')})`;
       if (makeInfo.roomType === 'M') {
         // M의 경우 남은 값이 1개
         const filterMember = getFilterMember(makeInfo.members, sender);
@@ -267,12 +271,12 @@ const MakeRoom = ({ history }) => {
         if (target) {
           return `${common.getDictionary(target.name)} ${refWord}`;
         } else {
-          return `${covi.getDic('NoChatMembers')} ${refWord}`;
+          return `${covi.getDic('NoChatMembers', '대화상대없음')} ${refWord}`;
         }
       } else {
         const filterMember = getFilterMember(makeInfo.members, sender);
         if (filterMember.length == 0)
-          return `${covi.getDic('NoChatMembers')} ${refWord}`;
+          return `${covi.getDic('NoChatMembers', '대화상대없음')} ${refWord}`;
 
         const groupNames = filterMember.map((item, index) => {
           return common.getDictionary(item.name);
@@ -283,10 +287,13 @@ const MakeRoom = ({ history }) => {
           const otherCnt = groupNames.length - limitCnt;
 
           if (otherCnt > 0) {
-            return common.getSysMsgFormatStr(covi.getDic('Tmp_andOthers'), [
-              { type: 'Plain', data: spliceArr.join(', ') },
-              { type: 'Plain', data: otherCnt },
-            ]);
+            return common.getSysMsgFormatStr(
+              covi.getDic('Tmp_andOthers', 'Tmp_andOthers'),
+              [
+                { type: 'Plain', data: spliceArr.join(', ') },
+                { type: 'Plain', data: otherCnt },
+              ],
+            );
           } else {
             return spliceArr.join(', ');
           }

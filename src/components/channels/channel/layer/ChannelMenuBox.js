@@ -76,7 +76,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
       {
         component: (
           <InviteMember
-            headerName={covi.getDic('AddChatMembers')}
+            headerName={covi.getDic('AddChatMembers', '대화상대 추가')}
             roomId={channelInfo.roomId}
             openType={channelInfo.openType}
             isNewRoom={false}
@@ -93,7 +93,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
       {
         component: (
           <InviteExtUser
-            headerName={covi.getDic('InviteExUser')}
+            headerName={covi.getDic('InviteExUser', '외부사용자 신규 초대')}
             roomId={channelInfo.roomId}
           />
         ),
@@ -109,7 +109,10 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
       openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_DelChannelAdmin'),
+          message: covi.getDic(
+            'Msg_DelChannelAdmin',
+            '채널 관리자 권한을 위임 후 탈퇴가 가능합니다.',
+          ),
         },
         dispatch,
       );
@@ -127,7 +130,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
             if (
               window.opener &&
               typeof window.opener.parent.newWinChannelLeaveCallback ==
-              'function'
+                'function'
             ) {
               window.opener.parent.newWinChannelLeaveCallback(
                 channelInfo.roomId,
@@ -201,7 +204,10 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
     openPopup(
       {
         type: 'Confirm',
-        message: covi.getDic('Msg_SaveChat'),
+        message: covi.getDic(
+          'Msg_SaveChat',
+          '채팅방 내용을 텍스트 파일로 저장합니다. 저장하시겠습니까?',
+        ),
         callback: result => {
           if (result) {
             const fileName = channelInfo.roomName + '_channel.txt';
@@ -253,7 +259,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
         onClick: () => {
           handleLeaveChannelByAdmin(dispatch, userInfo.id);
         },
-        name: covi.getDic('Deport'),
+        name: covi.getDic('Deport', '내보내기'),
       },
       {
         code: 'modifyChannelMemberAuth',
@@ -264,7 +270,10 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
             openPopup(
               {
                 type: 'Alert',
-                message: covi.getDic('Msg_MinAdminCnt'),
+                message: covi.getDic(
+                  'Msg_MinAdminCnt',
+                  '최소 1명의 채널관리자가 필요합니다.',
+                ),
               },
               dispatch,
             );
@@ -275,9 +284,15 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                 message:
                   userInfo.channelAuth == 'Y'
                     ? userInfo.id === id
-                      ? covi.getDic('Msg_SelfDemotion')
-                      : covi.getDic('Msg_Demotion')
-                    : covi.getDic('Msg_SelAdmin'),
+                      ? covi.getDic(
+                          'Msg_SelfDemotion',
+                          '자기 자신을 일반회원으로 강등할 경우 되돌릴 수 없습니다. 정말로 일반회원으로 강등하시겠습니까?',
+                        )
+                      : covi.getDic(
+                          'Msg_Demotion',
+                          '정말로 일반회원으로 강등하시겠습니까?',
+                        )
+                    : covi.getDic('Msg_SelAdmin', '관리자로 지정하시겠습니까?'),
                 callback: result => {
                   if (result) {
                     dispatch(
@@ -297,8 +312,8 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
         },
         name:
           userInfo.channelAuth == 'Y'
-            ? covi.getDic('GeneralDemotion')
-            : covi.getDic('SelectAdmin'),
+            ? covi.getDic('GeneralDemotion', '일반회원으로 강등')
+            : covi.getDic('SelectAdmin', '관리자 지정'),
       },
     ];
     return menus;
@@ -332,7 +347,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
     openPopup(
       {
         type: 'Confirm',
-        message: covi.getDic('Msg_ClosureChannel'),
+        message: covi.getDic('Msg_ClosureChannel', '채널을 폐쇄 하시겠습니까?'),
         callback: result => {
           if (result) {
             closureChannel(
@@ -347,7 +362,10 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                 openPopup(
                   {
                     type: 'Alert',
-                    message: covi.getDic('Msg_Error'),
+                    message: covi.getDic(
+                      'Msg_Error',
+                      '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+                    ),
                   },
                   dispatch,
                 );
@@ -370,9 +388,12 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   }, [dispatch, channelInfo]);
 
   const RENDER_UNIT = 8;
-  const { isDone, nextStep, list, handleScrollUpdate } = useOffset(channelInfo.members, { renderPerBatch: RENDER_UNIT });
+  const { isDone, nextStep, list, handleScrollUpdate } = useOffset(
+    channelInfo.members,
+    { renderPerBatch: RENDER_UNIT },
+  );
   const handleUpdate = handleScrollUpdate({
-    threshold: 0.9
+    threshold: 0.9,
   });
 
   return (
@@ -428,9 +449,10 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
               <li className="divideline">
                 <a onClick={handleAlarm}>
                   <span className="c_menu_ico c_menu_ico_01"></span>
-                  <span>{covi.getDic('Notification')}</span>
+                  <span>{covi.getDic('Notification', '알림')}</span>
                   <span className="colortxt-point control-loc-right">
-                    {(isNoti && covi.getDic('On')) || covi.getDic('Off')}
+                    {(isNoti && covi.getDic('On', '켜짐')) ||
+                      covi.getDic('Off', '꺼짐')}
                   </span>
                 </a>
               </li>
@@ -447,7 +469,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                 }}
               >
                 <span className="c_menu_ico c_menu_ico_06"></span>
-                <span>{covi.getDic('ShowChannelInfo')}</span>
+                <span>{covi.getDic('ShowChannelInfo', '채널 정보보기')}</span>
               </a>
             </li>
             {channelInfo && channelAuth && (
@@ -463,27 +485,27 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                   }}
                 >
                   <span className="c_menu_ico c_menu_ico_06"></span>
-                  <span>{covi.getDic('ModChannelInfo')}</span>
+                  <span>{covi.getDic('ModChannelInfo', '채널정보 수정')}</span>
                 </a>
               </li>
             )}
             <li>
               <a onClick={handlePhotoSummary}>
                 <span className="c_menu_ico c_menu_ico_02"></span>
-                {covi.getDic('PhotoSummary')}
+                {covi.getDic('PhotoSummary', '사진 모아보기')}
               </a>
             </li>
             <li className="divideline">
               <a onClick={handleFileSummary}>
                 <span className="c_menu_ico c_menu_ico_03"></span>
-                {covi.getDic('FileSummary')}
+                {covi.getDic('FileSummary', '파일 모아보기')}
               </a>
             </li>
             {getConfig('UseMsgExport', false) && (
               <li>
                 <a onClick={handleSaveChat}>
                   <span className="c_menu_ico c_menu_ico_04"></span>
-                  {covi.getDic('SaveChat')}
+                  {covi.getDic('SaveChat', '대화내용 저장하기')}
                 </a>
               </li>
             )}
@@ -496,11 +518,9 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
           </ul>
         </div>
         {channelInfo && channelInfo.members && (
-          <div
-            className="AddnPersonlist"
-          >
+          <div className="AddnPersonlist">
             <span className="titletype01 mb10">
-              {covi.getDic('ChatMembers')}
+              {covi.getDic('ChatMembers', '대화상대')}
               <span className="colortxt-point ml5">
                 {channelInfo.members.length}
               </span>
@@ -511,7 +531,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                   <a onClick={handleInvite}>
                     <div className="AddBoxIco mr15"></div>
                     <span className="Addusertxt">
-                      {covi.getDic('AddChatMembers')}
+                      {covi.getDic('AddChatMembers', '대화상대 추가')}
                     </span>
                   </a>
                   {enabledExtUser === 'Y' && SMTPConfig === 'Y' && (
@@ -540,7 +560,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                         </div>
                       </div>
                       <span className="Addusertxt">
-                        {covi.getDic('InviteExUser')}
+                        {covi.getDic('InviteExUser', '외부사용자 신규 초대')}
                       </span>
                     </a>
                   )}
@@ -548,17 +568,18 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
               )}
 
               <ul className="people">
-                {channelInfo.members.length > 0 && (
+                {channelInfo.members.length > 0 &&
                   list((member, index) => {
-                    return <ChannelUserInfoBox
-                      key={`channelmember_${member.id}`}
-                      userId={id}
-                      userInfo={member}
-                      getMenuData={getMenuData}
-                      channelAuth={channelAuth}
-                    />
-                  }))
-                }
+                    return (
+                      <ChannelUserInfoBox
+                        key={`channelmember_${member.id}`}
+                        userId={id}
+                        userInfo={member}
+                        getMenuData={getMenuData}
+                        channelAuth={channelAuth}
+                      />
+                    );
+                  })}
 
                 {
                   /**
@@ -568,9 +589,13 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                    */
                   isDone === false && (
                     <li className="person">
-                      <a onClick={() => nextStep()}>{"...대화상대 더 보기"}</a>
+                      <a onClick={() => nextStep()}>{`...${covi.getDic(
+                        'SeeMoreContacts',
+                        '대화 상대 더 보기',
+                      )}`}</a>
                     </li>
-                  )}
+                  )
+                }
               </ul>
             </div>
           </div>
@@ -581,15 +606,15 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
             <a
               className="ico_chatout"
               onClick={() => handleLeaveChannel()}
-              alt={covi.getDic('LeaveChat')}
-              title={covi.getDic('LeaveChat')}
+              alt={covi.getDic('LeaveChat', '채팅방 나가기')}
+              title={covi.getDic('LeaveChat', '채팅방 나가기')}
             ></a>
             {channelAuth && (
               <a
                 className="ico_chatclosure"
                 onClick={() => handleClosureChannel()}
-                alt={covi.getDic('Close')}
-                title={covi.getDic('Close')}
+                alt={covi.getDic('Close', '닫기')}
+                title={covi.getDic('Close', '닫기')}
               ></a>
             )}
             {DEVICE_TYPE == 'd' && (

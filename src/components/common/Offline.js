@@ -53,8 +53,8 @@ const Offline = () => {
           <div style={{ float: 'right' }}>
             <button
               id="btnClose"
-              alt={covi.getDic('Close')}
-              title={covi.getDic('Close')}
+              alt={covi.getDic('Close', '닫기')}
+              title={covi.getDic('Close', '닫기')}
               style={{
                 WebkitAppRegion: 'no-drag',
                 display: 'inline-block',
@@ -114,9 +114,14 @@ const Offline = () => {
           }}
         >
           <p style={{ fontSize: '16px' }}>
-            {covi.getDic('Msg_NetworkConnect')}
+            {covi.getDic(
+              'Msg_NetworkConnect',
+              '네트워크 문제로 연결이 종료되었습니다.',
+            )}
           </p>
-          <p>{covi.getDic('Msg_NetworkCheck')}</p>
+          <p>
+            {covi.getDic('Msg_NetworkCheck', '네트워크 상태를 확인해주세요')}
+          </p>
           <p style={{ marginTop: '10px' }}>
             <button
               type="button"

@@ -174,8 +174,14 @@ function createAddContactsSaga(type) {
       } else {
         // unknown 기본처리
         message = success
-          ? covi.getDic('Msg_AddContacts_Success')
-          : covi.getDic('Msg_AddContacts_Fail');
+          ? covi.getDic(
+              'Msg_AddContacts_Success',
+              '대화상대 추가에 성공했습니다.',
+            )
+          : covi.getDic(
+              'Msg_AddContacts_Fail',
+              '대화상대 추가에 실패했습니다.',
+            );
       }
 
       yield put({

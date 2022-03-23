@@ -1,4 +1,10 @@
-﻿import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+﻿import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { bound, setTopButton } from '@/modules/menu';
 import SearchBar from '@COMMON/SearchBar';
@@ -25,7 +31,9 @@ const OrgChart = ({ viewType, checkObj, group }) => {
   const [searchResult, setSearchResult] = useState([]);
   const [searchGroup, setSearchGroup] = useState('');
   const [searchCompanyCode, setCompanyCode] = useState('');
-  const { items, handleScrollUpdate } = useOffset(searchResult, { renderPerBatch: RENDER_UNIT });
+  const { items, handleScrollUpdate } = useOffset(searchResult, {
+    renderPerBatch: RENDER_UNIT,
+  });
   const [type, setType] = useState(viewType);
 
   const dispatch = useDispatch();
@@ -38,18 +46,20 @@ const OrgChart = ({ viewType, checkObj, group }) => {
 
   useEffect(() => {
     if (type === 'list') {
-      dispatch(bound({ name: covi.getDic('OrgChart'), type: 'orgchart' }));
+      dispatch(
+        bound({ name: covi.getDic('OrgChart', '조직도'), type: 'orgchart' }),
+      );
       dispatch(
         setTopButton([
           {
             code: 'startChat',
-            alt: covi.getDic('StartChat'),
+            alt: covi.getDic('StartChat', '대화시작'),
             onClick: () => {
               openLayer(
                 {
                   component: (
                     <InviteMember
-                      headerName={covi.getDic('NewChatRoom')}
+                      headerName={covi.getDic('NewChatRoom', '새로운 채팅방')}
                       isNewRoom={true}
                     />
                   ),
@@ -57,7 +67,7 @@ const OrgChart = ({ viewType, checkObj, group }) => {
                 dispatch,
               );
             },
-            svg: <AddChatIcon />
+            svg: <AddChatIcon />,
           },
         ]),
       );
@@ -79,11 +89,15 @@ const OrgChart = ({ viewType, checkObj, group }) => {
           }).then(({ data }) => {
             if (data.status == 'SUCCESS') {
               //그룹 존재시 그룹멤버 제외하고 목록나오도록
-              if(group)
-                data.result = filterSearchGroupMember(data.result, group, userID);
+              if (group)
+                data.result = filterSearchGroupMember(
+                  data.result,
+                  group,
+                  userID,
+                );
 
               setSearchResult(data.result);
-            }else{
+            } else {
               setSearchResult([]);
             }
           });
@@ -103,17 +117,21 @@ const OrgChart = ({ viewType, checkObj, group }) => {
   };
 
   const handleUpdate = handleScrollUpdate({
-    threshold: 0.85
+    threshold: 0.85,
   });
 
-  const scrollHeight = useMemo(()=>{
-    return 'calc(100% - '+(group && checkObj?.checkedList?.length > 0 ? '220px': '124px') +')'
+  const scrollHeight = useMemo(() => {
+    return (
+      'calc(100% - ' +
+      (group && checkObj?.checkedList?.length > 0 ? '220px' : '124px') +
+      ')'
+    );
   }, [checkObj]);
 
   return (
     <>
       <SearchBar
-        placeholder={covi.getDic('Msg_contactSearch')}
+        placeholder={covi.getDic('Msg_contactSearch', '부서, 임직원 검색')}
         input={searchText}
         onChange={handleChange}
       />

@@ -60,7 +60,7 @@ const ChannelCategoryList = ({ headerName }) => {
       searchValue = category.categoryCode;
     } else {
       category = {
-        categoryName: covi.getDic('All'),
+        categoryName: covi.getDic('All', '전체'),
       };
       searchType = 'name';
       searchValue = '';
@@ -119,12 +119,14 @@ const ChannelCategoryList = ({ headerName }) => {
         {currentCategory && (
           <div className="org_tree_wrap">
             <a className="top_folder" onClick={showChannelCategory}>
-              {covi.getDic('Top')}
+              {covi.getDic('Top', '최상위로')}
             </a>
             <div className="scr_h">
               <ul>
                 <li>
-                  <a onClick={showChannelCategory}>{covi.getDic('Category')}</a>
+                  <a onClick={showChannelCategory}>
+                    {covi.getDic('Category', '카테고리')}
+                  </a>
                 </li>
                 <li>
                   <a>{currentCategory.categoryName}</a>
@@ -203,7 +205,9 @@ const ChannelCategoryList = ({ headerName }) => {
                   onClick={() => handleCategory(null)}
                 >
                   <div className="category-box all">
-                    <p className="category-box-txt">{covi.getDic('All')}</p>
+                    <p className="category-box-txt">
+                      {covi.getDic('All', '전체')}
+                    </p>
                   </div>
                 </li>
                 {itemList.map((item, index) => (

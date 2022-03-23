@@ -42,7 +42,7 @@ const Select = ({ popObj }) => {
                 );
               })}
             <li>
-              <a onClick={handleClose}>{covi.getDic('Cancel')}</a>
+              <a onClick={handleClose}>{covi.getDic('Cancel', '취소')}</a>
             </li>
           </ul>
         </div>

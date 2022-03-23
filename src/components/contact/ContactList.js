@@ -27,10 +27,9 @@ const ContactList = ({ viewType, checkObj }) => {
 
   const RENDER_INIT = Math.ceil(window.innerHeight / 60);
   const RENDER_UNIT = 10;
-  const { items, handleScrollUpdate } = useOffset(
-    searchResult,
-    { renderPerBatch: RENDER_UNIT },
-  );
+  const { items, handleScrollUpdate } = useOffset(searchResult, {
+    renderPerBatch: RENDER_UNIT,
+  });
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -41,12 +40,17 @@ const ContactList = ({ viewType, checkObj }) => {
 
   useEffect(() => {
     if (type === 'list') {
-      dispatch(bound({ name: covi.getDic('Contact'), type: 'contactlist' }));
+      dispatch(
+        bound({
+          name: covi.getDic('Contact', '내 대화상대'),
+          type: 'contactlist',
+        }),
+      );
       dispatch(
         setTopButton([
           {
             code: 'addContactItem',
-            alt: covi.getDic('AddContact'),
+            alt: covi.getDic('AddContact', '내 대화상대 추가'),
             onClick: () => {
               openLayer(
                 {
@@ -59,13 +63,13 @@ const ContactList = ({ viewType, checkObj }) => {
           },
           {
             code: 'startChat',
-            alt: covi.getDic('StartChat'),
+            alt: covi.getDic('StartChat', '대화시작'),
             onClick: () => {
               openLayer(
                 {
                   component: (
                     <InviteMember
-                      headerName={covi.getDic('NewChatRoom')}
+                      headerName={covi.getDic('NewChatRoom', '새로운 채팅방')}
                       isNewRoom={true}
                     />
                   ),
@@ -125,7 +129,7 @@ const ContactList = ({ viewType, checkObj }) => {
   return (
     <>
       <SearchBar
-        placeholder={covi.getDic('Msg_contactSearch')}
+        placeholder={covi.getDic('Msg_contactSearch', '부서, 임직원 검색')}
         input={searchText}
         onChange={handleChange}
       />

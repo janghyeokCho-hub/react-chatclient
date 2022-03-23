@@ -50,7 +50,7 @@ const ExtensionBox = ({
             textAlign: 'center',
           }}
         >
-          설치됨
+          {covi.getDic('InstallationComplete', '설치됨')}
         </div>
       )) || (
         <button
@@ -70,7 +70,7 @@ const ExtensionBox = ({
             handleClick();
           }}
         >
-          설치하기
+          {covi.getDic('Install', '설치하기')}
         </button>
       )}
     </div>

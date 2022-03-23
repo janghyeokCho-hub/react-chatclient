@@ -21,9 +21,12 @@ const ChannelItems = ({
 
   const [isNotis, setIsNotis] = useState({});
   const RENDER_UNIT = 5;
-  const { handleScrollUpdate, list } = useOffset(channels, { initialNumToRender: 1, renderPerBatch : RENDER_UNIT });
+  const { handleScrollUpdate, list } = useOffset(channels, {
+    initialNumToRender: 1,
+    renderPerBatch: RENDER_UNIT,
+  });
   const handleUpdate = handleScrollUpdate({
-    threshold: 0.85
+    threshold: 0.85,
   });
 
   useEffect(() => {
@@ -54,7 +57,7 @@ const ChannelItems = ({
               if (!isSelect) onChannelChange(channel.roomId);
             }
           },
-          name: covi.getDic('OpenChannel'),
+          name: covi.getDic('OpenChannel', '채널 열기'),
         },
       ];
 
@@ -99,11 +102,12 @@ const ChannelItems = ({
     >
       <ul className="people">
         {loading && <LoadingWrap />}
-        {
-          !loading &&
+        {!loading &&
           list((channel, _) => {
             const isSelect = channel.roomId === selectId;
-            const isJoined = joinedChannelList?.findIndex((chan) => chan.roomId === channel.roomId);
+            const isJoined = joinedChannelList?.findIndex(
+              chan => chan.roomId === channel.roomId,
+            );
             return (
               <ChannelItem
                 key={channel.roomId}
@@ -115,8 +119,7 @@ const ChannelItems = ({
                 isJoin={isJoined === -1}
               />
             );
-          })
-        }
+          })}
       </ul>
     </Scrollbars>
   );

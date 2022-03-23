@@ -76,17 +76,16 @@ const MessageView = ({
   const callLiveMeet = useCallback(() => {
     // TODO: 다국어 처리
     const msgObj = {
-      title: '화상회의',
+      title: covi.getDic('VideoConferencing', '화상회의'),
       context:
         liveMeet.type == 'jitsi'
-          ? '화상회의(' +
-            liveMeet.domain +
-            '/' +
-            roomInfo.roomID +
-            '에 참석해주세요'
-          : '화상회의에 참석해주세요',
+          ? `${covi.getDic(
+              'Msg_JoinVideoConference',
+              '화상회의에 참석해주세요.',
+            )} ( ${liveMeet.domain}/${roomInfo.roomID} )`
+          : covi.getDic('Msg_JoinVideoConference', '화상회의에 참석해주세요.'),
       func: {
-        name: '페이지로 이동',
+        name: covi.getDic('GoToPage', '페이지로 이동'),
         type: 'link',
         data: {
           baseURL: `${Config.ServerURL.HOST}/manager/liveMeetGate.do?type=${liveMeet.type}&rKey=${channelInfo.roomId}`,
@@ -117,7 +116,8 @@ const MessageView = ({
   const roomName = useMemo(() => {
     const refWord = `(Enter ${covi.getDic(
       'Send',
-    )} / Shift + Enter ${covi.getDic('NewLine')})`;
+      '전송',
+    )} / Shift + Enter ${covi.getDic('NewLine', '개행')})`;
     return `${channelInfo.roomName}(${channelInfo.categoryName}) ${refWord}`;
   }, [channelInfo]);
 

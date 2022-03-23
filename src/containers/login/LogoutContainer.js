@@ -14,7 +14,7 @@ const LogoutContainer = ({ history }) => {
     common.openPopup(
       {
         type: 'Confirm',
-        message: covi.getDic('Msg_logout'),
+        message: covi.getDic('Msg_logout', '로그아웃하시겠습니까?'),
         callback: result => {
           if (result) {
             const data = {

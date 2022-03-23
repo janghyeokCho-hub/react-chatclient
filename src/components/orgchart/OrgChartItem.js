@@ -49,7 +49,7 @@ const OrgChartItem = ({ result }) => {
             onClick: () => {
               addContact(dispatch, result);
             },
-            name: covi.getDic('AddContact'),
+            name: covi.getDic('AddContact', '내 대화상대 추가'),
           });
         } else {
           orgType = 'C';
@@ -61,10 +61,10 @@ const OrgChartItem = ({ result }) => {
             syncFavorite({
               op: 'add',
               userInfo: result,
-              folderType: orgType
+              folderType: orgType,
             });
           },
-          name: covi.getDic('AddFavorite'),
+          name: covi.getDic('AddFavorite', '즐겨찾기 추가'),
         });
       }
     } else {
@@ -75,7 +75,7 @@ const OrgChartItem = ({ result }) => {
           onClick: () => {
             addContact(dispatch, result);
           },
-          name: covi.getDic('AddContact'),
+          name: covi.getDic('AddContact', '내 대화상대 추가'),
         });
       }
     }
@@ -98,12 +98,15 @@ const OrgChartItem = ({ result }) => {
           openPopup(
             {
               type: 'Alert',
-              message: covi.getDic('Msg_GroupInviteError'),
+              message: covi.getDic(
+                'Msg_GroupInviteError',
+                '해당 그룹은 그룹채팅을 시작할 수 없습니다.',
+              ),
             },
             dispatch,
           );
       },
-      name: covi.getDic('StartChat'),
+      name: covi.getDic('StartChat', '대화시작'),
     });
 
     return returnMenu;
