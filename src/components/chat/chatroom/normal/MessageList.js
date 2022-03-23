@@ -37,6 +37,7 @@ import { getMessage } from '@/lib/messageUtil';
 import { deleteChatroomMessage } from '@/lib/message';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import ShareContainer from '@C/share/ShareContainer';
+import { checkFileTokenValidation } from '@/lib/fileUpload/coviFile';
 
 const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const tempMessage = useSelector(({ message }) => message.tempMessage);
@@ -356,14 +357,18 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const getMenuData = useCallback(
     message => {
       const menus = [];
-      // console.log(message);
       if (message.messageType != 'S' && message.messageType != 'I') {
         let messageType = 'message';
         if (eumTalkRegularExp.test(message.context)) {
           const processMsg = convertEumTalkProtocol(message.context);
           messageType = processMsg.type;
         }
-        if (messageType == 'message') {
+
+        if (message.fileInfos !== null) {
+          messageType = 'files';
+        }
+
+        if (messageType === 'message') {
           menus.push({
             code: 'copyClipboardMessage',
             isline: false,
@@ -385,10 +390,17 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
             code: 'shareMessage',
             isline: false,
             onClick: () => {
+              if (messageType !== 'message') {
+                const files = JSON.parse(message.fileInfos);
+                console.log(files);
+                // checkFileTokenValidation()
+              } else {
+              }
               openLayer(
                 {
                   component: (
                     <ShareContainer
+                      messageType={messageType}
                       headerName={covi.getDic('Msg_Note_Forward', '전달하기')}
                       message={message.context}
                     />
@@ -399,8 +411,61 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
             },
             name: covi.getDic('Forward', '전달'),
           });
+        } else if (messageType === 'files') {
+          menus.push({
+            code: 'shareMessage',
+            isline: false,
+            onClick: async () => {
+              let files = JSON.parse(message.fileInfos);
+              if (!Array.isArray(files) && files) {
+                files = Array(files);
+              }
+              files = files.map(item => item.token);
+              const result = await checkFileTokenValidation({
+                token: files,
+                serviceType: 'CHAT',
+              });
+              if (result.status === 204) {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: covi.getDic('Msg_FileExpired'),
+                  },
+                  dispatch,
+                );
+                return;
+              } else if (result.status === 403) {
+                openPopup(
+                  {
+                    type: 'Alert',
+                    message: covi.getDic('Msg_FilePermission'),
+                  },
+                  dispatch,
+                );
+                return;
+              } else {
+                openLayer(
+                  {
+                    component: (
+                      <ShareContainer
+                        headerName={covi.getDic('Msg_Note_Forward')}
+                        message={message}
+                        messageType={messageType}
+                      />
+                    ),
+                  },
+                  dispatch,
+                );
+              }
+            },
+            name: covi.getDic('Forward'),
+          });
         }
-        if (useMessageDelete && message?.isMine === 'Y') {
+        if (
+          messageType !== 'files' &&
+          useMessageDelete &&
+          message?.isMine === 'Y'
+        ) {
           menus.push({
             name: covi.getDic('Delete', '삭제'),
             code: 'deleteMessage',
