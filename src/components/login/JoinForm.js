@@ -49,7 +49,7 @@ const JoinForm = ({ location, history }) => {
       openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_InvalidApproach'), // 잘못된 접근입니다.
+          message: covi.getDic('Msg_InvalidApproach', '잘못된 접근입니다.'),
           callback: () => {
             history.goBack();
           },
@@ -79,11 +79,17 @@ const JoinForm = ({ location, history }) => {
             let alertMsg = '';
             if (data.status == 'SUCCESS') {
               // 로딩중 끝
-              alertMsg = covi.getDic('Msg_JoinSuccess');
+              alertMsg = covi.getDic('Msg_JoinSuccess', '가입되었습니다.');
             } else if (data.status == 'FAIL') {
-              alertMsg = covi.getDic('Msg_JoinFail');
+              alertMsg = covi.getDic(
+                'Msg_JoinFail',
+                '초대된 사용자가 아닙니다.',
+              );
             } else if (data.status == 'ERROR') {
-              alertMsg = covi.getDic('Msg_Error');
+              alertMsg = covi.getDic(
+                'Msg_Error',
+                '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+              );
             }
             openPopup(
               {
@@ -119,15 +125,18 @@ const JoinForm = ({ location, history }) => {
 
   const checkValidation = useCallback(() => {
     if (email == '') {
-      return covi.getDic('Msg_MissingItems');
+      return covi.getDic('Msg_MissingItems', '누락된 항목이 존재합니다.');
     } else if (password == '') {
-      return covi.getDic('Msg_MissingItems');
+      return covi.getDic('Msg_MissingItems', '누락된 항목이 존재합니다.');
     } else if (passwordChk == '') {
-      return covi.getDic('Msg_MissingItems');
+      return covi.getDic('Msg_MissingItems', '누락된 항목이 존재합니다.');
     } else if (name == '') {
-      return covi.getDic('Msg_MissingItems');
+      return covi.getDic('Msg_MissingItems', '누락된 항목이 존재합니다.');
     } else if (password !== passwordChk) {
-      return covi.getDic('Msg_ComparePwdErr');
+      return covi.getDic(
+        'Msg_ComparePwdErr',
+        '비밀번호와 비밀번호 확인이 일치하지 않습니다.',
+      );
     } else {
       return true;
     }
@@ -137,23 +146,28 @@ const JoinForm = ({ location, history }) => {
     <div className="LoginWrap">
       <div className="JoinBox">
         <div className="JoinBox_inputWrap">
-          <p className="JoinBox_tit">{covi.getDic('GenAccount')}</p>
+          <p className="JoinBox_tit">
+            {covi.getDic('GenAccount', '계정 생성')}
+          </p>
           <div className="JoinBox_info">
             <p
               className="JoinBox_info_p"
               dangerouslySetInnerHTML={{
-                __html: covi.getDic('Msg_JoinExUser'),
+                __html: covi.getDic(
+                  'Msg_JoinExUser',
+                  '외부사용자 계정을 생성합니다.<br />계정 생성 시, 초대된 채널에 가입됩니다.',
+                ),
               }}
             ></p>
           </div>
           <div className="input full">
             <label className="string optional" for="secretCode">
-              {covi.getDic('SecretCode')}
+              {covi.getDic('SecretCode', '인증코드')}
               <span className="tx_must">*</span>
             </label>
             <input
               className="string optional"
-              placeholder={covi.getDic('SecretCode')}
+              placeholder={covi.getDic('SecretCode', '인증코드')}
               type="text"
               value={secretCode}
               disabled="disabled"
@@ -161,12 +175,12 @@ const JoinForm = ({ location, history }) => {
           </div>
           <div className="input full">
             <label className="string optional" for="email">
-              {covi.getDic('Email')}
+              {covi.getDic('Email', '이메일')}
               <span className="tx_must">*</span>
             </label>
             <input
               className="string optional"
-              placeholder={covi.getDic('Email')}
+              placeholder={covi.getDic('Email', '이메일')}
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -174,18 +188,21 @@ const JoinForm = ({ location, history }) => {
             <p
               className="email_info"
               dangerouslySetInnerHTML={{
-                __html: covi.getDic('Msg_JoinExEmail'),
+                __html: covi.getDic(
+                  'Msg_JoinExEmail',
+                  '로그인 시 사용할 이메일 입니다.<br/>초대 메일을 받은 이메일 주소를 입력해주세요.',
+                ),
               }}
             ></p>
           </div>
           <div className="input full">
             <label className="string optional" for="password">
-              {covi.getDic('Password')}
+              {covi.getDic('Password', '비밀번호')}
               <span className="tx_must">*</span>
             </label>
             <input
               className="string optional"
-              placeholder={covi.getDic('Password')}
+              placeholder={covi.getDic('Password', '비밀번호')}
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
@@ -193,20 +210,20 @@ const JoinForm = ({ location, history }) => {
           </div>
           <div className="input full">
             <label className="string optional" for="password">
-              {covi.getDic('PasswordConfirm')}
+              {covi.getDic('PasswordConfirm', '비밀번호 확인')}
               <span className="tx_must">*</span>
             </label>
             <input
               className="string optional"
-              placeholder={covi.getDic('PasswordConfirm')}
+              placeholder={covi.getDic('PasswordConfirm', '비밀번호 확인')}
               type="password"
               value={passwordChk}
               onChange={e => setPasswordChk(e.target.value)}
             />
           </div>
           {/* 2021.06.29
-            * '이름'필드의 제목을 커스터마이징 할 경우가 아니라면
-            * InviteExtUser_Name 다국어를 추가하지 않는다.
+           * '이름'필드의 제목을 커스터마이징 할 경우가 아니라면
+           * InviteExtUser_Name 다국어를 추가하지 않는다.
            */}
           <div className="input full">
             <label className="string optional" for="name">
@@ -215,7 +232,10 @@ const JoinForm = ({ location, history }) => {
             </label>
             <input
               className="string optional"
-              placeholder={covi.getDic('InviteExtUser_Name', covi.getDic('Name'))}
+              placeholder={covi.getDic(
+                'InviteExtUser_Name',
+                covi.getDic('Name'),
+              )}
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
@@ -223,7 +243,7 @@ const JoinForm = ({ location, history }) => {
           </div>
         </div>
         <button className="LoginBtn Type1" type="button" onClick={handleClick}>
-          {covi.getDic('Join')}
+          {covi.getDic('Join', '가입하기')}
         </button>
         {!agentDetect.mobile() && (
           <div className="LoginBottom">
@@ -232,7 +252,10 @@ const JoinForm = ({ location, history }) => {
                 history.push('/client/login');
               }}
             >
-              {covi.getDic('Msg_ExExistAccount')}
+              {covi.getDic(
+                'Msg_ExExistAccount',
+                '이미 계정이 있으세요? 로그인하기',
+              )}
             </a>
           </div>
         )}

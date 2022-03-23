@@ -62,7 +62,7 @@ export const messageCopy = (messages, startID, endID) => {
             if (typeof message.senderInfo === 'string') {
               senderInfo = JSON.parse(message.senderInfo);
             } else senderInfo = message.senderInfo;
-            let senderName = '알수없는사용자';
+            let senderName = covi.getDic('UnknownUser', '알 수 없는 사용자');
             if (senderInfo != null) {
               senderName = getJobInfo(senderInfo);
             }
@@ -70,12 +70,12 @@ export const messageCopy = (messages, startID, endID) => {
               copiedMessage += `[${senderName}] [${format(
                 new Date(message.sendDate),
                 'a hh:mm',
-              )}] (${covi.getDic('Emoticon')}) \r\n`;
+              )}] (${covi.getDic('Emoticon', '이모티콘')}) \r\n`;
             } else if (message.context.length <= 0) {
               copiedMessage += `[${senderName}] [${format(
                 new Date(message.sendDate),
                 'a hh:mm',
-              )}] (${covi.getDic('File')}) \r\n`;
+              )}] (${covi.getDic('File', '파일')}) \r\n`;
             } else {
               copiedMessage += `[${senderName}] [${format(
                 new Date(message.sendDate),

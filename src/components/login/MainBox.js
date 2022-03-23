@@ -32,13 +32,13 @@ const MainBox = () => {
         <h1 className="logo-img"></h1>
         <div>
           <LinkButton to="/client/login" className="LoginBtn Type1">
-            {covi.getDic('EmployeeLogin')}
+            {covi.getDic('EmployeeLogin', '임직원 로그인')}
           </LinkButton>
           <LinkButton
             to="/client/login?type=external"
             className="LoginBtn Type2"
           >
-            {covi.getDic('ExternalLogin')}
+            {covi.getDic('ExternalLogin', '외부사용자 로그인')}
           </LinkButton>
         </div>
         <SelectBox
@@ -49,7 +49,10 @@ const MainBox = () => {
             openPopup(
               {
                 type: 'Confirm',
-                message: covi.getDic('Msg_ApplyAndRefresh'),
+                message: covi.getDic(
+                  'Msg_ApplyAndRefresh',
+                  '적용을 위해 모든창이 닫히고 앱이 새로고침 됩니다. 진행하시겠습니까?',
+                ),
                 callback: result => {
                   if (result) {
                     localStorage.setItem('covi_user_lang', item.value);

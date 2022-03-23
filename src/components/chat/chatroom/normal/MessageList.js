@@ -35,7 +35,6 @@ import { hasClass, messageCopy, getMsgElement } from '@/lib/util/domUtil';
 import { evalConnector } from '@/lib/deviceConnector';
 import { getMessage } from '@/lib/messageUtil';
 import { deleteChatroomMessage } from '@/lib/message';
-import { roomMessageDelete } from '@/modules/room';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import ShareContainer from '@C/share/ShareContainer';
 
@@ -372,15 +371,15 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               openPopup(
                 {
                   type: 'Alert',
-                  message: covi.getDic('Msg_Copy'),
-                  callback: result => {
+                  message: covi.getDic('Msg_Copy', '복사되었습니다.'),
+                  callback: () => {
                     navigator.clipboard.writeText(message.context);
                   },
                 },
                 dispatch,
               );
             },
-            name: covi.getDic('Copy'),
+            name: covi.getDic('Copy', '내용 복사'),
           });
           menus.push({
             code: 'shareMessage',
@@ -390,7 +389,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                 {
                   component: (
                     <ShareContainer
-                      headerName={covi.getDic('Msg_Note_Forward')}
+                      headerName={covi.getDic('Msg_Note_Forward', '전달하기')}
                       message={message.context}
                     />
                   ),
@@ -398,19 +397,22 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                 dispatch,
               );
             },
-            name: covi.getDic('Forward'),
+            name: covi.getDic('Forward', '전달'),
           });
         }
         if (useMessageDelete && message?.isMine === 'Y') {
           menus.push({
-            name: covi.getDic('Delete'),
+            name: covi.getDic('Delete', '삭제'),
             code: 'deleteMessage',
             isline: false,
             onClick() {
               openPopup(
                 {
                   type: 'Confirm',
-                  message: covi.getDic('Msg_ChatroomDeleteMsg'),
+                  message: covi.getDic(
+                    'Msg_ChatroomDeleteMsg',
+                    '메시지를 삭제하시겠습니까? 삭제 후 복원이 불가하며, 채팅방 동기화 후 화면에 보여지지 않습니다.',
+                  ),
                   async callback(result) {
                     if (!result) {
                       return;
@@ -431,11 +433,20 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                       //   }),
                       // );
                     } catch (err) {
-                      console.log('deleteChatroomMessage occured an error: ', err);
-                      openPopup({
-                        type: 'Alert',
-                        message: covi.getDic('Msg_Error')
-                      }, dispatch);
+                      console.log(
+                        'deleteChatroomMessage occured an error: ',
+                        err,
+                      );
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: covi.getDic(
+                            'Msg_Error',
+                            '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+                          ),
+                        },
+                        dispatch,
+                      );
                     }
                   },
                 },

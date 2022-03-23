@@ -237,7 +237,7 @@ const File = ({ type, item, preview, id, isTemp, index, len }) => {
                 {isTemp ? item.fullName : item.fileName}
               </p>
               <p className="file-size">
-                {covi.getDic('FileSize')} {convertFileSize(item.size)}
+                {covi.getDic('FileSize', '용량')} {convertFileSize(item.size)}
               </p>
             </div>
 

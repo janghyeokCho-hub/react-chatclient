@@ -30,7 +30,7 @@ const FileMenuBox = ({
           <>
             {onPreview && typeof onPreview === 'function' && (
               <span className="file-func-txt" onClick={onPreview}>
-                {covi.getDic('Preview')}
+                {covi.getDic('Preview', '미리보기')}
               </span>
             )}
             {onDownload && typeof onDownload === 'function' && (
@@ -39,7 +39,7 @@ const FileMenuBox = ({
                   fileAttachViewMode[0].type === 'PC' &&
                   fileAttachViewMode[0].Download === true && (
                     <span className="file-func-txt" onClick={onDownload}>
-                      {covi.getDic('Save')}
+                      {covi.getDic('Save', '저장')}
                     </span>
                   )}
               </>
@@ -50,7 +50,7 @@ const FileMenuBox = ({
               fileAttachViewMode[0].type === 'PC' &&
               fileAttachViewMode[0].Download === true && (
                 <span className="file-func-txt" onClick={onDownloadWithOpen}>
-                  {covi.getDic('SaveAndOpen')}
+                  {covi.getDic('SaveAndOpen', '저장 후 열기')}
                 </span>
               )}
           </>
@@ -62,7 +62,7 @@ const FileMenuBox = ({
         fileAttachViewMode[0].type === 'PC' &&
         fileAttachViewMode[0].Viewer === true && (
           <span className="file-func-txt" onClick={onViewer}>
-            {covi.getDic('RunViewer')}
+            {covi.getDic('RunViewer', '뷰어로 열기')}
           </span>
         )}
 
@@ -70,14 +70,14 @@ const FileMenuBox = ({
         <>
           {onPreview && typeof onPreview === 'function' && (
             <span className="file-func-txt" onClick={onPreview}>
-              {covi.getDic('Preview')}
+              {covi.getDic('Preview', '미리보기')}
             </span>
           )}
           <span className="file-func-txt" onClick={handleOpenFile}>
-            {covi.getDic('Open')}
+            {covi.getDic('Open', '열기')}
           </span>
           <span className="file-func-txt" onClick={handleOpenPath}>
-            {covi.getDic('OpenFolder')}
+            {covi.getDic('OpenFolder', '폴더 열기')}
           </span>
         </>
       )}

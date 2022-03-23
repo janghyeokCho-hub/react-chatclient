@@ -465,10 +465,10 @@ export const downloadByTokenAll = async (
 
   if (expiredCheck) {
     check = false;
-    message = covi.getDic('Msg_FileExpired');
+    message = covi.getDic('Msg_FileExpired', '만료된 파일입니다.');
   } else if (permissionCheck) {
     check = false;
-    message = covi.getDic('Msg_FilePermission');
+    message = covi.getDic('Msg_FilePermission', '권한이 없는 파일입니다.');
   } else {
     // 압축 여부
     if (isZip) {
@@ -513,11 +513,14 @@ const downloadFiles = (
 
   messageApi.getFileByToken({ token }, progress).then(response => {
     if (response.status == 204) {
-      callback({ result: 'EXPIRED', message: covi.getDic('Msg_FileExpired') });
+      callback({
+        result: 'EXPIRED',
+        message: covi.getDic('Msg_FileExpired', '만료된 파일입니다.'),
+      });
     } else if (response.status == 403) {
       callback({
         result: 'FORBIDDEN',
-        message: covi.getDic('Msg_FilePermission'),
+        message: covi.getDic('Msg_FilePermission', '권한이 없는 파일입니다.'),
       });
     } else {
       if (DEVICE_TYPE == 'b') {
@@ -668,18 +671,25 @@ export const openFilePreview = (file, files, type, params) => {
 
 export const getValidationMessage = type => {
   if (type == 'LIMIT_FILE_COUNT') {
-    return getSysMsgFormatStr(covi.getDic('Msg_LimitFileCnt'), [
-      { type: 'Plain', data: getConfig('File.limitFileCnt') },
-    ]);
+    return getSysMsgFormatStr(
+      covi.getDic('Msg_LimitFileCnt', '파일 첨부 최대 갯수는 %s개 입니다.'),
+      [{ type: 'Plain', data: getConfig('File.limitFileCnt') }],
+    );
   } else if (type == 'LIMIT_FILE_SIZE') {
-    return getSysMsgFormatStr(covi.getDic('Msg_LimitFileSize'), [
-      {
-        type: 'Plain',
-        data: convertFileSize(getConfig('File.limitUnitFileSize')),
-      },
-    ]);
+    return getSysMsgFormatStr(
+      covi.getDic(
+        'Msg_LimitFileSize',
+        '첨부파일의 단일사이즈 제한은 %s 입니다.',
+      ),
+      [
+        {
+          type: 'Plain',
+          data: convertFileSize(getConfig('File.limitUnitFileSize')),
+        },
+      ],
+    );
   } else if (type == 'LIMIT_FILE_EXTENSION') {
-    return covi.getDic('Msg_LimitFileExt');
+    return covi.getDic('Msg_LimitFileExt', '제한된 확장자 입니다.');
   }
 };
 

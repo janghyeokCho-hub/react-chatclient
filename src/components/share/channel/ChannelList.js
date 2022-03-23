@@ -96,7 +96,7 @@ const ChannelList = ({ channels, checkObj }) => {
   return (
     <>
       <SearchBar
-        placeholder={covi.getDic('Msg_chatSearch')}
+        placeholder={covi.getDic('Msg_chatSearch', '방 이름, 참여자 검색')}
         input={searchText}
         onChange={e => {
           handleSearch(e.target.value);

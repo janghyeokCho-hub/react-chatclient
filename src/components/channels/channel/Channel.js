@@ -236,7 +236,10 @@ const Channel = ({ match, channelInfo }) => {
       {!loading && roomId && (
         <>
           {isNewWin && (
-            <div className="Chat Newwindow" style={{ fontFamily: fontType === 'Default' ? null : fontType }}>
+            <div
+              className="Chat Newwindow"
+              style={{ fontFamily: fontType === 'Default' ? null : fontType }}
+            >
               {DEVICE_TYPE == 'd' && channel && (
                 <ChatBackground background={channel.background} />
               )}
@@ -304,7 +307,9 @@ const Channel = ({ match, channelInfo }) => {
           )}
         </>
       )}
-      {!loading && !roomId && <div>{covi.getDic('Msg_InvalidApproach')}</div>}
+      {!loading && !roomId && (
+        <div>{covi.getDic('Msg_InvalidApproach', '잘못된 접근입니다.')}</div>
+      )}
       {/* 채널 정보 수정 팝업 */}
       <ChannelInfoPopup />
     </>

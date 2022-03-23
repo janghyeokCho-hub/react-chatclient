@@ -183,7 +183,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
                   openPopup(
                     {
                       type: 'Alert',
-                      message: covi.getDic('Msg_Copy'),
+                      message: covi.getDic('Msg_Copy', '복사되었습니다.'),
                       callback: async () => {
                         const context = await makeMessage(message.context);
                         navigator.clipboard.writeText(context);
@@ -192,7 +192,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
                     dispatch,
                   );
                 },
-                name: covi.getDic('Copy'),
+                name: covi.getDic('Copy', '내용 복사'),
               },
               {
                 code: 'shareMessage',
@@ -202,7 +202,10 @@ const MessageList = ({ onExtension, viewExtension }) => {
                     {
                       component: (
                         <ShareContainer
-                          headerName={covi.getDic('Msg_Note_Forward')}
+                          headerName={covi.getDic(
+                            'Msg_Note_Forward',
+                            '전달하기',
+                          )}
                           message={message.context}
                         />
                       ),
@@ -210,7 +213,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
                     dispatch,
                   );
                 },
-                name: covi.getDic('Forward'),
+                name: covi.getDic('Forward', '전달'),
               },
               {
                 code: 'setNoticeMessage',
@@ -219,7 +222,10 @@ const MessageList = ({ onExtension, viewExtension }) => {
                   openPopup(
                     {
                       type: 'Confirm',
-                      message: covi.getDic('Msg_RegNotice'),
+                      message: covi.getDic(
+                        'Msg_RegNotice',
+                        '공지는 1건만 등록됩니다. 해당 메시지를 공지로 등록하시겠습니까?',
+                      ),
                       callback: result => {
                         if (result) {
                           setChannelNotice({
@@ -231,7 +237,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
                     dispatch,
                   );
                 },
-                name: covi.getDic('Notice'),
+                name: covi.getDic('Notice', 'Notice'),
               },
             );
           }
@@ -245,7 +251,10 @@ const MessageList = ({ onExtension, viewExtension }) => {
               openPopup(
                 {
                   type: 'Confirm',
-                  message: covi.getDic('Msg_DeleteMsg'),
+                  message: covi.getDic(
+                    'Msg_DeleteMsg',
+                    '메시지를 삭제하시겠습니까? 삭제 후 복원이 불가하며, 채널 동기화 후 화면에 보여지지 않습니다.',
+                  ),
                   callback: result => {
                     if (result) {
                       let token = [];
@@ -269,7 +278,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
                 dispatch,
               );
             },
-            name: covi.getDic('Delete'),
+            name: covi.getDic('Delete', '삭제'),
           });
         }
       }
@@ -351,7 +360,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
               className="meassage-newline"
               id="newMessageSeperator"
             >
-              <p>여기까지 읽었습니다.</p>
+              <p>{covi.getDic('Msg_readFar', '여기까지 읽었습니다.')}</p>
             </li>,
           );
           setTimeout(() => {
@@ -460,8 +469,13 @@ const MessageList = ({ onExtension, viewExtension }) => {
                   setClickNewMessageSeperator(true);
                 }}
               >
-                <span>읽지않은 첫번째 메시지로 이동</span>
-                <span className="ico-arrow"></span>
+                <span></span>
+                <span className="ico-arrow">
+                  {covi.getDic(
+                    'MoveToFirstUnreadMessage',
+                    '읽지 않은 첫번째 메세지로 이동',
+                  )}
+                </span>
               </span>
               <span
                 style={{ position: 'absolute', right: '-25px', top: '7px' }}

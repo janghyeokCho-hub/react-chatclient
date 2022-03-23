@@ -73,7 +73,7 @@ const ChatSettingBox = ({ info, isChannel }) => {
         <div className="modalheader">
           <a className="closebtn" onClick={handleClose}></a>
           <div className="modaltit">
-            <p>{covi.getDic('ChatRoomSetting')}</p>
+            <p>{covi.getDic('ChatRoomSetting', '채팅방 설정')}</p>
           </div>
         </div>
         <div style={{ width: '100%' }}>
@@ -96,7 +96,7 @@ const ChatSettingBox = ({ info, isChannel }) => {
                     setLockInput(changeVal);
                   }}
                 >
-                  <span>{covi.getDic('LockInput')}</span>
+                  <span>{covi.getDic('LockInput', '입력창 잠금')}</span>
                 </a>
               </li>
             </ul>

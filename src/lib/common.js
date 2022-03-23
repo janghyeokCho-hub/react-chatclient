@@ -61,7 +61,8 @@ export const removeDuplicates = (jsonArray, key) => {
 // URL 정규식 체크
 // const urlRegularExp = /(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?/gm;
 // const urlRegularExp = /(?:(?:(https?):\/\/)((?:[\w$\-_\.+!*\'\(\),]|%[0-9a-f][0-9a-f])*\:(?:[\w$\-_\.+!*\'\(\),;\?&=]|%[0-9a-f][0-9a-f])+\@)?(?:((?:(?:[a-z0-9\-가-힣]+\.)+[a-z0-9\-]{2,})|(?:[\d]{1,3}\.){3}[\d]{1,3})|localhost)(?:\:([0-9]+))?((?:\/(?:[\w$\-_\.+!*\'\(\),;:@&=ㄱ-ㅎㅏ-ㅣ가-힣]|%[0-9a-f][0-9a-f])+)*)(?:\/([^\s\/\?\.:<>|#]*(?:\.[^\s\/\?:<>|#]+)*))?(\/?[\?;](?:[a-z0-9\-]+(?:=[^\s:&<>]*)?\&)*[a-z0-9\-]+(?:=[^\s:&<>]*)?)?(#[\w\-]+)?)/gim;
-const urlRegularExp = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
+const urlRegularExp =
+  /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
 export const eumTalkRegularExp =
   /eumtalk:\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gim;
 
@@ -168,7 +169,7 @@ export const convertEumTalkProtocolPreview = message => {
     if (type == 'emoticon') {
       // emoticon이 포함된 메시지는 별도의 처리없이 drawtext를 emoticon으로 대체
       returnObj.type = 'emoticon';
-      returnObj.message = covi.getDic('Emoticon');
+      returnObj.message = covi.getDic('Emoticon', '이모티콘');
       return item;
     } else {
       if (type == 'mention') {
@@ -211,7 +212,7 @@ export const convertEumTalkProtocolPreviewForChannelItem = async message => {
     if (type == 'emoticon') {
       // emoticon이 포함된 메시지는 별도의 처리없이 drawtext를 emoticon으로 대체
       returnObj.type = 'emoticon';
-      returnObj.message = covi.getDic('Emoticon');
+      returnObj.message = covi.getDic('Emoticon', '이모티콘');
       return item;
     } else {
       if (type == 'mention') {

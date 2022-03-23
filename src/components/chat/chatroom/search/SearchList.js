@@ -134,7 +134,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
               openPopup(
                 {
                   type: 'Alert',
-                  message: covi.getDic('Msg_Copy'),
+                  message: covi.getDic('Msg_Copy', '복사되었습니다.'),
                   callback: result => {
                     navigator.clipboard.writeText(message.context);
                   },
@@ -142,7 +142,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                 dispatch,
               );
             },
-            name: covi.getDic('Copy'),
+            name: covi.getDic('Copy', '내용 복사'),
           });
         }
       }

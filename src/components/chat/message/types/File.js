@@ -148,7 +148,10 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
         }
         let message;
         if (!err) {
-          message = getDic('Msg_Error');
+          message = getDic(
+            'Msg_Error',
+            '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+          );
         } else if (err.response.status === 500) {
           // '파일이 만료되었거나 문서 변환 오류가 발생했습니다.;The file has already expired or failed to convert from the server'
           message = getDic(
@@ -361,7 +364,7 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
                 {isTemp ? item.fullName : item.fileName}
               </p>
               <p className="file-size">
-                {covi.getDic('FileSize')}{' '}
+                {covi.getDic('FileSize', '용량')}{' '}
                 {!inprogress && convertFileSize(item.size)}{' '}
                 {inprogress &&
                   total &&

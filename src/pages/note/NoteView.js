@@ -126,16 +126,28 @@ function _DrawFile({
               execute: true,
               isZip: false,
             });
-            _popupResult(dispatch, covi.getDic('Msg_Save'));
+            _popupResult(dispatch, covi.getDic('Msg_Save', '저장되었습니다.'));
           }
         } else if (response.status === 204) {
-          _popupResult(dispatch, covi.getDic('Msg_FileExpired'));
+          _popupResult(
+            dispatch,
+            covi.getDic('Msg_FileExpired', '만료된 파일입니다.'),
+          );
         } else if (response.status === 403) {
-          _popupResult(dispatch, covi.getDic('Msg_FilePermission'));
+          _popupResult(
+            dispatch,
+            covi.getDic('Msg_FilePermission', '권한이 없는 파일입니다.'),
+          );
         }
       } catch (err) {
         console.log('FileSave Error   ', err);
-        _popupResult(dispatch, covi.getDic('Msg_Error'));
+        _popupResult(
+          dispatch,
+          covi.getDic(
+            'Msg_Error',
+            '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+          ),
+        );
       } finally {
         setIsSaving(false);
       }
@@ -170,10 +182,10 @@ function _DrawFile({
 
       if (expiredCheck) {
         check = false;
-        message = covi.getDic('Msg_FileExpired');
+        message = covi.getDic('Msg_FileExpired', '만료된 파일입니다.');
       } else if (permissionCheck) {
         check = false;
-        message = covi.getDic('Msg_FilePermission');
+        message = covi.getDic('Msg_FilePermission', '권한이 없는 파일입니다.');
       } else {
         if (Object.keys(JSZip?.files).length) {
           const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
@@ -186,9 +198,18 @@ function _DrawFile({
           });
         }
       }
-      _popupResult(dispatch, check ? covi.getDic('Msg_Save') : message);
+      _popupResult(
+        dispatch,
+        check ? covi.getDic('Msg_Save', '저장되었습니다.') : message,
+      );
     } catch (err) {
-      _popupResult(dispatch, covi.getDic('Msg_Error'));
+      _popupResult(
+        dispatch,
+        covi.getDic(
+          'Msg_Error',
+          '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+        ),
+      );
     } finally {
       setProgressData(null);
     }
@@ -204,15 +225,15 @@ function _DrawFile({
           htmlFor="user-name"
           style={{ cursor: 'inherit' }}
         >
-          {covi.getDic('AttachFile')}
+          {covi.getDic('AttachFile', '첨부파일')}
           {files.length > 1 && (
             <a
               className="Okbtn"
               onClick={progressData ? null : handleAllDownLoad}
             >
               {progressData
-                ? covi.getDic('Downloading')
-                : covi.getDic('AllSave')}
+                ? covi.getDic('Downloading', '다운로드중')
+                : covi.getDic('AllSave', '일괄저장')}
             </a>
           )}
         </label>
@@ -240,7 +261,9 @@ function _DrawFile({
                       {_convertFileSize(file.fileSize)}
                     </p>
                   </div>
-                  <a className="btn_download">{covi.getDic('Download')}</a>
+                  <a className="btn_download">
+                    {covi.getDic('Download', '다운로드')}
+                  </a>
                 </div>
               </li>
             );
@@ -462,7 +485,7 @@ export default function NoteView({ match }) {
       const result = await _popup(
         dispatch,
         'Confirm',
-        covi.getDic('Msg_Note_DeleteConfirm'),
+        covi.getDic('Msg_Note_DeleteConfirm', '정말 쪽지를 삭제하시겠습니까?'),
       );
       if (result === false) {
         return;
@@ -576,9 +599,12 @@ export default function NoteView({ match }) {
           <div className="progress-sticke">
             <div style={{ width: '100%' }}>
               <span>
-                {`${covi.getDic('Downloading')} ( ${convertFileSize(
-                  progressData.load,
-                )} / ${_convertFileSize(progressData.total)} )`}
+                {`${covi.getDic(
+                  'Downloading',
+                  '다운로드중',
+                )} ( ${convertFileSize(progressData.load)} / ${_convertFileSize(
+                  progressData.total,
+                )} )`}
               </span>
             </div>
             <div style={{ width: '100%' }}>
@@ -594,7 +620,7 @@ export default function NoteView({ match }) {
 
         <div className="layer-bottom-btn-wrap right">
           <a className="btn_delete" onClick={handleDeleteNote}>
-            {covi.getDic('Delete')}
+            {covi.getDic('Delete', '삭제')}
           </a>
           <a
             className="Btn-pointcolor-mini"

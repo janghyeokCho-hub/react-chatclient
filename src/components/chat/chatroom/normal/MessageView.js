@@ -30,7 +30,8 @@ const MessageView = ({
   const zoomMeet = getConfig('ZoomMeet');
   const useMessageCopy = getConfig('UseMessageCopy', true);
   const remoteAssistance = getConfig('UseRemoteView', 'N');
-  const useMessageDelete = getConfig('UseChatroomDeleteMessage', false) === true;
+  const useMessageDelete =
+    getConfig('UseChatroomDeleteMessage', false) === true;
 
   const getFilterMember = (members, id) => {
     if (members) {
@@ -88,10 +89,13 @@ const MessageView = ({
         const match = data.meeting_url.match(/\/([0-9]*)\?/);
         if (match[1]) {
           const msgObj = {
-            title: '화상회의(Zoom)',
-            context: `Zoom 회의초대:Meeting ID ${match[1]}`,
+            title: covi.getDic('VideoConferencing', '화상회의'),
+            context: `${covi.getDic(
+              'Msg_MeetingInvitation',
+              '회의 초대',
+            )}:Meeting ID ${match[1]}`,
             func: {
-              name: '회의에 참가하기',
+              name: covi.getDic('JoinMeeting', '회의에 참가하기'),
               type: 'link',
               data: {
                 baseURL: data.meeting_url,
@@ -229,10 +233,13 @@ const MessageView = ({
 
             // 5. 메시지 전송
             const msgObj = {
-              title: '화상회의',
-              context: '회의에 참석해주세요',
+              title: covi.getDic('VideoConferencing', '화상회의'),
+              context: covi.getDic(
+                'Msg_JoinVideoConference',
+                '화상회의에 참석해주세요.',
+              ),
               func: {
-                name: '페이지로 이동',
+                name: covi.getDic('GoToPage', '페이지로 이동'),
                 type: 'saeha',
                 data: {
                   ownerId: id,
@@ -248,7 +255,10 @@ const MessageView = ({
             openPopup(
               {
                 type: 'Alert',
-                message: '화상회의를 시작 할 수 없습니다.',
+                message: covi.getDic(
+                  'Msg_UnableVideoConference',
+                  '화상회의를 시작 할 수 없습니다.',
+                ),
                 callback: () => {
                   console.log(data);
                 },
@@ -261,7 +271,10 @@ const MessageView = ({
           openPopup(
             {
               type: 'Alert',
-              message: '화상회의를 시작 할 수 없습니다.',
+              message: covi.getDic(
+                'Msg_UnableVideoConference',
+                '화상회의를 시작 할 수 없습니다.',
+              ),
               callback: () => {
                 console.log(error);
               },
@@ -271,10 +284,13 @@ const MessageView = ({
         });
     } else {
       const msgObj = {
-        title: '화상회의',
-        context: '회의에 참석해주세요',
+        title: covi.getDic('VideoConferencing', '화상회의'),
+        context: covi.getDic(
+          'Msg_JoinVideoConference',
+          '화상회의에 참석해주세요.',
+        ),
         func: {
-          name: '페이지로 이동',
+          name: covi.getDic('GoToPage', '페이지로 이동'),
           type: 'link',
           data: {
             baseURL: `${Config.ServerURL.HOST}/manager/liveMeetGate.do?type=${liveMeet.type}&rKey=${roomInfo.roomID}&cu=${id}`,
@@ -298,10 +314,13 @@ const MessageView = ({
     sessionKey => {
       console.log(sessionKey);
       const msgObj = {
-        title: '원격지원',
-        context: '원격지원 요청입니다.',
+        title: covi.getDic('RemoteSupport', '원격지원'),
+        context: covi.getDic(
+          'Msg_RequestRemoteSupport',
+          '원격지원 요청입니다.',
+        ),
         func: {
-          name: '원격지원 수락',
+          name: covi.getDic('AcceptRemoteSupport', '원격지원 수락'),
           type: 'remote',
           data: {
             sessionKey: sessionKey,
@@ -316,7 +335,8 @@ const MessageView = ({
   const roomName = useMemo(() => {
     const refWord = `(Enter ${covi.getDic(
       'Send',
-    )} / Shift + Enter ${covi.getDic('NewLine')})`;
+      '전송',
+    )} / Shift + Enter ${covi.getDic('NewLine', '개행')})`;
     if (roomInfo.roomType === 'M') {
       const filterMember = getFilterMember(roomInfo.members, id);
       // M의 경우 남은 값이 1개
@@ -330,7 +350,7 @@ const MessageView = ({
       if (target) {
         return `${getDictionary(target.name)} ${refWord}`;
       } else {
-        return `${covi.getDic('NoChatMembers')} ${refWord}`;
+        return `${covi.getDic('NoChatMembers', '대화상대없음')} ${refWord}`;
       }
     } else {
       const filterMember = getFilterMember(roomInfo.members, id);
@@ -339,7 +359,7 @@ const MessageView = ({
       }
 
       if (filterMember.length == 0)
-        return `${covi.getDic('NoChatMembers')} ${refWord}`;
+        return `${covi.getDic('NoChatMembers', '대화상대없음')} ${refWord}`;
 
       const groupNames = filterMember.map((item, index) => {
         return getDictionary(item.name);
@@ -350,10 +370,13 @@ const MessageView = ({
         const otherCnt = groupNames.length - limitCnt;
 
         if (otherCnt > 0) {
-          return getSysMsgFormatStr(covi.getDic('Tmp_andOthers'), [
-            { type: 'Plain', data: spliceArr.join(', ') },
-            { type: 'Plain', data: otherCnt },
-          ]);
+          return getSysMsgFormatStr(
+            covi.getDic('Tmp_andOthers', '%s 외 %s명'),
+            [
+              { type: 'Plain', data: spliceArr.join(', ') },
+              { type: 'Plain', data: otherCnt },
+            ],
+          );
         } else {
           return spliceArr.join(', ');
         }
@@ -388,7 +411,11 @@ const MessageView = ({
         onNewWin={onNewWin}
         isNewWin={isNewWin}
       />
-      <MessageList onExtension={onExtension} viewExtension={viewExtension} useMessageDelete={useMessageDelete} />
+      <MessageList
+        onExtension={onExtension}
+        viewExtension={viewExtension}
+        useMessageDelete={useMessageDelete}
+      />
       <MessagePostBox
         postAction={postAction}
         viewExtension={viewExtension}

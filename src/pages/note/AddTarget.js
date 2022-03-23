@@ -24,8 +24,6 @@ export default function AddTarget({ oldMemberList, onChange, onRemove }) {
     setOldMembers(prevState => prevState.filter(item => item[key] !== value));
   }, []);
 
-
-
   const checkObj = useMemo(
     () => ({
       name: 'note_',
@@ -66,7 +64,7 @@ export default function AddTarget({ oldMemberList, onChange, onRemove }) {
           <span className="colortxt-point mr5">
             {members.length + oldMembers.length}
           </span>
-          {covi.getDic('Ok')}
+          {covi.getDic('Ok', '확인')}
         </a>
       </div>
       <div className="container AddUser">
@@ -102,7 +100,7 @@ export default function AddTarget({ oldMemberList, onChange, onRemove }) {
                 setSelectTab('C');
               }}
             >
-              {covi.getDic('Contact')}
+              {covi.getDic('Contact', '내 대화상대')}
             </a>
           </li>
           <li className={selectTab == 'O' ? 'active' : ''} data-tab="tab2">
@@ -111,7 +109,7 @@ export default function AddTarget({ oldMemberList, onChange, onRemove }) {
                 setSelectTab('O');
               }}
             >
-              {covi.getDic('OrgChart')}
+              {covi.getDic('OrgChart', '조직도')}
             </a>
           </li>
         </ul>

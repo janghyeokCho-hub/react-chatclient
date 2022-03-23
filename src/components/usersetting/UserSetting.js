@@ -221,7 +221,10 @@ const UserSetting = ({ history }) => {
         openPopup(
           {
             type: 'Alert',
-            message: covi.getDic('Msg_ImageExtError'),
+            message: covi.getDic(
+              'Msg_ImageExtError',
+              '프로필 이미지는 jpg 형식의 파일만 업로드 가능합니다.',
+            ),
             callback: () => {},
           },
           dispatch,
@@ -274,7 +277,10 @@ const UserSetting = ({ history }) => {
         openPopup(
           {
             type: 'Alert',
-            message: covi.getDic('Msg_UserInfoModify'),
+            message: covi.getDic(
+              'Msg_UserInfoModify',
+              '개인정보가 수정되었습니다.',
+            ),
             callback: () => {},
           },
           dispatch,
@@ -288,7 +294,7 @@ const UserSetting = ({ history }) => {
       openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_MissingItems'),
+          message: covi.getDic('Msg_MissingItems', '누락된 항목이 존재합니다.'),
           callback: () => {},
         },
         dispatch,
@@ -299,7 +305,10 @@ const UserSetting = ({ history }) => {
       openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_InputNewPasswordConfirm'),
+          message: covi.getDic(
+            'Msg_InputNewPasswordConfirm',
+            '새 비밀번호를 다시 입력하세요.',
+          ),
           callback: () => {},
         },
         dispatch,
@@ -318,7 +327,7 @@ const UserSetting = ({ history }) => {
         openPopup(
           {
             type: 'Alert',
-            message: covi.getDic('Msg_ModifySuccess'),
+            message: covi.getDic('Msg_ModifySuccess', '수정되었습니다.'),
             callback: () => {},
           },
           dispatch,
@@ -331,7 +340,10 @@ const UserSetting = ({ history }) => {
         openPopup(
           {
             type: 'Alert',
-            message: covi.getDic('Msg_WrongPassword'),
+            message: covi.getDic(
+              'Msg_WrongPassword',
+              '잘못된 비밀번호를 입력했습니다.<br/>비밀번호를 다시 입력해주세요.',
+            ),
             callback: () => {},
           },
           dispatch,
@@ -345,7 +357,10 @@ const UserSetting = ({ history }) => {
     openPopup(
       {
         type: 'Confirm',
-        message: covi.getDic('Msg_ConfirmChangeSecondPassword'),
+        message: covi.getDic(
+          'Msg_ConfirmChangeSecondPassword',
+          '2차 비밀번호를 변경하시겠습니까?',
+        ),
         callback: result => {
           if (result) {
             if (secondPassword && reSecondPassword) {
@@ -361,9 +376,15 @@ const UserSetting = ({ history }) => {
                 {
                   type: 'Alert',
                   message:
-                    covi.getDic('Msg_WrongSecondPassword') +
+                    covi.getDic(
+                      'Msg_WrongSecondPassword',
+                      '2차 비밀번호가 잘못 입력되었습니다',
+                    ) +
                     '\r\n' +
-                    covi.getDic('Msg_InputSecondPassword2'),
+                    covi.getDic(
+                      'Msg_InputSecondPassword2',
+                      '다시 한번 2차 비밀번호를 입력해주세요,',
+                    ),
                   callback: () => {},
                 },
                 dispatch,
@@ -398,7 +419,10 @@ const UserSetting = ({ history }) => {
     openPopup(
       {
         type: 'Confirm',
-        message: covi.getDic('Msg_reSyncConfirm'),
+        message: covi.getDic(
+          'Msg_reSyncConfirm',
+          '앱 데이터를 다시 동기화합니다. 진행하시겠습니까?',
+        ),
         callback: result => {
           if (result) {
             dispatch(logout());
@@ -432,7 +456,10 @@ const UserSetting = ({ history }) => {
     openPopup(
       {
         type: 'Confirm',
-        message: covi.getDic('Msg_ApplyAndRefresh'),
+        message: covi.getDic(
+          'Msg_ApplyAndRefresh',
+          '적용을 위해 모든창이 닫히고 앱이 새로고침 됩니다. 진행하시겠습니까?',
+        ),
         callback: result => {
           if (result) {
             handleConfig({ jobInfo });
@@ -527,21 +554,31 @@ const UserSetting = ({ history }) => {
           }}
         >
           <p style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 12 }}>
-            2차 비밀번호 설정
+            {covi.getDic('SecondPasswordSetting', '2차 비밀번호 설정')}
           </p>
-          <p style={{ fontWeight: 'bold' }}>2차 비밀번호</p>
+          <p style={{ fontWeight: 'bold' }}>
+            {covi.getDic('SecondPassword', '2차 비밀번호')}
+          </p>
           <input
             style={{
               border: '1px solid #ddd',
               padding: '8px 5px',
               borderRadius: 4,
             }}
-            placeholder={covi.getDic('Msg_ChangeSecondPassword')}
+            placeholder={covi.getDic(
+              'Msg_ChangeSecondPassword',
+              '변경할 2차 비밀번호를 입력해주세요.',
+            )}
             type="password"
             value={secondPassword}
             onChange={e => setSecondPassword(e.target.value)}
           />
-          <p style={{ fontWeight: 'bold' }}>2차 비밀번호 재입력</p>
+          <p style={{ fontWeight: 'bold' }}>
+            {covi.getDic(
+              'SecondPasswordReEntry',
+              '비밀번호 확인을 위해 다시 한번 입력바랍니다.',
+            )}
+          </p>
           <input
             style={{
               border: '1px solid #ddd',
@@ -549,7 +586,10 @@ const UserSetting = ({ history }) => {
               borderRadius: 4,
             }}
             type="password"
-            placeholder={covi.getDic('Msg_InputSecondPassword2')}
+            placeholder={covi.getDic(
+              'Msg_InputSecondPassword2',
+              '다시 한번 2차 비밀번호를 입력해주세요,',
+            )}
             value={reSecondPassword}
             onChange={e => setReSecondPassword(e.target.value)}
           />
@@ -575,7 +615,7 @@ const UserSetting = ({ history }) => {
               setSettingSecondPassword(false);
             }}
           >
-            {covi.getDic('Cancel')}
+            {covi.getDic('Cancel', '취소')}
           </button>
           <button
             style={{
@@ -590,7 +630,7 @@ const UserSetting = ({ history }) => {
               handleChangeSecondPassword();
             }}
           >
-            {covi.getDic('Save')}
+            {covi.getDic('Save', '저장')}
           </button>
         </div>
       </div>
@@ -604,7 +644,7 @@ const UserSetting = ({ history }) => {
               <a className="closebtn" onClick={() => history.goBack()} />
             )}
             <div className="modaltit">
-              <p>{covi.getDic('UserSetting')}</p>
+              <p>{covi.getDic('UserSetting', '환경설정')}</p>
             </div>
           </div>
           <div
@@ -619,21 +659,21 @@ const UserSetting = ({ history }) => {
                 }}
                 data-tab="tab1"
               >
-                <a>{covi.getDic('MyInfo')}</a>
+                <a>{covi.getDic('MyInfo', '개인정보')}</a>
               </li>
               <li
                 className={activeSettingTab == 'P' ? 'active' : ''}
                 onClick={e => setActiveSettingTab('P')}
                 data-tab="tab2"
               >
-                <a>{covi.getDic('Security')}</a>
+                <a>{covi.getDic('Security', '보안')}</a>
               </li>
               <li
                 className={activeSettingTab == 'G' ? 'active' : ''}
                 onClick={e => setActiveSettingTab('G')}
                 data-tab="tab3"
               >
-                <a>{covi.getDic('General')}</a>
+                <a>{covi.getDic('General', '일반')}</a>
               </li>
               {DEVICE_TYPE == 'd' && (
                 <li
@@ -641,7 +681,7 @@ const UserSetting = ({ history }) => {
                   onClick={e => setActiveSettingTab('N')}
                   data-tab="tab4"
                 >
-                  <a>{covi.getDic('Notification')}</a>
+                  <a>{covi.getDic('Notification', '알림')}</a>
                 </li>
               )}
               <li
@@ -649,7 +689,7 @@ const UserSetting = ({ history }) => {
                 onClick={e => setActiveSettingTab('C')}
                 data-tab="tab5"
               >
-                <a>{covi.getDic('ChatSetting')}</a>
+                <a>{covi.getDic('ChatSetting', '채팅')}</a>
               </li>
             </ul>
             <div
@@ -683,7 +723,7 @@ const UserSetting = ({ history }) => {
                           }}
                           className="config-profile-edit-btn"
                         >
-                          {covi.getDic('Modify')}
+                          {covi.getDic('Modify', '수정')}
                         </a>
                       )}
                     </li>
@@ -707,12 +747,15 @@ const UserSetting = ({ history }) => {
                       style={{ cursor: 'default' }}
                       className="string optional"
                     >
-                      {covi.getDic('Email')}
+                      {covi.getDic('Email', '이메일')}
                     </label>
                     {myInfo.isHR === 'N' ? (
                       <input
                         className="string optional"
-                        placeholder={covi.getDic('Msg_InputEmail')}
+                        placeholder={covi.getDic(
+                          'Msg_InputEmail',
+                          '이메일을 입력하세요.',
+                        )}
                         type="text"
                         value={email}
                         onChange={e => {
@@ -725,7 +768,10 @@ const UserSetting = ({ history }) => {
                       <input
                         style={{ cursor: 'default' }}
                         className="string optional value"
-                        placeholder={covi.getDic('Msg_modifyUserSetting')}
+                        placeholder={covi.getDic(
+                          'Msg_modifyUserSetting',
+                          '기본정보에서 수정바랍니다.',
+                        )}
                         value={email}
                         readOnly={true}
                       />
@@ -736,12 +782,15 @@ const UserSetting = ({ history }) => {
                       style={{ cursor: 'default' }}
                       className="string optional"
                     >
-                      {covi.getDic('PhoneNumber')}
+                      {covi.getDic('PhoneNumber', '연락처')}
                     </label>
                     {myInfo.isHR === 'N' ? (
                       <input
                         className="string optional"
-                        placeholder={covi.getDic('Msg_InputPhoneNumber')}
+                        placeholder={covi.getDic(
+                          'Msg_InputPhoneNumber',
+                          '연락처를 입력하세요.',
+                        )}
                         type="text"
                         value={phoneNumber}
                         onChange={e => setPhoneNumber(e.target.value)}
@@ -751,7 +800,10 @@ const UserSetting = ({ history }) => {
                       <input
                         style={{ cursor: 'default' }}
                         className="string optional value"
-                        placeholder={covi.getDic('Msg_modifyUserSetting')}
+                        placeholder={covi.getDic(
+                          'Msg_modifyUserSetting',
+                          '기본정보에서 수정바랍니다.',
+                        )}
                         value={phoneNumber}
                         readOnly={true}
                       />
@@ -762,12 +814,15 @@ const UserSetting = ({ history }) => {
                       style={{ cursor: 'default' }}
                       className="string optional"
                     >
-                      {covi.getDic('Work')}
+                      {covi.getDic('Work', '담당업무')}
                     </label>
                     {myInfo.isHR === 'N' ? (
                       <input
                         className="string optional"
-                        placeholder={covi.getDic('Msg_modifyUserSetting')}
+                        placeholder={covi.getDic(
+                          'Msg_modifyUserSetting',
+                          '기본정보에서 수정바랍니다.',
+                        )}
                         type="text"
                         value={work}
                         onChange={e => setWork(e.target.value)}
@@ -777,7 +832,10 @@ const UserSetting = ({ history }) => {
                       <input
                         style={{ cursor: 'default' }}
                         className="string optional value"
-                        placeholder={covi.getDic('Msg_modifyUserSetting')}
+                        placeholder={covi.getDic(
+                          'Msg_modifyUserSetting',
+                          '기본정보에서 수정바랍니다.',
+                        )}
                         value={work}
                         readOnly={true}
                       />
@@ -791,7 +849,7 @@ const UserSetting = ({ history }) => {
                       fontWeight: 'bold',
                       lineHeight: '35px',
                     }}
-                  >{`${covi.getDic('LatestLogin')}`}</p>
+                  >{`${covi.getDic('LatestLogin', '최근 로그인 시간')}`}</p>
                   <p>{`${format(latestLogin, 'yyyy.MM.dd HH:mm:ss')}`}</p>
                 </div>
                 {myInfo.isHR === 'N' && (
@@ -800,7 +858,7 @@ const UserSetting = ({ history }) => {
                       onClick={handleUserSettingSave}
                       className="Config-save-btn"
                     >
-                      {covi.getDic('Save')}
+                      {covi.getDic('Save', '저장')}
                     </button>
                   </div>
                 )}
@@ -837,7 +895,12 @@ const UserSetting = ({ history }) => {
                           // else setUseSecondPassword(false);
                         }}
                       >
-                        <span>{covi.getDic('SecondPasswordConfig')}</span>
+                        <span>
+                          {covi.getDic(
+                            'SecondPasswordConfig',
+                            '화면 잠금 사용 설정',
+                          )}
+                        </span>
                       </a>
                     </li>
                     {myInfo.isHR === 'N' && (
@@ -850,7 +913,7 @@ const UserSetting = ({ history }) => {
                             fontWeight: 'bold',
                           }}
                         >
-                          비밀번호 수정
+                          {covi.getDic('PasswordChange', '비밀번호 변경')}
                         </p>
                       </li>
                     )}
@@ -860,12 +923,13 @@ const UserSetting = ({ history }) => {
                       <div className="Profile-info-input">
                         <div className="input full">
                           <label className="string optional">
-                            {covi.getDic('CurrentPassword')}
+                            {covi.getDic('CurrentPassword', '현재 비밀번호')}
                           </label>
                           <input
                             className="string optional"
                             placeholder={covi.getDic(
                               'Msg_InputCurrentPassword',
+                              '현재 비밀번호를 입력하세요.',
                             )}
                             type="password"
                             value={nowPassword}
@@ -874,11 +938,14 @@ const UserSetting = ({ history }) => {
                         </div>
                         <div className="input full">
                           <label className="string optional">
-                            {covi.getDic('NewPassword')}
+                            {covi.getDic('NewPassword', '새 비밀번호')}
                           </label>
                           <input
                             className="string optional"
-                            placeholder={covi.getDic('Msg_InputNewPassword')}
+                            placeholder={covi.getDic(
+                              'Msg_InputNewPassword',
+                              '새 비밀번호를 입력하세요.',
+                            )}
                             type="password"
                             value={newPassword}
                             onChange={e => setNewPassword(e.target.value)}
@@ -888,12 +955,16 @@ const UserSetting = ({ history }) => {
                         </div>
                         <div className="input full">
                           <label className="string optional">
-                            {covi.getDic('NewPasswordConfirm')}
+                            {covi.getDic(
+                              'NewPasswordConfirm',
+                              '새 비밀번호 확인',
+                            )}
                           </label>
                           <input
                             className="string optional"
                             placeholder={covi.getDic(
                               'Msg_InputNewPasswordConfirm',
+                              '새 비밀번호를 다시 입력하세요.',
                             )}
                             type="password"
                             value={rePassword}
@@ -908,7 +979,7 @@ const UserSetting = ({ history }) => {
                           onClick={handleUserPasswordSave}
                           className="Config-save-btn"
                         >
-                          {covi.getDic('Modify')}
+                          {covi.getDic('Modify', '수정')}
                         </button>
                       </div>
                     </div>
@@ -954,7 +1025,9 @@ const UserSetting = ({ history }) => {
                             setAutoLaunch(!autoLaunch);
                           }}
                         >
-                          <span>{covi.getDic('AutoLaunch')}</span>
+                          <span>
+                            {covi.getDic('AutoLaunch', '시작 시 자동실행')}
+                          </span>
                         </a>
                       </li>
                       <li className="ChatConfig-list">
@@ -980,7 +1053,7 @@ const UserSetting = ({ history }) => {
                             setAutoLogin(!autoLogin);
                           }}
                         >
-                          <span>{covi.getDic('AutoLogin')}</span>
+                          <span>{covi.getDic('AutoLogin', '자동로그인')}</span>
                         </a>
                       </li>
                       <li className="ChatConfig-list">
@@ -997,7 +1070,12 @@ const UserSetting = ({ history }) => {
                           }}
                         ></SelectBox>
                         <span className="ChatConfig-menu">
-                          <span>{covi.getDic('Msg_SetIdleTime')}</span>
+                          <span>
+                            {covi.getDic(
+                              'Msg_SetIdleTime',
+                              '자리비움 시간 설정',
+                            )}
+                          </span>
                         </span>
                       </li>
                     </>
@@ -1011,7 +1089,10 @@ const UserSetting = ({ history }) => {
                         openPopup(
                           {
                             type: 'Confirm',
-                            message: covi.getDic('Msg_ApplyAndRefresh'),
+                            message: covi.getDic(
+                              'Msg_ApplyAndRefresh',
+                              '적용을 위해 모든창이 닫히고 앱이 새로고침 됩니다. 진행하시겠습니까?',
+                            ),
                             callback: result => {
                               if (result) {
                                 localStorage.setItem(
@@ -1042,7 +1123,7 @@ const UserSetting = ({ history }) => {
                       }}
                     ></SelectBox>
                     <span className="ChatConfig-menu">
-                      <span>{covi.getDic('ChangeLang')}</span>
+                      <span>{covi.getDic('ChangeLang', '언어변경')}</span>
                     </span>
                   </li>
                   <li className="ChatConfig-list">
@@ -1055,7 +1136,7 @@ const UserSetting = ({ history }) => {
                       }}
                     ></SelectBox>
                     <span className="ChatConfig-menu">
-                      <span>{covi.getDic('JobName')}</span>
+                      <span>{covi.getDic('JobName', '직무표기')}</span>
                     </span>
                   </li>
                   {DEVICE_TYPE == 'd' && (
@@ -1072,7 +1153,7 @@ const UserSetting = ({ history }) => {
                           style={{ width: '150px' }}
                         ></SelectBox>
                         <span className="ChatConfig-menu">
-                          <span>{covi.getDic('StartMenu')}</span>
+                          <span>{covi.getDic('StartMenu', '시작 메뉴')}</span>
                         </span>
                       </li>
                       <li className="ChatConfig-list">
@@ -1094,7 +1175,12 @@ const UserSetting = ({ history }) => {
                             setDownloadPathCheck(!downloadPathCheck);
                           }}
                         >
-                          <span>{covi.getDic('DownloadPathCheck')}</span>
+                          <span>
+                            {covi.getDic(
+                              'DownloadPathCheck',
+                              '다운로드 시 경로 확인',
+                            )}
+                          </span>
                         </a>
                       </li>
                       <li className="ChatConfig-list">
@@ -1115,7 +1201,10 @@ const UserSetting = ({ history }) => {
                               openPopup(
                                 {
                                   type: 'Prompt',
-                                  title: covi.getDic('DownloadDeafultPath'),
+                                  title: covi.getDic(
+                                    'DownloadDeafultPath',
+                                    '다운로드 기본경로',
+                                  ),
                                   initValue: defaultDownloadPath,
                                   callback(result) {
                                     console.log('Change default download Path');
@@ -1146,7 +1235,12 @@ const UserSetting = ({ history }) => {
                             }
                           }}
                         >
-                          <span>{covi.getDic('DownloadDeafultPath')}</span>
+                          <span>
+                            {covi.getDic(
+                              'DownloadDeafultPath',
+                              '다운로드 기본경로',
+                            )}
+                          </span>
                           <span
                             className="chat-sync-date"
                             style={{
@@ -1166,7 +1260,12 @@ const UserSetting = ({ history }) => {
                           className="ChatConfig-menu"
                           onClick={handleResetDomain}
                         >
-                          <span>{covi.getDic('InitDomainInfo')}</span>
+                          <span>
+                            {covi.getDic(
+                              'InitDomainInfo',
+                              '도메인 설정 초기화',
+                            )}
+                          </span>
                         </a>
                       </li>
                     </>
@@ -1202,7 +1301,7 @@ const UserSetting = ({ history }) => {
                         setDesktopNoti(!desktopNoti);
                       }}
                     >
-                      <span>{covi.getDic('UseNoti')}</span>
+                      <span>{covi.getDic('UseNoti', '알림 사용')}</span>
                     </a>
                   </li>
                   {desktopNoti && (
@@ -1221,7 +1320,10 @@ const UserSetting = ({ history }) => {
                           openPopup(
                             {
                               type: 'Confirm',
-                              message: covi.getDic('Msg_ApplyAndRefresh'),
+                              message: covi.getDic(
+                                'Msg_ApplyAndRefresh',
+                                '적용을 위해 모든창이 닫히고 앱이 새로고침 됩니다. 진행하시겠습니까?',
+                              ),
                               callback: result => {
                                 if (result) {
                                   handleConfig({ customAlarm: !customAlarm });
@@ -1238,7 +1340,9 @@ const UserSetting = ({ history }) => {
                           );
                         }}
                       >
-                        <span>{covi.getDic('UseSelfNoti')}</span>
+                        <span>
+                          {covi.getDic('UseSelfNoti', '자체알림사용')}
+                        </span>
                       </a>
                     </li>
                   )}
@@ -1258,7 +1362,7 @@ const UserSetting = ({ history }) => {
                         setShowNotiContent(!showNotiContent);
                       }}
                     >
-                      <span>{covi.getDic('ShowNoti')}</span>
+                      <span>{covi.getDic('ShowNoti', '알림내용 표시')}</span>
                     </a>
                   </li>
                   {notificationBlock && notificationBlock == 'Y' && (
@@ -1277,7 +1381,12 @@ const UserSetting = ({ history }) => {
                           setNotiBlock(!workTiemNoti ? 'Y' : 'N');
                         }}
                       >
-                        <span>{covi.getDic('SetWorkTimeNoti')}</span>
+                        <span>
+                          {covi.getDic(
+                            'SetWorkTimeNoti',
+                            '근무시간 외 알림 받지 않기',
+                          )}
+                        </span>
                       </a>
                     </li>
                   )}
@@ -1304,13 +1413,13 @@ const UserSetting = ({ history }) => {
                       ></ColorBox>
                     </div>
                     <a className="ChatConfig-menu">
-                      <span>{covi.getDic('ChangeTheme')}</span>
+                      <span>{covi.getDic('ChangeTheme', '테마변경')}</span>
                     </a>
                   </li>
                   {/* 폰트크기 변경 */}
                   <li className="ChatConfig-list">
                     <span className="ChatConfig-menu">
-                      <span>{covi.getDic('FontSize')}</span>
+                      <span>{covi.getDic('FontSize', '글씨크기')}</span>
                     </span>
                     <Slider
                       defaultValue={defaultFontSize}
@@ -1379,13 +1488,18 @@ const UserSetting = ({ history }) => {
                             openPopup(
                               {
                                 type: 'Alert',
-                                message: covi.getDic('Msg_Apply'),
+                                message: covi.getDic(
+                                  'Msg_Apply',
+                                  '적용되었습니다.',
+                                ),
                               },
                               dispatch,
                             );
                           }}
                         >
-                          <span>{covi.getDic('UseEmoji')}</span>
+                          <span>
+                            {covi.getDic('UseEmoji', '이모지 사용여부')}
+                          </span>
                         </a>
                       </li>
                       {/*
@@ -1401,7 +1515,9 @@ const UserSetting = ({ history }) => {
                           className="ChatConfig-menu"
                           onClick={handleReSyncData}
                         >
-                          <span>{covi.getDic('DataSync')}</span>
+                          <span>
+                            {covi.getDic('DataSync', '데이터 동기화')}
+                          </span>
                           <span className="chat-sync-date">
                             {format(new Date(syncDate), 'yyyy.MM.dd HH:mm')}
                           </span>
@@ -1412,7 +1528,9 @@ const UserSetting = ({ history }) => {
                           className="ChatConfig-menu"
                           onClick={handleDeleteTempData}
                         >
-                          <span>{covi.getDic('RemoveTempData')}</span>
+                          <span>
+                            {covi.getDic('RemoveTempData', '임시데이터 삭제')}
+                          </span>
                         </a>
                       </li>
                     </>

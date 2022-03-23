@@ -3,7 +3,6 @@ import { useDispatch } from 'react-redux';
 import File from '@C/chat/message/types/file';
 import Progress from '@C/common/buttons/Progress';
 import { convertFileSize } from '@/lib/fileUpload/coviFile';
-import { getDic } from '@/lib/util/configUtil';
 import { openPopup } from '@/lib/common';
 import { getFileExtension, openFilePreview } from '@/lib/fileUpload/coviFile';
 import { isAllImage, downloadByTokenAll } from '@/lib/fileUpload/coviFile';
@@ -42,10 +41,13 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
                   onClick={progressData ? null : handleAllDownLoad}
                 >
                   {progressData
-                    ? `${covi.getDic('Downloading')} ( ${convertFileSize(
+                    ? `${covi.getDic(
+                        'Downloading',
+                        '다운로드중',
+                      )} ( ${convertFileSize(
                         progressData.load,
                       )} / ${convertFileSize(progressData.total)} )`
-                    : covi.getDic('AllSave')}
+                    : covi.getDic('AllSave', '일괄저장')}
                 </span>
               </span>
             </li>
@@ -95,10 +97,13 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
                   onClick={progressData ? null : handleAllDownLoad}
                 >
                   {progressData
-                    ? `${covi.getDic('Downloading')} ( ${convertFileSize(
+                    ? `${covi.getDic(
+                        'Downloading',
+                        '다운로드중',
+                      )} ( ${convertFileSize(
                         progressData.load,
                       )} / ${convertFileSize(progressData.total)} )`
-                    : covi.getDic('AllSave')}
+                    : covi.getDic('AllSave', '일괄저장')}
                 </span>
               </span>
             </li>
@@ -126,7 +131,7 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
           <p style={{ marginLeft: 15, padding: 10, color: '#999' }}>
             {inprogress &&
               total &&
-              getDic('Upload') +
+              covi.getDic('Upload', '업로드 중') +
                 ' (' +
                 convertFileSize(inprogress) +
                 ' / ' +
@@ -164,7 +169,7 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
         openPopup(
           {
             type: 'Alert',
-            message: covi.getDic('Msg_Save'),
+            message: covi.getDic('Msg_Save', '저장되었습니다.'),
           },
           dispatch,
         );

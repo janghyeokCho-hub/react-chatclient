@@ -314,7 +314,12 @@ const ChatBotMessageBox = ({
                         borderBottom: '1px solid #ccc',
                       }}
                     >
-                      <li>{'등록된 일정이 없습니다.'}</li>
+                      <li>
+                        {covi.getDic(
+                          'Msg_NoRegisteredSchedule',
+                          '등록된 일정이 없습니다.',
+                        )}
+                      </li>
                     </ul>
                   )}
                   {linkInfo && (
@@ -336,9 +341,14 @@ const ChatBotMessageBox = ({
                       <p style={{ lineHeight: 1.5, fontSize: 16, padding: 10 }}>
                         {(botInfoCount > 0 && (
                           <div>
-                            {'외 ' + botInfoCount + ' 건 (클릭 후 자세히 보기)'}
+                            {covi.getDic(
+                              'Msg_ClickSeeDetails',
+                              '클릭 후 자세히 보기',
+                            )}
                           </div>
-                        )) || <div>{'자세히 보기'}</div>}
+                        )) || (
+                          <div>{covi.getDic('SeeMore', '자세히 보기')}</div>
+                        )}
                       </p>
                     </button>
                   )}

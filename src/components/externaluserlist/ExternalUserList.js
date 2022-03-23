@@ -1,6 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { bound, setTopButton } from '@/modules/menu';
+import React, { useCallback, useState } from 'react';
 import SearchBar from '@COMMON/SearchBar';
 import Scrollbars from 'react-custom-scrollbars';
 import SearchOrgChart from '../orgchart/SearchOrgChart';
@@ -12,31 +10,16 @@ import SearchOrgChart from '../orgchart/SearchOrgChart';
  */
 
 const ExternalUserList = () => {
-  const dispatch = useDispatch();
-
   const [searchText, setSearchText] = useState('');
-  const [externalEmail, setExternalEmail] = useState('');
-
-  useEffect(() => {
-    //dispatch(bound({ name: '외부사용자', type: 'externaluserlist' }));
-    //dispatch(setTopButton([])); // TODO
-  }, []);
-
   const handleChange = useCallback(e => {
     const text = e.target.value;
     setSearchText(text);
-
-    if (text != '') {
-    } else {
-    }
   }, []);
-
-  const addExtUser = () => {};
 
   return (
     <div>
       <SearchBar
-        placeholder="외부사용자 검색"
+        placeholder={covi.getDic('ExternalUserSearch', '외부사용자 검색')}
         input={searchText}
         onChange={handleChange}
       />

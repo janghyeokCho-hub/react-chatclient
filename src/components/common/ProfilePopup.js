@@ -175,7 +175,7 @@ const ProfilePopup = ({ userInfo }) => {
 
           <div className="pro-infobox">
             <dl>
-              <dt>{covi.getDic('Mobile')}</dt>
+              <dt>{covi.getDic('Mobile', '휴대폰')}</dt>
               <dd>
                 {userInfo.phoneNumber}
                 {'  '}
@@ -228,7 +228,7 @@ const ProfilePopup = ({ userInfo }) => {
               </dd>
             </dl>
             <dl>
-              <dt>{covi.getDic('Phone')}</dt>
+              <dt>{covi.getDic('Phone', '내선번호')}</dt>
               <dd>
                 {userInfo.companyNumber}
                 {'  '}
@@ -280,13 +280,13 @@ const ProfilePopup = ({ userInfo }) => {
               </dd>
             </dl>
             <dl>
-              <dt>{covi.getDic('Email')}</dt>
+              <dt>{covi.getDic('Email', '이메일')}</dt>
               <dd>
                 {userInfo.mailAddress == null ? '' : userInfo.mailAddress}
               </dd>
             </dl>
             <dl>
-              <dt>{covi.getDic('Work')}</dt>
+              <dt>{covi.getDic('Work', '담당업무')}</dt>
               <dd>
                 <a>{userInfo.work == null ? '' : userInfo.work}</a>
               </dd>
@@ -311,7 +311,7 @@ const ProfilePopup = ({ userInfo }) => {
                     clearLayer(dispatch);
                   }}
                 >
-                  <span>{covi.getDic('StartChat')}</span>
+                  <span>{covi.getDic('StartChat', '대화시작')}</span>
                 </a>
               </li>
             </ul>

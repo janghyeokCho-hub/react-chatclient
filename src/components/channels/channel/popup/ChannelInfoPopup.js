@@ -90,8 +90,10 @@ const ChannelInfoPopup = () => {
           openPopup(
             {
               type: 'Alert',
-              message: covi.getDic('Msg_InvalidImage'),
-              callback: () => {},
+              message: covi.getDic(
+                'Msg_InvalidImage',
+                '잘못된 이미지 입니다. 다른 이미지를 등록해주세요.',
+              ),
             },
             dispatch,
           );
@@ -187,7 +189,7 @@ const ChannelInfoPopup = () => {
                     }}
                   ></img>
                 ) : (
-                  <span>{covi.getDic('AddPhoto')}</span>
+                  <span>{covi.getDic('AddPhoto', '사진추가')}</span>
                 )}
                 {openPopType === 'ChannelInfoModify' && (
                   <input
@@ -208,12 +210,15 @@ const ChannelInfoPopup = () => {
                     className="string optional"
                     htmlFor="user-name"
                   >
-                    {covi.getDic('ChannelName')}
+                    {covi.getDic('ChannelName', '채널이름')}
                   </label>
                   {openPopType === 'ChannelInfoModify' ? (
                     <input
                       className="string optional"
-                      placeholder={covi.getDic('Msg_InputChannelName')}
+                      placeholder={covi.getDic(
+                        'Msg_InputChannelName',
+                        '채널이름을 입력하세요.',
+                      )}
                       type="text"
                       value={displayName}
                       onChange={e => setDisplayName(e.target.value)}
@@ -223,7 +228,10 @@ const ChannelInfoPopup = () => {
                     <input
                       style={{ cursor: 'default' }}
                       className="string optional"
-                      placeholder={covi.getDic('Msg_InputChannelName')}
+                      placeholder={covi.getDic(
+                        'Msg_InputChannelName',
+                        '채널이름을 입력하세요.',
+                      )}
                       type="text"
                       value={displayName}
                       readOnly={true}
@@ -241,7 +249,10 @@ const ChannelInfoPopup = () => {
                   {openPopType === 'ChannelInfoModify' ? (
                     <input
                       className="string optional"
-                      placeholder={covi.getDic('Msg_InputChannelDesc')}
+                      placeholder={covi.getDic(
+                        'Msg_InputChannelDesc',
+                        '채널설명을 입력하세요.',
+                      )}
                       type="text"
                       value={description}
                       onChange={e => setDescription(e.target.value)}
@@ -251,7 +262,10 @@ const ChannelInfoPopup = () => {
                     <input
                       style={{ cursor: 'default' }}
                       className="string optional"
-                      placeholder={covi.getDic('Msg_InputChannelDesc')}
+                      placeholder={covi.getDic(
+                        'Msg_InputChannelDesc',
+                        '채널설명을 입력하세요.',
+                      )}
                       type="text"
                       value={description}
                       readOnly={true}
@@ -264,7 +278,7 @@ const ChannelInfoPopup = () => {
                     className="string optional"
                     htmlFor="user-name"
                   >
-                    {covi.getDic('Category')}
+                    {covi.getDic('Category', '카테고리')}
                   </label>
                   <div className="link_select_box">
                     {openPopType === 'ChannelInfoModify' ? (
@@ -305,7 +319,7 @@ const ChannelInfoPopup = () => {
                       className="string optional"
                       htmlFor="user-name"
                     >
-                      {covi.getDic('ChannelPassword')}
+                      {covi.getDic('ChannelPassword', '가입암호')}
                     </label>
                     <input
                       className="string optional"
@@ -326,7 +340,10 @@ const ChannelInfoPopup = () => {
                         openPopupToFront(
                           {
                             type: 'Alert',
-                            message: covi.getDic('Msg_InputChannelName'),
+                            message: covi.getDic(
+                              'Msg_InputChannelName',
+                              '채널이름을 입력하세요.',
+                            ),
                           },
                           dispatch,
                         );
@@ -334,7 +351,10 @@ const ChannelInfoPopup = () => {
                         openPopupToFront(
                           {
                             type: 'Alert',
-                            message: covi.getDic('Msg_LimitChannelNameLength'),
+                            message: covi.getDic(
+                              'Msg_LimitChannelNameLength',
+                              '채널이름은 최대 20자 까지 등록가능합니다.',
+                            ),
                           },
                           dispatch,
                         );
@@ -344,6 +364,7 @@ const ChannelInfoPopup = () => {
                             type: 'Alert',
                             message: covi.getDic(
                               'Msg_LimitChannelDescriptionLength',
+                              '채널 설명은 최대 40자 까지 등록가능합니다.',
                             ),
                           },
                           dispatch,
@@ -354,6 +375,7 @@ const ChannelInfoPopup = () => {
                             type: 'Alert',
                             message: covi.getDic(
                               'Msg_LimitChannelPasswordLength',
+                              '채널 비밀번호는 최대 20자 까지 등록가능합니다.',
                             ),
                           },
                           dispatch,
@@ -362,7 +384,10 @@ const ChannelInfoPopup = () => {
                         openPopupToFront(
                           {
                             type: 'Alert',
-                            message: covi.getDic('Msg_InputPassword'),
+                            message: covi.getDic(
+                              'Msg_InputPassword',
+                              '비밀번호를 입력해주세요',
+                            ),
                           },
                           dispatch,
                         );
@@ -372,15 +397,15 @@ const ChannelInfoPopup = () => {
                     }}
                   >
                     <span className="colortxt-point">
-                      {covi.getDic('Modify')}
+                      {covi.getDic('Modify', '수정')}
                     </span>
                   </a>
                 )}
                 <a>
                   <span className="colortxt-grey" onClick={() => handleClose()}>
                     {openPopType == 'ChannelInfoModify'
-                      ? covi.getDic('Cancel')
-                      : covi.getDic('Ok')}
+                      ? covi.getDic('Cancel', '취소')
+                      : covi.getDic('Ok', '확인')}
                   </span>
                 </a>
               </div>

@@ -3,19 +3,14 @@ import { useSelector } from 'react-redux';
 import UserInfoBox from '@COMMON/UserInfoBox';
 import OrgChartItem from '@C/orgchart/OrgChartItem';
 
-const SearchOrgChart = ({
-  viewType,
-  checkObj,
-  searchData,
-  handleGroup,
-}) => {
+const SearchOrgChart = ({ viewType, checkObj, searchData, handleGroup }) => {
   const userID = useSelector(({ login }) => login.id);
   const handleClick = (groupCode, companyCode) => {
     if (handleGroup) handleGroup(groupCode, companyCode);
   };
   return (
     <ul className="people">
-      {searchData?.map((resultItem) => {
+      {searchData?.map(resultItem => {
         if (viewType == 'list') {
           if (resultItem.id != userID)
             return (
@@ -59,7 +54,7 @@ const SearchOrgChart = ({
       })}
       {!searchData.length && (
         <li className="person">
-          <a>{'결과 없음'}</a>
+          <a>{covi.getDic('Msg_noSearchResult', '검색결과가 없습니다.')}</a>
         </li>
       )}
     </ul>

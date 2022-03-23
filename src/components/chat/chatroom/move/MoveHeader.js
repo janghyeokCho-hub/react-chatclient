@@ -25,11 +25,11 @@ const MoveHeader = ({ onMoveBox }) => {
           lineHeight: '32px',
         }}
       >
-        {covi.getDic('ShowChat')}
+        {covi.getDic('ShowChat', '대화보기')}
       </div>
 
       <span className="searchcancel" onClick={hideSearchBox}>
-        {covi.getDic('Cancel')}
+        {covi.getDic('Cancel', '취소')}
       </span>
     </div>
   );
