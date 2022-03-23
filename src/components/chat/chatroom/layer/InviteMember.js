@@ -92,7 +92,10 @@ const InviteMember = ({
             openPopup(
               {
                 type: 'Alert',
-                message: covi.getDic('Msg_GroupInviteError'),
+                message: covi.getDic(
+                  'Msg_GroupInviteError',
+                  '해당 그룹은 그룹채팅을 시작할 수 없습니다.',
+                ),
               },
               dispatch,
             );
@@ -178,7 +181,10 @@ const InviteMember = ({
                 {
                   type: 'Alert',
                   message: getSysMsgFormatStr(
-                    covi.getDic('Tmp_exceptExistMember'),
+                    covi.getDic(
+                      'Tmp_exceptExistMember',
+                      '%s은 이미 추가된 사용자이므로 제외하고 진행합니다.',
+                    ),
                     [{ type: 'Plain', data: dupListTxt }],
                   ),
                   callback: () => {
@@ -194,7 +200,10 @@ const InviteMember = ({
             openPopup(
               {
                 type: 'Alert',
-                message: covi.getDic('Msg_ExceptExistEmpty'),
+                message: covi.getDic(
+                  'Msg_ExceptExistEmpty',
+                  '이미 초대된 사용자는 제외하여, 초대될 사용자가 없습니다.',
+                ),
                 callback: () => {
                   handleClose();
                 },
@@ -209,7 +218,10 @@ const InviteMember = ({
       openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_InviteMemberError'),
+          message: covi.getDic(
+            'Msg_InviteMemberError',
+            '초대할 대상을 선택해주세요.',
+          ),
         },
         dispatch,
       );
@@ -275,7 +287,7 @@ const InviteMember = ({
               ? members.length - oldMembers.length
               : members.length}
           </span>
-          {covi.getDic('Ok')}
+          {covi.getDic('Ok', '확인')}
         </a>
       </div>
       <div className="container AddUser">
@@ -316,7 +328,7 @@ const InviteMember = ({
                 setSelectTab('C');
               }}
             >
-              {covi.getDic('Contact')}
+              {covi.getDic('Contact', '내 대화상대')}
             </a>
           </li>
           <li className={selectTab == 'O' ? 'active' : ''} data-tab="tab2">
@@ -325,7 +337,7 @@ const InviteMember = ({
                 setSelectTab('O');
               }}
             >
-              {covi.getDic('OrgChart')}
+              {covi.getDic('OrgChart', '조직도')}
             </a>
           </li>
         </ul>

@@ -159,7 +159,10 @@ const CreateChannel = ({ headerName }) => {
         openPopup(
           {
             type: 'Alert',
-            message: covi.getDic('Msg_InvalidImage'),
+            message: covi.getDic(
+              'Msg_InvalidImage',
+              '잘못된 이미지 입니다. 다른 이미지를 등록해주세요.',
+            ),
             callback: () => {},
           },
           dispatch,
@@ -314,8 +317,8 @@ const CreateChannel = ({ headerName }) => {
         <a className="Okbtn" onClick={handleCreateBtn}>
           <span className="colortxt-point mr5">
             {selectStage === 0
-              ? covi.getDic('Next')
-              : covi.getDic('CreateChannel')}
+              ? covi.getDic('Next', '다음')
+              : covi.getDic('CreateChannel', '채널 생성')}
           </span>
         </a>
       </div>
@@ -335,7 +338,7 @@ const CreateChannel = ({ headerName }) => {
             }}
           >
             {!iconImagePath ? (
-              <span>{covi.getDic('AddPhoto')}</span>
+              <span>{covi.getDic('AddPhoto', '사진추가')}</span>
             ) : (
               <img
                 src={iconImagePath}
@@ -353,29 +356,35 @@ const CreateChannel = ({ headerName }) => {
           <div className="Profile-info-input">
             <div className="input full">
               <label style={{ cursor: 'default' }} className="string optional">
-                {covi.getDic('ChannelName')}
+                {covi.getDic('ChannelName', '채널이름')}
               </label>
               <input
                 className="string optional"
-                placeholder={covi.getDic('Msg_InputChannelName')}
+                placeholder={covi.getDic(
+                  'Msg_InputChannelName',
+                  '채널이름을 입력하세요.',
+                )}
                 type="text"
                 onChange={e => setName(e.target.value)}
               />
             </div>
             <div className="input full">
               <label style={{ cursor: 'default' }} className="string optional">
-                {covi.getDic('ChannelDescription')}
+                {covi.getDic('ChannelDescription', '채널설명')}
               </label>
               <input
                 className="string optional"
-                placeholder={covi.getDic('Msg_InputChannelDesc')}
+                placeholder={covi.getDic(
+                  'Msg_InputChannelDesc',
+                  '채널설명을 입력하세요.',
+                )}
                 type="text"
                 onChange={e => setDesc(e.target.value)}
               />
             </div>
             <div className="input full">
               <label style={{ cursor: 'default' }} className="string optional">
-                {covi.getDic('Category')}
+                {covi.getDic('Category', '카테고리')}
               </label>
               <div className="link_select_box">
                 <a onClick={() => setDisplayCategory(!displayCategory)}>
@@ -403,7 +412,7 @@ const CreateChannel = ({ headerName }) => {
             </div>
             <div className="input full">
               <label style={{ cursor: 'default' }} className="string optional">
-                {covi.getDic('ChannelType')}
+                {covi.getDic('ChannelType', '공개여부')}
               </label>
               <div className="checkbox-wrap">
                 <div className="chkStyle01">
@@ -416,7 +425,7 @@ const CreateChannel = ({ headerName }) => {
                   />
                   <label htmlFor="chk02">
                     <span></span>
-                    {covi.getDic('Private')}
+                    {covi.getDic('Private', '비공개')}
                   </label>
                 </div>
                 <div className="chkStyle01">
@@ -429,7 +438,7 @@ const CreateChannel = ({ headerName }) => {
                   />
                   <label htmlFor="chk01">
                     <span></span>
-                    {covi.getDic('Public')}
+                    {covi.getDic('Public', '공개')}
                   </label>
                 </div>
                 <div className="chkStyle01">
@@ -442,7 +451,7 @@ const CreateChannel = ({ headerName }) => {
                   />
                   <label htmlFor="chk03">
                     <span></span>
-                    {covi.getDic('Permission')}
+                    {covi.getDic('Permission', '목록만공개')}
                   </label>
                 </div>
               </div>
@@ -453,11 +462,14 @@ const CreateChannel = ({ headerName }) => {
                   style={{ cursor: 'default' }}
                   className="string optional"
                 >
-                  {covi.getDic('ChannelPassword')}
+                  {covi.getDic('ChannelPassword', '가입암호')}
                 </label>
                 <input
                   className="string optional"
-                  placeholder={covi.getDic('Msg_InputChannelPassword')}
+                  placeholder={covi.getDic(
+                    'Msg_InputChannelPassword',
+                    '가입시 필요한 암호를 입력하세요.',
+                  )}
                   type="password"
                   onChange={e => setSecretKey(e.target.value)}
                 />
@@ -472,7 +484,10 @@ const CreateChannel = ({ headerName }) => {
               openPopup(
                 {
                   type: 'Alert',
-                  message: covi.getDic('Msg_InputChannelName'),
+                  message: covi.getDic(
+                    'Msg_InputChannelName',
+                    '채널이름을 입력하세요.',
+                  ),
                 },
                 dispatch,
               );
@@ -480,7 +495,10 @@ const CreateChannel = ({ headerName }) => {
               openPopup(
                 {
                   type: 'Alert',
-                  message: covi.getDic('Msg_InputPassword'),
+                  message: covi.getDic(
+                    'Msg_InputPassword',
+                    '비밀번호를 입력해주세요',
+                  ),
                 },
                 dispatch,
               );
@@ -489,7 +507,7 @@ const CreateChannel = ({ headerName }) => {
             }
           }}
         >
-          <a className="Btn-pointcolor-full">{covi.getDic('Next')}</a>
+          <a className="Btn-pointcolor-full">{covi.getDic('Next', '다음')}</a>
         </div>
       </div>
 
@@ -536,7 +554,7 @@ const CreateChannel = ({ headerName }) => {
                 setSelectTab('C');
               }}
             >
-              {covi.getDic('Contact')}
+              {covi.getDic('Contact', '내 대화상대')}
             </a>
           </li>
           <li className={selectTab == 'O' ? 'active' : ''} data-tab="tab2">
@@ -545,7 +563,7 @@ const CreateChannel = ({ headerName }) => {
                 setSelectTab('O');
               }}
             >
-              {covi.getDic('OrgChart')}
+              {covi.getDic('OrgChart', '조직도')}
             </a>
           </li>
         </ul>
@@ -566,11 +584,13 @@ const CreateChannel = ({ headerName }) => {
         <div
           className={['tabcontent', selectTab == 'E' ? 'active' : ''].join(' ')}
         >
-          <div className="AddUserCon">{covi.getDic('ExternalUser')}</div>
+          <div className="AddUserCon">
+            {covi.getDic('ExternalUser', '외부사용자')}
+          </div>
         </div>
         <div className="layer-bottom-btn-wrap">
           <a className="Btn-pointcolor-full" onClick={handleCreateBtn}>
-            {covi.getDic('CreateChannel')}
+            {covi.getDic('CreateChannel', '채널 생성')}
           </a>
         </div>
       </div>

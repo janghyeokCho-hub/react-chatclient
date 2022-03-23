@@ -219,7 +219,7 @@ export default function NoticeTalk({ match, location, history }) {
               <a className="closebtn" onClick={() => history.goBack()} />
             )}
             <div className="modaltit">
-              <p>{covi.getDic('NoticeTalk')}</p>
+              <p>{covi.getDic('NoticeTalk', '알림톡')}</p>
             </div>
           </div>
 

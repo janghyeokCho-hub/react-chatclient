@@ -169,7 +169,7 @@ const LeftMenu = ({ history }) => {
     common.openPopup(
       {
         type: 'Confirm',
-        message: covi.getDic('Msg_logout'),
+        message: covi.getDic('Msg_logout', '로그아웃하시겠습니까?'),
         callback: result => {
           if (result) {
             const data = {
@@ -207,7 +207,7 @@ const LeftMenu = ({ history }) => {
             );
           }
         },
-        name: covi.getDic('NoticeTalk'),
+        name: covi.getDic('NoticeTalk', '알림톡'),
       },
       {
         code: 'setting',
@@ -228,7 +228,7 @@ const LeftMenu = ({ history }) => {
             );
           }
         },
-        name: covi.getDic('UserSetting'),
+        name: covi.getDic('UserSetting', '환경설정'),
       },
       {
         code: 'line',
@@ -242,7 +242,7 @@ const LeftMenu = ({ history }) => {
         onClick: () => {
           handleLogout();
         },
-        name: covi.getDic('Logout'),
+        name: covi.getDic('Logout', '로그아웃'),
       },
     ];
 
@@ -253,7 +253,7 @@ const LeftMenu = ({ history }) => {
         onClick: async () => {
           quit(id);
         },
-        name: covi.getDic('Quit'),
+        name: covi.getDic('Quit', '종료'),
       });
 
     if (!userInfo.noticeTalkAuth || userInfo.noticeTalkAuth == 'N') {

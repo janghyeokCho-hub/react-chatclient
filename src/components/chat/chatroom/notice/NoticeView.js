@@ -48,7 +48,7 @@ const NoticeView = ({ roomInfo, onNewWin, isNewWin, onRead }) => {
               color: '#777',
             }}
           >
-            {covi.getDic('Msg_ImpossibleChat')}
+            {covi.getDic('Msg_ImpossibleChat', '채팅이 불가능한 공간입니다.')}
           </div>
           <div className="input-bottombox">
             <div className="input-icobox">

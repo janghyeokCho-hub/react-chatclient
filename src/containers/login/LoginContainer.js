@@ -111,9 +111,15 @@ const LoginContainer = ({ history, location }) => {
 
       if (errStatus) {
         if (errStatus === 'FAIL') {
-          message = covi.getDic('Msg_wrongLoginInfo');
+          message = covi.getDic(
+            'Msg_wrongLoginInfo',
+            '아이디 또는 패스워드가 잘못되었습니다.',
+          );
         } else if (errStatus === 'ERROR') {
-          message = covi.getDic('Msg_Error');
+          message = covi.getDic(
+            'Msg_Error',
+            '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+          );
         } else if (errStatus === 'LIC_FAIL') {
           //2021.02.09 TODO 다국어 반영
           message = covi.getDic(
@@ -141,7 +147,10 @@ const LoginContainer = ({ history, location }) => {
       if (!message) {
         // 에러 원인을 알 수 없을 경우 출력할 기본 메시지 설정
         console.log(`Unknown status ${errStatus}`);
-        message = covi.getDic('Msg_Error');
+        message = covi.getDic(
+          'Msg_Error',
+          '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+        );
       }
 
       common.openPopup(

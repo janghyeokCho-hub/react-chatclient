@@ -35,7 +35,10 @@ const SearchHeader = ({
           ref={searchInput}
           type="text"
           value={searchText}
-          placeholder={covi.getDic('Msg_searchBox')}
+          placeholder={covi.getDic(
+            'Msg_searchBox',
+            '검색할 내용을 입력해주세요',
+          )}
           disabled={disabled}
           onChange={e => {
             onChange(e.target.value);
@@ -51,7 +54,7 @@ const SearchHeader = ({
       </div>
 
       <span className="searchcancel" onClick={hideSearchBox}>
-        {covi.getDic('Cancel')}
+        {covi.getDic('Cancel', '취소')}
       </span>
     </div>
   );

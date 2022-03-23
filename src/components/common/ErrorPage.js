@@ -82,10 +82,14 @@ const ErrorPage = () => {
           ></p>
           <div className="btnbox">
             <a onClick={handleExist}>
-              <span className="colortxt-point">{covi.getDic('Quit')}</span>
+              <span className="colortxt-point">
+                {covi.getDic('Quit', '종료')}
+              </span>
             </a>
             <a onClick={handleClose}>
-              <span className="colortxt-point">{covi.getDic('Refresh')}</span>
+              <span className="colortxt-point">
+                {covi.getDic('Refresh', '새로고침')}
+              </span>
             </a>
           </div>
         </div>

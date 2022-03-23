@@ -50,10 +50,15 @@ export const handleNewMessage = (dispatch, userInfo) => {
     if (json_data.isMine != 'Y' && DEVICE_TYPE == 'b') {
       if (Notification.permission === 'granted') {
         if (localStorage.getItem('check_notification') == 'true') {
-          const notification = new Notification(covi.getDic('NewMessage'), {
-            icon: '',
-            body: `${getJobInfo(json_data.senderInfo)} : ${json_data.context}`,
-          });
+          const notification = new Notification(
+            covi.getDic('NewMessage', '새 메세지'),
+            {
+              icon: '',
+              body: `${getJobInfo(json_data.senderInfo)} : ${
+                json_data.context
+              }`,
+            },
+          );
 
           setTimeout(notification.close.bind(notification), 2000);
         }
@@ -241,7 +246,10 @@ export const handleForceToLogout = dispatch => {
       common.openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_LoginOtherDevice'),
+          message: covi.getDic(
+            'Msg_LoginOtherDevice',
+            '동일한 아이디로 다른 기기에서 로그인하여 접속이 종료되었습니다.',
+          ),
           callback: () => {
             if (deviceConnector.isMainWindow()) {
               location.reload();
@@ -259,7 +267,10 @@ export const handleForceToLogout = dispatch => {
       common.openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_LoginOtherDevice'),
+          message: covi.getDic(
+            'Msg_LoginOtherDevice',
+            '동일한 아이디로 다른 기기에서 로그인하여 접속이 종료되었습니다.',
+          ),
           callback: () => {
             dispatch(logout());
           },
@@ -331,10 +342,10 @@ export const handleNewChannelMessage = (dispatch, userInfo) => {
                 .convertEumTalkProtocolPreviewForChannelItem(returnText)
                 .then(messageObj => {
                   if (messageObj.type == 'emoticon')
-                    returnText = covi.getDic('Emoticon');
+                    returnText = covi.getDic('Emoticon', '이모티콘');
                   else returnText = messageObj.message.split('\n')[0];
                   const notification = new Notification(
-                    covi.getDic('NewMessage'),
+                    covi.getDic('NewMessage', '새 메세지'),
                     {
                       icon: '',
                       body: `${getJobInfo(
@@ -347,11 +358,14 @@ export const handleNewChannelMessage = (dispatch, userInfo) => {
                 });
             } else {
               returnText = json_data.context.split('\n')[0];
-              const notification = new Notification(covi.getDic('NewMessage'), {
-                icon: '',
-                // body: `채널 메시지가 도착하였습니다`,
-                body: `${getJobInfo(json_data.senderInfo)} : ${returnText}`,
-              });
+              const notification = new Notification(
+                covi.getDic('NewMessage', '새 메세지'),
+                {
+                  icon: '',
+                  // body: `채널 메시지가 도착하였습니다`,
+                  body: `${getJobInfo(json_data.senderInfo)} : ${returnText}`,
+                },
+              );
 
               setTimeout(notification.close.bind(notification), 2000);
             }
@@ -415,10 +429,13 @@ export const handleNewNotice = dispatch => {
     if (DEVICE_TYPE == 'b') {
       if (Notification.permission === 'granted') {
         if (localStorage.getItem('check_notification') == 'true') {
-          const notification = new Notification(covi.getDic('NewMessage'), {
-            icon: '',
-            body: `멘션메시지 도착`,
-          });
+          const notification = new Notification(
+            covi.getDic('NewMessage', '새 메세지'),
+            {
+              icon: '',
+              body: `멘션메시지 도착`,
+            },
+          );
 
           setTimeout(notification.close.bind(notification), 2000);
         }
@@ -432,17 +449,17 @@ export const handleNewNotice = dispatch => {
   };
 };
 
-export const handleDelChatroomMessage = (dispatch) => {
+export const handleDelChatroomMessage = dispatch => {
   return data => {
     try {
       const json_data = JSON.parse(data);
       console.log('handleDelChatroomMessage payload :: ', json_data);
       dispatch(roomMessageDelete(json_data));
-    } catch(err) {
+    } catch (err) {
       console.log('handleDelMessage Error : ', err);
     }
-  }
-}
+  };
+};
 
 // 채널 메시지 삭제 (Broswer)
 export const handleDelChannelMessageInBrowser = dispatch => {
@@ -498,11 +515,14 @@ export const handleNewChannelNotice = (dispatch, userInfo) => {
     if (json_data.isMine != 'Y' && DEVICE_TYPE == 'b') {
       if (Notification.permission === 'granted') {
         if (localStorage.getItem('check_notification') == 'true') {
-          const notification = new Notification(covi.getDic('NewMessage'), {
-            icon: '',
-            body: `채널 공지가 등록되었습니다.`,
-            // body: `${getJobInfo(json_data.senderInfo)} : ${json_data.context}`,
-          });
+          const notification = new Notification(
+            covi.getDic('NewMessage', '새 메세지'),
+            {
+              icon: '',
+              body: `채널 공지가 등록되었습니다.`,
+              // body: `${getJobInfo(json_data.senderInfo)} : ${json_data.context}`,
+            },
+          );
 
           setTimeout(notification.close.bind(notification), 2000);
         }

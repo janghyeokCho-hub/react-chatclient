@@ -63,7 +63,10 @@ const SecondLockContainer = ({ theme, secondLockHandler }) => {
       openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('Msg_WrongPasswordInput'),
+          message: covi.getDic(
+            'Msg_WrongPasswordInput',
+            '잘못된 비밀번호를 입력했습니다.\r\n비밀번호를 다시 입력해주세요.',
+          ),
         },
         dispatch,
       );
@@ -143,9 +146,14 @@ const SecondLockContainer = ({ theme, secondLockHandler }) => {
         {userInfo && (
           <SecondLockSubTitle>{getJobInfo(userInfo)}</SecondLockSubTitle>
         )}
-        <SecondLockTitle>잠금 상태 입니다</SecondLockTitle>
+        <SecondLockTitle>
+          {covi.getDic('Msg_locked', '잠금 상태 입니다.')}
+        </SecondLockTitle>
         <SecondInputBox
-          placeholder="비밀번호를 입력해주세요"
+          placeholder={covi.getDic(
+            'Msg_InputPassword',
+            '비밀번호를 입력해주세요',
+          )}
           type="password"
           value={password}
           onChange={e => {

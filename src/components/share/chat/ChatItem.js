@@ -39,7 +39,7 @@ const ChatItem = ({ room, checkObj }) => {
   }, [checkRef]);
 
   const makeMessageText = lastMessage => {
-    let returnText = covi.getDic('Msg_NoMessages');
+    let returnText = covi.getDic('Msg_NoMessages', '대화내용 없음');
     try {
       let msgObj = null;
 
@@ -68,7 +68,7 @@ const ChatItem = ({ room, checkObj }) => {
         if (common.eumTalkRegularExp.test(drawText)) {
           const messageObj = common.convertEumTalkProtocolPreview(drawText);
           if (messageObj.type == 'emoticon')
-            returnText = covi.getDic('Emoticon');
+            returnText = covi.getDic('Emoticon', '이모티콘');
           else returnText = messageObj.message.split('\n')[0];
         } else {
           // 첫줄만 노출
@@ -96,13 +96,13 @@ const ChatItem = ({ room, checkObj }) => {
           ) {
             // 사진 외 %s건
             returnText = common.getSysMsgFormatStr(
-              covi.getDic('Tmp_imgExCnt'),
+              covi.getDic('Tmp_imgExCnt', '사진 외 %s건'),
               [{ type: 'Plain', data: fileObj.length - 1 }],
             );
           } else {
             // 파일 외 %s건
             returnText = common.getSysMsgFormatStr(
-              covi.getDic('Tmp_fileExCnt'),
+              covi.getDic('Tmp_fileExCnt', '파일 외 %s건'),
               [{ type: 'Plain', data: fileObj.length - 1 }],
             );
           }
@@ -113,9 +113,9 @@ const ChatItem = ({ room, checkObj }) => {
             fileObj.ext == 'jpeg' ||
             fileObj.ext == 'bmp'
           ) {
-            returnText = covi.getDic('Image');
+            returnText = covi.getDic('Image', '사진');
           } else {
-            returnText = covi.getDic('File');
+            returnText = covi.getDic('File', '파일');
           }
         }
       }
@@ -156,7 +156,7 @@ const ChatItem = ({ room, checkObj }) => {
         }
 
         if (filterMember.length == 0)
-          return <>{covi.getDic('NoChatMembers')}</>;
+          return <>{covi.getDic('NoChatMembers', '대화상대없음')}</>;
 
         return (
           <>

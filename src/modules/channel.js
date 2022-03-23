@@ -940,7 +940,10 @@ const channel = handleActions(
         const lastMessageData = {
           Message:
             action.payload.messageType === 'I'
-              ? '새로운 공지가 등록되었습니다.'
+              ? covi.getDic(
+                  'Msg_newNoticeRegistered',
+                  '새로운 공지가 등록되었습니다.',
+                )
               : action.payload.context,
           File: action.payload.fileInfos,
         };

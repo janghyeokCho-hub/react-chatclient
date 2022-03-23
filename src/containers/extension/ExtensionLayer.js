@@ -83,7 +83,10 @@ const ExtensionLayer = () => {
 
   useEffect(() => {
     dispatch(
-      bound({ name: covi.getDic('Extension'), type: 'extension-viewer' }),
+      bound({
+        name: covi.getDic('Extension', '익스텐션'),
+        type: 'extension-viewer',
+      }),
     );
     return () => {
       script?.remove();

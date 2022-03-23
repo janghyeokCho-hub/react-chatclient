@@ -71,7 +71,10 @@ const SearchView = ({ onSearchBox }) => {
             common.openPopup(
               {
                 type: 'Alert',
-                message: covi.getDic('Msg_noSearchResult'),
+                message: covi.getDic(
+                  'Msg_noSearchResult',
+                  '검색결과가 없습니다.',
+                ),
               },
               dispatch,
             );

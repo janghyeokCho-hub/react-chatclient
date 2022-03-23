@@ -50,13 +50,14 @@ const LatestMessage = () => {
     if (eumTalkRegularExp.test(context)) {
       const messageObj = convertEumTalkProtocolPreview(context);
       console.log(messageObj);
-      if (messageObj.type == 'emoticon') context = covi.getDic('Emoticon');
+      if (messageObj.type == 'emoticon')
+        context = covi.getDic('Emoticon', '이모티콘');
       else context = messageObj.message.split('\n')[0];
     } else {
       context = context.split('\n')[0];
     }
 
-    if (context == '') context = covi.getDic('File');
+    if (context == '') context = covi.getDic('File', '파일');
 
     return (
       <>

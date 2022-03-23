@@ -337,7 +337,10 @@ const MessagePostBox = forwardRef(
       commonApi.openPopup(
         {
           type: 'Confirm',
-          message: '화상회의 초대장이 발송됩니다. 발송하시겠습니까?',
+          message: covi.getDic(
+            'Msg_VideoConferenceSend',
+            '화상회의 초대장이 발송됩니다. 발송하시겠습니까?',
+          ),
           callback: result => {
             if (result) {
               liveMeet();
@@ -420,12 +423,13 @@ const MessagePostBox = forwardRef(
               name: ipInfo,
               callback: () => {
                 const msgObj = {
-                  title: '원격지원',
-                  context: `호스트 ${commonApi.getJobInfo(
-                    myInfo,
-                  )}님의 원격 요청`,
+                  title: covi.getDic('RemoteSupport', 'RemoteSupport'),
+                  context: `${covi.getDic(
+                    'Msg_RemoteRequest',
+                    'Msg_RequestRemoteSupport',
+                  )} : ${commonApi.getJobInfo(myInfo)}`,
                   func: {
-                    name: '원격 지원 시작',
+                    name: covi.getDic('StartRemoteSupport', '원격 지원 시작'),
                     type: 'remotevnc',
                     data: {
                       hostAddr: ipInfo,
@@ -454,7 +458,10 @@ const MessagePostBox = forwardRef(
           commonApi.openPopup(
             {
               type: 'Select',
-              title: '원격 IP 대역 선택',
+              title: covi.getDic(
+                'RemoteIPBandwidthSelection',
+                '원격 IP 대역 선택',
+              ),
               buttons: useableIPList,
             },
             dispatch,
@@ -463,7 +470,10 @@ const MessagePostBox = forwardRef(
           commonApi.openPopup(
             {
               type: 'Alert',
-              message: '원격 지원이 종료 되었습니다.',
+              message: covi.getDic(
+                'Msg_RemoteSupportEnd',
+                '원격 지원이 종료 되었습니다.',
+              ),
             },
             dispatch,
           );
@@ -513,7 +523,10 @@ const MessagePostBox = forwardRef(
           commonApi.openPopup(
             {
               type: 'Confirm',
-              message: '화상회의(Zoom) 초대장이 발송됩니다. 발송하시겠습니까?',
+              message: covi.getDic(
+                'Msg_VideoConferenceSend',
+                '화상회의 초대장이 발송됩니다. 발송하시겠습니까?',
+              ),
               callback: result => {
                 if (result) {
                   zoomMeet();
@@ -550,7 +563,12 @@ const MessagePostBox = forwardRef(
               onKeyDown={handleKeyDown}
               className="message-to-send"
               placeholder={
-                !inputLock ? placeholder : covi.getDic('Msg_LockInput')
+                !inputLock
+                  ? placeholder
+                  : covi.getDic(
+                      'Msg_LockInput',
+                      '대화가 잠긴 방입니다. 해제버튼을 누른 후 사용할 수 있습니다.',
+                    )
               }
               value={context}
               style={{ backgroundColor: inputLock ? '#f9f9f9' : '' }}

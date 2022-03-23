@@ -253,7 +253,10 @@ const Notice = ({ type, value, title, func }) => {
                 openPopup(
                   {
                     type: 'Alert',
-                    message: '해당 화상 채팅 방은 종료 되었습니다.',
+                    message: covi.getDic(
+                      'Msg_VideoChatEnd',
+                      '해당 화상 채팅 방은 종료 되었습니다.',
+                    ),
                   },
                   dispatch,
                 );
@@ -264,7 +267,10 @@ const Notice = ({ type, value, title, func }) => {
               openPopup(
                 {
                   type: 'Alert',
-                  message: '해당 화상 채팅 방은 종료 되었습니다.',
+                  message: covi.getDic(
+                    'Msg_VideoChatEnd',
+                    '해당 화상 채팅 방은 종료 되었습니다.',
+                  ),
                 },
                 dispatch,
               );
@@ -370,7 +376,7 @@ const Notice = ({ type, value, title, func }) => {
               </svg>
             </span>
             <span style={{ float: 'left', marginLeft: '10px' }}>
-              {covi.getDic('AddNotice')}
+              {covi.getDic('AddNotice', '공지 등록')}
             </span>
           </span>
           {drawText}

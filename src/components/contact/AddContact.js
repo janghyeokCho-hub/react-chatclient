@@ -3,26 +3,26 @@ import { useSelector, useDispatch } from 'react-redux';
 import { deleteLayer, clearLayer, getJobInfo } from '@/lib/common';
 import OrgChart from '@C/orgchart/OrgChart';
 import ProfileBox from '../common/ProfileBox';
-import { 
+import {
   addContactList,
-  editGroupContactList, 
-  getApplyGroupInfo
+  editGroupContactList,
+  getApplyGroupInfo,
 } from '@/lib/contactUtil';
 import { addCustomGroup } from '@/modules/contact';
 import { openPopup } from '@/lib/common';
 
-const AddContact = ({useGroup}) => {
+const AddContact = ({ useGroup }) => {
   const { userID, contacts } = useSelector(({ login, contact }) => ({
     userID: login.id,
     contacts: contact.contacts,
   }));
   const [selectors, setSelectors] = useState([]);
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const dispatch = useDispatch();
 
   let oldContactList = [{ id: userID }];
 
-  if(!useGroup){
+  if (!useGroup) {
     contacts.forEach(item => {
       if ((item.folderType == 'F' || item.folderType == 'C') && item.sub)
         item.sub.forEach(itemSub => {
@@ -92,11 +92,11 @@ const AddContact = ({useGroup}) => {
 
   const handleAddGroupBtn = useCallback(() => {
     /* 그룹명 미 입력시 Alert Msg*/
-    if(name === ""){
+    if (name === '') {
       openPopup(
         {
           type: 'Alert',
-          message: covi.getDic('그룹명을 입력해주세요.'),
+          message: covi.getDic('Input_Group_Name', '그룹명을 입력하세요.'),
         },
         dispatch,
       );
@@ -104,10 +104,10 @@ const AddContact = ({useGroup}) => {
     }
     /* 그룹 생성 */
     editGroupContactList(
-      dispatch, 
-      addCustomGroup, 
-      getApplyGroupInfo(selectors, name), 
-      selectors
+      dispatch,
+      addCustomGroup,
+      getApplyGroupInfo(selectors, name),
+      selectors,
     );
 
     clearLayer(dispatch);
@@ -121,15 +121,21 @@ const AddContact = ({useGroup}) => {
   }, []);
 
   return (
-    <div className="Layer-AddUser" style={{ height: '100%',minWidth:'400px' }}>
+    <div
+      className="Layer-AddUser"
+      style={{ height: '100%', minWidth: '400px' }}
+    >
       <div className="modalheader">
         <a className="closebtn" onClick={handleClose}></a>
         <div className="modaltit">
-          <p>{covi.getDic('AddContact')}</p>
+          <p>{covi.getDic('AddContact', '내 대화상대 추가')}</p>
         </div>
-        <a className="Okbtn" onClick={useGroup ? handleAddGroupBtn : handleAddBtn}>
+        <a
+          className="Okbtn"
+          onClick={useGroup ? handleAddGroupBtn : handleAddBtn}
+        >
           <span className="colortxt-point mr5">{selectors.length}</span>
-          {covi.getDic('Ok')}
+          {covi.getDic('Ok', '확인')}
         </a>
       </div>
       <div className="container AddUser">
@@ -161,22 +167,25 @@ const AddContact = ({useGroup}) => {
               })}
           </ul>
         </div>
-        {useGroup ? 
+        {useGroup ? (
           <div className="Profile-info-input">
-              <div className="input full">
-                <label style={{ cursor: 'default' }} className="string optional">
-                  {covi.getDic('Group_Name','그룹 이름')}
-                </label>
-                <input
-                  className="string optional"
-                  placeholder={covi.getDic('Input_Group_Name', '그룹명을 입력하세요.')}
-                  value={name}
-                  type="text"
-                  onChange={e => setName(e.target.value)}
-                />
-              </div>
-          </div>: null
-        }
+            <div className="input full">
+              <label style={{ cursor: 'default' }} className="string optional">
+                {covi.getDic('Group_Name', '그룹 이름')}
+              </label>
+              <input
+                className="string optional"
+                placeholder={covi.getDic(
+                  'Input_Group_Name',
+                  '그룹명을 입력하세요.',
+                )}
+                value={name}
+                type="text"
+                onChange={e => setName(e.target.value)}
+              />
+            </div>
+          </div>
+        ) : null}
         <div className="tabcontent active">
           <div className="AddUserCon">
             <OrgChart viewType="checklist" checkObj={checkObj} />

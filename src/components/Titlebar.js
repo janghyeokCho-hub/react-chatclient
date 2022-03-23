@@ -201,8 +201,8 @@ const Titlebar = () => {
           <button
             className="minisize"
             style={{ WebkitAppRegion: 'no-drag' }}
-            alt={covi.getDic('Minimize')}
-            title={covi.getDic('Minimize')}
+            alt={covi.getDic('Minimize', '최소화')}
+            title={covi.getDic('Minimize', '최소화')}
             onClick={e => {
               evalConnector({
                 method: 'window-minimize',
@@ -221,8 +221,8 @@ const Titlebar = () => {
           ></button>
           <button
             className="close"
-            alt={covi.getDic('Close')}
-            title={covi.getDic('Close')}
+            alt={covi.getDic('Close', '닫기')}
+            title={covi.getDic('Close', '닫기')}
             style={{ WebkitAppRegion: 'no-drag' }}
             onClick={e => {
               let closeAlertMessageFlag = false;
@@ -239,7 +239,10 @@ const Titlebar = () => {
                 openPopup(
                   {
                     type: 'Confirm',
-                    message: covi.getDic('Msg_FileSendingClose'),
+                    message: covi.getDic(
+                      'Msg_FileSendingClose',
+                      '파일이 업로드 중입니다. \r\n창을 종료시 파일 전송이 취소 됩니다.',
+                    ),
                     callback: result => {
                       if (result) {
                         closeWindow();

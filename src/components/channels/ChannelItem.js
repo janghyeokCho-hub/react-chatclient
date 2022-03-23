@@ -47,7 +47,7 @@ const makeDateTime = timestamp => {
 };
 
 const makeMessageText = async lastMessage => {
-  let returnText = covi.getDic('Msg_NoMessages');
+  let returnText = covi.getDic('Msg_NoMessages', '대화내용 없음');
 
   try {
     let msgObj = null;
@@ -76,7 +76,8 @@ const makeMessageText = async lastMessage => {
       if (common.eumTalkRegularExp.test(drawText)) {
         const messageObj =
           await common.convertEumTalkProtocolPreviewForChannelItem(drawText);
-        if (messageObj.type == 'emoticon') returnText = covi.getDic('Emoticon');
+        if (messageObj.type == 'emoticon')
+          returnText = covi.getDic('Emoticon', '이모티콘');
         else returnText = messageObj.message.split('\n')[0];
       } else {
         // 첫줄만 노출
@@ -103,14 +104,16 @@ const makeMessageText = async lastMessage => {
           firstObj.ext == 'bmp'
         ) {
           // 사진 외 %s건
-          returnText = common.getSysMsgFormatStr(covi.getDic('Tmp_imgExCnt'), [
-            { type: 'Plain', data: fileObj.length - 1 },
-          ]);
+          returnText = common.getSysMsgFormatStr(
+            covi.getDic('Tmp_imgExCnt', '사진 외 %s건'),
+            [{ type: 'Plain', data: fileObj.length - 1 }],
+          );
         } else {
           // 파일 외 %s건
-          returnText = common.getSysMsgFormatStr(covi.getDic('Tmp_fileExCnt'), [
-            { type: 'Plain', data: fileObj.length - 1 },
-          ]);
+          returnText = common.getSysMsgFormatStr(
+            covi.getDic('Tmp_fileExCnt', '파일 외 %s건'),
+            [{ type: 'Plain', data: fileObj.length - 1 }],
+          );
         }
       } else {
         if (
@@ -119,9 +122,9 @@ const makeMessageText = async lastMessage => {
           fileObj.ext == 'jpeg' ||
           fileObj.ext == 'bmp'
         ) {
-          returnText = covi.getDic('Image');
+          returnText = covi.getDic('Image', '사진');
         } else {
-          returnText = covi.getDic('File');
+          returnText = covi.getDic('File', '파일');
         }
       }
     }
@@ -150,7 +153,7 @@ const ChannelItem = ({
     evalConnector({
       method: 'on',
       channel: 'onNewDeleteMessage',
-      callback: (event, args) => {
+      callback: (_, args) => {
         console.log('onNewDeleteMessage called >> ', args);
       },
     });
@@ -226,8 +229,11 @@ const ChannelItem = ({
         openPopup(
           {
             type: 'Confirm',
-            title: covi.getDic('Eumtalk'),
-            message: covi.getDic('Msg_AskEnterChannel'),
+            title: covi.getDic('Eumtalk', '이음톡'),
+            message: covi.getDic(
+              'Msg_AskEnterChannel',
+              '해당 채널에 참여하시겠습니까?',
+            ),
             initValue: '',
             callback: result => {
               if (result) {
@@ -237,15 +243,21 @@ const ChannelItem = ({
                     {
                       type: 'Prompt',
                       inputType: 'password',
-                      title: covi.getDic('ChannelPassword'),
-                      message: covi.getDic('Msg_InputChannelPassword'),
+                      title: covi.getDic('ChannelPassword', '가입암호'),
+                      message: covi.getDic(
+                        'Msg_InputChannelPassword',
+                        '가입시 필요한 암호를 입력하세요.',
+                      ),
                       initValue: '',
                       callback: result => {
                         if (!result) {
                           openPopup(
                             {
                               type: 'Custom',
-                              message: covi.getDic('Msg_InputChannelPassword'),
+                              message: covi.getDic(
+                                'Msg_InputChannelPassword',
+                                '가입시 필요한 암호를 입력하세요.',
+                              ),
                             },
                             dispatch,
                           );
@@ -299,15 +311,21 @@ const ChannelItem = ({
           {
             type: 'Prompt',
             inputType: 'password',
-            title: covi.getDic('ChannelPassword'),
-            message: covi.getDic('Msg_InputChannelPassword'),
+            title: covi.getDic('ChannelPassword', '가입암호'),
+            message: covi.getDic(
+              'Msg_InputChannelPassword',
+              '가입시 필요한 암호를 입력하세요.',
+            ),
             initValue: '',
             callback: result => {
               if (!result) {
                 openPopup(
                   {
                     type: 'Custom',
-                    message: covi.getDic('Msg_InputChannelPassword'),
+                    message: covi.getDic(
+                      'Msg_InputChannelPassword',
+                      '가입시 필요한 암호를 입력하세요.',
+                    ),
                   },
                   dispatch,
                 );
@@ -398,7 +416,9 @@ const ChannelItem = ({
         {channel.openType != 'O' && <span className="private" />}
         <span className="channelName">
           <span>
-            {channel.roomName == '' ? covi.getDic('NoTitle') : channel.roomName}
+            {channel.roomName == ''
+              ? covi.getDic('NoTitle', '제목없음')
+              : channel.roomName}
           </span>
           <span className="categoryName">
             {channel.categoryName ? `(${channel.categoryName})` : ''}
@@ -412,7 +432,7 @@ const ChannelItem = ({
             ></span>
             <span className="preview">
               {channel.description == ''
-                ? covi.getDic('NoDescription')
+                ? covi.getDic('NoDescription', '설명없음')
                 : channel.description}
             </span>
           </>
