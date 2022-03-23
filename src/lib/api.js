@@ -150,12 +150,19 @@ export const managesvr = (
   return axios(reqOptions);
 };
 
-export const filesvr = (method, url, params, headers, downloadHandler) => {
+export const filesvr = (
+  method,
+  url,
+  params,
+  headers,
+  downloadHandler,
+  responseType = 'arraybuffer',
+) => {
   const reqOptions = {
     method: method,
     url: `${MANAGE_SERVER}${url}`,
     data: params,
-    responseType: 'arraybuffer',
+    responseType,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Covi-User-Access-Version': APP_VERSION,
