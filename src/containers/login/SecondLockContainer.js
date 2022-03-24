@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getAesUtil } from '@/lib/aesUtil';
 import { getDictionary, getJobInfo, openPopup } from '@/lib/common';
 
+import * as loginApi from '@/lib/login';
+
 const SecondLockWrap = styled.div`
   display: flex;
   flex-direction: column;
@@ -47,17 +49,28 @@ const SecondPasswordConfirmBox = styled.button`
 
 const SecondLockContainer = ({ theme, secondLockHandler }) => {
   const userInfo = useSelector(({ login }) => login.userInfo);
+  const userId = useSelector(({ login }) => login.id);
 
   const [password, setPassword] = useState('');
   const [viewImage, setViewImage] = useState(true);
 
-  const handleUnlock = pw => {
+  const handleUnlockWithLoginAPI = async pw => {
     const AESUtil = getAesUtil();
 
-    const targetPW = localStorage.getItem('lockHash');
     const inputPW = AESUtil.encrypt(pw);
 
-    if (targetPW === inputPW) {
+    const reqData = {
+      id: userId,
+      pw: inputPW,
+      dp: process.platform,
+      da: process.arch,
+      al: 'N',
+      isAuto: false,
+    };
+
+    const response = await loginApi.loginValidationRequest(reqData);
+
+    if (response?.data?.status === 'SUCCESS') {
       secondLockHandler();
     } else {
       openPopup(
@@ -153,13 +166,13 @@ const SecondLockContainer = ({ theme, secondLockHandler }) => {
           }}
           onKeyDown={e => {
             if (e.key === 'Enter') {
-              handleUnlock(password);
+              handleUnlockWithLoginAPI(password);
             }
           }}
         />
         <SecondPasswordConfirmBox
           onClick={() => {
-            handleUnlock(password);
+            handleUnlockWithLoginAPI(password);
           }}
           style={
             password?.length > 0
