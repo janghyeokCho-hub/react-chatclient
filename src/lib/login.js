@@ -40,3 +40,10 @@ export const logoutRequest = params => {
 export const tokencheckRequest = params => {
   return managesvr('post', '/na/m/v/k', params);
 };
+
+export const loginValidationRequest = params => {
+  return _loginRequest('post', '/na/m/loginVali', params, {
+    useMACAddress: true,
+    useMACEncryption: true,
+  });
+};
