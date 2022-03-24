@@ -39,10 +39,10 @@ const makeMessage = async msg => {
 const ShareContainer = ({
   headerName = covi.getDic('Msg_Note_Forward', '전달하기'),
   message,
+  context,
   messageType,
 }) => {
   const dispatch = useDispatch();
-
   const [messageText, setMessageText] = useState('');
   const [members, setMembers] = useState([]);
   const [rooms, setRooms] = useState([]);
@@ -67,9 +67,11 @@ const ShareContainer = ({
 
   useLayoutEffect(() => {
     if (messageType === 'message') {
-      makeMessage(message.context).then(result => {
+      makeMessage(context).then(result => {
         setMessageText(result);
       });
+    } else {
+      setMessageText(context || '');
     }
   }, [message]);
 
@@ -347,6 +349,9 @@ const ShareContainer = ({
     }
 
     let params = await makeParams();
+    if (!params) {
+      return;
+    }
     if (
       params.targetType === 'CHAT' &&
       params.roomType === 'M' &&
@@ -514,7 +519,7 @@ const ShareContainer = ({
   }, [dispatch, selectTab, members, rooms, channels]);
 
   const handleMessage = async params => {
-    let result;
+    let response;
     let msg = covi.getDic(
       'Msg_ForwardingWasSuccessful',
       '전달에 성공 하였습니다.',
@@ -522,20 +527,22 @@ const ShareContainer = ({
 
     switch (params.targetType) {
       case 'CHAT':
-        result = await sendMessage(params);
+        response = await sendMessage(params);
         break;
       case 'CHANNEL':
-        result = await sendChannelMessage(params);
+        response = await sendChannelMessage(params);
         break;
       case 'NEWROOM':
-        result = await createRoom(params);
+        response = await createRoom(params);
         break;
     }
 
-    if (result?.data?.status !== 'SUCCESS') {
+    const { status } = response.data;
+
+    if (status !== 'SUCCESS') {
       msg = covi.getDic('Msg_ForwardingWasFailed', '전달에 실패 하였습니다.');
     }
-    sharePopup({ status: result?.data?.status, msg });
+    sharePopup({ status, msg });
   };
 
   return (
