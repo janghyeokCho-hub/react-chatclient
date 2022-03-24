@@ -359,6 +359,12 @@ const MessagePostBox = forwardRef(
 
     const handleKeyDown = useCallback(
       e => {
+        if (e.key === 'PageUp' || e.key === 'PageDown') {
+          const cursorPosition = e.key === 'PageUp' ? 0 : e.target.textLength;
+
+          e.preventDefault();
+          e.target.setSelectionRange(cursorPosition, cursorPosition);
+        }
         if (!e.shiftKey && e.keyCode == 13) {
           if (viewExtension === 'M' && suggestionMembers.length > 0) {
             // 멘션 리스트가 열려 있을 경우에는 Enter 이벤트가 치환됨.
