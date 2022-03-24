@@ -208,12 +208,13 @@ const MessageList = ({ onExtension, viewExtension }) => {
                     {
                       component: (
                         <ShareContainer
-                          messageType={messageType}
                           headerName={covi.getDic(
                             'Msg_Note_Forward',
                             '전달하기',
                           )}
-                          message={message.context}
+                          message={message}
+                          context={message.context}
+                          messageType={messageType}
                         />
                       ),
                     },
@@ -249,6 +250,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
             );
           }
         } else if (messageType === 'files') {
+          // 파일을 전달할 경우 파일 토큰의 유효성을 먼저 검증
           menus.push({
             code: 'shareMessage',
             isline: false,
@@ -287,6 +289,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
                       <ShareContainer
                         headerName={covi.getDic('Msg_Note_Forward')}
                         message={message}
+                        context={message.context}
                         messageType={messageType}
                       />
                     ),
