@@ -528,13 +528,13 @@ const MessageList = ({ onExtension, viewExtension }) => {
                   setClickNewMessageSeperator(true);
                 }}
               >
-                <span></span>
-                <span className="ico-arrow">
+                <span>
                   {covi.getDic(
                     'MoveToFirstUnreadMessage',
                     '읽지 않은 첫번째 메세지로 이동',
                   )}
                 </span>
+                <span className="ico-arrow"></span>
               </span>
               <span
                 style={{ position: 'absolute', right: '-25px', top: '7px' }}
