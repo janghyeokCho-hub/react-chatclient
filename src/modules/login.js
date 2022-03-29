@@ -103,23 +103,6 @@ function createLoginRequestSaga(loginType, syncType) {
       try {
         yield put(startLoading(loginType));
         const response = yield call(loginApi.loginRequest, action.payload);
-        // macAddr 체크 (서버로 macAddr 보내지 않고 서버에서 받은 white list와 직접 비교)
-        //TODO: 한국투자공사 :: macaddress capture 불가 이슈
-        /*
-        if (DEVICE_TYPE === 'd') {
-          const macAddr = yield call(evalConnector, {
-            method: 'sendSync',
-            channel: 'req-get-macaddr',
-            message: {},
-          });
-
-          if (typeof macAddr === 'object' && macAddr !== null) {
-            for (const [key, values] of Object.entries(macAddr)) {
-              console.log(`${key}:: ${values.mac}`);
-            }
-          }
-        }
-         */
 
         yield put(finishLoading(loginType));
         if (response.data.status == 'SUCCESS') {
@@ -137,10 +120,7 @@ function createLoginRequestSaga(loginType, syncType) {
             // 동기화 시작
             yield put(startLoading(syncType));
 
-            // 화면 잠금
-            yield localStorage.setItem('lockHash', action.payload.pw);
-
-            // 1. presence online 처리
+            // desktop sync
             if (DEVICE_TYPE == 'd') {
               yield call(presenceApi.pubPresence, {
                 userId: action.payload.id,
