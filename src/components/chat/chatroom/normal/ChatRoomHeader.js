@@ -25,23 +25,23 @@ const useTitle = (room, id) => {
         if (room.roomType === 'M' || room.roomType === 'O') {
           // M의 경우 남은 값이 1개
           const target = filterMember[0];
-
           roomName.current = getJobInfo(target);
         } else {
           if (room.roomName && room.roomName !== '') {
             roomName.current = room.roomName;
+          } else {
+            if (filterMember.length == 0) {
+              roomName.current = covi.getDic('NoChatMembers', '대화상대없음');
+            } else {
+              const memberTextArr = filterMember.map(item => getJobInfo(item));
+
+              roomName.current = `${memberTextArr.slice(0, 5).join(',')}${
+                memberTextArr.length > 5 ? '...' : ''
+              }`;
+            }
           }
-
-          if (filterMember.length == 0)
-            roomName.current = covi.getDic('NoChatMembers', '대화상대없음');
-
-          const memberTextArr = filterMember.map(item => getJobInfo(item));
-
-          roomName.current = `${memberTextArr.slice(0, 5).join(',')}${
-            memberTextArr.length > 5 ? '...' : ''
-          }`;
         }
-
+        console.log(roomName.current);
         roomName.current && setWindowTitle(roomName.current);
       } catch (e) {}
     }
