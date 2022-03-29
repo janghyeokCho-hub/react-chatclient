@@ -17,11 +17,6 @@ import { closeWindow, evalConnector } from '@/lib/deviceConnector';
 
 // DESKTOP Local File DB
 createStorage();
-window.addEventListener('keydown', e => {
-  if (e.keyCode == 27) {
-    closeWindow();
-  }
-});
 
 const sagaMiddleware = createSagaMiddleware();
 

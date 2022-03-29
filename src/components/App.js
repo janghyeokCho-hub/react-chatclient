@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch } from 'react-router-dom';
-import { evalConnector } from '@/lib/deviceConnector';
-
+import { closeWindow, evalConnector } from '@/lib/deviceConnector';
 import TokenChecker from '@COMMON/TokenChecker';
 import URLChecker from '@COMMON/URLChecker';
 import SocketContainer from '@/containers/socket/SocketContainer';
-
 import { hot } from 'react-hot-loader';
-
+import { popLayer } from '@/modules/mainlayer';
 import {
   IndexMain,
   LoginMain,
@@ -30,11 +28,9 @@ import {
   NoteReceive,
   NoteReadList,
 } from '@C/route/main/index.async';
-
 import SimplePopup from '@COMMON/popup/SimplePopup';
 import PresenceContainer from '@/containers/presence/PresenceContainer';
 import SecondLockContainer from '@/containers/login/SecondLockContainer';
-
 import Titlebar from '@C/Titlebar';
 import { Helmet } from 'react-helmet';
 
@@ -48,7 +44,21 @@ class App extends Component {
       view: this.getContext(),
       unlockSecondPassword: false,
     };
+    this.setEscEventListner();
   }
+
+  setEscEventListner = () => {
+    window.addEventListener('keydown', e => {
+      if (e.key  == 'Escape') {
+        const { layer, popLayer } = this.props;
+        if (layer.length == 1) {
+          popLayer();
+        } else if (DEVICE_TYPE == 'd') {
+          closeWindow();
+        }
+      }
+    });
+  };
 
   getContext = () => {
     const context = global.location.hash;
@@ -69,7 +79,6 @@ class App extends Component {
     } else if (!token && !localToken) {
       gotoURL = '/client';
     }
-
     return { tokenCheckFlag: tokenCheckFlag, gotoURL: gotoURL };
   };
 
@@ -337,20 +346,26 @@ const appModule = () => {
   if (DEVICE_TYPE == 'b') {
     return hot(module)(
       connect(
-        ({ login, menu }) => ({
+        ({ login, menu, mainlayer }) => ({
           token: login.token,
           theme: menu.theme,
+          layer: mainlayer.layer,
         }),
-        {},
+        dispatch => ({
+          popLayer: () => dispatch(popLayer()),
+        }),
       )(App),
     );
   } else {
     return connect(
-      ({ login, menu }) => ({
+      ({ login, menu, mainlayer }) => ({
         token: login.token,
         theme: menu.theme,
+        layer: mainlayer.layer,
       }),
-      {},
+      dispatch => ({
+        popLayer: () => dispatch(popLayer()),
+      }),
     )(App);
   }
 };
