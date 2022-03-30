@@ -109,15 +109,24 @@ export default function NoticeTalk({ match, location, history }) {
   }
 
   function removeTarget(name) {
-    const filtered = targets.filter(t => {
-      return t.name !== name;
-    });
-    setTargets(filtered);
+    setTargets(targets.filter(t => t.name !== name));
   }
 
   const checkedAll = () => {
     setCheckAll(!checkAll);
   };
+
+  const handleKeyDown = useCallback(
+    e => {
+      if (e.key === 'PageUp' || e.key === 'PageDown') {
+        const cursorPosition = e.key === 'PageUp' ? 0 : e.target.textLength;
+        e.preventDefault();
+        e.target.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    },
+    [],
+  );
+
 
   async function handleSend() {
     if (isSending === true) {
@@ -133,16 +142,13 @@ export default function NoticeTalk({ match, location, history }) {
 
     if (noticeSubject) {
       subjectId = noticeSubject.subjectId;
-    }
-
-    if (!subjectId) {
+    } else {
       _popupResult(
         dispatch,
         covi.getDic('Msg_Noti_EnterChannel', '알림채널을 선택하세요'),
       );
       return;
     }
-
     if (selectTargets.length === 0 && !checkAll) {
       _popupResult(
         dispatch,
@@ -173,8 +179,6 @@ export default function NoticeTalk({ match, location, history }) {
       const { data } = await chatsvr('post', '/notice/talk', sendData);
 
       if (data) {
-        console.log('sendData', sendData);
-
         _popupResult(
           dispatch,
           covi.getDic('Msg_Noti_SendSuccess', '알림톡 전송에 성공했습니다.'),
@@ -246,7 +250,13 @@ export default function NoticeTalk({ match, location, history }) {
               <li>
                 <div className="add" onClick={handleNotificationPopup}>
                   <a className="ui-link">
-                    <div className="profile-photo add"></div>
+                    <div
+                      className={
+                        noticeSubject
+                          ? 'profile-photo addChange'
+                          : 'profile-photo add'
+                      }
+                    ></div>
                   </a>
                 </div>
               </li>
@@ -267,7 +277,6 @@ export default function NoticeTalk({ match, location, history }) {
                 onClick={checkedAll}
                 checked={checkAll}
               />
-
               <label for="chkStyle03" className="Style03" />
               <p> {covi.getDic('All_Recipient', '전체공지')}</p>
             </div>
@@ -303,23 +312,20 @@ export default function NoticeTalk({ match, location, history }) {
                   </li>
                 );
               })}
-              {checkAll ? (
-                <>
-                  <li className="add-disable">
-                    <a className="ui-link">
-                      <div className="profile-photo add-disable"></div>
-                    </a>
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li className="add" onClick={addTarget}>
-                    <a className="ui-link">
-                      <div className="profile-photo add"></div>
-                    </a>
-                  </li>
-                </>
-              )}
+              <li
+                className={checkAll ? 'add-disable' : 'add'}
+                onClick={!checkAll ? addTarget : () => {}}
+              >
+                <a className="ui-link">
+                  <div
+                    className={
+                      checkAll
+                        ? 'profile-photo add-disable'
+                        : 'profile-photo add'
+                    }
+                  ></div>
+                </a>
+              </li>
             </ul>
           </div>
           {/* 내용 */}
@@ -335,6 +341,7 @@ export default function NoticeTalk({ match, location, history }) {
                 </label>
                 <textarea
                   ref={editorRef}
+                  onKeyDown={handleKeyDown}
                   autoFocus
                   className="messafe-to-send"
                   onChange={e => {
