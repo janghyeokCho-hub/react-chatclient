@@ -6,13 +6,13 @@ import { takeLatest, call, put, throttle } from 'redux-saga/effects';
 import * as messageApi from '@/lib/message';
 import * as channelApi from '@/lib/channel';
 import { modifyRoomSetting } from '@/lib/room';
-import createRequestSaga, {
+import {
   createRequestActionTypes,
   exceptionHandler,
 } from '@/lib/createRequestSaga';
 import produce from 'immer';
 import { removeChannelTempMessage, setMoveView } from '@/modules/message';
-import { changeNewMark, setCurrentChannel } from '@/modules/menu';
+import { setCurrentChannel } from '@/modules/menu';
 import {
   isMainWindow,
   resetParentUnreadCount,
@@ -21,9 +21,6 @@ import {
 import { startLoading, finishLoading } from '@/modules/loading';
 import { changeOpenRoom } from '@/modules/room';
 import { get } from '@/lib/util/storageUtil';
-
-import { format } from 'date-fns';
-import { fi } from 'date-fns/locale';
 
 const INIT = 'channel/INIT';
 const SET_CHANNELS = 'channel/SET_CHANNELS';
@@ -342,9 +339,8 @@ function createReceiveMessageSaga() {
     }
   };
 }
-
+/* 2022-04-01 대화삭제 로직 보완 중복으로 주석처리.
 const deleteMessageSaga = createDeleteMessageSaga();
-
 function createDeleteMessageSaga() {
   return function* (action) {
     if (action.payload) {
@@ -363,6 +359,7 @@ function createDeleteMessageSaga() {
     }
   };
 }
+*/
 
 const receiveMessageSaga = createReceiveMessageSaga();
 
@@ -792,7 +789,7 @@ export function* channelSaga() {
   yield takeLatest(UPDATE_CHANNELS, updateChannelsSaga);
   yield takeLatest(GET_CHANNEL_CATEGORIES, getChannelCategoriesSaga);
   yield takeLatest(RECEIVE_MESSAGE, receiveMessageSaga);
-  yield takeLatest(DELETE_MESSAGE, deleteMessageSaga);
+  // yield takeLatest(DELETE_MESSAGE, deleteMessageSaga);
   yield takeLatest(OPEN_CHANNEL, openChannelSaga);
   yield takeLatest(GET_CHANNEL_INFO, getChannelInfoSaga);
   yield takeLatest(GET_CHANNEL_NOTICE, getChannelNoticeSaga);
