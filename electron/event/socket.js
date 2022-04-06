@@ -9,6 +9,7 @@ export const reqSocketConnect = (event, args) => {
   const preFuncs = {
     onNewMessage: socketAction.onNewMessage,
     onDelMessage: socketAction.onDelMessage,
+    onDelChannelMessage: socketAction.onDelChannelMessage,
     onNewNoteMessage: socketAction.onNewNoteMessage,
     onPresenceChanged: socketAction.onPresenceChanged,
     onChatRoomInvitation: socketAction.onChatRoomInvitation,
@@ -18,7 +19,7 @@ export const reqSocketConnect = (event, args) => {
     onNewNotice: socketAction.onNewNotice,
     onNewChannelMessage: socketAction.onNewChannelMessage,
     onNewChannelNotice: socketAction.onNewChannelMessage,
-    onAppUpdateConfig: socketAction.onAppUpdateConfig
+    onAppUpdateConfig: socketAction.onAppUpdateConfig,
   };
 
   if (CONN_SOCKET == null || CONN_SOCKET.disconnect) {
@@ -29,12 +30,12 @@ export const reqSocketConnect = (event, args) => {
       // rejectUnauthorized: false,
     });
 
-    CONN_SOCKET.on('message', (data) => {
+    CONN_SOCKET.on('message', data => {
       if (data.result === 'success') {
         logger.info('token auth :: success');
 
         // 모든창에 메세지 전송
-        BrowserWindow.getAllWindows().forEach((win) => {
+        BrowserWindow.getAllWindows().forEach(win => {
           if (win)
             win.webContents.send('socket-event', {
               channel: 'onConnected',
@@ -42,14 +43,14 @@ export const reqSocketConnect = (event, args) => {
             });
         });
 
-        Object.keys(preFuncs).forEach((key) => {
+        Object.keys(preFuncs).forEach(key => {
           if (CONN_SOCKET.hasListeners(key)) CONN_SOCKET.off(key);
 
           CONN_SOCKET.on(
             key,
-            ((method) => {
+            (method => {
               const preFunc = method;
-              return (payload) => {
+              return payload => {
                 logger.info('event receive :: ' + key);
                 if (typeof preFunc == 'function') {
                   logger.info('pre porc method exec');
@@ -58,7 +59,7 @@ export const reqSocketConnect = (event, args) => {
                 }
 
                 // 모든창에 메세지 전송
-                BrowserWindow.getAllWindows().forEach((win) => {
+                BrowserWindow.getAllWindows().forEach(win => {
                   if (win)
                     win.webContents.send('socket-event', {
                       channel: key,
@@ -82,11 +83,11 @@ export const reqSocketConnect = (event, args) => {
       CONN_SOCKET.emit('message', {
         token: args.token,
         // accessid : Covi-User-Access-ID
-        accessid: args.accessid
+        accessid: args.accessid,
       });
     });
 
-    CONN_SOCKET.on('connect_error', (evt) => {
+    CONN_SOCKET.on('connect_error', evt => {
       console.dir(evt);
       logger.info('socket connect_error event :: force new connect');
     });
@@ -95,7 +96,7 @@ export const reqSocketConnect = (event, args) => {
       logger.info('socket connect_error event :: force new connect');
     });
 
-    CONN_SOCKET.on('error', (evt) => {
+    CONN_SOCKET.on('error', evt => {
       console.dir(evt);
       logger.info('socket error event :: force new connect');
     });
@@ -103,7 +104,7 @@ export const reqSocketConnect = (event, args) => {
     CONN_SOCKET.on('disconnect', () => {
       socketAction.onDisconnected();
       // 모든창에 메세지 전송
-      BrowserWindow.getAllWindows().forEach((win) => {
+      BrowserWindow.getAllWindows().forEach(win => {
         if (win)
           win.webContents.send('socket-event', {
             channel: 'onDisconnected',
@@ -133,7 +134,7 @@ export const checkNetwork = (event, args) => {
       event.sender.send('onNetworkStatus', true);
     });
 
-    check.on('connect_error', (evt) => {
+    check.on('connect_error', evt => {
       event.sender.send('onNetworkStatus', false);
     });
 
@@ -141,7 +142,7 @@ export const checkNetwork = (event, args) => {
       event.sender.send('onNetworkStatus', false);
     });
 
-    check.on('error', (evt) => {
+    check.on('error', evt => {
       event.sender.send('onNetworkStatus', false);
     });
   } else {
