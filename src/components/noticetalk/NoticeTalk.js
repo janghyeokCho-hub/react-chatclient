@@ -48,6 +48,7 @@ export default function NoticeTalk({ match, location, history }) {
   const [isSending, setIsSending] = useState(false);
   const [context, setContext] = useState('');
   const [checkAll, setCheckAll] = useState(false);
+  const [url, setUrl] = useState('');
 
   useLayoutEffect(() => {
     const { noteId, noteInfo } = viewState;
@@ -77,6 +78,10 @@ export default function NoticeTalk({ match, location, history }) {
       setTargets([]);
     };
   }, []);
+
+  useEffect(()=>{
+    console.log('ff',url)
+  },[url])
 
   const addTarget = useCallback(() => {
     appendLayer(
@@ -309,7 +314,7 @@ export default function NoticeTalk({ match, location, history }) {
             </ul>
           </div>
           {/* 내용 */}
-          <ContextBox  setContext={setContext} />
+          <ContextBox  setContext={setContext} setUrl={setUrl}  url={url}/>
         </Scrollbars>
         <div className="layer-bottom-btn-wrap right">
           <a className="Btn-pointcolor-mini" onClick={handleSend}>

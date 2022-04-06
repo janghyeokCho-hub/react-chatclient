@@ -1,7 +1,7 @@
 import React, { createRef, useCallback, useState } from 'react';
 
 function ContextBox(props) {
-  const { setContext } = props;
+  const { setContext, url, setUrl } = props;
   const [checkLink, setCheckLink] = useState(false);
   const editorRef = createRef();
 
@@ -42,7 +42,7 @@ function ContextBox(props) {
           {checkLink && (
             <div className="addLink">
               <label for="inputUrl">바로가기 URL: </label>
-              <input id="inputUrl" type="text" />
+              <input value={url} onChange={e => setUrl(e.target.value)} id="inputUrl" type="text" />
             </div>
           )}
           <textarea
