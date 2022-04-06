@@ -52,7 +52,7 @@ const ProfileBox = ({
           // url이 relative path인 경우 catch error
           photoSrc = new URL(img, window.covi.baseURL);
           photoSrc.searchParams.append('t', timestamp);
-        } catch(err) {
+        } catch (err) {
           photoSrc = img;
         }
       }
