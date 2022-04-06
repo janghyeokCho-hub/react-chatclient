@@ -458,11 +458,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
             name: covi.getDic('Forward'),
           });
         }
-        if (
-          messageType !== 'files' &&
-          useMessageDelete &&
-          message?.isMine === 'Y'
-        ) {
+        if (useMessageDelete && message?.isMine === 'Y') {
           menus.push({
             name: covi.getDic('Delete', '삭제'),
             code: 'deleteMessage',

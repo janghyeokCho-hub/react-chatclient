@@ -23,6 +23,7 @@ const MessageView = ({
 }) => {
   const channelBox = useRef(null);
   const contentEditable = useRef(null);
+  const useMessageDelete = getConfig('UseChannelDeleteMessage', false) === true;
 
   const readMessageEvt = useCallback(
     e => {
@@ -129,7 +130,11 @@ const MessageView = ({
         onNewWin={onNewWin}
         isNewWin={isNewWin}
       />
-      <MessageList onExtension={onExtension} viewExtension={viewExtension} />
+      <MessageList
+        onExtension={onExtension}
+        viewExtension={viewExtension}
+        useMessageDelete={useMessageDelete}
+      />
       <MessagePostBox
         postAction={postAction}
         viewExtension={viewExtension}
