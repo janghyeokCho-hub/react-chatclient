@@ -462,6 +462,7 @@ export const handleDelChatroomMessage = dispatch => {
 };
 
 // 채널 메시지 삭제 (Broswer)
+/*
 export const handleDelChannelMessageInBrowser = dispatch => {
   return data => {
     const json_data = JSON.parse(data);
@@ -473,16 +474,33 @@ export const handleDelChannelMessageInBrowser = dispatch => {
     }
   };
 };
+*/
 
 // 채널 메시지 삭제 (Desktop)
+/*
 export const handleDelChannelMessageInDesktop = dispatch => {
   return data => {
     const json_data = JSON.parse(data);
-
+    console.log(json_data);
     if (json_data.messageType === 'I') {
       dispatch(receiveDeletedChannelNotice(json_data));
     } else {
-      dispatch(deleteMessage(json_data));
+      // 2022-04-01 채널 메시지 삭제 로직 보완 : 중복
+      // dispatch(deleteMessage(json_data));
+      dispatch(receiveDeletedChannelMessage(json_data));
+    }
+  };
+};
+*/
+
+// 채널 메시지 삭제 (Broswer/Desktop 나눌 필요 없어보임)
+export const handleDelChannelMessage = dispatch => {
+  return data => {
+    const json_data = JSON.parse(data);
+    console.log(json_data);
+    if (json_data.messageType === 'I') {
+      dispatch(receiveDeletedChannelNotice(json_data));
+    } else {
       dispatch(receiveDeletedChannelMessage(json_data));
     }
   };

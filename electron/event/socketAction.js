@@ -5,14 +5,14 @@ import { setHot } from '../utils/trayUtils';
 import * as loginInfo from '../utils/loginInfo';
 import logger from '../utils/logger';
 
-
-//앱 자동 동기화 
+//앱 자동 동기화
 export const onAppUpdateConfig = payload => {
-// console.log('onAppUpdateConfig payload check >> ',payload)
-    if(payload.platform == 'PC'){   
+  // console.log('onAppUpdateConfig payload check >> ',payload)
+  if (payload.platform == 'PC') {
     const parentWin = BrowserWindow.fromId(1);
     parentWin.webContents.send('sync-alert', {
-    payload,})
+      payload,
+    });
   }
 };
 
@@ -21,9 +21,6 @@ export const onNewMessage = payload => {
   payload.sender == loginInfo.getData().id && (payload.isMine = 'Y');
   // flashFrame evt 발생 ( 자기자신에게 발생한 메세지 처리 안함 )
   if (payload.isMine != 'Y' && payload.roomID) {
-
-
-    
     // 선택된 id가 없으면 무조건 부모창
     if (USER_SETTING.config.desktopNoti) {
       const id = ROOM_WIN_MAP[payload.roomID];
@@ -205,7 +202,7 @@ export const onNewChannelMessage = payload => {
     if (context?.templateKey === 'Tmp_noticeOff') {
       return;
     }
-  } catch(err) {}
+  } catch (err) {}
   // 자기자신 메세지 확인
   payload.sender == loginInfo.getData().id && (payload.isMine = 'Y');
 
@@ -245,10 +242,12 @@ export const onNewChannelMessage = payload => {
   }
 };
 
-export const onNewNoteMessage = (payload) => {
+export const onNewNoteMessage = payload => {
   try {
     const title = common.getDictionary(payload.multiDisplayName);
-    const message = payload?.subject || common.getDictionary('새 쪽지;New note;新笔记;新しいメモ');
+    const message =
+      payload?.subject ||
+      common.getDictionary('새 쪽지;New note;新笔记;新しいメモ');
     const noteId = parseInt(payload.noteId);
     const isEmergency = payload.emergency === 'Y';
 
@@ -257,16 +256,19 @@ export const onNewNoteMessage = (payload) => {
       title,
       message,
       isEmergency,
-      photoPath: payload?.photoPath
+      photoPath: payload?.photoPath,
     });
     setHot(true);
   } catch (err) {
     console.log('onNewNoteMessage Err : ', err);
     // log error
   }
-
-}
-export const onDelMessage = (payload) => {
+};
+export const onDelMessage = payload => {
   appData.deleteChatroomMessage(payload);
   return;
-}
+};
+export const onDelChannelMessage = payload => {
+  appData.deleteChannelMessage(payload);
+  return;
+};

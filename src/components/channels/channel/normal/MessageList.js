@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 
 import { setMessages, initMessages } from '@/modules/channel';
 import { setChannelNotice } from '@/lib/channel';
-import * as messageApi from '@/lib/message';
+import { getChannelMessages, deleteChannelMessage } from '@/lib/message';
 import {
   openPopup,
   eumTalkRegularExp,
@@ -44,7 +44,7 @@ const makeMessage = async msg => {
   }
 };
 
-const MessageList = ({ onExtension, viewExtension }) => {
+const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const tempMessage = useSelector(({ message }) => message.tempChannelMessage);
   const tempFiles = useSelector(({ message }) => message.tempFiles);
   const messages = useSelector(({ channel }) => channel.messages);
@@ -123,29 +123,27 @@ const MessageList = ({ onExtension, viewExtension }) => {
         // 실제로 불러와야 할 메시지가 달라진 경우에만 처리
         setLoading(true);
         const startID = messages[0].messageID;
-        messageApi
-          .getChannelMessages({
-            roomId: roomID,
-            startId: startID,
-            loadCnt: 100,
-            dist: 'NEXT',
-          })
-          .then(({ data }) => {
-            if (data.status == 'SUCCESS') {
-              const result = data.result;
-              if (result.length > 0) {
-                setNextPage(result);
-              } else {
-                setNextPage([]);
-                setTopEnd(true);
-              }
-              setLoading(false);
+        getChannelMessages({
+          roomId: roomID,
+          startId: startID,
+          loadCnt: 100,
+          dist: 'NEXT',
+        }).then(({ data }) => {
+          if (data.status == 'SUCCESS') {
+            const result = data.result;
+            if (result.length > 0) {
+              setNextPage(result);
             } else {
               setNextPage([]);
               setTopEnd(true);
-              setLoading(false);
             }
-          });
+            setLoading(false);
+          } else {
+            setNextPage([]);
+            setTopEnd(true);
+            setLoading(false);
+          }
+        });
       }
     },
     [loading, messages, topEnd],
@@ -302,11 +300,12 @@ const MessageList = ({ onExtension, viewExtension }) => {
           });
         }
 
-        if (messageType !== 'files' && message.isMine == 'Y') {
+        if (useMessageDelete && message.isMine == 'Y') {
           menus.push({
+            name: covi.getDic('Delete', '삭제'),
             code: 'deleteMessage',
             isline: false,
-            onClick: () => {
+            onClick: async () => {
               openPopup(
                 {
                   type: 'Confirm',
@@ -314,33 +313,52 @@ const MessageList = ({ onExtension, viewExtension }) => {
                     'Msg_DeleteMsg',
                     '메시지를 삭제하시겠습니까? 삭제 후 복원이 불가하며, 채널 동기화 후 화면에 보여지지 않습니다.',
                   ),
-                  callback: result => {
-                    if (result) {
-                      let token = [];
-                      if (message.fileInfos) {
-                        if (Array.isArray(JSON.parse(message.fileInfos))) {
-                          token = JSON.parse(message.fileInfos).map(
-                            f => f.token,
-                          );
-                        } else {
-                          token.push(JSON.parse(message.fileInfos).token);
-                        }
+                  callback: async result => {
+                    if (!result) {
+                      return;
+                    }
+                    if (!message?.messageID || !message?.roomID) {
+                      return;
+                    }
+                    let token = [];
+                    if (message.fileInfos) {
+                      if (Array.isArray(JSON.parse(message.fileInfos))) {
+                        token = JSON.parse(message.fileInfos).map(f => f.token);
+                      } else {
+                        token.push(JSON.parse(message.fileInfos).token);
                       }
+                    }
 
-                      messageApi.deleteChannelMessage({
+                    try {
+                      await deleteChannelMessage({
                         token,
                         messageId: message.messageID,
                       });
+                    } catch (err) {
+                      console.log(
+                        'deleteChannelMessage occured an error: ',
+                        err,
+                      );
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: covi.getDic(
+                            'Msg_Error',
+                            '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+                          ),
+                        },
+                        dispatch,
+                      );
                     }
                   },
                 },
                 dispatch,
               );
             },
-            name: covi.getDic('Delete', '삭제'),
           });
         }
       }
+
       return menus;
     },
     [dispatch],

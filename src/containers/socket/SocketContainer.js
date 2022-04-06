@@ -66,7 +66,7 @@ const SocketContainer = ({ history, location }) => {
             onChannelExit: socketActions.handleChannelExit(dispatch, userInfo),
             onDelMessage: socketActions.handleDelChatroomMessage(dispatch),
             onDelChannelMessage:
-              socketActions.handleDelChannelMessageInBrowser(dispatch),
+              socketActions.handleDelChannelMessage(dispatch),
             onNewChannelNotice: socketActions.handleNewChannelNotice(
               dispatch,
               userInfo,
@@ -118,7 +118,7 @@ const SocketContainer = ({ history, location }) => {
             onChannelExit: socketActions.handleChannelExit(dispatch, userInfo),
             onDelMessage: socketActions.handleDelChatroomMessage(dispatch),
             onDelChannelMessage:
-              socketActions.handleDelChannelMessageInDesktop(dispatch),
+              socketActions.handleDelChannelMessage(dispatch),
             onChannelClosure: socketActions.handleChannelClosure(dispatch), //channel closure
             onNewChannelNotice: socketActions.handleNewChannelNotice(
               dispatch,
