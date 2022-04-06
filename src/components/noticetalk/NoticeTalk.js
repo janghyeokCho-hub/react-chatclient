@@ -2,7 +2,6 @@ import React, {
   useState,
   useEffect,
   useLayoutEffect,
-  createRef,
   useCallback,
 } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
@@ -14,6 +13,7 @@ import { appendLayer, getJobInfo, openPopup } from '@/lib/common';
 import ProfileBox from '@C/common/ProfileBox';
 import AddTarget from '@/pages/note/AddTarget';
 import NotificationPopup from '@/components/noticetalk/NotificationPopup';
+import ContextBox from '@/components/noticetalk/contextBox';
 import useTargetState from '@/pages/note/TargetState';
 import ConditionalWrapper from '@/components/ConditionalWrapper';
 import { getNote } from '@/lib/note';
@@ -38,7 +38,6 @@ export default function NoticeTalk({ match, location, history }) {
   const isNewWin =
     window.opener !== null || (match && match.url.indexOf('/nw/') > -1);
   const { myInfo } = useSelector(({ login }) => ({ myInfo: login.userInfo }));
-  const editorRef = createRef();
   const params =
     isNewWin &&
     location.search &&
@@ -104,29 +103,10 @@ export default function NoticeTalk({ match, location, history }) {
     );
   }, [viewState, targets]);
 
-  function removeChannel() {
-    setNoticeSubject(null);
-  }
 
   function removeTarget(name) {
     setTargets(targets.filter(t => t.name !== name));
   }
-
-  const checkedAll = () => {
-    setCheckAll(!checkAll);
-  };
-
-  const handleKeyDown = useCallback(
-    e => {
-      if (e.key === 'PageUp' || e.key === 'PageDown') {
-        const cursorPosition = e.key === 'PageUp' ? 0 : e.target.textLength;
-        e.preventDefault();
-        e.target.setSelectionRange(cursorPosition, cursorPosition);
-      }
-    },
-    [],
-  );
-
 
   async function handleSend() {
     if (isSending === true) {
@@ -243,7 +223,7 @@ export default function NoticeTalk({ match, location, history }) {
                       <img src={noticeSubject.subjectPhoto}></img>
                     </div>
                     <p className="name">{noticeSubject.subjectName}</p>
-                    <span className="del" onClick={removeChannel}></span>
+                    <span className="del" onClick={()=> setNoticeSubject(null)}></span>
                   </div>
                 </li>
               )}
@@ -274,7 +254,7 @@ export default function NoticeTalk({ match, location, history }) {
                 id="chkStyle03"
                 className="chkStyle03"
                 type="checkbox"
-                onClick={checkedAll}
+                onClick={() => setCheckAll(!checkAll)}
                 checked={checkAll}
               />
               <label for="chkStyle03" className="Style03" />
@@ -329,30 +309,9 @@ export default function NoticeTalk({ match, location, history }) {
             </ul>
           </div>
           {/* 내용 */}
-          <div className="Layer-Note-Con" style={{ marginBottom: '60px' }}>
-            <div className="Profile-info-input" style={{ textAlign: 'start' }}>
-              <div className="input full">
-                <label
-                  className="string optional"
-                  htmlFor="user-name"
-                  style={{ cursor: 'inherit' }}
-                >
-                  <p>{covi.getDic('Context', '내용')}</p>
-                </label>
-                <textarea
-                  ref={editorRef}
-                  onKeyDown={handleKeyDown}
-                  autoFocus
-                  className="messafe-to-send"
-                  onChange={e => {
-                    setContext(e.target.value);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+          <ContextBox  setContext={setContext} />
         </Scrollbars>
-        <div className="layer-bottom-btn-wrap right" style={{ zIndex: 500 }}>
+        <div className="layer-bottom-btn-wrap right">
           <a className="Btn-pointcolor-mini" onClick={handleSend}>
             {isSending ? (
               <TailSpin style={{ verticalAlign: 'middle' }} />
