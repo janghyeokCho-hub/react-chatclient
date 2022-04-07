@@ -1,8 +1,9 @@
-import React, { createRef, useCallback, useState } from 'react';
+import React, { createRef, useCallback, useEffect, useMemo, useState } from 'react';
+import validator from 'validator';
+
 
 function ContextBox(props) {
-  const { setContext, url, setUrl } = props;
-  const [checkLink, setCheckLink] = useState(false);
+  const { setContext, url, setUrl, checkLink, setCheckLink, validURL } = props;
   const editorRef = createRef();
 
   const handleKeyDown = useCallback(e => {
@@ -40,10 +41,23 @@ function ContextBox(props) {
             </div>
           </div>
           {checkLink && (
+              <>
             <div className="addLink">
               <label for="inputUrl">바로가기 URL: </label>
-              <input value={url} onChange={e => setUrl(e.target.value)} id="inputUrl" type="text" />
+            <input  value={url} onChange={e => {
+                console.log(e.target.value); setUrl(e.target.value)
+                }} id="inputUrl" type="text" />
             </div>
+           
+                <div style={{textAlign:'right', marginBottom:'5px'}}>
+                {
+                !validURL && <span style={{color:'red', fontWeight:600, fontsize:'10px'}}>{covi.getDic('CheckURL', '올바를 url형식을 사용하고 있는지 확인하세요')}
+                </span>
+}
+                </div>
+            
+           
+            </>
           )}
           <textarea
             ref={editorRef}

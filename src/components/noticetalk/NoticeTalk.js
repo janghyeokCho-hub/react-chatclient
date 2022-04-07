@@ -3,6 +3,7 @@ import React, {
   useEffect,
   useLayoutEffect,
   useCallback,
+  useMemo,
 } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,6 +22,7 @@ import { isMainWindow } from '@/lib/deviceConnector';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import { chatsvr } from '@/lib/api';
 import { bound } from '@/modules/menu';
+import validator from 'validator';
 
 function _popupResult(dispatch, message, cb) {
   openPopup(
@@ -49,6 +51,9 @@ export default function NoticeTalk({ match, location, history }) {
   const [context, setContext] = useState('');
   const [checkAll, setCheckAll] = useState(false);
   const [url, setUrl] = useState('');
+  const [checkLink, setCheckLink] = useState(false);
+  const validURL = useMemo(() => validator.isURL(url, { require_protocol: true, allow_trailing_dot: true }), [url]);
+
 
   useLayoutEffect(() => {
     const { noteId, noteInfo } = viewState;
@@ -79,10 +84,6 @@ export default function NoticeTalk({ match, location, history }) {
     };
   }, []);
 
-  useEffect(()=>{
-    console.log('ff',url)
-  },[url])
-
   const addTarget = useCallback(() => {
     appendLayer(
       {
@@ -108,7 +109,6 @@ export default function NoticeTalk({ match, location, history }) {
     );
   }, [viewState, targets]);
 
-
   function removeTarget(name) {
     setTargets(targets.filter(t => t.name !== name));
   }
@@ -124,6 +124,21 @@ export default function NoticeTalk({ match, location, history }) {
     targets.forEach(target => {
       selectTargets.push({ targetCode: target.id, targetType: target.type });
     });
+
+    var objLink = {
+      title: '시스템 알림',
+      context: context.trim(),
+      func: {
+        name: '페이지로 이동',
+        type: 'link',
+        data: {
+          baseURL: url,
+        },
+      },
+    };
+
+    let selectAll = [{ targetCode: myInfo.CompanyCode, targetType: 'G' }];
+
 
     if (noticeSubject) {
       subjectId = noticeSubject.subjectId;
@@ -149,17 +164,26 @@ export default function NoticeTalk({ match, location, history }) {
       return;
     }
 
-    let selectAll = [{ targetCode: myInfo.CompanyCode, targetType: 'G' }];
+    if (checkLink && !url || checkLink && !validURL  ) {
+      _popupResult(
+        dispatch,
+        covi.getDic('CheckURL', '올바를 url형식을 사용하고 있는지 확인하세요'),
+      );
+      return;
+    }
 
+    
     try {
       setIsSending(true);
       const sendData = {
         subjectId: subjectId.toString(),
         targets: checkAll ? selectAll : selectTargets,
-        message: context.trim(),
+        message: checkLink ? JSON.stringify(objLink) : context.trim(),
         companyCode: myInfo.CompanyCode,
         push: 'Y',
       };
+
+      console.log('sent data!', sendData);
 
       const { data } = await chatsvr('post', '/notice/talk', sendData);
 
@@ -228,7 +252,10 @@ export default function NoticeTalk({ match, location, history }) {
                       <img src={noticeSubject.subjectPhoto}></img>
                     </div>
                     <p className="name">{noticeSubject.subjectName}</p>
-                    <span className="del" onClick={()=> setNoticeSubject(null)}></span>
+                    <span
+                      className="del"
+                      onClick={() => setNoticeSubject(null)}
+                    ></span>
                   </div>
                 </li>
               )}
@@ -314,7 +341,14 @@ export default function NoticeTalk({ match, location, history }) {
             </ul>
           </div>
           {/* 내용 */}
-          <ContextBox  setContext={setContext} setUrl={setUrl}  url={url}/>
+          <ContextBox
+            setContext={setContext}
+            setUrl={setUrl}
+            url={url}
+            checkLink={checkLink}
+            setCheckLink={setCheckLink}
+            validURL={validURL}
+          />
         </Scrollbars>
         <div className="layer-bottom-btn-wrap right">
           <a className="Btn-pointcolor-mini" onClick={handleSend}>
