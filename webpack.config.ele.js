@@ -59,7 +59,7 @@ module.exports = (env, options) => {
       }),
       new CopyPlugin(
         options.mode == 'production' &&
-        (options.arch == 'x64' || options.arch == 'x86')
+        (options.arch == 'x64' || options.arch == 'ia32')
           ? [
               {
                 from: 'electron/templates/*',
@@ -70,12 +70,6 @@ module.exports = (env, options) => {
                 from: 'resources/icons/*',
                 to: 'icons/[name].[ext]',
                 toType: 'template',
-              },
-              {
-                //vc_redist.x86.exe, vc_redist.x64.exe
-                from: `resources/vcredist/vc_redist.${options.arch}.exe`,
-                to: `vcredist/vc_redist.${options.arch}.exe`,
-                toType: 'file',
               },
             ]
           : [
