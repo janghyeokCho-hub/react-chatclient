@@ -9,29 +9,17 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
   .BundleAnalyzerPlugin;
 
 module.exports = (env, options) => {
+  const isWebBuild = options?.target === 'web';
+  const buildEntry = isWebBuild ? './src/index.js' : './src/index.app.js';
+  const outDir = isWebBuild ? `prod/web/${version}` : 'build/electron/renderer';
+  const publicPath = isWebBuild ? '/client/' : './';
   const config = {
-    entry: options.target
-      ? options.target == 'web'
-        ? './src/index.js'
-        : './src/index.app.js'
-      : './src/index.js',
+    entry: buildEntry,
     output: {
       filename: '[name].[hash].js',
       chunkFilename: '[name].[chunkhash].chunk.js',
-      path: path.resolve(
-        __dirname +
-          '/build/' +
-          (options.target
-            ? options.target == 'web'
-              ? 'web'
-              : 'electron/renderer'
-            : 'web'),
-      ),
-      publicPath: options.target
-        ? options.target == 'web'
-          ? '/client/'
-          : './'
-        : '/client/',
+      path: path.resolve(__dirname, outDir),
+      publicPath,
     },
     optimization: {
       splitChunks: {
@@ -63,8 +51,8 @@ module.exports = (env, options) => {
         },
         {
           test: /\.css$/i,
-          use: ["style-loader", "css-loader"],
-        }
+          use: ['style-loader', 'css-loader'],
+        },
       ],
     },
     plugins: [
@@ -78,14 +66,10 @@ module.exports = (env, options) => {
       }),
       // new BundleAnalyzerPlugin(),
       new webpack.DefinePlugin({
-        SCREEN_OPTION: JSON.stringify(
-          options.target ? (options.target == 'web' ? 'G' : 'N') : 'G',
-        ),
+        SCREEN_OPTION: JSON.stringify(isWebBuild ? 'G' : 'N'),
         DEF_TARGET: JSON.stringify(options.target || 'web'),
         DEF_MODE: JSON.stringify(options.mode),
-        DEVICE_TYPE: JSON.stringify(
-          options.target ? (options.target == 'web' ? 'b' : 'd') : 'b',
-        ),
+        DEVICE_TYPE: JSON.stringify(isWebBuild ? 'b' : 'd'),
         APP_VERSION: JSON.stringify(version),
       }),
     ],

@@ -1,4 +1,5 @@
 import { app, BrowserWindow, Notification, screen } from 'electron';
+import AutoLaunch from 'auto-launch';
 import path from 'path';
 import logger from './logger';
 import exportProps from '../config/exportProps';
@@ -7,7 +8,6 @@ import { managesvr } from '../utils/api';
 import { removeLocalDatabaseDir } from '../utils/fileUtils';
 import * as netUtils from 'node-macaddress';
 import { openNoteWindow } from './note';
-import ip from 'ip';
 import { networkInterfaces } from 'os';
 
 /*
@@ -20,6 +20,11 @@ const appId =
 let alarmWin = null;
 let loadingAlarmWin = false;
 let fixWin = null;
+
+const autoLaunchSetting = new AutoLaunch({
+  name: app.getName(),
+  path: app.getPath('exe'),
+});
 
 // Message 도착 알림 처리
 export const notifyMessage = (payload, focusWin) => {
@@ -356,6 +361,9 @@ export const initApp = () => {
         // app data 삭제
         APP_SECURITY_SETTING.purge();
         SERVER_SECURITY_SETTING.purge();
+
+        const autoLaunchEnabled = await autoLaunchSetting.isEnabled();
+        autoLaunchEnabled && (await autoLaunchSetting.disable());
 
         app.relaunch();
         app.exit();
