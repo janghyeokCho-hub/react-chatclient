@@ -43,8 +43,8 @@ class Updater {
   };
 
   registListener = () => {
-    autoUpdater.on('update-available', () => {
-      logger.info('A new update is available');
+    autoUpdater.on('update-available', (info) => {
+      logger.info(`[${exportProps.version}] A new update is available: ` + JSON.stringify(info));
       const message =
         this.updateInfo.forceUpdate == 'Y'
           ? SERVER_SECURITY_SETTING.getDic('Msg_UpdateForceConfirm')

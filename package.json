@@ -1,18 +1,21 @@
 {
   "name": "eumtalk",
   "version": "1.12.2",
+  "description": "Eumtalk Messenger Client",
+  "author": "Covision Corp.",
   "main": "build/electron/main.js",
   "appId": "com.covision.eumtalk",
+  "keywords": [],
   "browserslist": [
     "last 2 version",
     "android >= 4.4",
     "IE >= 10"
   ],
   "scripts": {
-    "build": "webpack --config ./webpack.config.prod",
-    "make:macos": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --arch darwin --config ./webpack.config.ele && electron-builder build --macos -c.directories.output=prod/macos",
-    "make:x64": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --arch x64 --config ./webpack.config.ele && electron-builder build --win --x64 -c.directories.output=prod/x64",
-    "make:ia32": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --arch x86 --config ./webpack.config.ele && electron-builder build --win --ia32 -c.directories.output=prod/ia32",
+    "build": "webpack --target web --config ./webpack.config.prod",
+    "make:macos": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --arch darwin --config ./webpack.config.ele && electron-builder build --macos --config electron-builder.config.js",
+    "make:x64": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --arch x64 --config ./webpack.config.ele && electron-builder build --win --x64 --config electron-builder.config.js",
+    "make:ia32": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --arch x86 --config ./webpack.config.ele && electron-builder build --win --ia32 --config electron-builder.config.js",
     "build-dev": "webpack --mode development --config ./webpack.config.dev",
     "build-ele": "webpack --config ./webpack.config.ele",
     "start": "webpack-dev-server --mode development --hot --config ./webpack.config.dev",
@@ -23,126 +26,6 @@
     "postinstall": "electron-builder install-app-deps",
     "browserslist": "browserslist"
   },
-  "build": {
-    "productName": "eumtalk",
-    "appId": "com.covision.eumtalk",
-    "asar": true,
-    "files": [
-      "build/electron/templates/**",
-      "build/electron/main.js"
-    ],
-    "extraFiles": [
-      {
-        "from": "resources/icons",
-        "to": "resources/icons",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "build/electron/vcredist",
-        "to": "resources/vcredist",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "build/electron/renderer",
-        "to": "resources/renderer",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "./remote",
-        "to": "remote",
-        "filter": [
-          "**/**"
-        ]
-      },
-      {
-        "from": "./vncremote",
-        "to": "resources/vncremote",
-        "filter": [
-          "**/**"
-        ]
-      },
-      {
-        "from": "./remote/RACE",
-        "to": "remote/RACE",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "./remote/RACE/068",
-        "to": "remote/RACE/068",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "./remote/RACE/105",
-        "to": "remote/RACE/105",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "./remote/RACE/105/x86",
-        "to": "remote/RACE/105/x86",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "./remote/RACE/105/x64",
-        "to": "remote/RACE/105/x64",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
-    "mac": {
-      "target": [
-        "default"
-      ],
-      "icon": "resources/icons/main_dmg.png"
-    },
-    "dmg": {
-      "title": "eumtalk",
-      "icon": "resources/icons/main_dmg.png"
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ],
-      "icon": "resources/icons/main.ico",
-      "certificateFile": "make/cert/www.covision.co.kr.pfx",
-      "certificatePassword": "covicovi"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": true,
-      "allowToChangeInstallationDirectory": false,
-      "language": 1042,
-      "shortcutName": "eumtalk",
-      "createStartMenuShortcut": true,
-      "include": "make/installer.nsh",
-      "license": "make/license.html",
-      "deleteAppDataOnUninstall": true
-    },
-    "directories": {
-      "output": "prod",
-      "app": "."
-    },
-    "publish": {
-      "provider": "generic",
-      "url": ""
-    }
-  },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.7.7",
@@ -202,7 +85,6 @@
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.4.0"
   },
-  "description": "",
   "dependencies": {
     "@agney/react-loading": "^0.1.2",
     "@babel/runtime": "^7.7.7",
