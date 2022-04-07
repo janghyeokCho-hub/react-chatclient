@@ -322,19 +322,6 @@ const appReady = async () => {
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   }
-
-  // 앱 실행마다 auto-launch flag 저장값이 실제 활성여부와 다르면 값을 업데이트함
-  const autoLaunchConfig = APP_SECURITY_SETTING.get('autoLaunch');
-  if (autoLaunchConfig === false) {
-    logger.info('autoLaunch config: disabled');
-    const autoLaunchEnabled = await autoLaunchSetting.isEnabled();
-    if (autoLaunchEnabled === true) {
-      APP_SECURITY_SETTING.set('autoLaunch', true);
-      logger.info('AutoLaunch is already enabled. Update config "autoLaunch"');
-    }
-  } else {
-    logger.info('autoLaunch config: enabled');
-  }
 };
 
 const lockScreenEvt = () => {
