@@ -280,8 +280,6 @@ function createGetChannelCategoriesSaga() {
         response = yield call(channelApi.getChannelCategoryList);
       }
 
-      console.log(response.data);
-
       data = response.data;
 
       yield put({
@@ -826,7 +824,6 @@ const channel = handleActions(
     }),
     [UPDATE_LAST_MESSAGE]: (state, action) => {
       return produce(state, draft => {
-        console.log(action.payload);
         const channel = draft.channels.find(
           c => c.roomId == action.payload.roomID,
         );
@@ -1765,14 +1762,19 @@ const channel = handleActions(
           const channel = draft.channels.find(
             item => item.roomId === action.payload.roomID,
           );
-          channel.setting = action.payload.setting;
+          channel.settingJSON = action.payload.setting;
 
-          if (draft.currentChannel.roomId === action.payload.roomID) {
+          if (
+            !!draft.currentChannel &&
+            draft.currentChannel.roomId === action.payload.roomID
+          ) {
             // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
             try {
-              draft.currentChannel.setting = JSON.parse(action.payload.setting);
+              draft.currentChannel.settingJSON = JSON.parse(
+                action.payload.setting,
+              );
             } catch (e) {
-              draft.currentChannel.setting = null;
+              draft.currentChannel.settingJSON = null;
             }
           }
         }

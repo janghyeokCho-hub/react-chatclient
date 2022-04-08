@@ -3,10 +3,29 @@ import { useSelector } from 'react-redux';
 import { Scrollbars } from 'react-custom-scrollbars';
 import useOffset from '@/hooks/useOffset';
 import SearchBar from '@COMMON/SearchBar';
-
 import { getPinnedRooms } from '@/lib/deviceConnector';
-
 import ChannelItem from './ChannelItem';
+import { isJSONStr } from '@/lib/common';
+
+const isEmptyObj = obj => {
+  if (obj && obj.constructor === Object && Object.keys(obj).length === 0) {
+    return true;
+  }
+  return false;
+};
+
+const getChannelSettings = channel => {
+  let setting = null;
+
+  if (channel.settingJSON === null) {
+    setting = {};
+  } else if (typeof channel.settingJSON === 'object') {
+    setting = { ...channel.settingJSON };
+  } else if (isJSONStr(channel.settingJSON)) {
+    setting = JSON.parse(channel.settingJSON);
+  }
+  return setting;
+};
 
 const ChannelList = ({ channels, checkObj }) => {
   const RENDER_UNIT = 5;
@@ -17,9 +36,6 @@ const ChannelList = ({ channels, checkObj }) => {
   const [listMode, setListMode] = useState('N');
   const [searchText, setSearchText] = useState('');
   const [searchList, setSearchList] = useState([]);
-  const [pinnedRooms, setPinnedRooms] = useState(
-    getPinnedRooms({ userId: myInfo.id, type: 'R' }) || [],
-  );
 
   const handleSearch = useCallback(
     changeVal => {
@@ -69,22 +85,32 @@ const ChannelList = ({ channels, checkObj }) => {
     }
   }, [channels]);
 
-  const sortedRooms = useMemo(() => {
+  const sortedChannels = useMemo(() => {
     const pinned = [];
-    const unpinned = channels.filter(
-      r => pinnedRooms.includes(r.roomId) === false,
-    );
+    const unpinned = [];
 
-    pinnedRooms.forEach(p => {
-      const pinnedRoom = channels.find(r => r.roomId === p);
-      if (pinnedRoom) {
-        pinned.push(pinnedRoom);
+    channels.forEach(c => {
+      const setting = getChannelSettings(c);
+      if (isEmptyObj(setting)) {
+        unpinned.push(c);
+      } else {
+        if (!!setting.pinTop) {
+          pinned.push(c);
+        } else {
+          unpinned.push(c);
+        }
       }
     });
-    return [...pinned, ...unpinned];
-  }, [channels, pinnedRooms]);
 
-  const { handleScrollUpdate, list } = useOffset(sortedRooms, {
+    pinned.sort((a, b) => {
+      const aSetting = getChannelSettings(a);
+      const bSetting = getChannelSettings(b);
+      return bSetting.pinTop - aSetting.pinTop;
+    });
+    return [...pinned, ...unpinned];
+  }, [channels]);
+
+  const { handleScrollUpdate, list } = useOffset(sortedChannels, {
     initialNumToRender: 1,
     renderPerBatch: RENDER_UNIT,
   });
@@ -115,6 +141,12 @@ const ChannelList = ({ channels, checkObj }) => {
               const isJoined = joinedChannelList?.findIndex(
                 chan => chan.roomId === channel.roomId,
               );
+              const setting = getChannelSettings(channel);
+
+              let isPinTop = false;
+              if (!isEmptyObj(setting) && !!setting.pinTop) {
+                isPinTop = true;
+              }
               return (
                 <ChannelItem
                   channel={channel}
@@ -122,6 +154,7 @@ const ChannelList = ({ channels, checkObj }) => {
                   checkObj={checkObj}
                   isClick={false}
                   isJoin={isJoined === -1}
+                  pinnedTop={isPinTop}
                 />
               );
             })}
@@ -131,6 +164,12 @@ const ChannelList = ({ channels, checkObj }) => {
               const isJoined = joinedChannelList?.findIndex(
                 chan => chan.roomId === channel.roomId,
               );
+              const setting = getChannelSettings(channel);
+
+              let isPinTop = false;
+              if (!isEmptyObj(setting) && !!setting.pinTop) {
+                isPinTop = true;
+              }
               return (
                 <ChannelItem
                   channel={channel}
@@ -138,6 +177,7 @@ const ChannelList = ({ channels, checkObj }) => {
                   checkObj={checkObj}
                   isClick={false}
                   isJoin={isJoined === -1}
+                  pinnedTop={isPinTop}
                 />
               );
             })}
