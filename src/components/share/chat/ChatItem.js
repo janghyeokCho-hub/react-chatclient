@@ -5,7 +5,7 @@ import ProfileBox from '@COMMON/ProfileBox';
 import { getConfig } from '@/lib/util/configUtil';
 import * as common from '@/lib/common';
 
-const ChatItem = ({ room, checkObj }) => {
+const ChatItem = ({ room, checkObj, pinnedTop }) => {
   const id = useSelector(({ login }) => login.id);
   const checkRef = useRef(null);
 
@@ -222,7 +222,10 @@ const ChatItem = ({ room, checkObj }) => {
               handleClick={false}
             />
           ))}
-        <span className="name">{makeRoomName(filterMember)}</span>
+        <span className="name">
+          {makeRoomName(filterMember)}
+          {pinnedTop && '📌'}
+        </span>
         <span className="preview">
           {room.lastMessage && makeMessageText(room.lastMessage)}
         </span>

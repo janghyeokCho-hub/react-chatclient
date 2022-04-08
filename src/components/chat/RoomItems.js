@@ -1,64 +1,71 @@
-import React, { useCallback, useEffect, useState, useLayoutEffect, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Room from '@C/chat/Room';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import { Scrollbars } from 'react-custom-scrollbars';
-import { leaveRoomUtil } from '@/lib/roomUtil';
-import { evalConnector, getPinnedRooms, savePinnedRooms } from '@/lib/deviceConnector';
 import useOffset from '@/hooks/useOffset';
-import { getConfig } from '@/lib/util/configUtil';
-import { openPopup } from '@/lib/common';
+import { isJSONStr } from '@/lib/common';
+
+const isEmptyObj = obj => {
+  if (obj.constructor === Object && Object.keys(obj).length === 0) {
+    return true;
+  }
+
+  return false;
+};
+
+const getRoomSettings = room => {
+  let setting = null;
+
+  if (room.setting === null) {
+    setting = {};
+  } else if (typeof room.setting === 'object') {
+    setting = { ...room.setting };
+  } else if (isJSONStr(room.setting)) {
+    setting = JSON.parse(room.setting);
+  }
+  return setting;
+};
 
 const RoomItems = ({ rooms, loading, onRoomChange, isDoubleClick }) => {
-  const dispatch = useDispatch();
   const selectId = useSelector(({ room }) => room.selectId);
-  const myInfo = useSelector(({ login }) => login.userInfo);
   const RENDER_UNIT = 5;
-  const [pinnedRooms, setPinnedRooms] = useState(getPinnedRooms({ userId: myInfo.id, type: 'R' }) || []);
-  const pinToTopLimit = useMemo(() => getConfig('PinToTop_Limit_Chat', -1), []);
+  const [pinnedRooms, setPinnedRooms] = useState([]);
 
   const sortedRooms = useMemo(() => {
-    const pinned = []
-    const unpinned = rooms.filter(r => pinnedRooms.includes(r.roomID) === false);
+    const pinned = [];
+    const unpinned = [];
 
-    pinnedRooms.forEach(p => {
-      const pinnedRoom = rooms.find(r => r.roomID === p);
-      if (pinnedRoom) {
-        pinned.push(pinnedRoom);
+    rooms.forEach(r => {
+      const setting = getRoomSettings(r);
+      if (isEmptyObj(setting)) {
+        unpinned.push(r);
+      } else {
+        if (!!setting.pinTop) {
+          pinned.push(r);
+        } else {
+          unpinned.push(r);
+        }
       }
     });
-    return [...pinned, ...unpinned];
-  }, [rooms, pinnedRooms]);
+    setPinnedRooms(pinned);
 
-  const { handleScrollUpdate, list } = useOffset(sortedRooms, { initialNumToRender: 1, renderPerBatch : RENDER_UNIT });
-  const handleUpdate = handleScrollUpdate({
-    threshold: 0.85
+    pinned.sort((a, b) => {
+      const aSetting = getRoomSettings(a);
+      const bSetting = getRoomSettings(b);
+      return bSetting.pinTop - aSetting.pinTop;
+    });
+    return [...pinned, ...unpinned];
+  }, [rooms]);
+
+  const { handleScrollUpdate, list } = useOffset(sortedRooms, {
+    initialNumToRender: 1,
+    renderPerBatch: RENDER_UNIT,
   });
 
-  const onPinChange = useCallback((type, roomID) => {
-    if (type === 'ADD') {
-      if (pinToTopLimit > -1 && pinToTopLimit !==0 && pinnedRooms?.length >= pinToTopLimit) {
-        openPopup(
-          {
-            type: 'Alert',
-            message: covi.getDic('Msg_PinToTop_LimitExceeded', '더 이상 고정할 수 없습니다.')
-          },
-          dispatch
-        );
-        return;
-      }
-      // 상단고정 추가
-      setPinnedRooms((state) => [...state, roomID])
-    } else if (type === 'DEL') {
-      // 상단고정 삭제
-      setPinnedRooms((state) => state.filter(r => r !== roomID));
-    }
-  }, [pinnedRooms]);
-
-  useLayoutEffect(() => {
-    // 상단고정 변경시 로컬데이터 update
-    savePinnedRooms({ userId: myInfo.id, type: 'R', data: pinnedRooms });
-  }, [pinnedRooms]);
+  const handleUpdate = handleScrollUpdate({
+    threshold: 0.85,
+  });
 
   return (
     <Scrollbars
@@ -69,23 +76,28 @@ const RoomItems = ({ rooms, loading, onRoomChange, isDoubleClick }) => {
     >
       <ul className="people">
         {loading && <LoadingWrap />}
-        {
-          !loading &&
+        {!loading &&
           list((room, _) => {
             const isSelect = room.roomID === selectId;
+            const setting = getRoomSettings(room);
+
+            let isPinTop = false;
+            if (!isEmptyObj(setting) && !!setting.pinTop) {
+              isPinTop = true;
+            }
+
             return (
               <Room
-                  key={room.roomID}
-                  room={room}
-                  onRoomChange={onRoomChange}
-                  dbClickEvent={isDoubleClick}
-                  isSelect={isSelect}
-                  pinnedTop={pinnedRooms.includes(room?.roomID)}
-                  onPinChange={onPinChange}
+                key={room.roomID}
+                room={room}
+                onRoomChange={onRoomChange}
+                dbClickEvent={isDoubleClick}
+                isSelect={isSelect}
+                pinnedTop={isPinTop}
+                pinnedRooms={pinnedRooms}
               />
-            )
-          })
-        }
+            );
+          })}
       </ul>
     </Scrollbars>
   );
