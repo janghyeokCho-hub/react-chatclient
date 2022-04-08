@@ -1,5 +1,12 @@
 import { createAction, handleActions } from 'redux-actions';
-import { takeLatest, call, put, throttle, takeEvery, delay } from 'redux-saga/effects';
+import {
+  takeLatest,
+  call,
+  put,
+  throttle,
+  takeEvery,
+  delay,
+} from 'redux-saga/effects';
 import * as roomApi from '@/lib/room';
 import * as messageApi from '@/lib/message';
 import createRequestSaga, {
@@ -364,7 +371,7 @@ function createUpdateRoomsSaga() {
     if (action.payload) {
       try {
         let response = yield call(roomApi.getRoomList, action.payload);
-        if(response?.data?.rooms?.length === 0) {
+        if (response?.data?.rooms?.length === 0) {
           // rooms 데이터가 비어있으면 retry
           yield delay(750);
           response = yield call(roomApi.getRoomList, action.payload);
@@ -515,7 +522,6 @@ function createModifyRoomSettingSaga() {
               setting: action.payload.setting,
             },
           });
-
           if (DEVICE_TYPE == 'd') {
             // TODO: AppData 저장 여부값 조건 추가 필요
             yield call(evalConnector, {
@@ -963,7 +969,9 @@ const room = handleActions(
         /* lastMessage 교체 */
         if (payload.lastMessage) {
           console.log('Update LastMessage   ', payload.lastMessage);
-          const room = draft.rooms.find(r => `${r.roomID}` === `${payload.roomID}`);
+          const room = draft.rooms.find(
+            r => `${r.roomID}` === `${payload.roomID}`,
+          );
           if (!room) {
             return;
           }
@@ -971,7 +979,10 @@ const room = handleActions(
             Message: payload.lastMessage.context,
             File: payload.lastMessage.fileInfos,
           };
-          console.log(`Update lastMessage on Room ${room.roomID}: `, lastMessage);
+          console.log(
+            `Update lastMessage on Room ${room.roomID}: `,
+            lastMessage,
+          );
           if (draft.currentRoom && room.roomID === draft.currentRoom.roomID) {
             draft.currentRoom.lastMessage = lastMessage;
           }
@@ -1487,8 +1498,10 @@ const room = handleActions(
             item => item.roomID === action.payload.roomID,
           );
           room.setting = action.payload.setting;
-
-          if (draft.currentRoom.roomID === action.payload.roomID) {
+          if (
+            !!draft.currentRoom &&
+            draft.currentRoom.roomID === action.payload.roomID
+          ) {
             // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
             try {
               draft.currentRoom.setting = JSON.parse(action.payload.setting);

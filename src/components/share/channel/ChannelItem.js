@@ -10,7 +10,7 @@ import { getConfig } from '@/lib/util/configUtil';
 import * as common from '@/lib/common';
 import Config from '@/config/config';
 
-const ChannelItem = ({ channel, checkObj, isJoin }) => {
+const ChannelItem = ({ channel, checkObj, isJoin, pinnedTop }) => {
   const id = useSelector(({ login }) => login.id);
   const channels = useSelector(({ channel }) => channel.channels);
   const checkRef = useRef(null);
@@ -170,6 +170,7 @@ const ChannelItem = ({ channel, checkObj, isJoin }) => {
           </span>
           <span className="categoryName">
             {channel.categoryName ? `(${channel.categoryName})` : ''}
+            {pinnedTop && '📌'}
           </span>
         </span>
         <span className="preview">{lastMessageText}</span>

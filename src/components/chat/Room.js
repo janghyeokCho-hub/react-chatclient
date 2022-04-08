@@ -14,6 +14,7 @@ import { newChatRoom, evalConnector } from '@/lib/deviceConnector';
 import * as common from '@/lib/common';
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { getConfig } from '@/lib/util/configUtil';
+import { modifyRoomSetting } from '@/modules/room';
 
 const getFilterMember = (members, id, roomType) => {
   if (members && roomType !== 'O') {
@@ -46,7 +47,7 @@ const makeMessageText = lastMessage => {
 
     if (!msgObj) return returnText;
 
-    if (msgObj.Message !== '' && msgObj.Message !== null) {
+    if (!!msgObj.Message) {
       let drawText = (msgObj.Message && msgObj.Message) || '';
       if (common.isJSONStr(msgObj.Message)) {
         const drawData = JSON.parse(msgObj.Message);
@@ -149,7 +150,7 @@ const Room = ({
   isSelect,
   dbClickEvent,
   pinnedTop,
-  onPinChange,
+  pinnedRooms,
 }) => {
   const id = useSelector(({ login }) => login.id);
   const [isNoti, setIsNoti] = useState(true);
@@ -187,7 +188,7 @@ const Room = ({
 
         return <>{common.getJobInfo(target)}</>;
       } else {
-        if (room.roomName && room.roomName !== '') {
+        if (!!room?.roomName) {
           return (
             <>
               <span>{room.roomName}</span>
@@ -208,7 +209,7 @@ const Room = ({
           }
         }
 
-        if (filterMember.length == 0)
+        if (!filterMember.length)
           return <>{covi.getDic('NoChatMembers', '대화상대없음')}</>;
 
         return (
@@ -269,24 +270,77 @@ const Room = ({
     }
   }, [room, dbClickEvent, dispatch]);
 
+  const handleChangeSetting = useCallback(
+    (key, value, type) => {
+      let setting = null;
+      if (type === 'ADD') {
+        if (
+          pinToTopLimit > -1 &&
+          pinToTopLimit !== 0 &&
+          pinnedRooms?.length >= pinToTopLimit
+        ) {
+          common.openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic(
+                'Msg_PinToTop_LimitExceeded',
+                '더 이상 고정할 수 없습니다.',
+              ),
+            },
+            dispatch,
+          );
+          return;
+        }
+
+        if (room.setting === null) {
+          setting = {};
+        } else if (typeof room.setting === 'object') {
+          setting = { ...room.setting };
+        } else if (common.isJSONStr(room.setting)) {
+          setting = JSON.parse(room.setting);
+        }
+
+        setting[key] = value;
+      } else {
+        if (room.setting === null) {
+          setting = {};
+        } else {
+          setting = JSON.parse(room.setting);
+          delete setting[key];
+        }
+      }
+      dispatch(
+        modifyRoomSetting({
+          roomID: room.roomID,
+          key: key,
+          value: value,
+          setting: JSON.stringify(setting),
+        }),
+      );
+    },
+    [room, pinnedRooms, dispatch],
+  );
+
   const menus = useMemo(() => {
     const pinToTop = {
       code: 'pinRoom',
       isline: false,
-      onClick() {
-        room?.roomID && onPinChange('ADD', room.roomID);
+      onClick: () => {
+        const today = new Date();
+        handleChangeSetting('pinTop', `${today.getTime()}`, 'ADD');
       },
       name: covi.getDic('PinToTop', '상단고정'),
     };
     const unpinToTop = {
       code: 'unpinRoom',
       isline: false,
-      onClick() {
-        room?.roomID && onPinChange('DEL', room.roomID);
+      onClick: () => {
+        handleChangeSetting('pinTop', '', 'DEL');
       },
       name: covi.getDic('UnpinToTop', '상단고정 해제'),
     };
     const menus = [
+      pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop),
       {
         code: 'openRoom',
         isline: false,
@@ -299,7 +353,6 @@ const Room = ({
         },
         name: covi.getDic('OpenChat', '채팅방 열기'),
       },
-      pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop),
       room?.roomType !== 'A' &&
         room?.roomType !== 'B' && {
           code: 'outRoom',
@@ -347,7 +400,6 @@ const Room = ({
     handleDoubleClick,
     isNoti,
     pinnedTop,
-    onPinChange,
   ]);
 
   const menuId = useMemo(() => 'room_' + room.roomID, [room]);
