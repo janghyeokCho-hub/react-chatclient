@@ -19,10 +19,19 @@ import RightConxtMenu from '../common/popup/RightConxtMenu';
 import { newChannel } from '@/lib/deviceConnector';
 import Config from '@/config/config';
 import { getAesUtil } from '@/lib/aesUtil';
-import { clearLayer, openPopup } from '@/lib/common';
+import {
+  getSysMsgFormatStr,
+  clearLayer,
+  openPopup,
+  isJSONStr,
+  getDictionary,
+  eumTalkRegularExp,
+  convertEumTalkProtocolPreviewForChannelItem,
+} from '@/lib/common';
+import { getConfig } from '@/lib/util/configUtil';
 import * as channelApi from '@/lib/channel';
-import * as common from '@/lib/common';
 import { evalConnector } from '@/lib/deviceConnector';
+import { modifyChannelSetting } from '@/modules/channel';
 
 const makeDateTime = timestamp => {
   if (timestamp && isValid(new Date(timestamp))) {
@@ -63,19 +72,20 @@ const makeMessageText = async lastMessage => {
     if (msgObj.Message !== '' && msgObj.Message !== null) {
       // returnText = commonApi.getPlainText(msgObj.Message);
       let drawText = (msgObj.Message && msgObj.Message) || '';
-      if (common.isJSONStr(msgObj.Message)) {
+      if (isJSONStr(msgObj.Message)) {
         const drawData = JSON.parse(msgObj.Message);
 
         if (drawData.msgType == 'C') {
-          drawText = common.getDictionary(drawData.title);
+          drawText = getDictionary(drawData.title);
         } else {
           drawText = drawData.context;
         }
       }
       // protocol check
-      if (common.eumTalkRegularExp.test(drawText)) {
-        const messageObj =
-          await common.convertEumTalkProtocolPreviewForChannelItem(drawText);
+      if (eumTalkRegularExp.test(drawText)) {
+        const messageObj = await convertEumTalkProtocolPreviewForChannelItem(
+          drawText,
+        );
         if (messageObj.type == 'emoticon')
           returnText = covi.getDic('Emoticon', '이모티콘');
         else returnText = messageObj.message.split('\n')[0];
@@ -104,13 +114,13 @@ const makeMessageText = async lastMessage => {
           firstObj.ext == 'bmp'
         ) {
           // 사진 외 %s건
-          returnText = common.getSysMsgFormatStr(
+          returnText = getSysMsgFormatStr(
             covi.getDic('Tmp_imgExCnt', '사진 외 %s건'),
             [{ type: 'Plain', data: fileObj.length - 1 }],
           );
         } else {
           // 파일 외 %s건
-          returnText = common.getSysMsgFormatStr(
+          returnText = getSysMsgFormatStr(
             covi.getDic('Tmp_fileExCnt', '파일 외 %s건'),
             [{ type: 'Plain', data: fileObj.length - 1 }],
           );
@@ -142,9 +152,15 @@ const ChannelItem = ({
   dbClickEvent,
   getMenuData,
   isJoin,
+  pinnedTop,
+  pinnedChannels,
 }) => {
   const id = useSelector(({ login }) => login.id);
   const channels = useSelector(({ channel }) => channel.channels);
+  const pinToTopLimit = useMemo(
+    () => getConfig('PinToTop_Limit_Channel', -1),
+    [],
+  );
 
   const menuId = useMemo(() => 'channel_' + channel.roomId, [channel]);
   const dispatch = useDispatch();
@@ -347,9 +363,78 @@ const ChannelItem = ({
     [dispatch, id],
   );
 
-  const menus = useMemo(
-    () =>
-      getMenuData(
+  const handleChangeSetting = useCallback(
+    (key, value, type) => {
+      let setting = null;
+      if (type === 'ADD') {
+        if (
+          pinToTopLimit > -1 &&
+          pinToTopLimit !== 0 &&
+          pinnedChannels?.length >= pinToTopLimit
+        ) {
+          openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic(
+                'Msg_PinToTop_LimitExceeded',
+                '더 이상 고정할 수 없습니다.',
+              ),
+            },
+            dispatch,
+          );
+          return;
+        }
+
+        if (channel.settingJSON === null) {
+          setting = {};
+        } else if (typeof channel.settingJSON === 'object') {
+          setting = { ...channel.settingJSON };
+        } else if (isJSONStr(channel.settingJSON)) {
+          setting = JSON.parse(channel.settingJSON);
+        }
+
+        setting[key] = value;
+      } else {
+        if (channel.settingJSON === null) {
+          setting = {};
+        } else {
+          setting = JSON.parse(channel.settingJSON);
+          delete setting[key];
+        }
+      }
+      dispatch(
+        modifyChannelSetting({
+          roomID: channel.roomId,
+          key: key,
+          value: value,
+          setting: JSON.stringify(setting),
+        }),
+      );
+    },
+    [channel, pinnedChannels, dispatch],
+  );
+
+  const menus = useMemo(() => {
+    const pinToTop = {
+      code: 'pinRoom',
+      isline: false,
+      onClick: () => {
+        const today = new Date();
+        handleChangeSetting('pinTop', `${today.getTime()}`, 'ADD');
+      },
+      name: covi.getDic('PinToTop', '상단고정'),
+    };
+    const unpinToTop = {
+      code: 'unpinRoom',
+      isline: false,
+      onClick: () => {
+        handleChangeSetting('pinTop', '', 'DEL');
+      },
+      name: covi.getDic('UnpinToTop', '상단고정 해제'),
+    };
+    const menus = [
+      pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop),
+      ...getMenuData(
         dispatch,
         channel,
         id,
@@ -357,8 +442,9 @@ const ChannelItem = ({
         isSelect,
         handleDoubleClick,
       ),
-    [dispatch, channel, id, dbClickEvent, isSelect, handleDoubleClick],
-  );
+    ];
+    return menus;
+  }, [dispatch, channel, id, dbClickEvent, isSelect, handleDoubleClick]);
 
   const messageDate = useMemo(
     () => makeDateTime(channel.lastMessageDate),
@@ -438,7 +524,10 @@ const ChannelItem = ({
           </>
         ) : (
           <>
-            <span className="time">{messageDate}</span>
+            <span className="time">
+              {pinnedTop && '📌'}
+              {messageDate}
+            </span>
             <span className="preview">{lastMessageText}</span>
           </>
         )}
