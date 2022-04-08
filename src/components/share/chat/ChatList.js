@@ -3,15 +3,13 @@ import { useSelector } from 'react-redux';
 import { Scrollbars } from 'react-custom-scrollbars';
 import useOffset from '@/hooks/useOffset';
 import SearchBar from '@COMMON/SearchBar';
-import { getPinnedRooms } from '@/lib/deviceConnector';
 import ChatItem from './ChatItem';
 import { isJSONStr } from '@/lib/common';
 
 const isEmptyObj = obj => {
-  if (obj.constructor === Object && Object.keys(obj).length === 0) {
+  if (obj && obj.constructor === Object && Object.keys(obj).length === 0) {
     return true;
   }
-
   return false;
 };
 
@@ -91,13 +89,15 @@ const ChatList = ({ roomList, checkObj }) => {
 
     roomList.forEach(r => {
       const setting = getRoomSettings(r);
-      if (isEmptyObj(setting)) {
-        unpinned.push(r);
-      } else {
-        if (!!setting.pinTop) {
-          pinned.push(r);
-        } else {
+      if (setting) {
+        if (isEmptyObj(setting)) {
           unpinned.push(r);
+        } else {
+          if (!!setting.pinTop) {
+            pinned.push(r);
+          } else {
+            unpinned.push(r);
+          }
         }
       }
     });
@@ -141,7 +141,7 @@ const ChatList = ({ roomList, checkObj }) => {
               const setting = getRoomSettings(room);
 
               let isPinTop = false;
-              if (!isEmptyObj(setting) && !!setting.pinTop) {
+              if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
                 isPinTop = true;
               }
 
@@ -164,7 +164,7 @@ const ChatList = ({ roomList, checkObj }) => {
                 const setting = getRoomSettings(room);
 
                 let isPinTop = false;
-                if (!isEmptyObj(setting) && !!setting.pinTop) {
+                if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
                   isPinTop = true;
                 }
 
