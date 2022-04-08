@@ -91,13 +91,15 @@ const ChannelList = ({ channels, checkObj }) => {
 
     channels.forEach(c => {
       const setting = getChannelSettings(c);
-      if (isEmptyObj(setting)) {
-        unpinned.push(c);
-      } else {
-        if (!!setting.pinTop) {
-          pinned.push(c);
-        } else {
+      if (setting) {
+        if (isEmptyObj(setting)) {
           unpinned.push(c);
+        } else {
+          if (!!setting.pinTop) {
+            pinned.push(c);
+          } else {
+            unpinned.push(c);
+          }
         }
       }
     });
@@ -144,7 +146,7 @@ const ChannelList = ({ channels, checkObj }) => {
               const setting = getChannelSettings(channel);
 
               let isPinTop = false;
-              if (!isEmptyObj(setting) && !!setting.pinTop) {
+              if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
                 isPinTop = true;
               }
               return (
@@ -167,7 +169,7 @@ const ChannelList = ({ channels, checkObj }) => {
               const setting = getChannelSettings(channel);
 
               let isPinTop = false;
-              if (!isEmptyObj(setting) && !!setting.pinTop) {
+              if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
                 isPinTop = true;
               }
               return (
