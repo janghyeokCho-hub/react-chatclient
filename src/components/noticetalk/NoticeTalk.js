@@ -1,21 +1,13 @@
-import React, {
-  useState,
-  useEffect,
-  useLayoutEffect,
-  useCallback,
-  useMemo,
-} from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useDispatch, useSelector } from 'react-redux';
 import { TailSpin } from '@agney/react-loading';
 import qs from 'qs';
 import { useViewState } from '@/lib/note';
-import { appendLayer, getJobInfo, openPopup } from '@/lib/common';
-import ProfileBox from '@C/common/ProfileBox';
-import AddTarget from '@/pages/note/AddTarget';
-import NotificationPopup from '@/components/noticetalk/NotificationPopup';
+import { openPopup } from '@/lib/common';
 import ContextBox from '@/components/noticetalk/contextBox';
 import AlarmChannel from '@/components/noticetalk/AlarmChannel';
+import SelectOrgList from '@/components/noticetalk/SelectOrgList';
 import useTargetState from '@/pages/note/TargetState';
 import ConditionalWrapper from '@/components/ConditionalWrapper';
 import { isMainWindow } from '@/lib/deviceConnector';
@@ -44,7 +36,7 @@ export default function NoticeTalk({ match, location, history }) {
     isNewWin &&
     location.search &&
     qs.parse(location.search, { ignoreQueryPrefix: true });
-  const [viewState, setViewState, clearViewState] = useViewState(params);
+  const [viewState, clearViewState] = useViewState(params);
   const { data: targets, mutate: setTargets } = useTargetState([]);
   const [noticeSubject, setNoticeSubject] = useState(null);
   const [isSending, setIsSending] = useState(false);
@@ -53,9 +45,14 @@ export default function NoticeTalk({ match, location, history }) {
   const [url, setUrl] = useState('');
   const [checkLink, setCheckLink] = useState(false);
 
-  const validURL = useMemo(() => validator.isURL(url, { require_protocol: true, allow_trailing_dot: true }), [url]);
-
-
+  const validURL = useMemo(
+    () =>
+      validator.isURL(url, {
+        require_protocol: true,
+        allow_trailing_dot: true,
+      }),
+    [url],
+  );
 
   useEffect(() => {
     dispatch(bound({ name: '', type: '' }));
@@ -65,35 +62,6 @@ export default function NoticeTalk({ match, location, history }) {
       setTargets([]);
     };
   }, []);
-
-  const addTarget = useCallback(() => {
-    appendLayer(
-      {
-        component: (
-          <AddTarget
-            oldMemberList={targets}
-            onChange={changedTargets => setTargets(changedTargets)}
-          />
-        ),
-      },
-      dispatch,
-    );
-  }, [viewState, targets]);
-
-  const handleNotificationPopup = useCallback(() => {
-    appendLayer(
-      {
-        component: (
-          <NotificationPopup onChange={subject => setNoticeSubject(subject)} />
-        ),
-      },
-      dispatch,
-    );
-  }, [viewState, targets]);
-
-  function removeTarget(name) {
-    setTargets(targets.filter(t => t.name !== name));
-  }
 
   async function handleSend() {
     if (isSending === true) {
@@ -121,7 +89,6 @@ export default function NoticeTalk({ match, location, history }) {
 
     let selectAll = [{ targetCode: myInfo.CompanyCode, targetType: 'G' }];
 
-
     if (noticeSubject) {
       subjectId = noticeSubject.subjectId;
     } else {
@@ -146,14 +113,13 @@ export default function NoticeTalk({ match, location, history }) {
       return;
     }
 
-    if (checkLink && !url || checkLink && !validURL  ) {
+    if ((checkLink && !url) || (checkLink && !validURL)) {
       _popupResult(
         dispatch,
         covi.getDic('CheckURL', '올바를 url형식을 사용하고 있는지 확인하세요'),
       );
       return;
     }
-
 
     try {
       setIsSending(true);
@@ -215,76 +181,21 @@ export default function NoticeTalk({ match, location, history }) {
               <p>{covi.getDic('NoticeTalk', '알림톡')}</p>
             </div>
           </div>
-
-          {/* 알림 채널 */}
-          <AlarmChannel noticeSubject={noticeSubject} targets={targets} setNoticeSubject={setNoticeSubject} viewState={viewState}/>  
-                 
-          {/* 받는 사람 */}
-
-          <div className="txtBox org_select_wrap_txtBox">
-            <div>
-              <p>{covi.getDic('Note_Recipient', '받는사람')}</p>
-            </div>
-            <div style={{ display: 'flex' }}>
-              <input
-                id="chkStyle03"
-                className="chkStyle03"
-                type="checkbox"
-                onClick={() => setCheckAll(!checkAll)}
-                checked={checkAll}
-              />
-              <label for="chkStyle03" className="Style03" />
-              <p> {covi.getDic('All_Recipient', '전체공지')}</p>
-            </div>
-          </div>
-          <div
-            className={
-              checkAll ? 'org_select_wrap disabled_box' : 'org_select_wrap'
-            }
-            style={{ marginRight: '30px', marginLeft: '30px' }}
-          >
-            <ul>
-              {targets.map((target, idx) => {
-                return (
-                  <li key={idx}>
-                    <a className="ui-link">
-                      <ProfileBox
-                        userId={target.id}
-                        img={target.photoPath}
-                        presence={target.presence}
-                        isInherit={true}
-                        userName={target.name}
-                        handleClick={false}
-                        checkAll={checkAll}
-                      />
-                      <p className="name">{getJobInfo(target)}</p>
-                      <span
-                        onClick={
-                          !checkAll ? () => removeTarget(target.name) : ''
-                        }
-                        className={'del'}
-                      ></span>
-                    </a>
-                  </li>
-                );
-              })}
-              <li
-                className={checkAll ? 'add-disable' : 'add'}
-                onClick={!checkAll ? addTarget : () => {}}
-              >
-                <a className="ui-link">
-                  <div
-                    className={
-                      checkAll
-                        ? 'profile-photo add-disable'
-                        : 'profile-photo add'
-                    }
-                  ></div>
-                </a>
-              </li>
-            </ul>
-          </div>
-          {/* 내용 */}
+          <AlarmChannel
+            noticeSubject={noticeSubject}
+            targets={targets}
+            setNoticeSubject={setNoticeSubject}
+            viewState={viewState}
+            dispatch={dispatch}
+          />
+          <SelectOrgList
+            dispatch={dispatch}
+            checkAll={checkAll}
+            setTargets={setTargets}
+            setCheckAll={setCheckAll}
+            targets={targets}
+            viewState={viewState}
+          />
           <ContextBox
             setContext={setContext}
             setUrl={setUrl}
