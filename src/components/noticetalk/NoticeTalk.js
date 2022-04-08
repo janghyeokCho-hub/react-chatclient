@@ -15,9 +15,9 @@ import ProfileBox from '@C/common/ProfileBox';
 import AddTarget from '@/pages/note/AddTarget';
 import NotificationPopup from '@/components/noticetalk/NotificationPopup';
 import ContextBox from '@/components/noticetalk/contextBox';
+import AlarmChannel from '@/components/noticetalk/AlarmChannel';
 import useTargetState from '@/pages/note/TargetState';
 import ConditionalWrapper from '@/components/ConditionalWrapper';
-import { getNote } from '@/lib/note';
 import { isMainWindow } from '@/lib/deviceConnector';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import { chatsvr } from '@/lib/api';
@@ -52,33 +52,15 @@ export default function NoticeTalk({ match, location, history }) {
   const [checkAll, setCheckAll] = useState(false);
   const [url, setUrl] = useState('');
   const [checkLink, setCheckLink] = useState(false);
+
   const validURL = useMemo(() => validator.isURL(url, { require_protocol: true, allow_trailing_dot: true }), [url]);
 
 
-  useLayoutEffect(() => {
-    const { noteId, noteInfo } = viewState;
-
-    async function fetchNote(_noteId) {
-      const fetchedNoteInfo = await getNote(_noteId);
-      setViewState(
-        {
-          ...viewState,
-          noteInfo: fetchedNoteInfo,
-        },
-        false,
-      );
-    }
-
-    if (noteId && !noteInfo) {
-      fetchNote(noteId);
-    }
-  }, [viewState]);
 
   useEffect(() => {
     dispatch(bound({ name: '', type: '' }));
 
     return () => {
-      console.log('NewNote Unmounted');
       clearViewState();
       setTargets([]);
     };
@@ -172,7 +154,7 @@ export default function NoticeTalk({ match, location, history }) {
       return;
     }
 
-    
+
     try {
       setIsSending(true);
       const sendData = {
@@ -182,8 +164,6 @@ export default function NoticeTalk({ match, location, history }) {
         companyCode: myInfo.CompanyCode,
         push: 'Y',
       };
-
-      console.log('sent data!', sendData);
 
       const { data } = await chatsvr('post', '/notice/talk', sendData);
 
@@ -237,44 +217,8 @@ export default function NoticeTalk({ match, location, history }) {
           </div>
 
           {/* 알림 채널 */}
-          <div className="txtBox" style={{ padding: '0 30px' }}>
-            <p>{covi.getDic('Notitification_Channel', '알림 채널')}</p>
-          </div>
-          <div
-            className="org_select_wrap"
-            style={{ marginRight: '30px', marginLeft: '30px' }}
-          >
-            <ul>
-              {noticeSubject && (
-                <li>
-                  <div>
-                    <div className="profile-photo">
-                      <img src={noticeSubject.subjectPhoto}></img>
-                    </div>
-                    <p className="name">{noticeSubject.subjectName}</p>
-                    <span
-                      className="del"
-                      onClick={() => setNoticeSubject(null)}
-                    ></span>
-                  </div>
-                </li>
-              )}
-              <li>
-                <div className="add" onClick={handleNotificationPopup}>
-                  <a className="ui-link">
-                    <div
-                      className={
-                        noticeSubject
-                          ? 'profile-photo addChange'
-                          : 'profile-photo add'
-                      }
-                    ></div>
-                  </a>
-                </div>
-              </li>
-            </ul>
-          </div>
-
+          <AlarmChannel noticeSubject={noticeSubject} targets={targets} setNoticeSubject={setNoticeSubject} viewState={viewState}/>  
+                 
           {/* 받는 사람 */}
 
           <div className="txtBox org_select_wrap_txtBox">
