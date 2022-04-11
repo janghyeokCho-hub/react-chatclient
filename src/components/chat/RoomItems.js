@@ -47,6 +47,8 @@ const RoomItems = ({ rooms, loading, onRoomChange, isDoubleClick }) => {
             unpinned.push(r);
           }
         }
+      } else {
+        unpinned.push(r);
       }
     });
     setPinnedRooms(pinned);
