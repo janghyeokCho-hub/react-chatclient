@@ -437,8 +437,8 @@ export const reloadApp = clearConfig => {
 
         win.webContents.reloadIgnoringCache();
       })
-      .catch(() => {
-        logger.info('server config load error');
+      .catch((err) => {
+        logger.info('server config load error: ' + JSON.stringify(err));
         // Alert 팝업 open
         win.webContents.reloadIgnoringCache();
       });
