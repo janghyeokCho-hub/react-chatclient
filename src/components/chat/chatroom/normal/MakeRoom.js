@@ -156,7 +156,7 @@ const MakeRoom = ({ history }) => {
   };
 
   // TODO: 메시지 전송 실패 여부 처리
-  const handleMessage = (message, filesObj, linkObj, messageType) => {
+  const handleMessage = (message, filesObj, linkObj, messageType, emoticon) => {
     // 방생성 api 호출
     // 호출 결과에 따라 ChatRoom으로 화면 전환
     // -- MultiView의 경우 dispatch
@@ -226,6 +226,16 @@ const MakeRoom = ({ history }) => {
                 });
               }
 
+              if (emoticon) {
+                console.log(data);
+                sendMessage({
+                  context: emoticon,
+                  roomID: data.result.roomID,
+                  sender,
+                  roomType: makeInfo.roomType,
+                });
+              }
+
               handleNewRoom(data.result.roomID);
             }
           });
@@ -241,6 +251,15 @@ const MakeRoom = ({ history }) => {
               roomId: roomID,
               messageId: data.result.messageID,
               url: linkObj.url,
+            });
+          }
+
+          if (emoticon) {
+            sendMessage({
+              context: emoticon,
+              roomID,
+              sender,
+              roomType: makeInfo.roomType,
             });
           }
 
