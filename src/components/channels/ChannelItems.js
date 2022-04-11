@@ -34,7 +34,6 @@ const ChannelItems = ({
   loading,
   onChannelChange,
   isDoubleClick,
-  isSearch,
 }) => {
   const selectId = useSelector(({ channel }) => channel.selectedId);
   const joinedChannelList = useSelector(({ channel }) => channel.channels);
@@ -59,6 +58,8 @@ const ChannelItems = ({
             unpinned.push(c);
           }
         }
+      } else {
+        unpinned.push(c);
       }
     });
     setPinnedChannels(pinned);

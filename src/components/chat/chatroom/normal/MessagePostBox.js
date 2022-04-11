@@ -83,11 +83,6 @@ const MessagePostBox = forwardRef(
       const files = fileCtrl.getFiles();
       const fileInfos = fileCtrl.getRealFileInfos();
 
-      if (currentEmoticon) {
-        handleEmoticon(currentEmoticon);
-        dispatch(clearEmoticon());
-      }
-
       if (
         (context.replace(/\s*/, '') != '' && context != '') ||
         files.length > 0
@@ -107,6 +102,8 @@ const MessagePostBox = forwardRef(
           inputContext,
           files.length > 0 ? { files, fileInfos } : null,
           checkURLResult && checkURLResult.isURL ? checkURLResult : null,
+          null,
+          currentEmoticon,
         );
 
         const historyArr = [context, ...history];
@@ -116,6 +113,14 @@ const MessagePostBox = forwardRef(
         setHistoryIndex(-1);
         fileCtrl.clear();
         dispatch(clearFiles());
+      } else {
+        if (currentEmoticon) {
+          handleEmoticon(currentEmoticon);
+        }
+      }
+
+      if (currentEmoticon) {
+        dispatch(clearEmoticon());
       }
     }, [dispatch, context, postAction, currentEmoticon]);
 
