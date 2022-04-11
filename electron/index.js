@@ -212,7 +212,7 @@ const appReady = async () => {
           createWindow(true, domainInfo).then(loadMainWindow);
         })
         .catch(err => {
-          logger.info('server config load error');
+          logger.info('server config load error: ' + JSON.stringify(err));
           console.log(err);
           setTimeout(() => {
             if (count !== 60) {
