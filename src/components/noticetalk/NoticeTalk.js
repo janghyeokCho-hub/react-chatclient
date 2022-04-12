@@ -14,7 +14,7 @@ import { isMainWindow } from '@/lib/deviceConnector';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import { chatsvr } from '@/lib/api';
 import { bound } from '@/modules/menu';
-import * as commonApi from '@/lib/common';
+import { checkURL } from '@/lib/common';
 
 
 function _popupResult(dispatch, message, cb) {
@@ -49,8 +49,11 @@ export default function NoticeTalk({ match, location, history }) {
 
 
   useEffect(()=>{
-    if(commonApi.checkURL(url).isURL)
-    setValidURL(true)
+    if(checkURL(url).isURL){
+      setValidURL(true)
+    }else{
+      setValidURL(false)
+    }
   },[url])
 
   useEffect(() => {

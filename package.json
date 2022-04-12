@@ -234,7 +234,6 @@
     "styled-components": "^5.3.3",
     "swr": "^0.5.6",
     "turndown": "^7.1.1",
-    "validator": "^13.7.0",
     "webpack-node-externals": "^1.7.2"
   }
 }
