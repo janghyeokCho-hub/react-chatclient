@@ -919,9 +919,11 @@ ipcMain.on('req-get-roomInfo', async (event, args) => {
   }
 });
 ipcMain.on('req-get-messages', async (event, args) => {
-  // 삭제된 메시지 동기화
-  await appDataEvt.syncChatroomDeletedMessages(args);
-  await appDataEvt.syncChannelDeletedMessages(args);
+  const isSync = args?.dist === 'SYNC';
+  if (isSync) {
+    // 삭제된 메시지 동기화
+    await appDataEvt.syncChatroomDeletedMessages(args);
+  }
 
   const returnValue = await appDataEvt.reqGetMessages(event, args);
   event.returnValue = returnValue;
@@ -933,7 +935,7 @@ ipcMain.on('req-get-messages', async (event, args) => {
       startId: messages[0].messageID,
       endId: messages[messages.length - 1].messageID,
       isNotice: Boolean(args.isNotice),
-      isSync: args.dist == 'SYNC',
+      isSync,
     };
     appDataEvt.reqUnreadCountForMessagesSync(event, param);
     appDataEvt.reqUnreadCountForSync(event, param);
