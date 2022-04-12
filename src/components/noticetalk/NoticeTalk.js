@@ -14,7 +14,6 @@ import { isMainWindow } from '@/lib/deviceConnector';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import { chatsvr } from '@/lib/api';
 import { bound } from '@/modules/menu';
-import validator from 'validator';
 import * as commonApi from '@/lib/common';
 
 
