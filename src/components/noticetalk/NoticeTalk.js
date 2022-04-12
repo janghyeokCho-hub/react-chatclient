@@ -15,6 +15,8 @@ import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import { chatsvr } from '@/lib/api';
 import { bound } from '@/modules/menu';
 import validator from 'validator';
+import * as commonApi from '@/lib/common';
+
 
 function _popupResult(dispatch, message, cb) {
   openPopup(
@@ -44,15 +46,13 @@ export default function NoticeTalk({ match, location, history }) {
   const [checkAll, setCheckAll] = useState(false);
   const [url, setUrl] = useState('');
   const [checkLink, setCheckLink] = useState(false);
+  const [validURL, setValidURL] = useState(false)
 
-  const validURL = useMemo(
-    () =>
-      validator.isURL(url, {
-        require_protocol: true,
-        allow_trailing_dot: true,
-      }),
-    [url],
-  );
+
+  useEffect(()=>{
+    if(commonApi.checkURL(url).isURL)
+    setValidURL(true)
+  },[url])
 
   useEffect(() => {
     dispatch(bound({ name: '', type: '' }));
@@ -75,7 +75,7 @@ export default function NoticeTalk({ match, location, history }) {
       selectTargets.push({ targetCode: target.id, targetType: target.type });
     });
 
-    var objLink = {
+    const objLink = {
       title: '시스템 알림',
       context: context.trim(),
       func: {
@@ -114,7 +114,7 @@ export default function NoticeTalk({ match, location, history }) {
     }
 
     if ((checkLink && !url) || (checkLink && !validURL)) {
-      _popupResult(dispatch, covi.getDic('CheckURL', 'url형식을 확인하세요'));
+      _popupResult(dispatch, covi.getDic('CheckURL', '올바른 URL형식을 사용하고 있는지 확인하세요.'));
       return;
     }
 
