@@ -23,7 +23,7 @@ const MessageView = ({
 }) => {
   const channelBox = useRef(null);
   const contentEditable = useRef(null);
-  const useMessageDelete = getConfig('UseChannelDeleteMessage', false) === true;
+  const useMessageDelete = getConfig('UseChatroomDeleteMessage', false) === true;
 
   const readMessageEvt = useCallback(
     e => {
