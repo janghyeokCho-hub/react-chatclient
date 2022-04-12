@@ -1606,30 +1606,30 @@ const channel = handleActions(
     [RECEIVE_DELETED_MESSAGE]: (state, action) => {
       return produce(state, draft => {
         if (action.payload) {
-          if (draft.currentChannel.roomId == action.payload.roomID) {
-            draft.messages.splice(
-              draft.messages.findIndex(
-                m => m.messageID == action.payload.deleteMessage.messageID,
-              ),
-              1,
-            );
-            // 여기에 추가
-            const channel = draft.channels.find(
-              r => r.roomId == action.payload.roomID,
-            );
-            if (channel) {
-              const lastMessage = draft.messages[draft.messages.length - 1];
-
-              if (lastMessage) {
-                channel.lastMessage = JSON.stringify({
-                  Message: lastMessage.context ? lastMessage.context : '',
-                  File: lastMessage.fileInfos ? lastMessage.fileInfos : '',
-                });
-                channel.lastMessageDate = lastMessage.sendDate;
-                channel.lastMessageType = lastMessage.messageType;
-              }
-            }
+          const { payload } = action;
+          if (!payload?.deleteMessage || !payload?.lastMessage) {
+            return;
           }
+
+          const idx = draft.messages?.findIndex(msg => msg.messageID === payload.deleteMessage?.messageID);
+          // 현재 대화방 메시지 목록에서 삭제
+          if (idx !== -1) {
+            draft.messages.splice(idx, 1);
+          }
+
+          // lastMessage 교체
+          const channel = draft.channels.find(
+            r => r.roomId == action.payload.roomID,
+          );
+          if (!channel) {
+            return;
+          }
+          const lastMessage = {
+            Message: payload.lastMessage.context,
+            File: payload.lastMessage.fileInfos,
+          };
+          channel.lastMessage = lastMessage;
+          channel.lastMessageDate = payload.lastMessage.sendDate;
         }
       });
     },

@@ -1988,30 +1988,6 @@ export const deleteChatroomMessage = async ({ roomID, deletedMessageIds }) => {
   }
 };
 
-export const deleteChannelMessage = async ({ roomID, deletedMessageIds }) => {
-  logger.info(
-    `Delete Channel Message:: room('${roomID}') deletedMessageIds: (${JSON.stringify(
-      deletedMessageIds,
-    )})`,
-  );
-  const userInfo = loginInfo.getData();
-  if (!userInfo) {
-    return;
-  }
-  const txProvider = await db.getTransactionProvider(dbPath, userInfo.id);
-  const tx = await txProvider();
-  try {
-    await tx('message')
-      .del()
-      .where('roomId', roomID)
-      .whereIn('messageId', deletedMessageIds);
-    await tx.commit();
-  } catch (err) {
-    logger.info(`Delete Channel Message Error: ${JSON.stringify(err)}`);
-    await tx.rollback();
-  }
-};
-
 export const syncChatroomDeletedMessages = async ({ roomID }) => {
   logger.info(`Chatroom: Sync deleted messages on room ${roomID}`);
   if (!roomID) {
@@ -2029,35 +2005,6 @@ export const syncChatroomDeletedMessages = async ({ roomID }) => {
       return;
     }
     deleteChatroomMessage({
-      roomID,
-      ...data.result,
-    });
-  } catch (err) {
-    logger.info(
-      `Chatroom: Sync deleted messages on room ${roomID} occured an error : ${JSON.stringify(
-        err,
-      )}`,
-    );
-  }
-};
-
-export const syncChannelDeletedMessages = async ({ roomID }) => {
-  logger.info(`Channel: Sync deleted messages on room ${roomID}`);
-  if (!roomID) {
-    return;
-  }
-  try {
-    const { data } = await managesvr('get', `/sync/room/message/${roomID}`);
-    logger.info(
-      `/sync/room/message/${roomID} result :: ` + JSON.stringify(data),
-    );
-    if (
-      data.status !== 'SUCCESS' ||
-      Array.isArray(data?.result?.deletedMessageIds) !== true
-    ) {
-      return;
-    }
-    deleteChannelMessage({
       roomID,
       ...data.result,
     });
