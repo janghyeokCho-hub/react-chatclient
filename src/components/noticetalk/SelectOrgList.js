@@ -2,6 +2,7 @@ import { appendLayer, getJobInfo } from '@/lib/common';
 import React, { useCallback } from 'react';
 import AddTarget from '@/pages/note/AddTarget';
 import ProfileBox from '@C/common/ProfileBox';
+import RequireIcon from '@/icons/svg/requireIcon';
 
 const SelectOrgList = props => {
   const { checkAll, targets, setCheckAll, viewState, setTargets, dispatch } =
@@ -28,8 +29,13 @@ const SelectOrgList = props => {
   return (
     <>
       <div className="txtBox org_select_wrap_txtBox">
-        <div>
-          <p>{covi.getDic('Note_Recipient', '받는사람')}</p>
+        <div style={{ display: 'flex' }}>
+          <div>
+            <p>{covi.getDic('Note_Recipient', '받는사람')}</p>
+          </div>
+          <div className="RequireIcon">
+            <RequireIcon />
+          </div>
         </div>
         <div style={{ display: 'flex' }}>
           <input

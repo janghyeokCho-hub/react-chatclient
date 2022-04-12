@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import NotificationPopup from '@/components/noticetalk/NotificationPopup';
 import { appendLayer } from '@/lib/common';
+import RequireIcon from '@/icons/svg/requireIcon';
 
 const AlarmChannel = props => {
   const { setNoticeSubject, viewState, noticeSubject, targets, dispatch } =
@@ -19,8 +20,11 @@ const AlarmChannel = props => {
 
   return (
     <>
-      <div className="txtBox" style={{ padding: '0 30px' }}>
-        <p>{covi.getDic('Notitification_Channel', '알림 채널')}</p>
+      <div className="txtBox" style={{ padding: '0 30px', display: 'flex' }}>
+        <div>{covi.getDic('Notitification_Channel', '알림 채널')}</div>
+        <div className="RequireIcon">
+          <RequireIcon />
+        </div>
       </div>
       <div
         className="org_select_wrap"

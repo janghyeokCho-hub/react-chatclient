@@ -1,4 +1,5 @@
 import React, { createRef, useCallback } from 'react';
+import RequireIcon from '@/icons/svg/requireIcon';
 
 const ContextBox = props => {
   const { setContext, url, setUrl, checkLink, setCheckLink, validURL } = props;
@@ -17,14 +18,19 @@ const ContextBox = props => {
       <div className="Profile-info-input" style={{ textAlign: 'start' }}>
         <div className="input full">
           <div className="addLink">
-            <div>
-              <label
-                className="string optional"
-                htmlFor="user-name"
-                style={{ cursor: 'inherit' }}
-              >
-                <p>{covi.getDic('Context', '내용')}</p>
-              </label>
+            <div style={{ display: 'flex' }}>
+              <div>
+                <label
+                  className="string optional"
+                  htmlFor="user-name"
+                  style={{ cursor: 'inherit' }}
+                >
+                  <p>{covi.getDic('Context', '내용')}</p>
+                </label>
+              </div>
+              <div className="RequireIcon">
+                <RequireIcon />
+              </div>
             </div>
             <div style={{ display: 'flex' }}>
               <input
@@ -39,9 +45,9 @@ const ContextBox = props => {
             </div>
           </div>
           {checkLink && (
-            <>
+            <div className="add_link_container">
               <div className="addLink">
-                <label for="inputUrl">바로가기 URL: </label>
+                <label for="inputUrl"> {covi.getDic('URL', 'URL: ')}</label>
                 <input
                   value={url}
                   onChange={e => {
@@ -52,19 +58,17 @@ const ContextBox = props => {
                   type="text"
                 />
               </div>
-              <div style={{ textAlign: 'right', marginBottom: '5px' }}>
+              <div className="warning_Box">
                 {!validURL && (
-                  <span
-                    style={{ color: 'red', fontWeight: 600, fontsize: '10px' }}
-                  >
+                  <span className="warning_txt">
                     {covi.getDic(
                       'CheckURL',
-                      '올바를 url형식을 사용하고 있는지 확인하세요',
+                      '올바른 URL형식을 사용하고 있는지 확인하세요.',
                     )}
                   </span>
                 )}
               </div>
-            </>
+            </div>
           )}
           <textarea
             ref={editorRef}

@@ -114,10 +114,7 @@ export default function NoticeTalk({ match, location, history }) {
     }
 
     if ((checkLink && !url) || (checkLink && !validURL)) {
-      _popupResult(
-        dispatch,
-        covi.getDic('CheckURL', '올바를 url형식을 사용하고 있는지 확인하세요'),
-      );
+      _popupResult(dispatch, covi.getDic('CheckURL', 'url형식을 확인하세요'));
       return;
     }
 
