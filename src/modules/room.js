@@ -987,6 +987,7 @@ const room = handleActions(
             draft.currentRoom.lastMessage = lastMessage;
           }
           room.lastMessage = lastMessage;
+          room.lastMessageDate = payload.lastMessage.sendDate;
         }
         /*  */
       });

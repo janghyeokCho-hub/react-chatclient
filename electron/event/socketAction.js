@@ -269,6 +269,5 @@ export const onDelMessage = payload => {
   return;
 };
 export const onDelChannelMessage = payload => {
-  appData.deleteChannelMessage(payload);
   return;
 };
