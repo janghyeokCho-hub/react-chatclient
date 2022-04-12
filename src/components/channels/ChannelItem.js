@@ -154,6 +154,7 @@ const ChannelItem = ({
   isJoin,
   pinnedTop,
   pinnedChannels,
+  isCategory = false,
 }) => {
   const id = useSelector(({ login }) => login.id);
   const channels = useSelector(({ channel }) => channel.channels);
@@ -415,35 +416,38 @@ const ChannelItem = ({
   );
 
   const menus = useMemo(() => {
-    const pinToTop = {
-      code: 'pinRoom',
-      isline: false,
-      onClick: () => {
-        const today = new Date();
-        handleChangeSetting('pinTop', `${today.getTime()}`, 'ADD');
-      },
-      name: covi.getDic('PinToTop', '상단고정'),
-    };
-    const unpinToTop = {
-      code: 'unpinRoom',
-      isline: false,
-      onClick: () => {
-        handleChangeSetting('pinTop', '', 'DEL');
-      },
-      name: covi.getDic('UnpinToTop', '상단고정 해제'),
-    };
-    const menus = [
-      pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop),
-      ...getMenuData(
+    if (!isCategory) {
+      const pinToTop = {
+        code: 'pinRoom',
+        isline: false,
+        onClick: () => {
+          const today = new Date();
+          handleChangeSetting('pinTop', `${today.getTime()}`, 'ADD');
+        },
+        name: covi.getDic('PinToTop', '상단고정'),
+      };
+      const unpinToTop = {
+        code: 'unpinRoom',
+        isline: false,
+        onClick: () => {
+          handleChangeSetting('pinTop', '', 'DEL');
+        },
+        name: covi.getDic('UnpinToTop', '상단고정 해제'),
+      };
+      const menus = [pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop)];
+      const menuData = getMenuData(
         dispatch,
         channel,
         id,
         dbClickEvent,
         isSelect,
         handleDoubleClick,
-      ),
-    ];
-    return menus;
+      );
+      if (menuData) {
+        menus.push(menuData);
+      }
+      return menus;
+    }
   }, [dispatch, channel, id, dbClickEvent, isSelect, handleDoubleClick]);
 
   const messageDate = useMemo(
@@ -468,7 +472,10 @@ const ChannelItem = ({
   }, [channel]);
 
   return (
-    <RightConxtMenu menuId={menuId} menus={menus}>
+    <RightConxtMenu
+      menuId={isCategory ? `category_${menuId}` : menuId}
+      menus={isCategory ? null : menus}
+    >
       <li
         key={channel.roomId}
         className={(isSelect && ['person', 'active'].join(' ')) || 'person'}
