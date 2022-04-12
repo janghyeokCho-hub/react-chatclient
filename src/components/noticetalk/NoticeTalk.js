@@ -84,7 +84,7 @@ export default function NoticeTalk({ match, location, history }) {
         name: '페이지로 이동',
         type: 'link',
         data: {
-          baseURL: url,
+          baseURL: checkURL(url).url,
         },
       },
     };
