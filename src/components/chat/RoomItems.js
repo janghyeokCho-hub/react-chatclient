@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import Room from '@C/chat/Room';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import { Scrollbars } from 'react-custom-scrollbars';
@@ -82,12 +82,6 @@ const RoomItems = ({ rooms, loading, onRoomChange, isDoubleClick }) => {
         {!loading &&
           list((room, _) => {
             const isSelect = room.roomID === selectId;
-            const setting = getRoomSettings(room);
-
-            let isPinTop = false;
-            if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
-              isPinTop = true;
-            }
 
             return (
               <Room
@@ -96,7 +90,8 @@ const RoomItems = ({ rooms, loading, onRoomChange, isDoubleClick }) => {
                 onRoomChange={onRoomChange}
                 dbClickEvent={isDoubleClick}
                 isSelect={isSelect}
-                pinnedTop={isPinTop}
+                getRoomSettings={getRoomSettings}
+                isEmptyObj={isEmptyObj}
                 pinnedRooms={pinnedRooms}
               />
             );

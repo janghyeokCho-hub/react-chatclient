@@ -149,14 +149,17 @@ const Room = ({
   onRoomChange,
   isSelect,
   dbClickEvent,
-  pinnedTop,
   pinnedRooms,
+  getRoomSettings,
+  isEmptyObj,
 }) => {
   const id = useSelector(({ login }) => login.id);
   const [isNoti, setIsNoti] = useState(true);
   const chatBotConfig = getConfig('ChatBot');
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
   const pinToTopLimit = useMemo(() => getConfig('PinToTop_Limit_Chat', -1), []);
+  const [pinnedTop, setPinnedTop] = useState(false);
+  const setting = useMemo(() => getRoomSettings(room), [room]);
 
   const filterMember = useMemo(
     () => getFilterMember(room.members, id, room.roomType),
@@ -177,6 +180,14 @@ const Room = ({
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
+      setPinnedTop(true);
+    } else {
+      setPinnedTop(false);
+    }
+  }, [setting]);
 
   const dispatch = useDispatch();
 
@@ -272,7 +283,7 @@ const Room = ({
 
   const handleChangeSetting = useCallback(
     (key, value, type) => {
-      let setting = null;
+      let chageSetting = null;
       if (type === 'ADD') {
         if (
           pinToTopLimit > -1 &&
@@ -291,22 +302,18 @@ const Room = ({
           );
           return;
         }
-
-        if (room.setting === null) {
-          setting = {};
-        } else if (typeof room.setting === 'object') {
-          setting = { ...room.setting };
-        } else if (common.isJSONStr(room.setting)) {
-          setting = JSON.parse(room.setting);
-        }
-
-        setting[key] = value;
+        chageSetting = getRoomSettings(room);
+        chageSetting[key] = value;
       } else {
-        if (room.setting === null) {
-          setting = {};
+        if (isEmptyObj(setting)) {
+          chageSetting = {};
         } else {
-          setting = JSON.parse(room.setting);
-          delete setting[key];
+          if (typeof room.setting === 'object') {
+            chageSetting = room.setting;
+          } else {
+            chageSetting = JSON.parse(room.setting);
+          }
+          chageSetting[key] = value;
         }
       }
       dispatch(
@@ -314,7 +321,7 @@ const Room = ({
           roomID: room.roomID,
           key: key,
           value: value,
-          setting: JSON.stringify(setting),
+          setting: JSON.stringify(chageSetting),
         }),
       );
     },

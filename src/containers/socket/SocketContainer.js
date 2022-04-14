@@ -76,6 +76,8 @@ const SocketContainer = ({ history, location }) => {
             },
             onDelChannelNotice: socketActions.handleDelChannelNotice(dispatch),
             onAuthChanged: socketActions.handleAuthChanged(dispatch),
+            onRoomSettingChanged:
+              socketActions.handleRoomSettingChanged(dispatch),
           },
           socketActions.handleConnect(dispatch), // connect callback
           socketActions.handleDisconnect(dispatch), // disconnect callback
@@ -126,6 +128,8 @@ const SocketContainer = ({ history, location }) => {
             ),
             onDelChannelNotice: socketActions.handleDelChannelNotice(dispatch),
             onAuthChanged: socketActions.handleAuthChanged(dispatch),
+            onRoomSettingChanged:
+              socketActions.handleRoomSettingChanged(dispatch),
           },
         );
       }
