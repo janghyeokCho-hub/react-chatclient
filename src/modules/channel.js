@@ -138,6 +138,8 @@ const [
 
 const CHANNEL_AUTH_CHANGED = 'channel/AUTH_CHANGED';
 
+const RECEIVE_CHANNELSETTING = 'channel/RECEIVE_CHANNELSETTING';
+
 export const channelClosure = createAction(SET_CHANNEL_CLOSURE);
 
 export const setChannels = createAction(SET_CHANNELS);
@@ -204,6 +206,8 @@ export const selectEmoticon = createAction(SELECT_EMOTICON);
 export const clearEmoticon = createAction(CLEAR_EMOTICON);
 
 export const updateLastMessage = createAction(UPDATE_LAST_MESSAGE);
+
+export const receiveChannelSetting = createAction(RECEIVE_CHANNELSETTING);
 
 function createGetChannelsSaga() {
   return function* (action) {
@@ -1611,7 +1615,9 @@ const channel = handleActions(
             return;
           }
 
-          const idx = draft.messages?.findIndex(msg => msg.messageID === payload.deleteMessage?.messageID);
+          const idx = draft.messages?.findIndex(
+            msg => msg.messageID === payload.deleteMessage?.messageID,
+          );
           // 현재 대화방 메시지 목록에서 삭제
           if (idx !== -1) {
             draft.messages.splice(idx, 1);
@@ -1805,6 +1811,35 @@ const channel = handleActions(
               cm.channelAuth = action.payload.auth;
             }
           });
+        }
+      });
+    },
+    [RECEIVE_CHANNELSETTING]: (state, action) => {
+      return produce(state, draft => {
+        if (action.payload.roomID) {
+          const channel = draft.channels.find(
+            c => c.roomId == action.payload.roomID,
+          );
+          let setting = {};
+
+          if (typeof action.payload.setting === 'object') {
+            setting = action.payload.setting;
+          } else {
+            setting = JSON.parse(action.payload.setting);
+          }
+          channel.settingJSON = setting;
+          if (
+            !!draft.currentChannel &&
+            draft.currentChannel.roomId === roomID
+          ) {
+            try {
+              for (const key of Object.keys(setting).entries()) {
+                draft.currentChannel.settingJSON[key] = setting[key];
+              }
+            } catch (e) {
+              draft.currentChannel.settingJSON = null;
+            }
+          }
         }
       });
     },

@@ -20,6 +20,7 @@ export const reqSocketConnect = (event, args) => {
     onNewChannelMessage: socketAction.onNewChannelMessage,
     onNewChannelNotice: socketAction.onNewChannelMessage,
     onAppUpdateConfig: socketAction.onAppUpdateConfig,
+    onRoomSettingChanged: payload => {},
   };
 
   if (CONN_SOCKET == null || CONN_SOCKET.disconnect) {
