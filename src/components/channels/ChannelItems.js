@@ -147,7 +147,8 @@ const ChannelItems = ({
                 isSelect={isSelect}
                 getMenuData={getMenuData}
                 isJoin={isJoined === -1}
-                pinnedTop={isPinTop}
+                getChannelSettings={getChannelSettings}
+                isEmptyObj={isEmptyObj}
                 pinnedChannels={pinnedChannels}
               />
             );

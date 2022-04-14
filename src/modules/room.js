@@ -20,6 +20,7 @@ import {
   evalConnector,
   resetParentUnreadCount,
   isMainWindow,
+  syncRoomSetting,
 } from '@/lib/deviceConnector';
 import { startLoading, finishLoading } from '@/modules/loading';
 import { changeOpenChannel } from '@/modules/channel'; // 채널
@@ -103,6 +104,8 @@ const SET_BACKGROUND = 'room/SET_BACKGROUND';
 const MESSAGE_READ_COUNT_FIXED = 'room/MESSAGE_READ_COUNT_FIXED';
 const MESSAGE_CURRENT_TYPING = 'room/MESSAGE_CURRENT_TYPING';
 
+const RECEIVE_ROOMSETTING = 'room/RECEIVE_ROOMSETTING';
+
 export const getRooms = createAction(GET_ROOMS);
 export const updateRooms = createAction(UPDATE_ROOMS);
 export const getRoomInfo = createAction(GET_ROOM_INFO);
@@ -150,6 +153,8 @@ export const roomLeaveTargetUser = createAction(ROOM_LEAVE_TARGET_USER);
 export const setBackground = createAction(SET_BACKGROUND);
 export const messageReadCountFixed = createAction(MESSAGE_READ_COUNT_FIXED);
 export const messageCurrentTyping = createAction(MESSAGE_CURRENT_TYPING);
+
+export const receiveRoomSetting = createAction(RECEIVE_ROOMSETTING);
 
 const inviteMemberSaga = createRequestSaga(INVITE_MEMBER, roomApi.inviteMember);
 
@@ -522,6 +527,7 @@ function createModifyRoomSettingSaga() {
               setting: action.payload.setting,
             },
           });
+
           if (DEVICE_TYPE == 'd') {
             // TODO: AppData 저장 여부값 조건 추가 필요
             yield call(evalConnector, {
@@ -553,6 +559,7 @@ const modifyRoomSettingSaga = createModifyRoomSettingSaga();
 
 function createRematchingMemberSaga() {
   return function* (action) {
+    console.log(action.payload);
     if (action.payload) {
       try {
         const response = yield call(roomApi.rematchMember, {
@@ -1519,6 +1526,33 @@ const room = handleActions(
           // 1. roomID가 일치하는 현재 방 탐색
           // 2. 해당 방의 메시지 중 payload에 있는 messageId 탐색
           // 3. 해당 메시지가 존재 한다면 해당 메시지만 업데이트 처리
+        }
+      });
+    },
+    [RECEIVE_ROOMSETTING]: (state, action) => {
+      return produce(state, draft => {
+        if (action.payload.roomID) {
+          const roomID = Number(action.payload.roomID);
+          const room = draft.rooms.find(item => item.roomID === roomID);
+          let setting = {};
+
+          if (typeof action.payload.setting === 'object') {
+            setting = action.payload.setting;
+          } else {
+            setting = JSON.parse(action.payload.setting);
+          }
+
+          room.setting = setting;
+          if (!!draft.currentRoom && draft.currentRoom.roomID === roomID) {
+            try {
+              const setting = JSON.parse(action.payload.setting);
+              for (const key of Object.keys(setting).entries()) {
+                draft.currentRoom.setting[key] = setting[key];
+              }
+            } catch (e) {
+              draft.currentRoom.setting = null;
+            }
+          }
         }
       });
     },

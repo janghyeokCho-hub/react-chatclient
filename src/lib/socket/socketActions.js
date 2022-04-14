@@ -10,6 +10,7 @@ import {
   roomLeaveTargetUser,
   messageReadOtherDevice,
   roomMessageDelete,
+  receiveRoomSetting,
 } from '@/modules/room';
 
 import {
@@ -24,7 +25,7 @@ import {
   resetUnreadCount,
   channelLeaveOtherDevice,
   changeChannelAuth,
-  deleteMessage,
+  receiveChannelSetting,
 } from '@/modules/channel';
 
 import { setUsersPresence, addFixedUsers } from '@/modules/presence';
@@ -528,5 +529,17 @@ export const handleAuthChanged = (dispatch, userInfo) => {
   return data => {
     const json_data = JSON.parse(data);
     dispatch(changeChannelAuth(json_data));
+  };
+};
+
+export const handleRoomSettingChanged = dispatch => {
+  return data => {
+    const json_data = JSON.parse(data);
+    // 채널 로직 분기 필요
+    if (json_data && json_data.roomType === 'C') {
+      dispatch(receiveChannelSetting(json_data));
+    } else {
+      dispatch(receiveRoomSetting(json_data));
+    }
   };
 };

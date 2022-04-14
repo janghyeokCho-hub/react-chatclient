@@ -152,7 +152,8 @@ const ChannelItem = ({
   dbClickEvent,
   getMenuData,
   isJoin,
-  pinnedTop,
+  getChannelSettings,
+  isEmptyObj,
   pinnedChannels,
   isCategory = false,
 }) => {
@@ -164,7 +165,21 @@ const ChannelItem = ({
   );
 
   const menuId = useMemo(() => 'channel_' + channel.roomId, [channel]);
+  const [pinnedTop, setPinnedTop] = useState(false);
+  const setting = useMemo(
+    () => getChannelSettings && getChannelSettings(channel),
+    [channel],
+  );
+
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
+      setPinnedTop(true);
+    } else {
+      setPinnedTop(false);
+    }
+  }, [setting]);
 
   useEffect(() => {
     evalConnector({
@@ -366,7 +381,7 @@ const ChannelItem = ({
 
   const handleChangeSetting = useCallback(
     (key, value, type) => {
-      let setting = null;
+      let chageSetting = setting;
       if (type === 'ADD') {
         if (
           pinToTopLimit > -1 &&
@@ -386,21 +401,17 @@ const ChannelItem = ({
           return;
         }
 
-        if (channel.settingJSON === null) {
-          setting = {};
-        } else if (typeof channel.settingJSON === 'object') {
-          setting = { ...channel.settingJSON };
-        } else if (isJSONStr(channel.settingJSON)) {
-          setting = JSON.parse(channel.settingJSON);
-        }
-
-        setting[key] = value;
+        chageSetting[key] = value;
       } else {
-        if (channel.settingJSON === null) {
-          setting = {};
+        if (isEmptyObj(setting)) {
+          chageSetting = {};
         } else {
-          setting = JSON.parse(channel.settingJSON);
-          delete setting[key];
+          if (typeof channel.settingJSON === 'object') {
+            chageSetting = channel.settingJSON;
+          } else {
+            chageSetting = JSON.parse(channel.settingJSON);
+          }
+          chageSetting[key] = value;
         }
       }
       dispatch(
@@ -408,7 +419,7 @@ const ChannelItem = ({
           roomID: channel.roomId,
           key: key,
           value: value,
-          setting: JSON.stringify(setting),
+          setting: JSON.stringify(chageSetting),
         }),
       );
     },
@@ -444,11 +455,21 @@ const ChannelItem = ({
         handleDoubleClick,
       );
       if (menuData) {
-        menus.push(menuData);
+        return menus.concat(menuData);
+      } else {
+        return menus;
       }
-      return menus;
     }
-  }, [dispatch, channel, id, dbClickEvent, isSelect, handleDoubleClick]);
+  }, [
+    dispatch,
+    channel,
+    id,
+    dbClickEvent,
+    isSelect,
+    handleDoubleClick,
+    pinnedTop,
+    pinToTopLimit,
+  ]);
 
   const messageDate = useMemo(
     () => makeDateTime(channel.lastMessageDate),
