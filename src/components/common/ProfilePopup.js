@@ -1,13 +1,12 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { format } from 'date-fns';
 import { getProfileInfo } from '@/lib/profile';
-import { addFavorite, deleteFavorite } from '@/lib/contactUtil';
 import { getConfig } from '@/lib/util/configUtil';
+import RightConxtMenu from '@C/common/popup/RightConxtMenu';
 import axios from 'axios';
-
 import {
   deleteLayer,
   clearLayer,
@@ -177,7 +176,21 @@ const ProfilePopup = ({ userInfo }) => {
             <dl>
               <dt>{covi.getDic('Mobile', '휴대폰')}</dt>
               <dd>
-                {userInfo.phoneNumber}
+                <RightConxtMenu
+                  menuId={`profilePhoneNumber`}
+                  menus={[
+                    {
+                      code: 'copyClipboardMessage',
+                      isline: false,
+                      onClick: () => {
+                        navigator.clipboard.writeText(userInfo.phoneNumber);
+                      },
+                      name: covi.getDic('Copy', '내용 복사'),
+                    },
+                  ]}
+                >
+                  {userInfo.phoneNumber}
+                </RightConxtMenu>
                 {'  '}
                 {makeCall?.isUse && userInfo?.phoneNumber?.length > 0 && (
                   <button
@@ -230,7 +243,21 @@ const ProfilePopup = ({ userInfo }) => {
             <dl>
               <dt>{covi.getDic('Phone', '내선번호')}</dt>
               <dd>
-                {userInfo.companyNumber}
+                <RightConxtMenu
+                  menuId={`companyNumber`}
+                  menus={[
+                    {
+                      code: 'copyClipboardMessage',
+                      isline: false,
+                      onClick: () => {
+                        navigator.clipboard.writeText(userInfo.companyNumber);
+                      },
+                      name: covi.getDic('Copy', '내용 복사'),
+                    },
+                  ]}
+                >
+                  {userInfo.companyNumber}
+                </RightConxtMenu>
                 {'  '}
                 {makeCall?.isUse && userInfo?.companyNumber?.length > 0 && (
                   <button
@@ -282,13 +309,43 @@ const ProfilePopup = ({ userInfo }) => {
             <dl>
               <dt>{covi.getDic('Email', '이메일')}</dt>
               <dd>
-                {userInfo.mailAddress == null ? '' : userInfo.mailAddress}
+                <RightConxtMenu
+                  menuId={`mailAddress`}
+                  menus={[
+                    {
+                      code: 'copyClipboardMessage',
+                      isline: false,
+                      onClick: () => {
+                        navigator.clipboard.writeText(userInfo.mailAddress);
+                      },
+                      name: covi.getDic('Copy', '내용 복사'),
+                    },
+                  ]}
+                >
+                  {userInfo.mailAddress == null ? '' : userInfo.mailAddress}
+                </RightConxtMenu>
               </dd>
             </dl>
             <dl>
               <dt>{covi.getDic('Work', '담당업무')}</dt>
               <dd>
-                <a>{userInfo.work == null ? '' : userInfo.work}</a>
+                <a>
+                  <RightConxtMenu
+                    menuId={`work`}
+                    menus={[
+                      {
+                        code: 'copyClipboardMessage',
+                        isline: false,
+                        onClick: () => {
+                          navigator.clipboard.writeText(userInfo.work);
+                        },
+                        name: covi.getDic('Copy', '내용 복사'),
+                      },
+                    ]}
+                  >
+                    {userInfo.work == null ? '' : userInfo.work}
+                  </RightConxtMenu>
+                </a>
               </dd>
             </dl>
           </div>
