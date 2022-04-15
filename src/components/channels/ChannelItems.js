@@ -8,6 +8,7 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import { evalConnector } from '@/lib/deviceConnector';
 import useOffset from '@/hooks/useOffset';
 import { isJSONStr } from '@/lib/common';
+import { getConfig } from '@/lib/util/configUtil';
 
 const isEmptyObj = obj => {
   if (obj && obj.constructor === Object && Object.keys(obj).length === 0) {
@@ -16,12 +17,10 @@ const isEmptyObj = obj => {
   return false;
 };
 
-const getChannelSettings = channel => {
-  let setting = null;
+const getChannelSettings = (channel = {}) => {
+  let setting = {};
 
-  if (channel.settingJSON === null) {
-    setting = {};
-  } else if (typeof channel.settingJSON === 'object') {
+  if (typeof channel.settingJSON === 'object') {
     setting = { ...channel.settingJSON };
   } else if (isJSONStr(channel.settingJSON)) {
     setting = JSON.parse(channel.settingJSON);
@@ -38,6 +37,10 @@ const ChannelItems = ({
   const selectId = useSelector(({ channel }) => channel.selectedId);
   const joinedChannelList = useSelector(({ channel }) => channel.channels);
   const [pinnedChannels, setPinnedChannels] = useState([]);
+  const pinToTopLimit = useMemo(
+    () => getConfig('PinToTop_Limit_Channel', -1),
+    [channels],
+  );
 
   const [isNotis, setIsNotis] = useState({});
   const RENDER_UNIT = 5;
@@ -45,32 +48,30 @@ const ChannelItems = ({
   const sortedChannels = useMemo(() => {
     const pinned = [];
     const unpinned = [];
-
-    channels.forEach(c => {
-      const setting = getChannelSettings(c);
-      if (setting) {
-        if (isEmptyObj(setting)) {
-          unpinned.push(c);
+    const result = [];
+    if (pinToTopLimit >= 0) {
+      channels.forEach(c => {
+        const setting = getChannelSettings(c);
+        if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
+          pinned.push(c);
         } else {
-          if (!!setting.pinTop) {
-            pinned.push(c);
-          } else {
-            unpinned.push(c);
-          }
+          unpinned.push(c);
         }
-      } else {
-        unpinned.push(c);
-      }
-    });
-    setPinnedChannels(pinned);
+      });
+      setPinnedChannels(pinned);
 
-    pinned.sort((a, b) => {
-      const aSetting = getChannelSettings(a);
-      const bSetting = getChannelSettings(b);
-      return bSetting.pinTop - aSetting.pinTop;
-    });
-    return [...pinned, ...unpinned];
-  }, [channels]);
+      pinned.sort((a, b) => {
+        const aSetting = getChannelSettings(a);
+        const bSetting = getChannelSettings(b);
+        return bSetting.pinTop - aSetting.pinTop;
+      });
+      return result.concat([...pinned, ...unpinned]);
+    } else {
+      return result.concat(channels).sort((a, b) => {
+        return b.lastMessageDate - a.lastMessageDate;
+      });
+    }
+  }, [channels, pinToTopLimit]);
 
   const { handleScrollUpdate, list } = useOffset(sortedChannels, {
     initialNumToRender: 1,
@@ -150,6 +151,7 @@ const ChannelItems = ({
                 getChannelSettings={getChannelSettings}
                 isEmptyObj={isEmptyObj}
                 pinnedChannels={pinnedChannels}
+                pinToTopLimit={pinToTopLimit}
               />
             );
           })}

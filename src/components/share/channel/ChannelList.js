@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { Scrollbars } from 'react-custom-scrollbars';
 import useOffset from '@/hooks/useOffset';
 import SearchBar from '@COMMON/SearchBar';
-import { getPinnedRooms } from '@/lib/deviceConnector';
 import ChannelItem from './ChannelItem';
 import { isJSONStr } from '@/lib/common';
 
@@ -14,12 +13,10 @@ const isEmptyObj = obj => {
   return false;
 };
 
-const getChannelSettings = channel => {
-  let setting = null;
+const getChannelSettings = (channel = {}) => {
+  let setting = {};
 
-  if (channel.settingJSON === null) {
-    setting = {};
-  } else if (typeof channel.settingJSON === 'object') {
+  if (typeof channel.settingJSON === 'object') {
     setting = { ...channel.settingJSON };
   } else if (isJSONStr(channel.settingJSON)) {
     setting = JSON.parse(channel.settingJSON);
@@ -36,6 +33,10 @@ const ChannelList = ({ channels, checkObj }) => {
   const [listMode, setListMode] = useState('N');
   const [searchText, setSearchText] = useState('');
   const [searchList, setSearchList] = useState([]);
+  const pinToTopLimit = useMemo(
+    () => getConfig('PinToTop_Limit_Channel', -1),
+    [channels],
+  );
 
   const handleSearch = useCallback(
     changeVal => {
@@ -88,29 +89,29 @@ const ChannelList = ({ channels, checkObj }) => {
   const sortedChannels = useMemo(() => {
     const pinned = [];
     const unpinned = [];
-
-    channels.forEach(c => {
-      const setting = getChannelSettings(c);
-      if (setting) {
-        if (isEmptyObj(setting)) {
-          unpinned.push(c);
+    const result = [];
+    if (pinToTopLimit >= 0) {
+      channels.forEach(c => {
+        const setting = getChannelSettings(c);
+        if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
+          pinned.push(c);
         } else {
-          if (!!setting.pinTop) {
-            pinned.push(c);
-          } else {
-            unpinned.push(c);
-          }
+          unpinned.push(c);
         }
-      }
-    });
+      });
 
-    pinned.sort((a, b) => {
-      const aSetting = getChannelSettings(a);
-      const bSetting = getChannelSettings(b);
-      return bSetting.pinTop - aSetting.pinTop;
-    });
-    return [...pinned, ...unpinned];
-  }, [channels]);
+      pinned.sort((a, b) => {
+        const aSetting = getChannelSettings(a);
+        const bSetting = getChannelSettings(b);
+        return bSetting.pinTop - aSetting.pinTop;
+      });
+      return result.concat([...pinned, ...unpinned]);
+    } else {
+      return result.concat(channels).sort((a, b) => {
+        return b.lastMessageDate - a.lastMessageDate;
+      });
+    }
+  }, [channels, pinToTopLimit]);
 
   const { handleScrollUpdate, list } = useOffset(sortedChannels, {
     initialNumToRender: 1,
