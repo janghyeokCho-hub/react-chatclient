@@ -11,7 +11,15 @@ import { newWinRoom } from '@/modules/room';
 import ProfileBox from '@COMMON/ProfileBox';
 import RightConxtMenu from '../common/popup/RightConxtMenu';
 import { newChatRoom, evalConnector } from '@/lib/deviceConnector';
-import * as common from '@/lib/common';
+import {
+  getSysMsgFormatStr,
+  isJSONStr,
+  getDictionary,
+  convertEumTalkProtocolPreview,
+  getJobInfo,
+  eumTalkRegularExp,
+  openPopup,
+} from '@/lib/common';
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import { modifyRoomSetting } from '@/modules/room';
@@ -49,11 +57,11 @@ const makeMessageText = lastMessage => {
 
     if (!!msgObj.Message) {
       let drawText = (msgObj.Message && msgObj.Message) || '';
-      if (common.isJSONStr(msgObj.Message)) {
+      if (isJSONStr(msgObj.Message)) {
         const drawData = JSON.parse(msgObj.Message);
 
         if (drawData.msgType == 'C') {
-          drawText = common.getDictionary(drawData.title);
+          drawText = getDictionary(drawData.title);
         } else if (typeof drawData == 'object') {
           drawText = drawData.context || JSON.stringify(drawData);
         } else {
@@ -61,8 +69,8 @@ const makeMessageText = lastMessage => {
         }
       }
       // protocol check
-      if (common.eumTalkRegularExp.test(drawText)) {
-        const messageObj = common.convertEumTalkProtocolPreview(drawText);
+      if (eumTalkRegularExp.test(drawText)) {
+        const messageObj = convertEumTalkProtocolPreview(drawText);
         if (messageObj.type == 'emoticon')
           returnText = covi.getDic('Emoticon', '이모티콘');
         else returnText = messageObj.message.split('\n')[0];
@@ -91,13 +99,13 @@ const makeMessageText = lastMessage => {
           firstObj.ext == 'bmp'
         ) {
           // 사진 외 %s건
-          returnText = common.getSysMsgFormatStr(
+          returnText = getSysMsgFormatStr(
             covi.getDic('Tmp_imgExCnt', '사진 외 %s건'),
             [{ type: 'Plain', data: fileObj.length - 1 }],
           );
         } else {
           // 파일 외 %s건
-          returnText = common.getSysMsgFormatStr(
+          returnText = getSysMsgFormatStr(
             covi.getDic('Tmp_fileExCnt', '파일 외 %s건'),
             [{ type: 'Plain', data: fileObj.length - 1 }],
           );
@@ -152,12 +160,12 @@ const Room = ({
   pinnedRooms,
   getRoomSettings,
   isEmptyObj,
+  pinToTopLimit = -1,
 }) => {
   const id = useSelector(({ login }) => login.id);
   const [isNoti, setIsNoti] = useState(true);
   const chatBotConfig = getConfig('ChatBot');
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
-  const pinToTopLimit = useMemo(() => getConfig('PinToTop_Limit_Chat', -1), []);
   const [pinnedTop, setPinnedTop] = useState(false);
   const setting = useMemo(() => getRoomSettings(room), [room]);
 
@@ -182,8 +190,12 @@ const Room = ({
   }, []);
 
   useEffect(() => {
-    if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
-      setPinnedTop(true);
+    if (pinToTopLimit >= 0) {
+      if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
+        setPinnedTop(true);
+      } else {
+        setPinnedTop(false);
+      }
     } else {
       setPinnedTop(false);
     }
@@ -197,7 +209,7 @@ const Room = ({
         // M의 경우 남은 값이 1개
         const target = filterMember[0];
 
-        return <>{common.getJobInfo(target)}</>;
+        return <>{getJobInfo(target)}</>;
       } else {
         if (!!room?.roomName) {
           return (
@@ -227,9 +239,8 @@ const Room = ({
           <>
             <span>
               {filterMember.map((item, index) => {
-                if (index == filterMember.length - 1)
-                  return common.getJobInfo(item);
-                else return common.getJobInfo(item) + ',';
+                if (index == filterMember.length - 1) return getJobInfo(item);
+                else return getJobInfo(item) + ',';
               })}
             </span>
             {room.roomType != 'A' && room.roomType != 'B' && room.members && (
@@ -283,14 +294,14 @@ const Room = ({
 
   const handleChangeSetting = useCallback(
     (key, value, type) => {
-      let chageSetting = null;
+      let chageSetting = getRoomSettings(room);
       if (type === 'ADD') {
         if (
           pinToTopLimit > -1 &&
           pinToTopLimit !== 0 &&
           pinnedRooms?.length >= pinToTopLimit
         ) {
-          common.openPopup(
+          openPopup(
             {
               type: 'Alert',
               message: covi.getDic(
@@ -302,17 +313,11 @@ const Room = ({
           );
           return;
         }
-        chageSetting = getRoomSettings(room);
         chageSetting[key] = value;
       } else {
-        if (isEmptyObj(setting)) {
+        if (isEmptyObj(chageSetting)) {
           chageSetting = {};
         } else {
-          if (typeof room.setting === 'object') {
-            chageSetting = room.setting;
-          } else {
-            chageSetting = JSON.parse(room.setting);
-          }
           chageSetting[key] = value;
         }
       }
@@ -325,7 +330,7 @@ const Room = ({
         }),
       );
     },
-    [room, pinnedRooms, dispatch],
+    [room, pinnedRooms, dispatch, pinToTopLimit],
   );
 
   const menus = useMemo(() => {
@@ -407,6 +412,8 @@ const Room = ({
     handleDoubleClick,
     isNoti,
     pinnedTop,
+    pinToTopLimit,
+    pinnedRooms,
   ]);
 
   const menuId = useMemo(() => 'room_' + room.roomID, [room]);
