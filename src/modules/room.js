@@ -1532,21 +1532,30 @@ const room = handleActions(
     [RECEIVE_ROOMSETTING]: (state, action) => {
       return produce(state, draft => {
         if (action.payload.roomID) {
+          const getSetting = item => {
+            if (!item) {
+              return {};
+            } else {
+              if (typeof item === 'object') {
+                return item;
+              } else {
+                return JSON.parse(item);
+              }
+            }
+          };
           const roomID = Number(action.payload.roomID);
           const room = draft.rooms.find(item => item.roomID === roomID);
-          let setting = {};
+          let originSetting = getSetting(room.setting);
+          let setting = getSetting(action.payload.setting);
 
-          if (typeof action.payload.setting === 'object') {
-            setting = action.payload.setting;
-          } else {
-            setting = JSON.parse(action.payload.setting);
+          for (const [_, key] of Object.keys(setting).entries()) {
+            originSetting[key] = setting[key];
           }
+          room.setting = originSetting;
 
-          room.setting = setting;
           if (!!draft.currentRoom && draft.currentRoom.roomID === roomID) {
             try {
-              const setting = JSON.parse(action.payload.setting);
-              for (const key of Object.keys(setting).entries()) {
+              for (const [_, key] of Object.keys(setting).entries()) {
                 draft.currentRoom.setting[key] = setting[key];
               }
             } catch (e) {

@@ -13,12 +13,10 @@ const isEmptyObj = obj => {
   return false;
 };
 
-const getRoomSettings = room => {
-  let setting = null;
+const getRoomSettings = (room = {}) => {
+  let setting = {};
 
-  if (room.setting === null) {
-    setting = {};
-  } else if (typeof room.setting === 'object') {
+  if (typeof room.setting === 'object') {
     setting = { ...room.setting };
   } else if (isJSONStr(room.setting)) {
     setting = JSON.parse(room.setting);
@@ -34,6 +32,10 @@ const ChatList = ({ roomList, checkObj }) => {
   const [listMode, setListMode] = useState('N');
   const [searchText, setSearchText] = useState('');
   const [searchList, setSearchList] = useState([]);
+  const pinToTopLimit = useMemo(
+    () => getConfig('PinToTop_Limit_Chat', -1),
+    [rooms],
+  );
 
   const handleSearch = useCallback(
     changeVal => {
@@ -86,29 +88,29 @@ const ChatList = ({ roomList, checkObj }) => {
   const sortedRooms = useMemo(() => {
     const pinned = [];
     const unpinned = [];
-
-    roomList.forEach(r => {
-      const setting = getRoomSettings(r);
-      if (setting) {
-        if (isEmptyObj(setting)) {
-          unpinned.push(r);
+    const result = [];
+    if (pinToTopLimit >= 0) {
+      roomList.forEach(r => {
+        const setting = getRoomSettings(r);
+        if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
+          pinned.push(r);
         } else {
-          if (!!setting.pinTop) {
-            pinned.push(r);
-          } else {
-            unpinned.push(r);
-          }
+          unpinned.push(r);
         }
-      }
-    });
+      });
 
-    pinned.sort((a, b) => {
-      const aSetting = getRoomSettings(a);
-      const bSetting = getRoomSettings(b);
-      return bSetting.pinTop - aSetting.pinTop;
-    });
-    return [...pinned, ...unpinned];
-  }, [roomList]);
+      pinned.sort((a, b) => {
+        const aSetting = getRoomSettings(a);
+        const bSetting = getRoomSettings(b);
+        return bSetting.pinTop - aSetting.pinTop;
+      });
+      return result.concat([...pinned, ...unpinned]);
+    } else {
+      return result.concat(roomList).sort((a, b) => {
+        return b.lastMessageDate - a.lastMessageDate;
+      });
+    }
+  }, [roomList, pinToTopLimit]);
 
   const { handleScrollUpdate, list } = useOffset(sortedRooms, {
     initialNumToRender: 1,
