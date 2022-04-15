@@ -28,7 +28,7 @@ import {
   eumTalkRegularExp,
   convertEumTalkProtocolPreviewForChannelItem,
 } from '@/lib/common';
-import { getConfig } from '@/lib/util/configUtil';
+
 import * as channelApi from '@/lib/channel';
 import { evalConnector } from '@/lib/deviceConnector';
 import { modifyChannelSetting } from '@/modules/channel';
@@ -156,13 +156,10 @@ const ChannelItem = ({
   isEmptyObj,
   pinnedChannels,
   isCategory = false,
+  pinToTopLimit = -1,
 }) => {
   const id = useSelector(({ login }) => login.id);
   const channels = useSelector(({ channel }) => channel.channels);
-  const pinToTopLimit = useMemo(
-    () => getConfig('PinToTop_Limit_Channel', -1),
-    [],
-  );
 
   const menuId = useMemo(() => 'channel_' + channel.roomId, [channel]);
   const [pinnedTop, setPinnedTop] = useState(false);
@@ -174,12 +171,16 @@ const ChannelItem = ({
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
-      setPinnedTop(true);
+    if (pinToTopLimit >= 0) {
+      if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
+        setPinnedTop(true);
+      } else {
+        setPinnedTop(false);
+      }
     } else {
       setPinnedTop(false);
     }
-  }, [setting]);
+  }, [setting, pinToTopLimit]);
 
   useEffect(() => {
     evalConnector({
@@ -381,7 +382,7 @@ const ChannelItem = ({
 
   const handleChangeSetting = useCallback(
     (key, value, type) => {
-      let chageSetting = setting;
+      let chageSetting = getChannelSettings(channel);
       if (type === 'ADD') {
         if (
           pinToTopLimit > -1 &&
@@ -400,17 +401,11 @@ const ChannelItem = ({
           );
           return;
         }
-
         chageSetting[key] = value;
       } else {
-        if (isEmptyObj(setting)) {
+        if (isEmptyObj(chageSetting)) {
           chageSetting = {};
         } else {
-          if (typeof channel.settingJSON === 'object') {
-            chageSetting = channel.settingJSON;
-          } else {
-            chageSetting = JSON.parse(channel.settingJSON);
-          }
           chageSetting[key] = value;
         }
       }
@@ -423,7 +418,7 @@ const ChannelItem = ({
         }),
       );
     },
-    [channel, pinnedChannels, dispatch],
+    [channel, pinnedChannels, dispatch, pinToTopLimit],
   );
 
   const menus = useMemo(() => {
@@ -445,7 +440,10 @@ const ChannelItem = ({
         },
         name: covi.getDic('UnpinToTop', '상단고정 해제'),
       };
-      const menus = [pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop)];
+      let menu = [];
+      if (pinToTopLimit >= 0) {
+        menu.push(pinnedTop ? unpinToTop : pinToTop);
+      }
       const menuData = getMenuData(
         dispatch,
         channel,
@@ -455,9 +453,9 @@ const ChannelItem = ({
         handleDoubleClick,
       );
       if (menuData) {
-        return menus.concat(menuData);
+        return menu.concat(menuData);
       } else {
-        return menus;
+        return menu;
       }
     }
   }, [
@@ -469,6 +467,7 @@ const ChannelItem = ({
     handleDoubleClick,
     pinnedTop,
     pinToTopLimit,
+    pinnedChannels,
   ]);
 
   const messageDate = useMemo(
@@ -553,7 +552,7 @@ const ChannelItem = ({
         ) : (
           <>
             <span className="time">
-              {pinnedTop && '📌'}
+              {pinToTopLimit >= 0 && pinnedTop && '📌'}
               {messageDate}
             </span>
             <span className="preview">{lastMessageText}</span>
