@@ -203,6 +203,22 @@ const ChatRoom = ({ match, roomInfo }) => {
     [roomID, dispatch],
   );
 
+  useEffect(()=>{
+    const setCtrlFEventListner = e => {
+      if (e.ctrlKey && e.key == 'f') {
+        setSearchVisible(true);
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', setCtrlFEventListner);
+
+    return () => {
+      window.removeEventListener('keydown', setCtrlFEventListner);
+    };
+
+  },[])
+
+
   return (
     <>
       {loading && <LoadingWrap />}
