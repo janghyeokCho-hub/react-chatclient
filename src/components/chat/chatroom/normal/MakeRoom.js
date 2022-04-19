@@ -6,6 +6,7 @@ import { openRoom } from '@/modules/room';
 import { mappingUserChatRoom } from '@/modules/contact';
 import FileUploadBox from '@C/chat/chatroom/normal/FileUploadBox';
 import { createRoom } from '@/lib/room';
+import { updateRooms } from '@/modules/room';
 import { clearFiles } from '@/modules/message';
 import * as common from '@/lib/common';
 import * as coviFile from '@/lib/fileUpload/coviFile';
@@ -197,8 +198,10 @@ const MakeRoom = ({ history }) => {
     if (messageType == 'A') {
       createRoom(data).then(({ data }) => {
         if (data.status === 'SUCCESS') {
-          console.log(data);
           const roomID = data.result.room.roomID;
+          if (data.result.room.updateDate === null) {
+            dispatch(updateRooms({ updateList: [roomID] }));
+          }
           handleNewRoom(roomID);
         }
       });
@@ -227,7 +230,6 @@ const MakeRoom = ({ history }) => {
               }
 
               if (emoticon) {
-                console.log(data);
                 sendMessage({
                   context: emoticon,
                   roomID: data.result.roomID,
@@ -244,8 +246,10 @@ const MakeRoom = ({ history }) => {
     } else {
       createRoom(data).then(({ data }) => {
         if (data.status === 'SUCCESS') {
-          console.log(data);
           const roomID = data.result.room.roomID;
+          if (data.result.room.updateDate === null) {
+            dispatch(updateRooms({ updateList: [roomID] }));
+          }
           if (linkObj) {
             getURLThumbnail({
               roomId: roomID,
