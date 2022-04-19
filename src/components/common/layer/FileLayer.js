@@ -69,6 +69,8 @@ const FileLayer = () => {
   const [currIndex, setCurrIndex] = useState(0);
   const [maxIndex, setMaxIndex] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [imageData, setImageData] = useState(null);
+  const [copyLoading, setCopyLoading] = useState(false);
 
   const [infoBox, setInfoBox] = useState(true);
 
@@ -78,6 +80,64 @@ const FileLayer = () => {
 
   const imageBox = useRef();
   const mainBox = useRef();
+  document.onkeydown = e => {
+    if (e.ctrlKey && e.code === 'KeyC' && !copyLoading) {
+      setCopyLoading(true);
+      handleCopy();
+    }
+  };
+  const handleCopy = async () => {
+    try {
+      const response = await fetch(imageData.src);
+      const blob = await response.blob();
+      const data = new ClipboardItem({
+        ['image/png']: blob,
+      });
+      await navigator.clipboard
+        .write([data])
+        .then(() => {
+          openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic('Msg_Copy', '복사되었습니다.'),
+              callback: () => {
+                setCopyLoading(false);
+              },
+            },
+            dispatch,
+          );
+        })
+        .catch(error => {
+          openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic(
+                'Msg_Error',
+                '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+              ),
+              callback: () => {
+                setCopyLoading(false);
+              },
+            },
+            dispatch,
+          );
+        });
+    } catch (err) {
+      openPopup(
+        {
+          type: 'Alert',
+          message: covi.getDic(
+            'Msg_Error',
+            '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+          ),
+          callback: () => {
+            setCopyLoading(false);
+          },
+        },
+        dispatch,
+      );
+    }
+  };
 
   const handleBefore = () => {
     if (currIndex - 1 >= 0) {
@@ -432,6 +492,7 @@ const FileLayer = () => {
               handleViewCenter();
             } catch (e) {}
           };
+          setImageData(image);
         })
         .catch(() => {
           const imgBox = imageBox.current;
@@ -588,6 +649,13 @@ const FileLayer = () => {
                   title={covi.getDic('Save', '저장')}
                 ></button>
               )}
+            <button
+              type="button"
+              className="clipboard"
+              onClick={handleCopy}
+              disabled={loading}
+              title={covi.getDic('ClipboardCopy', '클립보드 복사')}
+            ></button>
             <button
               type="button"
               className="info"
