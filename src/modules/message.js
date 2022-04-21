@@ -7,6 +7,7 @@ import createRequestSaga, {
   exceptionHandler,
 } from '@/lib/createRequestSaga';
 import produce from 'immer';
+import { getConfig } from '@/lib/util/configUtil';
 
 const [SEND_MESSAGE, SEND_MESSAGE_SUCCESS, SEND_MESSAGE_FAILURE] =
   createRequestActionTypes('message/SEND_MESSAGE');
@@ -366,7 +367,11 @@ const message = handleActions(
         const sendData = action.payload;
         sendData.status = 'send';
         sendData.tempId = (action.payload.roomID*10000) + tempId++;
-        draft.tempChannelMessage.push(sendData);
+        const isLegacyChannelAPI =
+          (getConfig('Legacy_ChannelTemp') || false) === true;
+        if (!isLegacyChannelAPI) {
+          draft.tempChannelMessage.push(sendData);
+        }
       });
     },
     [SEND_CHANNEL_MESSAGE_SUCCESS]: (state, action) => {

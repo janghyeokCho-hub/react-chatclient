@@ -9,6 +9,7 @@ import * as common from '@/lib/common';
 import SyncWrap from '@C/login/SyncWrap';
 import { evalConnector } from '@/lib/deviceConnector';
 import AppInfo from '@/../package.json';
+import { getConfig } from '@/lib/util/configUtil';
 
 const LoginContainer = ({ history, location }) => {
   const { loading, authFail, errMessage, errStatus, token, sync } = useSelector(
@@ -31,6 +32,8 @@ const LoginContainer = ({ history, location }) => {
   const [onExtLogin] = useActions([extLoginRequest], []);
 
   const passwordBox = useRef(null);
+
+  const isLegacyAutoLoginAPI = (getConfig('Legacy_AutoLogin') || false) === true;
 
   const handleLogin = () => {
     const AESUtil = getAesUtil();
@@ -163,7 +166,7 @@ const LoginContainer = ({ history, location }) => {
 
       if (DEVICE_TYPE == 'd') {
         const AESUtil = getAesUtil();
-        const encryptPassword = AESUtil.encrypt(password, true);
+        const encryptPassword = AESUtil.encrypt(password, !isLegacyAutoLoginAPI);
 
         const data = {
           autoLoginId: userId,
