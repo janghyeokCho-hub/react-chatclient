@@ -63,7 +63,7 @@ const UserSetting = ({ history }) => {
   const [email, setEmail] = useState(myInfo.mailAddress);
   const [phoneNumber, setPhoneNumber] = useState(myInfo.phoneNumber);
   const [work, setWork] = useState(myInfo.work);
-  const [latestLogin, setLatestLogin] = useState(new Date());
+  const [latestLogin, setLatestLogin] = useState(null);
 
   // 일반
   const [autoLaunch, setAutoLaunch] = useState(false);
@@ -115,8 +115,6 @@ const UserSetting = ({ history }) => {
     getLatestLogin().then(response => {
       if (response?.data?.result?.LoginDate) {
         setLatestLogin(new Date(response.data.result.LoginDate));
-      } else {
-        setLatestLogin(new Date());
       }
     });
 
@@ -651,12 +649,18 @@ const UserSetting = ({ history }) => {
                 )}
               </div>
             </div>
-            <div style={{ margin: '0px 17px', display: 'inline-block' }}>
-              <p
-                style={{ fontSize: 12, fontWeight: 'bold', lineHeight: '35px' }}
-              >{`${covi.getDic('LatestLogin')}`}</p>
-              <p>{`${format(latestLogin, 'yyyy.MM.dd HH:mm:ss')}`}</p>
-            </div>
+            {latestLogin && (
+              <div style={{ margin: '0px 17px', display: 'inline-block' }}>
+                <p
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 'bold',
+                    lineHeight: '35px',
+                  }}
+                >{`${covi.getDic('LatestLogin')}`}</p>
+                <p>{`${format(latestLogin, 'yyyy.MM.dd HH:mm:ss')}`}</p>
+              </div>
+            )}
             {myInfo.isHR === 'N' && (
               <div className="Btn-con-wrap mt20">
                 <button
