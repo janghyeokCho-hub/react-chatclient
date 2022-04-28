@@ -5,6 +5,7 @@ import useOffset from '@/hooks/useOffset';
 import SearchBar from '@COMMON/SearchBar';
 import ChatItem from './ChatItem';
 import { isJSONStr } from '@/lib/common';
+import { getConfig } from '@/lib/util/configUtil';
 
 const isEmptyObj = obj => {
   if (obj && obj.constructor === Object && Object.keys(obj).length === 0) {
@@ -34,7 +35,7 @@ const ChatList = ({ roomList, checkObj }) => {
   const [searchList, setSearchList] = useState([]);
   const pinToTopLimit = useMemo(
     () => getConfig('PinToTop_Limit_Chat', -1),
-    [rooms],
+    [roomList],
   );
 
   const handleSearch = useCallback(

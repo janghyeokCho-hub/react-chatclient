@@ -5,6 +5,7 @@ import useOffset from '@/hooks/useOffset';
 import SearchBar from '@COMMON/SearchBar';
 import ChannelItem from './ChannelItem';
 import { isJSONStr } from '@/lib/common';
+import { getConfig } from '@/lib/util/configUtil';
 
 const isEmptyObj = obj => {
   if (obj && obj.constructor === Object && Object.keys(obj).length === 0) {
