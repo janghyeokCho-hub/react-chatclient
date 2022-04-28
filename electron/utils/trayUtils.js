@@ -42,6 +42,7 @@ export const getTray = parentWin => {
 };
 
 export const setContextMenu = parentWin => {
+  const useLockApp = SERVER_SECURITY_SETTING?.config?.config?.UseLockApp || false;
   // tray 생성
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -79,13 +80,16 @@ export const setContextMenu = parentWin => {
           ),
           click: initApp,
         },
-        {
-          label: getDictionary(
-            '앱 잠금;Lock App;Lock App;Lock App;Lock App;Lock App;Lock App;Lock App;Lock App;',
-          ),
-          click: lockApp,
-        },
-
+        ...(useLockApp
+          ? [
+              {
+                label: getDictionary(
+                  '앱 잠금;Lock App;Lock App;Lock App;Lock App;Lock App;Lock App;Lock App;Lock App;',
+                ),
+                click: lockApp,
+              },
+            ]
+          : []),
         {
           label: getDictionary(
             '상태확인;Check Status;Check Status;Check Status;Check Status;Check Status;Check Status;Check Status;Check Status',
