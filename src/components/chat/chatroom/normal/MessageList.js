@@ -38,6 +38,7 @@ import { deleteChatroomMessage } from '@/lib/message';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import ShareContainer from '@C/share/ShareContainer';
 import { checkFileTokenValidation } from '@/lib/fileUpload/coviFile';
+import { getConfig } from '@/lib/util/configUtil';
 
 const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const tempMessage = useSelector(({ message }) => message.tempMessage);
@@ -407,8 +408,9 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
             name: covi.getDic('Forward', '전달'),
           });
         } else if (messageType === 'files') {
+          const useForwardFile = getConfig('UseForwardFile') || false;
           // 파일을 전달할 경우 파일 토큰의 유효성을 먼저 검증
-          menus.push({
+          useForwardFile && menus.push({
             code: 'shareMessage',
             isline: false,
             onClick: async () => {
