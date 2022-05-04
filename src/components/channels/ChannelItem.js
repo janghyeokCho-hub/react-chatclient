@@ -1,5 +1,3 @@
-// components\chat\Room.js
-
 import React, {
   useMemo,
   useCallback,
@@ -19,16 +17,7 @@ import RightConxtMenu from '../common/popup/RightConxtMenu';
 import { newChannel } from '@/lib/deviceConnector';
 import Config from '@/config/config';
 import { getAesUtil } from '@/lib/aesUtil';
-import {
-  getSysMsgFormatStr,
-  clearLayer,
-  openPopup,
-  isJSONStr,
-  getDictionary,
-  eumTalkRegularExp,
-  convertEumTalkProtocolPreviewForChannelItem,
-} from '@/lib/common';
-
+import { clearLayer, openPopup, makeMessageText } from '@/lib/common';
 import * as channelApi from '@/lib/channel';
 import { evalConnector } from '@/lib/deviceConnector';
 import { modifyChannelSetting } from '@/modules/channel';
@@ -46,103 +35,11 @@ const makeDateTime = timestamp => {
       // 오늘과 이틀이상 차이나는 경우 날짜로 표시
       dateText = format(procTime, 'yyyy.MM.dd');
     }
-
     // 오늘과 하루 차이인 경우 어제로 표시 -- 차후에 추가 ( 다국어처리 )
-
     return dateText;
   } else {
     return '';
   }
-};
-
-const makeMessageText = async lastMessage => {
-  let returnText = covi.getDic('Msg_NoMessages', '대화내용 없음');
-
-  try {
-    let msgObj = null;
-
-    if (typeof lastMessage == 'string') {
-      msgObj = JSON.parse(lastMessage);
-    } else if (typeof lastMessage == 'object') {
-      msgObj = lastMessage;
-    }
-
-    if (!msgObj) return returnText;
-
-    if (msgObj.Message !== '' && msgObj.Message !== null) {
-      // returnText = commonApi.getPlainText(msgObj.Message);
-      let drawText = (msgObj.Message && msgObj.Message) || '';
-      if (isJSONStr(msgObj.Message)) {
-        const drawData = JSON.parse(msgObj.Message);
-
-        if (drawData.msgType == 'C') {
-          drawText = getDictionary(drawData.title);
-        } else {
-          drawText = drawData.context;
-        }
-      }
-      // protocol check
-      if (eumTalkRegularExp.test(drawText)) {
-        const messageObj = await convertEumTalkProtocolPreviewForChannelItem(
-          drawText,
-        );
-        if (messageObj.type == 'emoticon')
-          returnText = covi.getDic('Emoticon', '이모티콘');
-        else returnText = messageObj.message.split('\n')[0];
-      } else {
-        // 첫줄만 노출
-        returnText = drawText.split('\n')[0];
-      }
-    } else if (msgObj.File) {
-      let fileObj = null;
-
-      if (typeof msgObj.File == 'string') {
-        fileObj = JSON.parse(msgObj.File);
-      } else if (typeof msgObj.File == 'object') {
-        fileObj = msgObj.File;
-      }
-
-      if (!fileObj) return returnText;
-
-      // files 일경우
-      if (fileObj.length != undefined && fileObj.length > 1) {
-        const firstObj = fileObj[0];
-        if (
-          firstObj.ext == 'png' ||
-          firstObj.ext == 'jpg' ||
-          firstObj.ext == 'jpeg' ||
-          firstObj.ext == 'bmp'
-        ) {
-          // 사진 외 %s건
-          returnText = getSysMsgFormatStr(
-            covi.getDic('Tmp_imgExCnt', '사진 외 %s건'),
-            [{ type: 'Plain', data: fileObj.length - 1 }],
-          );
-        } else {
-          // 파일 외 %s건
-          returnText = getSysMsgFormatStr(
-            covi.getDic('Tmp_fileExCnt', '파일 외 %s건'),
-            [{ type: 'Plain', data: fileObj.length - 1 }],
-          );
-        }
-      } else {
-        if (
-          fileObj.ext == 'png' ||
-          fileObj.ext == 'jpg' ||
-          fileObj.ext == 'jpeg' ||
-          fileObj.ext == 'bmp'
-        ) {
-          returnText = covi.getDic('Image', '사진');
-        } else {
-          returnText = covi.getDic('File', '파일');
-        }
-      }
-    }
-  } catch (e) {
-    // console.log(e);
-  }
-
-  return returnText;
 };
 
 const ChannelItem = ({
@@ -480,14 +377,11 @@ const ChannelItem = ({
   useLayoutEffect(() => {
     const changeTargetChannel = channels.find(c => c.roomId == channel.roomId);
     if (changeTargetChannel) {
-      makeMessageText(
-        changeTargetChannel.lastMessage,
-        changeTargetChannel.lastMessageType,
-      ).then(setLastMessageText);
-    } else {
-      makeMessageText(channel.lastMessage, channel.lastMessageType).then(
+      makeMessageText(changeTargetChannel.lastMessage, 'CHANNEL').then(
         setLastMessageText,
       );
+    } else {
+      makeMessageText(channel.lastMessage, 'CHANNEL').then(setLastMessageText);
     }
   }, [channel]);
 

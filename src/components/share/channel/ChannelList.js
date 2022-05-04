@@ -4,26 +4,8 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import useOffset from '@/hooks/useOffset';
 import SearchBar from '@COMMON/SearchBar';
 import ChannelItem from './ChannelItem';
-import { isJSONStr } from '@/lib/common';
 import { getConfig } from '@/lib/util/configUtil';
-
-const isEmptyObj = obj => {
-  if (obj && obj.constructor === Object && Object.keys(obj).length === 0) {
-    return true;
-  }
-  return false;
-};
-
-const getChannelSettings = (channel = {}) => {
-  let setting = {};
-
-  if (typeof channel.settingJSON === 'object') {
-    setting = { ...channel.settingJSON };
-  } else if (isJSONStr(channel.settingJSON)) {
-    setting = JSON.parse(channel.settingJSON);
-  }
-  return setting;
-};
+import { isEmptyObj, getSettings } from '../share';
 
 const ChannelList = ({ channels, checkObj }) => {
   const RENDER_UNIT = 5;
@@ -93,7 +75,7 @@ const ChannelList = ({ channels, checkObj }) => {
     const result = [];
     if (pinToTopLimit >= 0) {
       channels.forEach(c => {
-        const setting = getChannelSettings(c);
+        const setting = getSettings(c, 'CHANNEL');
         if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
           pinned.push(c);
         } else {
@@ -102,8 +84,8 @@ const ChannelList = ({ channels, checkObj }) => {
       });
 
       pinned.sort((a, b) => {
-        const aSetting = getChannelSettings(a);
-        const bSetting = getChannelSettings(b);
+        const aSetting = getSettings(a, 'CHANNEL');
+        const bSetting = getSettings(b, 'CHANNEL');
         return bSetting.pinTop - aSetting.pinTop;
       });
       return result.concat([...pinned, ...unpinned]);
@@ -145,7 +127,7 @@ const ChannelList = ({ channels, checkObj }) => {
               const isJoined = joinedChannelList?.findIndex(
                 chan => chan.roomId === channel.roomId,
               );
-              const setting = getChannelSettings(channel);
+              const setting = getSettings(channel, 'CHANNEL');
 
               let isPinTop = false;
               if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
@@ -168,7 +150,7 @@ const ChannelList = ({ channels, checkObj }) => {
               const isJoined = joinedChannelList?.findIndex(
                 chan => chan.roomId === channel.roomId,
               );
-              const setting = getChannelSettings(channel);
+              const setting = getSettings(channel, 'CHANNEL');
 
               let isPinTop = false;
               if (setting && !isEmptyObj(setting) && !!setting.pinTop) {

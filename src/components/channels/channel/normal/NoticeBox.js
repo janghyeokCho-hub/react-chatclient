@@ -22,6 +22,7 @@ import { useChatFontSize } from '@/hooks/useChat';
 
 import { evalConnector } from '@/lib/deviceConnector';
 import useMemberInfo from '@/hooks/useMemberInfo';
+import { getAttribute } from '@/lib/messageUtil';
 
 const NoticeBox = () => {
   const currentChannel = useSelector(({ channel }) => channel.currentChannel);
@@ -37,35 +38,6 @@ const NoticeBox = () => {
   const { findMemberInfo } = useMemberInfo();
 
   const _isMounted = useRef(true);
-
-  const getAttribute = tag => {
-    const attrPattern = new RegExp(
-      /(\S+)=["']?((?:.(?!["']?\s+(?:\S+)=|[>"']))+.)["']?/,
-      'gi',
-    );
-    let attrs = {};
-    const match = tag.match(attrPattern);
-
-    if (match && match.length > 0) {
-      match.forEach(item => {
-        try {
-          const key = item.split('=')[0];
-          let value = decodeURIComponent(item.split('=')[1]);
-
-          if (
-            (value[0] == '"' && value[value.length - 1] == '"') ||
-            (value[0] == "'" && value[value.length - 1] == "'")
-          ) {
-            value = value.substring(1, value.length - 1);
-          }
-
-          attrs[key] = value;
-        } catch (e) {}
-      });
-    }
-
-    return attrs;
-  };
 
   useEffect(() => {
     const saveHideChannelNotices = localStorage.getItem('hide_channel_notices');

@@ -50,3 +50,32 @@ export const getNotice = (roomID, startId, dist) => {
 
   return resultObj;
 };
+
+export const getAttribute = tag => {
+  const attrPattern = new RegExp(
+    /(\S+)=["']?((?:.(?!["']?\s+(?:\S+)=|[>"']))+.)["']?/,
+    'gi',
+  );
+  let attrs = {};
+  const match = tag.match(attrPattern);
+
+  if (match?.length) {
+    match.forEach(item => {
+      try {
+        const key = item.split('=')[0];
+        let value = decodeURIComponent(item.split('=')[1]);
+
+        if (
+          (value[0] === '"' && value[value.length - 1] === '"') ||
+          (value[0] === "'" && value[value.length - 1] === "'")
+        ) {
+          value = value.substring(1, value.length - 1);
+        }
+
+        attrs[key] = value;
+      } catch (e) {}
+    });
+  }
+
+  return attrs;
+};

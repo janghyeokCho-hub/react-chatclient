@@ -1,33 +1,26 @@
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, {
+  useMemo,
+  useCallback,
+  useRef,
+  useState,
+  useLayoutEffect,
+} from 'react';
 import { useSelector } from 'react-redux';
 import RoomMemberBox from '@C/chat/RoomMemberBox';
 import ProfileBox from '@COMMON/ProfileBox';
 import { getConfig } from '@/lib/util/configUtil';
-import * as common from '@/lib/common';
+import { getJobInfo, makeMessageText, getFilterMember } from '@/lib/common';
 
 const ChatItem = ({ room, checkObj, pinnedTop }) => {
   const id = useSelector(({ login }) => login.id);
   const checkRef = useRef(null);
 
   const chatBotConfig = getConfig('ChatBot');
+  const [lastMessageText, setLastMessageText] = useState('');
 
-  const getFilterMember = (members, id, roomType) => {
-    if (members && roomType !== 'O') {
-      const filterMember = members.filter(item => {
-        if (item.id === id) return false;
-
-        return true;
-      });
-
-      return filterMember;
-    } else if (members && roomType === 'O') {
-      const filterMember = members;
-
-      return filterMember;
-    }
-
-    return [];
-  };
+  useLayoutEffect(() => {
+    makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
+  }, [room]);
 
   const filterMember = useMemo(
     () => getFilterMember(room.members, id, room.roomType),
@@ -35,106 +28,16 @@ const ChatItem = ({ room, checkObj, pinnedTop }) => {
   );
 
   const handleClick = useCallback(() => {
-    checkRef && checkRef.current && checkRef.current.click();
+    checkRef?.current?.click();
   }, [checkRef]);
-
-  const makeMessageText = lastMessage => {
-    let returnText = covi.getDic('Msg_NoMessages', '대화내용 없음');
-    try {
-      let msgObj = null;
-
-      if (typeof lastMessage == 'string') {
-        msgObj = JSON.parse(lastMessage);
-      } else if (typeof lastMessage == 'object') {
-        msgObj = lastMessage;
-      }
-
-      if (!msgObj) return returnText;
-
-      if (msgObj.Message !== '' && msgObj.Message !== null) {
-        let drawText = (msgObj.Message && msgObj.Message) || '';
-        if (common.isJSONStr(msgObj.Message)) {
-          const drawData = JSON.parse(msgObj.Message);
-
-          if (drawData.msgType == 'C') {
-            drawText = common.getDictionary(drawData.title);
-          } else if (typeof drawData == 'object') {
-            drawText = drawData.context || JSON.stringify(drawData);
-          } else {
-            drawText = drawData.context;
-          }
-        }
-        // protocol check
-        if (common.eumTalkRegularExp.test(drawText)) {
-          const messageObj = common.convertEumTalkProtocolPreview(drawText);
-          if (messageObj.type == 'emoticon')
-            returnText = covi.getDic('Emoticon', '이모티콘');
-          else returnText = messageObj.message.split('\n')[0];
-        } else {
-          // 첫줄만 노출
-          returnText = drawText.split('\n')[0];
-        }
-      } else if (msgObj.File) {
-        let fileObj = null;
-
-        if (typeof msgObj.File == 'string') {
-          fileObj = JSON.parse(msgObj.File);
-        } else if (typeof msgObj.File == 'object') {
-          fileObj = msgObj.File;
-        }
-
-        if (!fileObj) return returnText;
-
-        // files 일경우
-        if (fileObj.length != undefined && fileObj.length > 1) {
-          const firstObj = fileObj[0];
-          if (
-            firstObj.ext == 'png' ||
-            firstObj.ext == 'jpg' ||
-            firstObj.ext == 'jpeg' ||
-            firstObj.ext == 'bmp'
-          ) {
-            // 사진 외 %s건
-            returnText = common.getSysMsgFormatStr(
-              covi.getDic('Tmp_imgExCnt', '사진 외 %s건'),
-              [{ type: 'Plain', data: fileObj.length - 1 }],
-            );
-          } else {
-            // 파일 외 %s건
-            returnText = common.getSysMsgFormatStr(
-              covi.getDic('Tmp_fileExCnt', '파일 외 %s건'),
-              [{ type: 'Plain', data: fileObj.length - 1 }],
-            );
-          }
-        } else {
-          if (
-            fileObj.ext == 'png' ||
-            fileObj.ext == 'jpg' ||
-            fileObj.ext == 'jpeg' ||
-            fileObj.ext == 'bmp'
-          ) {
-            returnText = covi.getDic('Image', '사진');
-          } else {
-            returnText = covi.getDic('File', '파일');
-          }
-        }
-      }
-    } catch (e) {
-      // console.log(e);
-    }
-
-    return returnText;
-  };
 
   const makeRoomName = useCallback(
     filterMember => {
       if (room.roomType === 'M' || room.roomType === 'O') {
         // M의 경우 남은 값이 1개
-        const target = filterMember[0];
-
-        return <>{common.getJobInfo(target)}</>;
+        return <>{getJobInfo(filterMember[0])}</>;
       } else {
-        if (room.roomName && room.roomName !== '') {
+        if (!!room.roomName) {
           return (
             <>
               <span>{room.roomName}</span>
@@ -145,29 +48,30 @@ const ChatItem = ({ room, checkObj, pinnedTop }) => {
               )}
             </>
           );
-        } else {
-          if (room.roomType == 'B') {
-            return (
-              <>
-                <span>{'이음이'}</span>
-              </>
-            );
-          }
+        } else if (room.roomType === 'B') {
+          return (
+            <>
+              <span>{'이음이'}</span>
+            </>
+          );
         }
 
-        if (filterMember.length == 0)
+        if (!filterMember.length) {
           return <>{covi.getDic('NoChatMembers', '대화상대없음')}</>;
+        }
 
         return (
           <>
             <span>
               {filterMember.map((item, index) => {
-                if (index == filterMember.length - 1)
-                  return common.getJobInfo(item);
-                else return common.getJobInfo(item) + ',';
+                if (index === filterMember.length - 1) {
+                  return getJobInfo(item);
+                } else {
+                  return `${getJobInfo(item)},`;
+                }
               })}
             </span>
-            {room.roomType != 'A' && room.roomType != 'B' && room.members && (
+            {!['A', 'B'].includes(room.roomType) && room.members && (
               <span className="roomMemberCtn">({room.members.length})</span>
             )}
           </>
@@ -178,11 +82,11 @@ const ChatItem = ({ room, checkObj, pinnedTop }) => {
   );
 
   const checkedValue = useMemo(() => {
-    if (typeof checkObj === 'undefined') {
+    if (!checkObj) {
       return;
     }
     // userInfo[checkedKey] 값이 비어있으면 checkedSubKey 참조
-    if (typeof checkObj.checkedSubKey !== 'undefined') {
+    if (!!checkObj?.checkedSubKey) {
       return room[checkObj.checkedKey] || room[checkObj.checkedSubKey];
     }
     return room[checkObj.checkedKey];
@@ -191,7 +95,7 @@ const ChatItem = ({ room, checkObj, pinnedTop }) => {
   return (
     <li className="person" onClick={() => handleClick()}>
       <>
-        {((room.roomType === 'M' || filterMember.length == 1) &&
+        {((room.roomType === 'M' || filterMember.length === 1) &&
           ((room.roomType === 'A' && (
             <ProfileBox
               userId={filterMember[0].id}
@@ -207,9 +111,10 @@ const ChatItem = ({ room, checkObj, pinnedTop }) => {
               userName={filterMember[0].name}
               isInherit={true}
               img={filterMember[0].photoPath}
+              handleClick={false}
             />
           ))) ||
-          (room.roomType != 'B' && (
+          (room.roomType !== 'B' && (
             <RoomMemberBox type="G" data={filterMember}></RoomMemberBox>
           )) ||
           (room.roomType === 'B' && (
@@ -226,9 +131,7 @@ const ChatItem = ({ room, checkObj, pinnedTop }) => {
           {makeRoomName(filterMember)}
           {pinnedTop && '📌'}
         </span>
-        <span className="preview">
-          {room.lastMessage && makeMessageText(room.lastMessage)}
-        </span>
+        <span className="preview">{lastMessageText}</span>
         <div className="check">
           <div className="chkStyle02">
             <input

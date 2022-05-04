@@ -1,4 +1,10 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react';
+import React, {
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+  useLayoutEffect,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import RoomMemberBox from '@C/chat/RoomMemberBox';
 import {
@@ -12,123 +18,14 @@ import ProfileBox from '@COMMON/ProfileBox';
 import RightConxtMenu from '../common/popup/RightConxtMenu';
 import { newChatRoom, evalConnector } from '@/lib/deviceConnector';
 import {
-  getSysMsgFormatStr,
-  isJSONStr,
-  getDictionary,
-  convertEumTalkProtocolPreview,
   getJobInfo,
-  eumTalkRegularExp,
   openPopup,
+  makeMessageText,
+  getFilterMember,
 } from '@/lib/common';
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import { modifyRoomSetting } from '@/modules/room';
-
-const getFilterMember = (members, id, roomType) => {
-  if (members && roomType !== 'O') {
-    const filterMember = members.filter(item => {
-      if (item.id === id) return false;
-
-      return true;
-    });
-
-    return filterMember;
-  } else if (members && roomType === 'O') {
-    const filterMember = members;
-
-    return filterMember;
-  }
-
-  return [];
-};
-
-const makeMessageText = lastMessage => {
-  let returnText = covi.getDic('Msg_NoMessages', '대화내용 없음');
-  try {
-    let msgObj = null;
-
-    if (typeof lastMessage == 'string') {
-      msgObj = JSON.parse(lastMessage);
-    } else if (typeof lastMessage == 'object') {
-      msgObj = lastMessage;
-    }
-
-    if (!msgObj) return returnText;
-
-    if (!!msgObj.Message) {
-      let drawText = (msgObj.Message && msgObj.Message) || '';
-      if (isJSONStr(msgObj.Message)) {
-        const drawData = JSON.parse(msgObj.Message);
-
-        if (drawData.msgType == 'C') {
-          drawText = getDictionary(drawData.title);
-        } else if (typeof drawData == 'object') {
-          drawText = drawData.context || JSON.stringify(drawData);
-        } else {
-          drawText = drawData.context;
-        }
-      }
-      // protocol check
-      if (eumTalkRegularExp.test(drawText)) {
-        const messageObj = convertEumTalkProtocolPreview(drawText);
-        if (messageObj.type == 'emoticon')
-          returnText = covi.getDic('Emoticon', '이모티콘');
-        else returnText = messageObj.message.split('\n')[0];
-      } else {
-        // 첫줄만 노출
-        returnText = drawText.split('\n')[0];
-      }
-    } else if (msgObj.File) {
-      let fileObj = null;
-
-      if (typeof msgObj.File == 'string') {
-        fileObj = JSON.parse(msgObj.File);
-      } else if (typeof msgObj.File == 'object') {
-        fileObj = msgObj.File;
-      }
-
-      if (!fileObj) return returnText;
-
-      // files 일경우
-      if (fileObj.length != undefined && fileObj.length > 1) {
-        const firstObj = fileObj[0];
-        if (
-          firstObj.ext == 'png' ||
-          firstObj.ext == 'jpg' ||
-          firstObj.ext == 'jpeg' ||
-          firstObj.ext == 'bmp'
-        ) {
-          // 사진 외 %s건
-          returnText = getSysMsgFormatStr(
-            covi.getDic('Tmp_imgExCnt', '사진 외 %s건'),
-            [{ type: 'Plain', data: fileObj.length - 1 }],
-          );
-        } else {
-          // 파일 외 %s건
-          returnText = getSysMsgFormatStr(
-            covi.getDic('Tmp_fileExCnt', '파일 외 %s건'),
-            [{ type: 'Plain', data: fileObj.length - 1 }],
-          );
-        }
-      } else {
-        if (
-          fileObj.ext == 'png' ||
-          fileObj.ext == 'jpg' ||
-          fileObj.ext == 'jpeg' ||
-          fileObj.ext == 'bmp'
-        ) {
-          returnText = covi.getDic('Image', '사진');
-        } else {
-          returnText = covi.getDic('File', '파일');
-        }
-      }
-    }
-  } catch (e) {
-    // console.log(e);
-  }
-
-  return returnText;
-};
 
 const makeDateTime = timestamp => {
   if (isValid(new Date(timestamp))) {
@@ -168,6 +65,11 @@ const Room = ({
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
   const [pinnedTop, setPinnedTop] = useState(false);
   const setting = useMemo(() => getRoomSettings(room), [room]);
+  const [lastMessageText, setLastMessageText] = useState('');
+
+  useLayoutEffect(() => {
+    makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
+  }, [room]);
 
   const filterMember = useMemo(
     () => getFilterMember(room.members, id, room.roomType),
@@ -467,9 +369,7 @@ const Room = ({
             {pinnedTop && '📌'}
             {makeDateTime(room.lastMessageDate)}
           </span>
-          <span className="preview">
-            {room.lastMessage && makeMessageText(room.lastMessage)}
-          </span>
+          <span className="preview">{lastMessageText}</span>
 
           {room.unreadCnt > 0 && (
             <span className="count">

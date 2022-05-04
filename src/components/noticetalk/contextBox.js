@@ -12,6 +12,7 @@ const ContextBox = props => {
       e.target.setSelectionRange(cursorPosition, cursorPosition);
     }
   }, []);
+  console.log(validURL);
 
   return (
     <div className="Layer-Note-Con" style={{ marginBottom: '60px' }}>

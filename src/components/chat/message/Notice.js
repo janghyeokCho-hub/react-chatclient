@@ -14,35 +14,7 @@ import { openPopup } from '@/lib/common';
 import ParamUtil, { encryptText } from '@/lib/util/paramUtil';
 import { evalConnector } from '@/lib/deviceConnector';
 import { useChatFontSize } from '@/hooks/useChat';
-
-const getAttribute = tag => {
-  const attrPattern = new RegExp(
-    /(\S+)=["']?((?:.(?!["']?\s+(?:\S+)=|[>"']))+.)["']?/,
-    'gi',
-  );
-  let attrs = {};
-  const match = tag.match(attrPattern);
-
-  if (match && match.length > 0) {
-    match.forEach(item => {
-      try {
-        const key = item.split('=')[0];
-        let value = decodeURIComponent(item.split('=')[1]);
-
-        if (
-          (value[0] == '"' && value[value.length - 1] == '"') ||
-          (value[0] == "'" && value[value.length - 1] == "'")
-        ) {
-          value = value.substring(1, value.length - 1);
-        }
-
-        attrs[key] = value;
-      } catch (e) {}
-    });
-  }
-
-  return attrs;
-};
+import { getAttribute } from '@/lib/messageUtil';
 
 const Notice = ({ type, value, title, func }) => {
   const dispatch = useDispatch();
@@ -95,7 +67,8 @@ const Notice = ({ type, value, title, func }) => {
           ></Plain>,
         );
       }
-      var attrs = getAttribute(match[0]);
+
+      const attrs = getAttribute(match[0]);
       if (match[1] == 'LINK') {
         returnJSX.push(
           <Link
