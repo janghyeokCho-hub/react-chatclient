@@ -423,3 +423,102 @@ export const moveRoom = (moveId, isChannel, dispatch) => {
       dispatch(openChannel({ roomId: moveId }));
   }
 };
+
+export const makeMessageText = async (lastMessage, type) => {
+  let returnText = covi.getDic('Msg_NoMessages', '대화내용 없음');
+  try {
+    let msgObj = null;
+
+    if (typeof lastMessage === 'string') {
+      msgObj = JSON.parse(lastMessage);
+    } else if (typeof lastMessage === 'object') {
+      msgObj = lastMessage;
+    }
+
+    if (!msgObj) {
+      return returnText;
+    }
+
+    if (!!msgObj.Message) {
+      let drawText = (msgObj.Message && msgObj.Message) || '';
+      if (isJSONStr(msgObj.Message)) {
+        const drawData = JSON.parse(msgObj.Message);
+
+        if (drawData.msgType === 'C') {
+          drawText = getDictionary(drawData.title);
+        } else {
+          drawText = drawData.context;
+        }
+      }
+
+      if (eumTalkRegularExp.test(drawText)) {
+        const messageObj =
+          type === 'CHANNEL'
+            ? await convertEumTalkProtocolPreviewForChannelItem(drawText)
+            : convertEumTalkProtocolPreview(drawText);
+        if (messageObj.type === 'emoticon') {
+          returnText = covi.getDic('Emoticon', '이모티콘');
+        } else {
+          returnText = messageObj.message.split('\n')[0];
+        }
+      } else {
+        returnText = drawText.split('\n')[0];
+      }
+    } else if (msgObj.File) {
+      let fileObj = null;
+
+      if (typeof msgObj.File == 'string') {
+        fileObj = JSON.parse(msgObj.File);
+      } else if (typeof msgObj.File == 'object') {
+        fileObj = msgObj.File;
+      }
+
+      if (!fileObj) {
+        return returnText;
+      }
+
+      // files 일경우
+      if (fileObj.length > 1) {
+        if (fileObj[0].isImage === 'Y') {
+          // 사진 외 %s건
+          returnText = getSysMsgFormatStr(
+            covi.getDic('Tmp_imgExCnt', '사진 외 %s건'),
+            [{ type: 'Plain', data: fileObj.length - 1 }],
+          );
+        } else {
+          // 파일 외 %s건
+          returnText = getSysMsgFormatStr(
+            covi.getDic('Tmp_fileExCnt', '파일 외 %s건'),
+            [{ type: 'Plain', data: fileObj.length - 1 }],
+          );
+        }
+      } else {
+        if (fileObj.isImage === 'Y') {
+          returnText = covi.getDic('Image', '사진');
+        } else {
+          returnText = covi.getDic('File', '파일');
+        }
+      }
+    }
+  } catch (e) {
+    // console.log(e);
+  }
+
+  return returnText;
+};
+
+export const getFilterMember = (members, id, roomType = null) => {
+  if (!members) {
+    return [];
+  } else if (roomType === 'O') {
+    return members;
+  } else {
+    return members.filter(item => {
+      if (item.id === id) {
+        return false;
+      }
+
+      return true;
+    });
+  }
+};

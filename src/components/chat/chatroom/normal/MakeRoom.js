@@ -8,30 +8,17 @@ import FileUploadBox from '@C/chat/chatroom/normal/FileUploadBox';
 import { createRoom } from '@/lib/room';
 import { updateRooms } from '@/modules/room';
 import { clearFiles } from '@/modules/message';
-import * as common from '@/lib/common';
-import * as coviFile from '@/lib/fileUpload/coviFile';
+import {
+  openPopup,
+  getDictionary,
+  getSysMsgFormatStr,
+  getFilterMember,
+} from '@/lib/common';
+import { getInstance } from '@/lib/fileUpload/coviFile';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 
-import {
-  getMakeData,
-  mappingChatRoomEvent,
-  evalConnector,
-} from '@/lib/deviceConnector';
+import { getMakeData, mappingChatRoomEvent } from '@/lib/deviceConnector';
 import { sendMessage, uploadFile, getURLThumbnail } from '@/lib/message';
-
-const getFilterMember = (members, id) => {
-  if (members) {
-    const filterMember = members.filter(item => {
-      if (item.id === id) return false;
-
-      return true;
-    });
-
-    return filterMember;
-  }
-
-  return [];
-};
 
 const MakeRoom = ({ history }) => {
   const isNewWin =
@@ -75,7 +62,7 @@ const MakeRoom = ({ history }) => {
       if (makeData) {
         dispatch(openRoom(makeData));
       } else {
-        common.openPopup(
+        openPopup(
           {
             type: 'Alert',
             message: covi.getDic(
@@ -92,7 +79,7 @@ const MakeRoom = ({ history }) => {
     }
 
     // file control 초기화
-    const fileCtrl = coviFile.getInstance();
+    const fileCtrl = getInstance();
     fileCtrl.clear();
     dispatch(clearFiles());
     setViewFileUpload(false);
@@ -288,11 +275,11 @@ const MakeRoom = ({ history }) => {
         const filterMember = getFilterMember(makeInfo.members, sender);
         const target = filterMember[0];
 
-        return `${common.getDictionary(target.name)} ${refWord}`;
+        return `${getDictionary(target.name)} ${refWord}`;
       } else if (makeInfo.roomType === 'O') {
         const target = (makeInfo.members && makeInfo.members[0]) || null;
         if (target) {
-          return `${common.getDictionary(target.name)} ${refWord}`;
+          return `${getDictionary(target.name)} ${refWord}`;
         } else {
           return `${covi.getDic('NoChatMembers', '대화상대없음')} ${refWord}`;
         }
@@ -302,7 +289,7 @@ const MakeRoom = ({ history }) => {
           return `${covi.getDic('NoChatMembers', '대화상대없음')} ${refWord}`;
 
         const groupNames = filterMember.map((item, index) => {
-          return common.getDictionary(item.name);
+          return getDictionary(item.name);
         });
 
         const getGroupName = (groupNames, limitCnt) => {
@@ -310,7 +297,7 @@ const MakeRoom = ({ history }) => {
           const otherCnt = groupNames.length - limitCnt;
 
           if (otherCnt > 0) {
-            return common.getSysMsgFormatStr(
+            return getSysMsgFormatStr(
               covi.getDic('Tmp_andOthers', 'Tmp_andOthers'),
               [
                 { type: 'Plain', data: spliceArr.join(', ') },

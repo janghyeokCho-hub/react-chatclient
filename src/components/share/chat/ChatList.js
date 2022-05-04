@@ -4,26 +4,8 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import useOffset from '@/hooks/useOffset';
 import SearchBar from '@COMMON/SearchBar';
 import ChatItem from './ChatItem';
-import { isJSONStr } from '@/lib/common';
 import { getConfig } from '@/lib/util/configUtil';
-
-const isEmptyObj = obj => {
-  if (obj && obj.constructor === Object && Object.keys(obj).length === 0) {
-    return true;
-  }
-  return false;
-};
-
-const getRoomSettings = (room = {}) => {
-  let setting = {};
-
-  if (typeof room.setting === 'object') {
-    setting = { ...room.setting };
-  } else if (isJSONStr(room.setting)) {
-    setting = JSON.parse(room.setting);
-  }
-  return setting;
-};
+import { isEmptyObj, getSettings } from '../share';
 
 const ChatList = ({ roomList, checkObj }) => {
   const RENDER_UNIT = 5;
@@ -47,19 +29,14 @@ const ChatList = ({ roomList, checkObj }) => {
       } else {
         const filterList = roomList.filter(item => {
           let returnVal = false;
-
-          if (
-            item.roomName &&
-            item.roomName.toLowerCase().indexOf(changeVal.toLowerCase()) > -1
-          ) {
+          if (item?.roomName?.toLowerCase().includes(changeVal.toLowerCase())) {
             return true;
           } else {
             if (item.members) {
               item.members.forEach(member => {
                 if (
                   member.id != myInfo.id &&
-                  member.name.toLowerCase().indexOf(changeVal.toLowerCase()) >
-                    -1
+                  member.name.toLowerCase().includes(changeVal.toLowerCase())
                 ) {
                   returnVal = true;
                   return false;
@@ -92,7 +69,7 @@ const ChatList = ({ roomList, checkObj }) => {
     const result = [];
     if (pinToTopLimit >= 0) {
       roomList.forEach(r => {
-        const setting = getRoomSettings(r);
+        const setting = getSettings(r, 'CHAT');
         if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
           pinned.push(r);
         } else {
@@ -101,8 +78,8 @@ const ChatList = ({ roomList, checkObj }) => {
       });
 
       pinned.sort((a, b) => {
-        const aSetting = getRoomSettings(a);
-        const bSetting = getRoomSettings(b);
+        const aSetting = getSettings(a, 'CHAT');
+        const bSetting = getSettings(b, 'CHAT');
         return bSetting.pinTop - aSetting.pinTop;
       });
       return result.concat([...pinned, ...unpinned]);
@@ -141,7 +118,7 @@ const ChatList = ({ roomList, checkObj }) => {
           {listMode === 'N' &&
             roomList &&
             list((room, _) => {
-              const setting = getRoomSettings(room);
+              const setting = getSettings(room, 'CHAT');
 
               let isPinTop = false;
               if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
@@ -164,7 +141,7 @@ const ChatList = ({ roomList, checkObj }) => {
             searchList &&
             searchList.map(room => {
               if (room.roomType !== 'A') {
-                const setting = getRoomSettings(room);
+                const setting = getSettings(room, 'CHAT');
 
                 let isPinTop = false;
                 if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
