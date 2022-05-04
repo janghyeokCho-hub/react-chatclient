@@ -9,7 +9,7 @@ import { getDictionary, getSysMsgFormatStr } from '@/lib/common';
 import Config from '@/config/config';
 import useCopyWithSenderInfo from '@/hooks/useCopyWithSenderInfo';
 import { getUserInfo, requestOAuth } from '@/lib/zoomService';
-import { openPopup } from '@/lib/common';
+import { openPopup, getFilterMember } from '@/lib/common';
 import { clearZoomData } from '@/lib/util/localStorageUtil';
 import axios from 'axios';
 
@@ -32,19 +32,6 @@ const MessageView = ({
   const remoteAssistance = getConfig('UseRemoteView', 'N');
   const useMessageDelete =
     getConfig('UseChatroomDeleteMessage', false) === true;
-
-  const getFilterMember = (members, id) => {
-    if (members) {
-      const filterMember = members.filter(item => {
-        if (item.id === id) return false;
-
-        return true;
-      });
-
-      return filterMember;
-    }
-    return [];
-  };
 
   const id = useSelector(({ login }) => login.id);
   const chatBox = useRef(null);
@@ -399,8 +386,6 @@ const MessageView = ({
         : false;
     return allowed;
   }, [userInfo]);
-
-  console.log('roomInfo > ', roomInfo);
 
   return (
     <div style={{ width: '100%', height: '100%' }} ref={chatBox}>

@@ -2,14 +2,6 @@ import React, { useState, useCallback, useLayoutEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@C/common/ProfileBox';
 import RoomMemberBox from '@C/chat/RoomMemberBox';
-import {
-  deleteLayer,
-  clearLayer,
-  openPopup,
-  getJobInfo,
-  eumTalkRegularExp,
-  convertEumTalkProtocolPreviewForChannelItem,
-} from '@/lib/common';
 import { createRoom } from '@/lib/room';
 import { sendMessage, sendChannelMessage, shareFile } from '@/lib/message';
 import { rematchingMember, getRooms } from '@/modules/room';
@@ -20,21 +12,8 @@ import ChannelList from './channel/ChannelList';
 import Config from '@/config/config';
 import { isMainWindow } from '@/lib/deviceConnector';
 import { getAllUserWithGroupList } from '@/lib/room';
-
-const makeMessage = async msg => {
-  const flag = eumTalkRegularExp.test(msg);
-  if (flag) {
-    const convertedMessage = await convertEumTalkProtocolPreviewForChannelItem(
-      msg,
-    );
-    if (!convertedMessage?.message) {
-      return msg;
-    }
-    return convertedMessage.message;
-  } else {
-    return msg;
-  }
-};
+import { getJobInfo } from '@/lib/common';
+import { makeMessage } from './share';
 
 const ShareContainer = ({
   headerName = covi.getDic('Msg_Note_Forward', '전달하기'),
@@ -48,7 +27,6 @@ const ShareContainer = ({
   const [rooms, setRooms] = useState([]);
   const [channels, setChannels] = useState([]);
   const [selectTab, setSelectTab] = useState('orgchart');
-
   const userId = useSelector(({ login }) => login.id);
   const roomList = useSelector(({ room }) => room.rooms);
   const channelList = useSelector(({ channel }) => channel.channels);
@@ -249,52 +227,19 @@ const ShareContainer = ({
       .forEach(item => (item.checked = false));
   }, []);
 
-  const makeRoomName = useCallback(room => {
-    const filterMember = room.filterMember;
-    if (room.roomType === 'M' || room.roomType === 'O') {
-      return <>{getJobInfo(filterMember[0])}</>;
-    } else {
-      if (room.roomName && room.roomName !== '') {
-        return (
-          <>
-            <span>{room.roomName}</span>
-            {room.roomType !== 'B' && (
-              <span className="roomMemberCtn">
-                {room.members && `(${room.members.length})`}
-              </span>
-            )}
-          </>
-        );
-      } else {
-        if (room.roomType === 'B') {
-          return (
-            <>
-              <span>{'이음이'}</span>
-            </>
-          );
-        }
-      }
-
-      if (!filterMember.length) {
-        return <>{covi.getDic('NoChatMembers', '대화상대없음')}</>;
-      }
-
-      return (
-        <>
-          {filterMember.length > 1
-            ? `${getJobInfo(filterMember[0])} ...`
-            : getJobInfo(filterMember[0])}
-        </>
-      );
-    }
-  }, []);
-
   const handleTabChange = useCallback(
     type => {
-      if (selectTab === type) return;
-      if (type !== 'orgchart') setMembers([]);
-      else if (type !== 'chat') setRooms([]);
-      else if (type !== 'channel') setChannels([]);
+      if (selectTab === type) {
+        return;
+      }
+
+      if (type !== 'orgchart') {
+        setMembers([]);
+      } else if (type !== 'chat') {
+        setRooms([]);
+      } else if (type !== 'channel') {
+        setChannels([]);
+      }
       setSelectTab(type);
     },
     [selectTab],
@@ -352,6 +297,7 @@ const ShareContainer = ({
     if (!params) {
       return;
     }
+
     if (
       params.targetType === 'CHAT' &&
       params.roomType === 'M' &&
@@ -543,6 +489,46 @@ const ShareContainer = ({
       msg = covi.getDic('Msg_ForwardingWasFailed', '전달에 실패 하였습니다.');
     }
     sharePopup({ status, msg });
+  };
+
+  const makeRoomName = room => {
+    const filterMember = room.filterMember;
+    if (room.roomType === 'M' || room.roomType === 'O') {
+      return <>{getJobInfo(filterMember[0])}</>;
+    } else {
+      if (room.roomName && room.roomName !== '') {
+        return (
+          <>
+            <span>{room.roomName}</span>
+            {room.roomType !== 'B' && (
+              <span className="roomMemberCtn">
+                {room.members && `(${room.members.length})`}
+              </span>
+            )}
+          </>
+        );
+      } else {
+        if (room.roomType === 'B') {
+          return (
+            <>
+              <span>{'이음이'}</span>
+            </>
+          );
+        }
+      }
+
+      if (!filterMember.length) {
+        return <>{covi.getDic('NoChatMembers', '대화상대없음')}</>;
+      }
+
+      return (
+        <>
+          {filterMember.length > 1
+            ? `${getJobInfo(filterMember[0])} ...`
+            : getJobInfo(filterMember[0])}
+        </>
+      );
+    }
   };
 
   return (

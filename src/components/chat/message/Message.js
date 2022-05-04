@@ -2,37 +2,17 @@ import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Plain, Link, Tag, Sticker, Mention } from '@C/chat/message/types';
 import { useChatFontSize, useMyChatFontColor } from '@/hooks/useChat';
+import { getAttribute } from '@/lib/messageUtil';
 
-const getAttribute = tag => {
-  const attrPattern = new RegExp(
-    /(\S+)=["']?((?:.(?!["']?\s+(?:\S+)=|[>"']))+.)["']?/,
-    'gi',
-  );
-  let attrs = {};
-  const match = tag.match(attrPattern);
-
-  if (match && match.length > 0) {
-    match.forEach(item => {
-      try {
-        const key = item.split('=')[0];
-        let value = decodeURIComponent(item.split('=')[1]);
-
-        if (
-          (value[0] == '"' && value[value.length - 1] == '"') ||
-          (value[0] == "'" && value[value.length - 1] == "'")
-        ) {
-          value = value.substring(1, value.length - 1);
-        }
-
-        attrs[key] = value;
-      } catch (e) {}
-    });
-  }
-
-  return attrs;
-};
-
-const Message = ({ children, style, className, eleId, marking, messageID, isMine }) => {
+const Message = ({
+  children,
+  style,
+  className,
+  eleId,
+  marking,
+  messageID,
+  isMine,
+}) => {
   const [fontSize] = useChatFontSize();
   const [myChatColor] = useMyChatFontColor();
 
@@ -58,7 +38,7 @@ const Message = ({ children, style, className, eleId, marking, messageID, isMine
         );
       }
 
-      var attrs = getAttribute(match[0]);
+      const attrs = getAttribute(match[0]);
 
       if (match[1] == 'LINK') {
         returnJSX.push(
@@ -101,7 +81,7 @@ const Message = ({ children, style, className, eleId, marking, messageID, isMine
   return (
     <div
       className={className}
-      style={{ fontSize, color: isMine ? myChatColor : undefined}}
+      style={{ fontSize, color: isMine ? myChatColor : undefined }}
       id={eleId ? eleId : undefined}
       data-messageid={messageID}
     >
