@@ -88,7 +88,7 @@ const UserSetting = ({ history }) => {
     defaultPath: '',
     useDefaultValue: false,
   });
-
+  const useLockApp = getConfig('UseLockApp') || false;
   // 색상 선택
   const [useEmoji, setUseEmoji] = useState(false);
   // 직무표시
@@ -659,13 +659,20 @@ const UserSetting = ({ history }) => {
               >
                 <a>{covi.getDic('MyInfo', '개인정보')}</a>
               </li>
-              <li
-                className={activeSettingTab == 'P' ? 'active' : ''}
-                onClick={e => setActiveSettingTab('P')}
-                data-tab="tab2"
-              >
-                <a>{covi.getDic('Security', '보안')}</a>
-              </li>
+              {/**
+               * 2022.05.04
+               * 화면잠금 미사용 / isHR !== 'N'인 경우 보여줄 옵션이 없으므로 탭 전체를 숨김처리
+               * 화면잠금, 비밀번호 변경 외에 신규기능 추가시 조건수정 필요
+               */}
+              {(useLockApp || myInfo.isHR === 'N') && (
+                <li
+                  className={activeSettingTab == 'P' ? 'active' : ''}
+                  onClick={e => setActiveSettingTab('P')}
+                  data-tab="tab2"
+                >
+                  <a>{covi.getDic('Security', '보안')}</a>
+                </li>
+              )}
               <li
                 className={activeSettingTab == 'G' ? 'active' : ''}
                 onClick={e => setActiveSettingTab('G')}
@@ -874,35 +881,34 @@ const UserSetting = ({ history }) => {
               >
                 <div className="ChatConfigCon">
                   <ul>
-                    <li className="ChatConfig-list">
-                      <div
-                        className={[
-                          'opt_setting',
-                          useSecondPassword === true ? 'on' : '',
-                        ].join(' ')}
-                      >
-                        <span className="ctrl"></span>
-                      </div>
-                      <a
-                        className="ChatConfig-menu"
-                        onClick={e => {
-                          handleUserConfig({
-                            useSecondPassword: !useSecondPassword,
-                          });
-                          setUseSecondPassword(!useSecondPassword);
-
-                          // if (!useSecondPassword) setSettingSecondPassword(true);
-                          // else setUseSecondPassword(false);
-                        }}
-                      >
-                        <span>
-                          {covi.getDic(
-                            'SecondPasswordConfig',
-                            '화면 잠금 사용 설정',
-                          )}
-                        </span>
-                      </a>
-                    </li>
+                    {useLockApp && (
+                      <li className="ChatConfig-list">
+                        <div
+                          className={[
+                            'opt_setting',
+                            useSecondPassword === true ? 'on' : '',
+                          ].join(' ')}
+                        >
+                          <span className="ctrl"></span>
+                        </div>
+                        <a
+                          className="ChatConfig-menu"
+                          onClick={e => {
+                            handleUserConfig({
+                              useSecondPassword: !useSecondPassword,
+                            });
+                            setUseSecondPassword(!useSecondPassword);
+                          }}
+                        >
+                          <span>
+                            {covi.getDic(
+                              'SecondPasswordConfig',
+                              '화면 잠금 사용 설정',
+                            )}
+                          </span>
+                        </a>
+                      </li>
+                    )}
                     {myInfo.isHR === 'N' && (
                       <li className="ChatConfig-list">
                         <p
