@@ -89,7 +89,7 @@ const MessageView = ({
         name: '페이지로 이동',
         type: 'link',
         data: {
-          baseURL: `${Config.ServerURL.HOST}/manager/liveMeetGate.do?type=${liveMeet.type}&rKey=${channelInfo.roomId}`,
+          baseURL: `${Config.ServerURL.HOST}/manager/na/nf/liveMeetGate.do?type=${liveMeet.type}&rKey=${channelInfo.roomId}`,
           params: {
             tk: { param: 'toToken#', plain: false, enc: false },
             dir: {
