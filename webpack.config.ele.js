@@ -67,7 +67,7 @@ module.exports = (env, options) => {
                 toType: 'template',
               },
               {
-                from: 'resources/icons/*',
+                from: 'resources/common/icons/*',
                 to: 'icons/[name].[ext]',
                 toType: 'template',
               },
@@ -79,7 +79,7 @@ module.exports = (env, options) => {
                 toType: 'template',
               },
               {
-                from: 'resources/icons/*',
+                from: 'resources/common/icons/*',
                 to: 'icons/[name].[ext]',
                 toType: 'template',
               },
