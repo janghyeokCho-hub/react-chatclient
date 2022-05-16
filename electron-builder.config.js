@@ -41,7 +41,6 @@ const excludeDeps = [
   '!node_modules/react-color',
   '!node_modules/react-draggable',
   '!node_modules/react-redux',
-  '!node_modules/react-rnd',
   '!node_modules/react-transition-group',
   '!node_modules/redux',
   '!node_modules/spectre.css/**/*',
