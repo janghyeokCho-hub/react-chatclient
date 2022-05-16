@@ -730,7 +730,7 @@ const MessagePostBox = forwardRef(
                     </button>
                   )}
 
-                  {DEVICE_TYPE == 'd' && useCapture == 'Y' && (
+                  {DEVICE_TYPE === 'd' && useCapture === 'Y' && (
                     <button
                       type="button"
                       alt="Screen Shot"
