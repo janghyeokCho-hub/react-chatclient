@@ -6,9 +6,15 @@ import {
   ipcMain,
   powerMonitor,
   protocol,
+  desktopCapturer,
+  nativeImage,
+  screen,
+  clipboard,
+  globalShortcut,
 } from 'electron';
 import path from 'path';
 import url from 'url';
+const fs = require('fs');
 
 import exportProps from './config/exportProps';
 import * as socketEvt from './event/socket';
@@ -51,6 +57,7 @@ import {
 
 import { openNoteWindow } from './utils/note';
 import axios from 'axios';
+import Jimp from 'jimp';
 
 /********** GLOBAL VARIABLE **********/
 // dirName
@@ -98,6 +105,14 @@ const autoLaunchSetting = new AutoLaunch({
   path: app.getPath('exe'),
 });
 
+/*********CAPTURE**********/
+
+let cropWin;
+const SOURCE_WIDTH = 10240;
+const SOURCE_HEIGHT = 6400;
+let folderName = '';
+let combineFolderName = '';
+
 // AUMID SETTING ( window alarm )
 app.setAppUserModelId(exportProps.appId);
 
@@ -111,6 +126,12 @@ app.whenReady().then(() => {
       .then(name => console.log(`Added Extension: ${name}`))
       .catch(error => console.log(`An error ocurred: ${error}`));
   }
+
+  globalShortcut.register('ESC', () => {
+    if (cropWin) {
+      cropWin.close();
+    }
+  });
 });
 
 const appReady = async () => {
@@ -156,12 +177,12 @@ const appReady = async () => {
       description: '메신저에서 그룹웨어를 사용해보세요',
       type: 'I',
       downloadURL: 'http://192.168.11.126:8080',
-      photoPath: 'http://192.168.11.80/storage/no_image.jpg',
+      photoPath: 'http://192.168.11.232/storage/no_image.jpg',
       createDate: new Date(),
       updateDate: new Date(),
       owner: 'ldh',
       version: '1.0.0',
-      iconPath: 'http://192.168.11.80/storage/extension/3.svg',
+      iconPath: 'http://192.168.11.232/storage/extension/3.svg',
     },
   ]);
 
@@ -1228,4 +1249,331 @@ ipcMain.on('req-del-chatroom-message', (_, args) => {
     return;
   }
   appDataEvt.deleteChatroomMessage(args);
+});
+
+
+ipcMain.on('create-crop-window', (_, args) => {
+  cropWin = new BrowserWindow({
+    width: 600,
+    height: 500,
+    title: 'cropWindow',
+    transparent: true,
+    // frame: false,
+    titleBarStyle: 'hidden',
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  });
+  cropWin.moveTop();
+  cropWin.loadFile(path.join(DIR_NAME, 'templates', 'crop.html'));
+
+  cropWin.on('close', () => {
+    cropWin = null;
+  });
+});
+
+ipcMain.on('close-crop-window', (_, args) => {
+  cropWin.close();
+});
+
+function createImg(cropBuffer, fileName, folderName) {
+  fs.mkdirSync(`./${folderName}`, { recursive: true });
+  setTimeout(() => {
+    fs.writeFile(`${folderName}/${fileName}c.png`, cropBuffer, err => {
+      if (err) throw err;
+      console.log('cropBuffer Saved');
+    });
+  }, 400);
+}
+
+function combineCaptureImage(folderName, combineFolderName) {
+  let imageNameList = [];
+  const files = fs.readdirSync(`./${folderName}`, { withFileTypes: true });
+  imageNameList = files.map(file => `./${folderName}/${file.name}`);
+  console.log('imageNameLlist', imageNameList);
+
+  const combineImage = require('combine-image');
+
+  setTimeout(() => {
+    combineImage(imageNameList).then(img => {
+      fs.mkdirSync(`./${combineFolderName}`, { recursive: true });
+      setTimeout(() => {
+        img.write(`./${combineFolderName}/out.png`, () => {
+          console.log('out.png created');
+          fs.readFile(`./${combineFolderName}/out.png`, function (err, buff) {
+            if (err) throw err;
+
+            const resultFullScreenBuffer = buff;
+            Jimp.read(resultFullScreenBuffer, (err, image) => {
+              if (err) throw err;
+              image.getBase64Async(Jimp.MIME_PNG).then(base64data => {
+                clipboard.writeImage(nativeImage.createFromDataURL(base64data));
+                BrowserWindow.getAllWindows().map(item => {
+                  item.webContents.send('imageData', base64data);
+                  item.webContents.send('imageDataSnipper', base64data);
+                });
+              });
+            });
+          });
+        });
+      }, 500);
+    });
+  }, 500);
+}
+
+ipcMain.on('crop-capture', (event) => {
+  const CropPosition = cropWin.getPosition();
+  const CropSize = cropWin.getSize();
+  folderName = 'cropCapture';
+  combineFolderName = 'cropCaptureCombine';
+
+  cropWin.close();
+
+  desktopCapturer
+    .getSources({
+      types: ['screen'],
+      thumbnailSize: {
+        width: SOURCE_WIDTH,
+        height: SOURCE_HEIGHT,
+      },
+    })
+    .then(async sources => {
+      const cropPositionX = CropPosition[0];
+      const cropPositionY = CropPosition[1];
+      const cropSizeWidth = CropSize[0];
+      const cropSizeHeight = CropSize[1];
+
+      const mainScreenWidth = screen.getPrimaryDisplay().bounds.width;
+      const mainScreenHeight = screen.getPrimaryDisplay().bounds.height;
+
+      const mainRect = {
+        x: cropPositionX,
+        y: cropPositionY,
+        width: cropSizeWidth,
+        height: cropSizeHeight,
+      };
+
+      const matchScreen = screen.getDisplayMatching(mainRect);
+      const mainScreen = screen.getPrimaryDisplay(mainRect);
+
+      const matchScreenWidth = matchScreen.size.width;
+      const matchScreenHeight = matchScreen.size.height;
+
+      const mainScreenSize = {
+        width: mainScreenWidth,
+        height: mainScreenHeight,
+      };
+
+      const matchScreenSize = {
+        width: matchScreenWidth,
+        height: matchScreenHeight,
+      };
+
+      const matchRectY = cropPositionY - matchScreen.bounds.y;
+      const matchRectX = cropPositionX - matchScreen.bounds.x;
+
+      const isLeftMonitor = cropPositionX < 0;
+      const isRightMonitor = cropPositionX >= mainScreenWidth;
+      const isTopMonitor = cropPositionY < 0;
+      const isBottomMonitor = cropPositionY >= mainScreenHeight;
+
+      // 크롭할 화면 아이디
+      const cropTargetScreenArr = [];
+      const isCropTargetScreenId = [];
+
+      if (sources.length > 1) {
+        if (matchScreen.id === mainScreen.id) {
+          isCropTargetScreenId.push(mainScreen.id);
+          cropTargetScreenArr.push({
+            id: mainScreen.id,
+            resize: mainScreenSize,
+            rect: mainRect,
+          });
+        } else {
+          // 크롭할 디스플레이 입력
+
+          let isAlreadyInCondition = false;
+          // //왼쪽 위에 캡쳐 / 왼쪽 아래
+          if (
+            (isLeftMonitor && isTopMonitor) ||
+            (isLeftMonitor && isBottomMonitor && !isAlreadyInCondition)
+          ) {
+            isAlreadyInCondition = true;
+            isCropTargetScreenId.push(matchScreen.id);
+            cropTargetScreenArr.push({
+              id: matchScreen.id,
+              resize: matchScreenSize,
+              rect: {
+                x:
+                  matchScreenWidth + matchScreen.bounds.x > 0
+                    ? cropPositionX + Math.abs(matchScreen.bounds.x)
+                    : matchScreenWidth + cropPositionX,
+                y: matchRectY,
+                width: cropSizeWidth,
+                height: cropSizeHeight,
+              },
+            });
+          }
+
+          // 오른쪽 위에 캡쳐하는 경우// 오른쪽 아래
+          if (
+            (isRightMonitor && isTopMonitor) ||
+            (isRightMonitor && isBottomMonitor && !isAlreadyInCondition)
+          ) {
+            isAlreadyInCondition = true;
+            isCropTargetScreenId.push(matchScreen.id);
+            cropTargetScreenArr.push({
+              id: matchScreen.id,
+              resize: matchScreenSize,
+              rect: {
+                x:
+                  matchScreen.bounds.x < mainScreenWidth
+                    ? cropPositionX -
+                      mainScreenWidth +
+                      (mainScreenWidth - matchScreen.bounds.x)
+                    : cropPositionX - mainScreenWidth,
+                y: matchRectY,
+                width: cropSizeWidth,
+                height: cropSizeHeight,
+              },
+            });
+          }
+
+          // 왼쪽 모니터
+          if (
+            isLeftMonitor &&
+            !isAlreadyInCondition &&
+            Math.abs(cropPositionX) >= cropSizeWidth
+          ) {
+            isAlreadyInCondition = true;
+            // 크롭할 사이즈보다 cropPosition X축이 큰 경우 <-- 크롭영역이 왼쪽 화면으로 아예 넘어간 경우(겹치지 않음)
+            isCropTargetScreenId.push(matchScreen.id);
+            cropTargetScreenArr.push({
+              id: matchScreen.id,
+              resize: matchScreenSize,
+              rect: {
+                x: matchScreen.size.width + cropPositionX,
+                y: matchRectY,
+                width: cropSizeWidth,
+                height: cropSizeHeight,
+              },
+            });
+          }
+          // 위쪽 모니터
+          // 크롭할 사이즈보다 cropPosition Y축이 큰 경우
+          if (
+            isTopMonitor &&
+            !isAlreadyInCondition &&
+            Math.abs(cropPositionY) >= cropSizeHeight
+          ) {
+            isAlreadyInCondition = true;
+            isCropTargetScreenId.push(matchScreen.id);
+            cropTargetScreenArr.push({
+              id: matchScreen.id,
+              resize: matchScreenSize,
+              rect: {
+                x: matchRectX,
+                y: matchScreenHeight + cropPositionY,
+                width: cropSizeWidth,
+                height: cropSizeHeight,
+              },
+            });
+          }
+          // 오른쪽 모니터
+          if (
+            cropPositionX + cropSizeWidth >= mainScreenWidth &&
+            !isAlreadyInCondition &&
+            isRightMonitor
+          ) {
+            isAlreadyInCondition = true;
+            isCropTargetScreenId.push(matchScreen.id);
+            cropTargetScreenArr.push({
+              id: matchScreen.id,
+              resize: matchScreenSize,
+              rect: {
+                x: cropPositionX - mainScreenWidth,
+                y: matchRectY,
+                width: cropSizeWidth,
+                height: cropSizeHeight,
+              },
+            });
+          }
+        }
+      } else {
+        isCropTargetScreenId.push(mainScreen.id);
+        cropTargetScreenArr.push({
+          id: mainScreen.id,
+          resize: mainScreenSize,
+          rect: mainRect,
+        });
+      }
+
+      for (const [idx, source] of sources.entries()) {
+        let fileName = `crop_${idx}`;
+        if (isCropTargetScreenId.includes(Number(source.display_id))) {
+          const targetScreen = cropTargetScreenArr.filter(
+            targetScreen => targetScreen.id === Number(source.display_id),
+          )?.[0];
+          if (targetScreen) {
+            const cropImg = source.thumbnail
+              .resize(targetScreen.resize)
+              .crop(targetScreen.rect);
+            const cropBuffer = cropImg.toPNG();
+            const isExists = fs.existsSync(`./${folderName}`);
+            if (!isExists) {
+              createImg(cropBuffer, fileName, folderName);
+            } else {
+              fs.rm(`./${folderName}`, { recursive: true }, err => {
+                if (err) {
+                  throw err;
+                }
+                createImg(cropBuffer, fileName, folderName);
+              });
+            }
+          }
+        }
+      }
+      setTimeout(() => {
+        combineCaptureImage(folderName, combineFolderName);
+        BrowserWindow.getAllWindows().map(item => {
+          item.webContents.send('openSnipWin');
+        });
+      }, 500);
+
+    });
+});
+
+ipcMain.on('full-screen-capture', (_, args) => {
+  folderName = 'capture';
+  combineFolderName = 'captureFullscreen';
+
+  desktopCapturer
+    .getSources({
+      types: ['screen'],
+      thumbnailSize: {
+        width: 1280,
+        height: 720,
+      },
+    })
+    .then(async sources => {
+      for (const [idx, source] of sources.entries()) {
+        let fileName = `screen_${idx}d`;
+        const cropBuffer = source.thumbnail.toPNG();
+        const isExists = fs.existsSync(`./${folderName}`);
+        if (!isExists) {
+          createImg(cropBuffer, fileName, folderName);
+        } else {
+          fs.rm(`./${folderName}`, { recursive: true }, err => {
+            if (err) {
+              throw err;
+            }
+            createImg(cropBuffer, fileName, folderName);
+          });
+        }
+      }
+      setTimeout(() => {
+        combineCaptureImage(folderName, combineFolderName);
+      }, 500);
+    });
 });

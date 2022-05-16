@@ -8,3 +8,10 @@ prod
 
 # MacOS finder env file
 .DS_Store
+
+# Capture directories
+
+capture/
+captureFullscreen/
+cropCapture/
+cropCaptureCombine/
