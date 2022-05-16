@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cropWindow</title>
+    <style>
+      body {
+        margin: 0;
+        font-size: 50px;
+        font-weight: 900;
+        text-align: center;
+        border: 2.5px solid #3a38d2;
+        overflow-y: hidden !important;
+      }
+
+      #dragg {
+        -webkit-app-region: drag;
+        height: 98vh;
+        color: white;
+        background-color: rgba(255, 255, 255, 0.5);
+        position: relative;
+      }
+
+      .btnBox {
+        position: absolute;
+        bottom: 10%;
+        width: 100%;
+        margin: auto;
+      }
+
+      .btn {
+        width: 130px;
+        margin-right: 5px;
+        align-items: center;
+        justify-content: center;
+        border: solid 2px #12cfee;
+        background-color: #12cfee;
+        color: white;
+        cursor: pointer;
+        -webkit-app-region: no-drag;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dragg">
+      <div class="btnBox">
+        <button class="btn" id="clickCapture">캡쳐</button>
+        <button class="btn" id="closeCaptureWin">취소</button>
+      </div>
+    </div>
+
+    <script>
+      const { ipcRenderer } = require('electron');
+
+      document.getElementById('clickCapture').addEventListener('click', () => {
+        ipcRenderer.send('crop-capture');
+      });
+
+      document
+        .getElementById('closeCaptureWin')
+        .addEventListener('click', () => {
+          ipcRenderer.send('close-crop-window');
+        });
+    </script>
+  </body>
+</html>
