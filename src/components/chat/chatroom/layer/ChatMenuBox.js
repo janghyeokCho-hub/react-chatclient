@@ -21,6 +21,8 @@ import ColorBox from '@COMMON/buttons/ColorBox';
 import { insert, remove } from '@/lib/util/storageUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import useOffset from '@/hooks/useOffset';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
 
 const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
 
@@ -31,9 +33,12 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     viewType: room.viewType,
   }));
   const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
 
   const [isNoti, setIsNoti] = useState(true);
   const [isFix, setIsFix] = useState(false);
+  const [chineseWallState, setChineseWallState] = useState([]);
   const RENDER_INIT = 10;
   const RENDER_UNIT = 8;
   const { isDone, nextStep, list, handleScrollUpdate } = useOffset(
@@ -46,6 +51,33 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   useEffect(() => {
     if (DEVICE_TYPE == 'd' && !isMakeRoom) {
@@ -201,19 +233,29 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     );
   };
 
-  const handlePhotoSummary = () => {
+  const handlePhotoSummary = useCallback(() => {
     appendLayer(
       {
-        component: <PhotoSummary roomId={roomInfo.roomID} />,
+        component: (
+          <PhotoSummary
+            roomId={roomInfo.roomID}
+            chineseWall={chineseWallState}
+          />
+        ),
       },
       dispatch,
     );
-  };
+  }, [chineseWallState]);
 
   const handleFileSummary = () => {
     appendLayer(
       {
-        component: <FileSummary roomId={roomInfo.roomID} />,
+        component: (
+          <FileSummary
+            roomId={roomInfo.roomID}
+            chineseWall={chineseWallState}
+          />
+        ),
       },
       dispatch,
     );

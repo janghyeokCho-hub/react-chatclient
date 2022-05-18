@@ -18,7 +18,11 @@ export const onAppUpdateConfig = payload => {
 
 export const onNewMessage = payload => {
   // 자기자신 메세지 확인
-  payload.sender == loginInfo.getData().id && (payload.isMine = 'Y');
+  if (payload.sender == loginInfo.getData().id) {
+    payload.isMine = 'Y';
+  } else {
+    payload.isMine = 'N';
+  }
   // flashFrame evt 발생 ( 자기자신에게 발생한 메세지 처리 안함 )
   if (payload.isMine != 'Y' && payload.roomID) {
     // 선택된 id가 없으면 무조건 부모창
@@ -47,7 +51,7 @@ export const onNewMessage = payload => {
 
       if (!focusWin.isFocused()) {
         payload.isChannel = false;
-        common.notifyMessage(payload, focusWin);
+        common.notifyMessage(payload, focusWin, loginInfo.getData());
       }
     }
     // Tray Change
@@ -185,7 +189,7 @@ export const onNewNotice = payload => {
 
       if (!focusWin.isFocused()) {
         payload.isChannel = false;
-        common.notifyMessage(payload, focusWin);
+        common.notifyMessage(payload, focusWin, loginInfo.getData());
       }
     }
     // Tray Change
@@ -204,7 +208,11 @@ export const onNewChannelMessage = payload => {
     }
   } catch (err) {}
   // 자기자신 메세지 확인
-  payload.sender == loginInfo.getData().id && (payload.isMine = 'Y');
+  if (payload.sender == loginInfo.getData().id) {
+    payload.isMine = 'Y';
+  } else {
+    payload.isMine = 'N';
+  }
 
   // flashFrame evt 발생 ( 자기자신에게 발생한 메세지 처리 안함 )
   if (payload.isMine != 'Y' && payload.roomID) {
@@ -234,7 +242,7 @@ export const onNewChannelMessage = payload => {
 
       if (!focusWin.isFocused()) {
         payload.isChannel = true;
-        common.notifyMessage(payload, focusWin);
+        common.notifyMessage(payload, focusWin, loginInfo.getData());
       }
     }
     // Tray Change

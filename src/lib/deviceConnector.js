@@ -837,7 +837,7 @@ const makeFileName = (basePath, name) => {
 };
 
 // AppData 동기화
-export const syncAppData = data => {
+export const syncAppData = ({ data, chineseWall }) => {
   const emitter = getEmitter();
 
   let returnVal = false;
@@ -848,6 +848,7 @@ export const syncAppData = data => {
     accessid: data.result.id,
     createDate: data.createDate,
     userInfo: data.result,
+    chineseWall,
   });
 
   // 채팅방 마지막 메시지 동기화 (async)

@@ -10,6 +10,30 @@ import * as netUtils from 'node-macaddress';
 import { openNoteWindow } from './note';
 import { networkInterfaces } from 'os';
 
+const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
+  let result = {
+    blockChat: false,
+    blockFile: false,
+  };
+
+  if (!chineseWall.length) {
+    return result;
+  }
+  const chineseData = chineseWall.filter(
+    item =>
+      item.target === targetInfo.sender || item.target === targetInfo.deptCode,
+  );
+  for (const data of chineseData) {
+    if (data.isChat === 'Y') {
+      result.blockChat = true;
+    }
+    if (data.isFile === 'Y') {
+      result.blockFile = true;
+    }
+  }
+  return result;
+};
+
 /*
 const appId =
   DEF_MODE == 'development'
@@ -27,12 +51,19 @@ const autoLaunchSetting = new AutoLaunch({
 });
 
 // Message 도착 알림 처리
-export const notifyMessage = (payload, focusWin) => {
+export const notifyMessage = (payload, focusWin, loginInfo) => {
   // 자기자신에게 온 메세지는 알림처리 안함 (socketAction에서 미리 검사)
   // if (payload.isMine != 'Y') {
   // TODO: notify 설정상태, payload에 따른 notify 설정정보 처리, os에 따른 notify 처리 추가 등등 개발 필요
   try {
     const senderInfo = JSON.parse(payload.senderInfo);
+
+    const { blockChat, blockFile } = isBlockCheck({
+      targetInfo: senderInfo,
+      chineseWall: loginInfo.chineseWall,
+    });
+    const isFile = !!payload.fileInfos;
+    const isBlock = isFile ? blockFile : blockChat;
 
     // let iconImage = path.join(exportProps.resourcePath, 'icons', 'alarm.png'); // full path여야함
     let iconImage = senderInfo.photoPath;
@@ -60,7 +91,9 @@ export const notifyMessage = (payload, focusWin) => {
 
     if (USER_SETTING.config.showNotiContent) {
       if (payload.context) {
-        message = payload.context;
+        message = isBlock
+          ? SERVER_SECURITY_SETTING.getDic('BlockChat', '차단된 메시지 입니다.')
+          : payload.context;
         if (/eumtalk:\/\//.test(message)) {
           console.log('message::::::::::::::', message);
           const arrMsgData = message.replace(/eumtalk:\/\//, '').split('.');
@@ -109,7 +142,9 @@ export const notifyMessage = (payload, focusWin) => {
         }
       } else {
         // 파일, 이미지 등 메시지 내용없이 파일만 전송한 경우
-        message = SERVER_SECURITY_SETTING.getDic('AttachFile', '첨부파일');
+        message = isBlock
+          ? '차단된 메시지 입니다.'
+          : SERVER_SECURITY_SETTING.getDic('AttachFile', '첨부파일');
       }
     } else {
       message = SERVER_SECURITY_SETTING.getDic(
@@ -437,7 +472,7 @@ export const reloadApp = clearConfig => {
 
         win.webContents.reloadIgnoringCache();
       })
-      .catch((err) => {
+      .catch(err => {
         logger.info('server config load error: ' + JSON.stringify(err));
         // Alert 팝업 open
         win.webContents.reloadIgnoringCache();

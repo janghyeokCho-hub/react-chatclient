@@ -24,6 +24,8 @@ import ColorBox from '@COMMON/buttons/ColorBox';
 import { insert, remove } from '@/lib/util/storageUtil';
 import { closureChannel } from '@/lib/channel';
 import useOffset from '@/hooks/useOffset';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
 
 const enabledExtUser = getConfig('EnabledExtUser', 'Y');
 const SMTPConfig = getConfig('SMTPConfig', 'Y');
@@ -33,13 +35,43 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   const { id } = useSelector(({ login }) => ({
     id: login.id,
   }));
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
 
   const [isNoti, setIsNoti] = useState(true);
   const [channelAuth, setChannelAuth] = useState(false);
   const [channelAdminMembers, setChannelAdminMembers] = useState([]);
+  const [chineseWallState, setChineseWallState] = useState([]);
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   useEffect(() => {
     if (DEVICE_TYPE == 'd') {
@@ -185,7 +217,12 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   const handlePhotoSummary = () => {
     appendLayer(
       {
-        component: <PhotoSummary roomId={channelInfo.roomId} />,
+        component: (
+          <PhotoSummary
+            roomId={channelInfo.roomId}
+            chineseWall={chineseWallState}
+          />
+        ),
       },
       dispatch,
     );
@@ -194,7 +231,12 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   const handleFileSummary = () => {
     appendLayer(
       {
-        component: <FileSummary roomId={channelInfo.roomId} />,
+        component: (
+          <FileSummary
+            roomId={channelInfo.roomId}
+            chineseWall={chineseWallState}
+          />
+        ),
       },
       dispatch,
     );
