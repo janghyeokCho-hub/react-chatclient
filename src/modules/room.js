@@ -1377,6 +1377,14 @@ const room = handleActions(
         if (action.payload.dist == 'BEFORE') {
           draft.messages = [...draft.messages, ...action.payload.messages];
         } else {
+          /** 2022.05.16
+           * action.payload의 첫번째 메시지와 기존 스토어의 첫번째 메시지가 동일하면 > 메시지 중복로드 발생
+           * => Array append 처리 생략
+           */
+          if (draft.messages?.at(0)?.messageID === action.payload?.messages?.at(0)?.messageID) {
+            console.log('SET_MESSAGES:: mesage duplicate :: ', draft.messages?.at(0)?.messageID, action.payload?.messages?.at(0));
+            return;
+          }
           draft.messages = [...action.payload.messages, ...draft.messages];
         }
       });
