@@ -5,7 +5,6 @@ import { openChatRoomView } from '@/lib/roomUtil';
 import { format } from 'date-fns';
 import { getProfileInfo } from '@/lib/profile';
 import { getConfig } from '@/lib/util/configUtil';
-import RightConxtMenu from '@C/common/popup/RightConxtMenu';
 import axios from 'axios';
 import {
   deleteLayer,
@@ -88,6 +87,7 @@ const ProfilePopup = ({ userInfo }) => {
       className="cover_profile type2"
       style={{
         width: '100%',
+        userSelect: 'text',
       }}
     >
       <div className="innerbox">
@@ -176,21 +176,7 @@ const ProfilePopup = ({ userInfo }) => {
             <dl>
               <dt>{covi.getDic('Mobile', '휴대폰')}</dt>
               <dd>
-                <RightConxtMenu
-                  menuId={`profilePhoneNumber`}
-                  menus={[
-                    {
-                      code: 'copyClipboardMessage',
-                      isline: false,
-                      onClick: () => {
-                        navigator.clipboard.writeText(userInfo.phoneNumber);
-                      },
-                      name: covi.getDic('Copy', '내용 복사'),
-                    },
-                  ]}
-                >
                   {userInfo.phoneNumber}
-                </RightConxtMenu>
                 {'  '}
                 {makeCall?.isUse && userInfo?.phoneNumber?.length > 0 && (
                   <button
@@ -243,21 +229,7 @@ const ProfilePopup = ({ userInfo }) => {
             <dl>
               <dt>{covi.getDic('Phone', '내선번호')}</dt>
               <dd>
-                <RightConxtMenu
-                  menuId={`companyNumber`}
-                  menus={[
-                    {
-                      code: 'copyClipboardMessage',
-                      isline: false,
-                      onClick: () => {
-                        navigator.clipboard.writeText(userInfo.companyNumber);
-                      },
-                      name: covi.getDic('Copy', '내용 복사'),
-                    },
-                  ]}
-                >
                   {userInfo.companyNumber}
-                </RightConxtMenu>
                 {'  '}
                 {makeCall?.isUse && userInfo?.companyNumber?.length > 0 && (
                   <button
@@ -309,42 +281,14 @@ const ProfilePopup = ({ userInfo }) => {
             <dl>
               <dt>{covi.getDic('Email', '이메일')}</dt>
               <dd>
-                <RightConxtMenu
-                  menuId={`mailAddress`}
-                  menus={[
-                    {
-                      code: 'copyClipboardMessage',
-                      isline: false,
-                      onClick: () => {
-                        navigator.clipboard.writeText(userInfo.mailAddress);
-                      },
-                      name: covi.getDic('Copy', '내용 복사'),
-                    },
-                  ]}
-                >
                   {userInfo.mailAddress == null ? '' : userInfo.mailAddress}
-                </RightConxtMenu>
               </dd>
             </dl>
             <dl>
               <dt>{covi.getDic('Work', '담당업무')}</dt>
               <dd>
                 <a>
-                  <RightConxtMenu
-                    menuId={`work`}
-                    menus={[
-                      {
-                        code: 'copyClipboardMessage',
-                        isline: false,
-                        onClick: () => {
-                          navigator.clipboard.writeText(userInfo.work);
-                        },
-                        name: covi.getDic('Copy', '내용 복사'),
-                      },
-                    ]}
-                  >
                     {userInfo.work == null ? '' : userInfo.work}
-                  </RightConxtMenu>
                 </a>
               </dd>
             </dl>
