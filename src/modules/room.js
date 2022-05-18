@@ -224,20 +224,18 @@ function createGetRoomInfoSaga() {
 
           data.room.background = background;
         }
-      } else {
+      }
+      
+      if (DEVICE_TYPE === 'b' || data.room.members.length > 2) {
         const response = yield call(roomApi.getRoomInfo, action.payload);
         data = response.data;
+        if (data?.room) {
+          yield put({
+            type: 'room/GET_ROOM_INFO_SUCCESS',
+            payload: data,
+          });
+        }
       }
-      let roomList = [];
-      if (data.room.members.length > 2) {
-        const roomListResponse = yield call(roomApi.getRoomList);
-        roomList = roomListResponse.data.rooms;
-      }
-
-      yield put({
-        type: 'room/GET_ROOM_INFO_SUCCESS',
-        payload: { ...data, rooms: roomList },
-      });
 
       // desktop의 경우 unread cnt sync 이후 read message 처리 수행
 
