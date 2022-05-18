@@ -1757,8 +1757,7 @@ export const reqSetUnreadCnt = async param => {
 };
 
 export const reqGetMessages = async (event, args) => {
-  logger.info('reqGetMessages');
-
+  logger.info('reqGetMessages' + JSON.stringify(args));
   let messages = [];
   const returnObj = {};
 
