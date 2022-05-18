@@ -6,10 +6,11 @@ import React, {
   useState,
 } from 'react';
 import { useSelector } from 'react-redux';
-import { makeMessageText } from '@/lib/common';
+import { makeMessageText, isJSONStr } from '@/lib/common';
 import Config from '@/config/config';
+import { isBlockCheck } from '@/lib/orgchart';
 
-const ChannelItem = ({ channel, checkObj, isJoin, pinnedTop }) => {
+const ChannelItem = ({ channel, checkObj, isJoin, pinnedTop, chineseWall }) => {
   const channels = useSelector(({ channel }) => channel.channels);
   const checkRef = useRef(null);
 
@@ -27,15 +28,34 @@ const ChannelItem = ({ channel, checkObj, isJoin, pinnedTop }) => {
   const [lastMessageText, setLastMessageText] = useState('');
 
   useLayoutEffect(() => {
-    const changeTargetChannel = channels.find(c => c.roomId == channel.roomId);
-    if (changeTargetChannel) {
-      makeMessageText(changeTargetChannel.lastMessage, 'CHANNEL').then(
-        setLastMessageText,
-      );
+    if (channel?.lastMessage && chineseWall.length) {
+      const lastMessageInfo = isJSONStr(channel.lastMessage)
+        ? JSON.parse(channel.lastMessage)
+        : channel.lastMessage;
+      const targetInfo = {
+        id: lastMessageInfo.sender,
+        companyCode: lastMessageInfo.companyCode,
+        deptCode: lastMessageInfo.deptCode,
+      };
+
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo,
+        chineseWall,
+      });
+      const isFile = !!lastMessageInfo?.File;
+      const result = isFile ? blockFile : blockChat;
+
+      if (result) {
+        setLastMessageText(covi.getDic('BlockChat', '차단된 메시지 입니다.'));
+      } else {
+        makeMessageText(channel.lastMessage, 'CHANNEL').then(
+          setLastMessageText,
+        );
+      }
     } else {
       makeMessageText(channel.lastMessage, 'CHANNEL').then(setLastMessageText);
     }
-  }, [channel]);
+  }, [channel, chineseWall]);
 
   const handleClick = useCallback(() => {
     checkRef?.current?.click();

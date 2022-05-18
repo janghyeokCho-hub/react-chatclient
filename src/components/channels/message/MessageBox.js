@@ -1,10 +1,16 @@
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import Message from '@C/channels/message/Message';
 import RightConxtMenu from '@C/common/popup/RightConxtMenu';
 import { format } from 'date-fns';
-import * as common from '@/lib/common';
+import {
+  eumTalkRegularExp,
+  convertEumTalkProtocol,
+  convertURLMessage,
+  checkURL,
+  getJobInfo,
+} from '@/lib/common';
 import LinkMessageBox from '@C/chat/message/LinkMessageBox'; // 그대로 사용
 import FileMessageBox from '@C/chat/message/FileMessageBox'; // 그대로 사용
 import { useChatFontSize } from '@/hooks/useChat';
@@ -21,8 +27,8 @@ const MessageBox = ({
   id,
   marking,
   getMenuData,
+  isBlock,
 }) => {
-  const roomId = useSelector(({ channel }) => channel.currentChannel.roomId);
   const [fontSize] = useChatFontSize();
   const currMember = useSelector(
     ({ channel }) => channel.currentChannel.members,
@@ -48,7 +54,9 @@ const MessageBox = ({
   );
 
   const drawMessage = useMemo(() => {
-    let drawText = (message.context && message.context) || '';
+    let drawText = isBlock
+      ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
+      : message?.context || '';
     let nameBoxVisible = nameBox;
 
     let senderInfo = null;
@@ -61,8 +69,8 @@ const MessageBox = ({
 
     const smallFontSize = Math.max(10, fontSize - 2);
     // protocol check
-    if (common.eumTalkRegularExp.test(drawText)) {
-      const processMsg = common.convertEumTalkProtocol(drawText);
+    if (!isBlock && eumTalkRegularExp.test(drawText)) {
+      const processMsg = convertEumTalkProtocol(drawText);
       messageType = processMsg.type;
       drawText = processMsg.message;
       mentionInfo = processMsg.mentionInfo;
@@ -76,7 +84,7 @@ const MessageBox = ({
       }
     }
 
-    if (messageType == 'message') {
+    if (!isBlock && messageType == 'message') {
       // 2. 검색 시 marking 처리 ---> marking은 props로 최하위 컴포넌트 까지 전달
       /*
       if (marking) {
@@ -102,7 +110,7 @@ const MessageBox = ({
           linkInfoObj = JSON.parse(message.linkInfo);
         }
 
-        drawText = common.convertURLMessage(drawText);
+        drawText = convertURLMessage(drawText);
 
         if (linkInfoObj.thumbNailInfo) {
           const linkThumbnailObj = linkInfoObj.thumbNailInfo;
@@ -122,7 +130,10 @@ const MessageBox = ({
               {!message.fileInfos && (
                 <div className="chatinfo">
                   {timeBox && (
-                    <span className="Sendtime" style={{ fontSize: smallFontSize}}>
+                    <span
+                      className="Sendtime"
+                      style={{ fontSize: smallFontSize }}
+                    >
                       {format(new Date(message.sendDate), 'HH:mm')}
                     </span>
                   )}
@@ -138,7 +149,7 @@ const MessageBox = ({
           );
         }
       } else if (message.linkInfo == null && DEVICE_TYPE != 'b') {
-        const checkURLResult = common.checkURL(drawText);
+        const checkURLResult = checkURL(drawText);
 
         if (checkURLResult.isURL) {
           evalConnector({
@@ -182,7 +193,7 @@ const MessageBox = ({
                     img={senderInfo.photoPath}
                   ></ProfileBox>
                   <p className="msgname" style={{ fontSize }}>
-                    {common.getJobInfo(senderInfo)}
+                    {getJobInfo(senderInfo)}
                     {senderInfo.isMobile === 'Y' && (
                       <span style={{ padding: '0px 5px' }}>
                         <svg
@@ -225,7 +236,10 @@ const MessageBox = ({
               />
               <div className="chatinfo">
                 {timeBox && (
-                  <span className="Sendtime" style={{ fontSize: smallFontSize}}>
+                  <span
+                    className="Sendtime"
+                    style={{ fontSize: smallFontSize }}
+                  >
                     {format(new Date(message.sendDate), 'HH:mm')}
                   </span>
                 )}
@@ -249,7 +263,10 @@ const MessageBox = ({
               ></div>
               <div className="chatinfo">
                 {timeBox && (
-                  <span className="Sendtime" style={{ fontSize: smallFontSize}}>
+                  <span
+                    className="Sendtime"
+                    style={{ fontSize: smallFontSize }}
+                  >
                     {format(new Date(message.sendDate), 'HH:mm')}
                   </span>
                 )}
@@ -285,7 +302,7 @@ const MessageBox = ({
     let menus = [];
     let menuId = '';
     if (getMenuData) {
-      menus = getMenuData(message);
+      menus = !isBlock && getMenuData(message);
       menuId = `channelmessage_${message.messageID}`;
     }
 
@@ -305,7 +322,7 @@ const MessageBox = ({
                       img={senderInfo.photoPath}
                     ></ProfileBox>
                     <p className="msgname" style={{ fontSize }}>
-                      {common.getJobInfo(senderInfo)}
+                      {getJobInfo(senderInfo)}
                       {senderInfo.isMobile === 'Y' && (
                         <span style={{ padding: '0px 5px' }}>
                           <svg
@@ -359,7 +376,10 @@ const MessageBox = ({
                 {!fileInfoJSX && !urlInfoJSX && (
                   <div className="chatinfo">
                     {timeBox && (
-                      <span className="Sendtime" style={{ fontSize: smallFontSize}}>
+                      <span
+                        className="Sendtime"
+                        style={{ fontSize: smallFontSize }}
+                      >
                         {format(new Date(message.sendDate), 'HH:mm')}
                       </span>
                     )}
@@ -387,7 +407,10 @@ const MessageBox = ({
             {!fileInfoJSX && !urlInfoJSX && (
               <div className="chatinfo">
                 {timeBox && (
-                  <span className="Sendtime" style={{ fontSize: smallFontSize}}>
+                  <span
+                    className="Sendtime"
+                    style={{ fontSize: smallFontSize }}
+                  >
                     {format(new Date(message.sendDate), 'HH:mm')}
                   </span>
                 )}
@@ -418,7 +441,7 @@ const MessageBox = ({
         </>
       );
     }
-  }, [message, marking, fontSize, nameBox, timeBox]);
+  }, [message, marking, fontSize, nameBox, timeBox, isBlock]);
 
   return drawMessage;
 };

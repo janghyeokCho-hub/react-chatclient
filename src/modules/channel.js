@@ -835,6 +835,9 @@ const channel = handleActions(
           channel.lastMessage = JSON.stringify({
             Message: action.payload.context,
             File: action.payload.fileInfos,
+            companyCode: action.payload.companyCode,
+            deptCode: action.payload.deptCode,
+            sender: action.payload.sender,
           });
           channel.lastMessageDate = action.payload.sendDate;
           channel.lastMessageType = action.payload.messageType;
@@ -883,7 +886,6 @@ const channel = handleActions(
             }
           });
         }
-
         draft.channels = action.payload.result;
       });
     },
@@ -944,6 +946,9 @@ const channel = handleActions(
                 )
               : action.payload.context,
           File: action.payload.fileInfos,
+          sender: action.payload.sender || '',
+          companyCode: action.payload.senderInfo?.companyCode || '',
+          deptCode: action.payload.senderInfo?.deptCode || '',
         };
 
         if (channel) {
@@ -1633,6 +1638,9 @@ const channel = handleActions(
           const lastMessage = {
             Message: payload.lastMessage.context,
             File: payload.lastMessage.fileInfos,
+            companyCode: payload.lastMessage.companyCode,
+            deptCode: payload.lastMessage.deptCode,
+            sender: payload.lastMessage.sender,
           };
           channel.lastMessage = lastMessage;
           channel.lastMessageDate = payload.lastMessage.sendDate;

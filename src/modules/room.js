@@ -830,10 +830,12 @@ const room = handleActions(
       return produce(state, draft => {
         const room = draft.rooms.find(r => r.roomID == action.payload.roomID);
         // room 순서 변경
-
         const lastMessageData = {
           Message: action.payload.context,
           File: action.payload.fileInfos,
+          sender: action.payload.sender || '',
+          companyCode: action.payload.senderInfo?.companyCode || '',
+          deptCode: action.payload.senderInfo?.deptCode || '',
         };
 
         if (room) {
@@ -1228,8 +1230,9 @@ const room = handleActions(
                 ? draft.messages[draft.messages.length - 1].messageID
                 : 0;
 
-            if (idx < 0 && action.payload.messageID > lastMessageID)
+            if (idx < 0 && action.payload.messageID > lastMessageID) {
               draft.messages.push(action.payload);
+            }
 
             const members = room.members;
             draft.currentRoom.members = members;

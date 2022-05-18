@@ -12,12 +12,9 @@ import ChatBotMessageBox from '@C/chat/message/ChatBotMessageBox';
 import NoticeMessageBox from '@C/chat/message/NoticeMessageBox';
 import TempMessageBox from '@C/chat/message/TempMessageBox';
 import SystemMessageBox from '@C/chat/message/SystemMessageBox';
-
-const ListScrollBox = loadable(() =>
-  import('@/components/chat/chatroom/normal/ListScrollBox'),
-);
 import { format } from 'date-fns';
 import {
+  isJSONStr,
   openPopup,
   openLayer,
   eumTalkRegularExp,
@@ -32,15 +29,23 @@ import {
   getRoomInfo,
 } from '@/modules/room';
 import { hasClass, messageCopy, getMsgElement } from '@/lib/util/domUtil';
-import { evalConnector } from '@/lib/deviceConnector';
+import { evalConnector, isMainWindow } from '@/lib/deviceConnector';
 import { getMessage } from '@/lib/messageUtil';
 import { deleteChatroomMessage } from '@/lib/message';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import ShareContainer from '@C/share/ShareContainer';
 import { checkFileTokenValidation } from '@/lib/fileUpload/coviFile';
 import { getConfig } from '@/lib/util/configUtil';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
+
+const ListScrollBox = loadable(() =>
+  import('@/components/chat/chatroom/normal/ListScrollBox'),
+);
 
 const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
   const tempMessage = useSelector(({ message }) => message.tempMessage);
   const tempFiles = useSelector(({ message }) => message.tempFiles);
   const messages = useSelector(({ room }) => room.messages);
@@ -48,6 +53,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
 
   const [mounted, setMounted] = useState(false);
   const [nextPage, setNextPage] = useState([]);
+  const [chineseWallState, setChineseWallState] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [messageLoading, setMessageLoading] = useState(false);
@@ -80,7 +86,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     }
   };
 
-  const handleSelectionChange = e => {
+  const handleSelectionChange = () => {
     const selectionValue = window.getSelection();
 
     let startMessageId = -1;
@@ -119,7 +125,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     }
   };
 
-  const handleMouseDown = e => {
+  const handleMouseDown = () => {
     setStartSelectMessage(-1);
     setEndSelectMessage(-1);
   };
@@ -140,7 +146,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     evalConnector({
       method: 'on',
       channel: 'onReSyncMessage',
-      callback: (event, args) => {
+      callback: () => {
         reSyncMessage();
       },
     });
@@ -166,21 +172,28 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       setTopEnd(false);
       // 메시지 동기화
       // TODO: AppData 저장 여부값 조건 추가 필요
-      if (DEVICE_TYPE == 'd') {
+      if (DEVICE_TYPE === 'd') {
         // NOTE:: 여기는 2번 호출됨
         // NOTE:: 여기 syncMessage 호출시 방 들어올 때 마다 +2 번 호출됨
         syncMessage(currentRoom.roomID);
       }
     }
-  }, [currentRoom]);
+    return () => {
+      setNextPage([]);
+      setTopEnd(false);
+    };
+  }, []);
 
   useEffect(() => {
     getNext(currentRoom.roomID);
     setTimeout(() => {
-      if (messages.length == 0) {
+      if (!messages?.length) {
         setReload(true);
       }
     }, 1000);
+    return () => {
+      setReload(false);
+    };
   }, [messages]);
 
   useEffect(() => {
@@ -189,6 +202,10 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
         setMessageLoading(false);
       }
     }, 10000);
+
+    return () => {
+      setMessageLoading(false);
+    };
   }, [messageLoading]);
 
   useEffect(() => {
@@ -196,6 +213,33 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       getMessages(currentRoom.roomID);
     }
   }, [reload]);
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   const getMessages = async roomID => {
     console.log('getMessages called!');
@@ -210,11 +254,9 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       },
     });
     const messages = response.data.result;
+    messages?.length && setTopEnd(false);
 
-    messages && messages.length > 0 && setTopEnd(false);
-
-    await dispatch(setMessagesForSync(messages));
-
+    dispatch(setMessagesForSync(messages));
     setReload(false);
   };
 
@@ -235,7 +277,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       evalConnector({
         method: 'once',
         channel: 'onSyncUnreadCount',
-        callback: (event, data) => {
+        callback: (_, data) => {
           dispatch(
             setUnreadCountForSync({ roomID, unreadCnts: data.unreadCnts }),
           );
@@ -253,7 +295,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       evalConnector({
         method: 'once',
         channel: 'onSyncUnreadCountMessages',
-        callback: (event, data) => {
+        callback: () => {
           //NOTE:: 창 열릴 때 마다 (x 2 + 4)번 호출됨
           console.log('onSyncUnreadCountMessages call');
           syncMessage(currentRoom.roomID);
@@ -263,7 +305,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       evalConnector({
         method: 'on',
         channel: 'onSyncMessageSuccess',
-        callback: async (event, targetRoomID) => {
+        callback: async (_, targetRoomID) => {
           if (roomID == targetRoomID) {
             const response = await evalConnector({
               method: 'sendSync',
@@ -277,12 +319,10 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
             });
 
             const messages = response.data.result;
-
-            messages && messages.length > 0 && setTopEnd(false);
-
+            messages?.length && setTopEnd(false);
             dispatch(setMessagesForSync(messages));
 
-            if (!messages || messages.length == 0) {
+            if (!messages || !messages?.length) {
               dispatch(
                 readMessage({
                   roomID: roomID,
@@ -318,13 +358,13 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
 
   const getNext = useCallback(
     roomID => {
-      if (!loading && messages.length > 0 && !topEnd) {
+      if (!loading && messages?.length && !topEnd) {
         // 실제로 불러와야 할 메시지가 달라진 경우에만 처리
         setLoading(true);
         getMessage(roomID, messages[0].messageID, 'NEXT').then(({ data }) => {
-          if (data.status == 'SUCCESS') {
-            const result = data.result;
-            if (result.length > 0) {
+          const { status, result } = data;
+          if (status === 'SUCCESS') {
+            if (result?.length) {
               setNextPage(result);
             } else {
               setNextPage([]);
@@ -343,7 +383,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   );
 
   const handleScrollTop = useCallback(() => {
-    if (!topEnd && !loading && nextPage.length > 0) {
+    if (!topEnd && !loading && nextPage?.length) {
       dispatch(setMessages({ messages: nextPage, dist: 'NEXT' }));
     }
   }, [dispatch, loading, nextPage, topEnd]);
@@ -358,7 +398,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const getMenuData = useCallback(
     message => {
       const menus = [];
-      if (message.messageType != 'S' && message.messageType != 'I') {
+      if (message.messageType !== 'S' && message.messageType !== 'I') {
         let messageType = 'message';
         if (eumTalkRegularExp.test(message.context)) {
           const processMsg = convertEumTalkProtocol(message.context);
@@ -410,55 +450,56 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
         } else if (messageType === 'files') {
           const useForwardFile = getConfig('UseForwardFile') || false;
           // 파일을 전달할 경우 파일 토큰의 유효성을 먼저 검증
-          useForwardFile && menus.push({
-            code: 'shareMessage',
-            isline: false,
-            onClick: async () => {
-              let files = JSON.parse(message.fileInfos);
-              if (!Array.isArray(files) && files) {
-                files = Array(files);
-              }
-              files = files.map(item => item.token);
-              const result = await checkFileTokenValidation({
-                token: files,
-                serviceType: 'CHAT',
-              });
-              if (result.status === 204) {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_FileExpired'),
-                  },
-                  dispatch,
-                );
-                return;
-              } else if (result.status === 403) {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_FilePermission'),
-                  },
-                  dispatch,
-                );
-                return;
-              } else {
-                openLayer(
-                  {
-                    component: (
-                      <ShareContainer
-                        headerName={covi.getDic('Msg_Note_Forward')}
-                        message={message}
-                        context={message.context}
-                        messageType={messageType}
-                      />
-                    ),
-                  },
-                  dispatch,
-                );
-              }
-            },
-            name: covi.getDic('Forward'),
-          });
+          useForwardFile &&
+            menus.push({
+              code: 'shareMessage',
+              isline: false,
+              onClick: async () => {
+                let files = JSON.parse(message.fileInfos);
+                if (!Array.isArray(files) && files) {
+                  files = Array(files);
+                }
+                files = files.map(item => item.token);
+                const result = await checkFileTokenValidation({
+                  token: files,
+                  serviceType: 'CHAT',
+                });
+                if (result.status === 204) {
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: covi.getDic('Msg_FileExpired'),
+                    },
+                    dispatch,
+                  );
+                  return;
+                } else if (result.status === 403) {
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: covi.getDic('Msg_FilePermission'),
+                    },
+                    dispatch,
+                  );
+                  return;
+                } else {
+                  openLayer(
+                    {
+                      component: (
+                        <ShareContainer
+                          headerName={covi.getDic('Msg_Note_Forward')}
+                          message={message}
+                          context={message.context}
+                          messageType={messageType}
+                        />
+                      ),
+                    },
+                    dispatch,
+                  );
+                }
+              },
+              name: covi.getDic('Forward'),
+            });
         }
         if (useMessageDelete && message?.isMine === 'Y') {
           menus.push({
@@ -522,7 +563,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   );
 
   const drawMessage = useMemo(() => {
-    if (messages.length > 0) {
+    if (messages?.length) {
       let lastDate = '';
       let currentSender = '';
 
@@ -532,15 +573,40 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       let returnJSX = [];
 
       messages.forEach((message, index) => {
+        let isBlock = false;
+
+        if (message?.isMine === 'N' && chineseWallState?.length) {
+          const senderInfo = isJSONStr(message?.senderInfo)
+            ? JSON.parse(message?.senderInfo)
+            : message?.senderInfo;
+
+          const { blockChat, blockFile } = isBlockCheck({
+            targetInfo: {
+              ...senderInfo,
+              id: message.sender,
+            },
+            chineseWall: chineseWallState,
+          });
+          const isFile = !!message.fileInfos;
+          isBlock = isFile ? blockFile : blockChat;
+        }
         let nameBox = !(message.sender == currentSender);
         let sendDate = format(new Date(message.sendDate), 'yyyyMMdd');
         let nextSendTime = '';
         let nextSender = '';
         let dateBox = !(lastDate == sendDate);
 
-        if (message.sender != currentSender) currentSender = message.sender;
-        if (message.messageType == 'S') currentSender = '';
-        if (dateBox) nameBox = true;
+        if (message.sender !== currentSender) {
+          currentSender = message.sender;
+        }
+
+        if (message.messageType === 'S') {
+          currentSender = '';
+        }
+
+        if (dateBox) {
+          nameBox = true;
+        }
 
         if (messages.length > index + 1) {
           nextSendTime = Math.floor(messages[index + 1].sendDate / 60000);
@@ -567,14 +633,16 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
           );
         }
 
-        if (dateBox) returnJSX.push(dateComponent);
+        if (dateBox) {
+          returnJSX.push(dateComponent);
+        }
 
         if (message.botInfo) {
           returnJSX.push(
             <ChatBotMessageBox
               key={message.messageID}
               message={message}
-              isMine={message.isMine == 'Y'}
+              isMine={message.isMine === 'Y'}
               startMessage={startSelectMessage}
               endMessage={endSelectMessage}
               nameBox={nameBox}
@@ -588,12 +656,13 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               <MessageBox
                 key={message.messageID}
                 message={message}
-                isMine={message.isMine == 'Y'}
+                isMine={message.isMine === 'Y'}
                 startMessage={startSelectMessage}
                 endMessage={endSelectMessage}
                 nameBox={nameBox}
                 timeBox={timeBox}
                 getMenuData={getMenuData}
+                isBlock={isBlock}
               ></MessageBox>,
             );
           } else if (
@@ -604,9 +673,10 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               <NoticeMessageBox
                 key={message.messageID}
                 message={message}
-                isMine={message.isMine == 'Y'}
+                isMine={message.isMine === 'Y'}
                 nameBox={nameBox}
                 timeBox={timeBox}
+                isBlock={isBlock}
               ></NoticeMessageBox>,
             );
           } else {
@@ -623,7 +693,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
 
       return returnJSX;
     }
-  }, [messages, startSelectMessage, endSelectMessage]);
+  }, [messages, startSelectMessage, endSelectMessage, chineseWallState]);
 
   const drawTempMessage = useMemo(() => {
     return tempMessage.map(message => {
@@ -644,11 +714,11 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const layerClass = useMemo(() => {
     let layerClass = '';
 
-    if (viewExtension != '' && tempFiles.length > 0) {
+    if (viewExtension !== '' && tempFiles?.length) {
       layerClass = 'layer-all';
-    } else if (viewExtension != '' && tempFiles.length == 0) {
+    } else if (viewExtension !== '' && !tempFiles?.length) {
       layerClass = 'layer';
-    } else if (viewExtension == '' && tempFiles.length > 0) {
+    } else if (viewExtension === '' && tempFiles?.length) {
       layerClass = 'layer-file';
     }
 
