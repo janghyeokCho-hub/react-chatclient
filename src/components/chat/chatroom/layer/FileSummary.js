@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Scrollbars } from 'react-custom-scrollbars';
 import {
   clearLayer,
@@ -20,7 +20,6 @@ import LoadingWrap from '@/components/common/LoadingWrap';
 import { format } from 'date-fns';
 import { getConfig } from '@/lib/util/configUtil';
 import * as viewerApi from '@/lib/viewer';
-import { getDic } from '@/lib/util/configUtil';
 import Progress from '@C/common/buttons/Progress';
 import { isBlockCheck } from '@/lib/orgchart';
 
@@ -47,6 +46,9 @@ const FileList = ({ files, onSelect, selectMode, handleProgress }) => {
 const File = ({ file, onSelect, selectMode, handleProgress }) => {
   const [check, setCheck] = useState(false);
   const dispatch = useDispatch();
+  const currentRoom = useSelector(({ room }) => room.currentRoom);
+  const currentChannel = useSelector(({ channel }) => channel.currentChannel);
+  const roomID = useMemo(() => currentRoom?.roomID || currentChannel?.roomId, [currentRoom, currentChannel]);
 
   useEffect(() => {
     setCheck(false);
@@ -119,53 +121,12 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
             },
             {
               name: covi.getDic('RunViewer', '뷰어로 열기'),
-              callback: () => {
-                let fileType = 'URL';
-                let token = localStorage.getItem('covi_user_access_token');
-                token = token.replace(/\^/gi, '-');
-                //filePath 사이냅 서버가 문서를 변환하기 위해 다운받을 주소
-                let eumTalkfilePath = `${window.covi.baseURL}/restful/na/nf/synabDownload/${item.FileID}/${token}`;
-                let filePath = `${eumTalkfilePath}`;
-
-                //fid 사이냅 변환요청시 관리자 페이지에 표시되는 문서ID (다운로드 링크에 따라오는 파일토큰)
-                let fid = `${item.token}`;
-                // let waterMarkText = 'EumTalk';
-                viewerApi
-                  .sendConversionRequest({
-                    fileType,
-                    filePath,
-                    fid,
-                  })
-                  .then(response => {
-                    let job = 'job';
-                    let key = response.data.key;
-                    let url = '';
-                    let view = 'view/';
-                    url = response.config.url.indexOf(job);
-                    url = response.config.url.substring(0, url);
-                    url = url + view + key;
-
-                    if (DEVICE_TYPE == 'd') {
-                      window.openExternalPopup(url);
-                    } else {
-                      window.open(url);
-                    }
-                    // testFunc(key)
-                  })
-                  .catch(response => {
-                    if (response) {
-                      openPopup(
-                        {
-                          type: 'Alert',
-                          message: getDic(
-                            'Msg_FileExpired',
-                            '만료된 파일입니다.',
-                          ),
-                        },
-                        dispatch,
-                      );
-                    }
-                  });
+              callback: async () => {
+                await viewerApi.requestSynapViewer(dispatch, {
+                  fileId: item.FileID,
+                  ext: item.Extension,
+                  roomID,
+                });
               },
             },
             {
@@ -351,53 +312,12 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
             },
             {
               name: covi.getDic('RunViewer', '뷰어로 열기'),
-              callback: () => {
-                let fileType = 'URL';
-                let token = localStorage.getItem('covi_user_access_token');
-                token = token.replace(/\^/gi, '-');
-                //filePath 사이냅 서버가 문서를 변환하기 위해 다운받을 주소
-                let eumTalkfilePath = `${window.covi.baseURL}/restful/na/nf/synabDownload/${item.FileID}/${token}`;
-                let filePath = `${eumTalkfilePath}`;
-
-                //fid 사이냅 변환요청시 관리자 페이지에 표시되는 문서ID (다운로드 링크에 따라오는 파일토큰)
-                let fid = `${item.token}`;
-                // let waterMarkText = 'EumTalk';
-                viewerApi
-                  .sendConversionRequest({
-                    fileType,
-                    filePath,
-                    fid,
-                  })
-                  .then(response => {
-                    let job = 'job';
-                    let key = response.data.key;
-                    let url = '';
-                    let view = 'view/';
-                    url = response.config.url.indexOf(job);
-                    url = response.config.url.substring(0, url);
-                    url = url + view + key;
-
-                    if (DEVICE_TYPE == 'd') {
-                      window.openExternalPopup(url);
-                    } else {
-                      window.open(url);
-                    }
-                    // testFunc(key)
-                  })
-                  .catch(response => {
-                    if (response) {
-                      openPopup(
-                        {
-                          type: 'Alert',
-                          message: getDic(
-                            'Msg_FileExpired',
-                            '만료된 파일입니다.',
-                          ),
-                        },
-                        dispatch,
-                      );
-                    }
-                  });
+              callback: async () => {
+                await viewerApi.requestSynapViewer(dispatch, {
+                  fileId: item.FileID,
+                  ext: item.Extension,
+                  roomID,
+                });
               },
             },
           ],
