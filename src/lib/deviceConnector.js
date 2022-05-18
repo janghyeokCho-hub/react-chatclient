@@ -1181,11 +1181,11 @@ export function openNote({ type, viewType, noteId }) {
 }
 
 export const logRenderer = msg => {
-  try {
-    getRemote().send('log-info', msg);
-  } catch (e) {
-    console.log(e);
+  if (DEVICE_TYPE !== 'd') {
+    return;
   }
+  const emitter = getEmitter();
+  emitter.send('req-save-error', msg);
 };
 
 /**
