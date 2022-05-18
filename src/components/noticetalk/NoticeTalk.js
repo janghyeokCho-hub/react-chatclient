@@ -132,7 +132,7 @@ export default function NoticeTalk({ match, location, history }) {
 
       const { data } = await chatsvr('post', '/notice/talk', sendData);
 
-      if (data) {
+      if (data.status == "SUCCESS") {
         _popupResult(
           dispatch,
           covi.getDic('Msg_Noti_SendSuccess', '알림톡 전송에 성공했습니다.'),
