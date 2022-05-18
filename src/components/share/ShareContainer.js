@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useLayoutEffect, useMemo } from 'react';
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@C/common/ProfileBox';
 import RoomMemberBox from '@C/chat/RoomMemberBox';
@@ -12,8 +18,10 @@ import ChannelList from './channel/ChannelList';
 import Config from '@/config/config';
 import { isMainWindow } from '@/lib/deviceConnector';
 import { getAllUserWithGroupList } from '@/lib/room';
-import { getJobInfo } from '@/lib/common';
+import { getJobInfo, deleteLayer, openPopup, clearLayer } from '@/lib/common';
 import { makeMessage } from './share';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
 
 const ShareContainer = ({
   headerName = covi.getDic('Msg_Note_Forward', '전달하기'),
@@ -21,15 +29,47 @@ const ShareContainer = ({
   context,
   messageType,
 }) => {
+  const userId = useSelector(({ login }) => login.id);
+  const roomList = useSelector(({ room }) => room.rooms);
+  const channelList = useSelector(({ channel }) => channel.channels);
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+
   const dispatch = useDispatch();
+
   const [messageText, setMessageText] = useState('');
   const [members, setMembers] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [channels, setChannels] = useState([]);
   const [selectTab, setSelectTab] = useState('orgchart');
-  const userId = useSelector(({ login }) => login.id);
-  const roomList = useSelector(({ room }) => room.rooms);
-  const channelList = useSelector(({ channel }) => channel.channels);
+  const [chineseWallState, setChineseWallState] = useState([]);
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     if (DEVICE_TYPE === 'd' && !isMainWindow()) {
@@ -720,7 +760,12 @@ const ShareContainer = ({
           )}
         >
           <div className="AddUserCon">
-            <ChatList roomList={roomList} checkObj={roomCheckObj} />
+            <ChatList
+              roomList={roomList}
+              checkObj={roomCheckObj}
+              chineseWall={chineseWallState}
+              myInfo={userInfo}
+            />
           </div>
         </div>
         <div
@@ -730,7 +775,11 @@ const ShareContainer = ({
           ].join(' ')}
         >
           <div className="AddUserCon">
-            <ChannelList channels={channelList} checkObj={channelCheckObj} />
+            <ChannelList
+              channels={channelList}
+              checkObj={channelCheckObj}
+              chineseWall={chineseWallState}
+            />
           </div>
         </div>
       </div>

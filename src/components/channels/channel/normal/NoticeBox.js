@@ -24,7 +24,7 @@ import { evalConnector } from '@/lib/deviceConnector';
 import useMemberInfo from '@/hooks/useMemberInfo';
 import { getAttribute } from '@/lib/messageUtil';
 
-const NoticeBox = () => {
+const NoticeBox = ({ isBlock }) => {
   const currentChannel = useSelector(({ channel }) => channel.currentChannel);
   const id = useSelector(({ login }) => login.id);
 
@@ -113,7 +113,9 @@ const NoticeBox = () => {
 
     // {senderInfo && ` ${senderInfo.Name} ${senderInfo.JobPosition}`} */
       let messageType = 'message';
-      let drawText = message.context;
+      let drawText = isBlock
+        ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
+        : message.context;
       let mentionInfo = [];
 
       // 시간
@@ -339,12 +341,14 @@ const NoticeBox = () => {
         </>
       );
     },
-    [openNotice, currentChannel, fontSize],
+    [openNotice, currentChannel, fontSize, isBlock],
   );
 
   const processContext = async () => {
     const { context, senderInfo, sendDate } = currentChannel.notice;
-    const _context = common.convertURLMessage(context);
+    const _context = isBlock
+      ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
+      : common.convertURLMessage(context);
     const pattern = new RegExp(/[<](MENTION|LINK)[^>]*[/>]/, 'gi');
     const returnJSX = [];
     let match = null;
@@ -403,42 +407,15 @@ const NoticeBox = () => {
     });
     return `<span>${stringString}</span>`;
   };
+
   useEffect(() => {
     processContext().then(str => {
       _isMounted.current && setNoticeContext(str);
     });
-  }, [currentChannel.notice, _isMounted]);
+  }, [currentChannel.notice, _isMounted, isBlock]);
 
   const getNoticeMenuData = useMemo(() => {
     const noticeMenus = [
-      {
-        code: 'detail',
-        isline: false,
-        onClick: () => {
-          setIsNew(false);
-
-          const { notice } = currentChannel;
-          let senderInfo = notice.senderInfo;
-          if (typeof senderInfo == 'string') {
-            senderInfo = JSON.parse(senderInfo);
-          }
-          console.log(noticeContext);
-          common.openPopup(
-            {
-              type: 'Alert',
-              message: `<p class="normaltxt"><b style="font-size: 16px;">${covi.getDic(
-                'Notice',
-                '공지',
-              )}</b><br><br>${noticeContext}<br/><br><font style="color:#999;float: right;">${format(
-                new Date(notice.sendDate),
-                'yyyy.MM.dd HH:mm:ss',
-              )} ${common.getJobInfo(senderInfo)}</font>`,
-            },
-            dispatch,
-          );
-        },
-        name: covi.getDic('ShowDetail', '자세히보기'),
-      },
       {
         code: 'keep',
         isline: false,
@@ -466,6 +443,41 @@ const NoticeBox = () => {
         name: covi.getDic('CloseNotice', '다시보지 않기'),
       },
     ];
+
+    if (isBlock) {
+      const index = noticeMenus.findIndex(menu => menu.code === 'detail');
+      if (index > -1) {
+        noticeMenus.splice(index, 1);
+      }
+    } else {
+      noticeMenus.unshift({
+        code: 'detail',
+        isline: false,
+        onClick: () => {
+          setIsNew(false);
+
+          const { notice } = currentChannel;
+          let senderInfo = notice.senderInfo;
+          if (typeof senderInfo == 'string') {
+            senderInfo = JSON.parse(senderInfo);
+          }
+          common.openPopup(
+            {
+              type: 'Alert',
+              message: `<p class="normaltxt"><b style="font-size: 16px;">${covi.getDic(
+                'Notice',
+                '공지',
+              )}</b><br><br>${noticeContext}<br/><br><font style="color:#999;float: right;">${format(
+                new Date(notice.sendDate),
+                'yyyy.MM.dd HH:mm:ss',
+              )} ${common.getJobInfo(senderInfo)}</font>`,
+            },
+            dispatch,
+          );
+        },
+        name: covi.getDic('ShowDetail', '자세히보기'),
+      });
+    }
 
     let channelAuth = false;
     if (currentChannel) {
@@ -511,7 +523,7 @@ const NoticeBox = () => {
     }
 
     return noticeMenus;
-  }, [currentChannel, noticeContext, dispatch]);
+  }, [currentChannel, noticeContext, dispatch, isBlock]);
 
   return (
     <>

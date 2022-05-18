@@ -40,6 +40,9 @@ import {
   startRefreshInterval,
 } from '@/lib/zoomService';
 
+// ChineseWall
+import { getChineseWall } from '@/lib/orgchart';
+
 const [LOGIN_REQUEST, LOGIN_REQUEST_SUCCESS, LOGIN_REQUEST_FAILURE] =
   createRequestActionTypes('login/REQUEST');
 
@@ -74,6 +77,8 @@ const CHANGE_SOCKETCONNECT = 'login/CHANGE_SOCKETCONNECT';
 
 const RESYNC = 'login/RESYNC';
 
+const SET_CHINESEWALL = 'login/SET_CHINESEWALL';
+
 export const loginRequest = createAction(LOGIN_REQUEST);
 export const extLoginRequest = createAction(EXT_LOGIN_REQUEST);
 export const loginInit = createAction(LOGIN_INIT);
@@ -91,8 +96,7 @@ export const changeMyPhotoPath = createAction(CHANGE_MYPHOTOPATH);
 export const changeMyInfo = createAction(CHANGE_MYINFO);
 
 export const reSync = createAction(RESYNC);
-
-//loginApi.loginRequest
+export const setChineseWall = createAction(SET_CHINESEWALL);
 
 function createLoginRequestSaga(loginType, syncType) {
   const SUCCESS = `${loginType}_SUCCESS`;
@@ -150,8 +154,24 @@ function createLoginRequestSaga(loginType, syncType) {
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
             if (DEVICE_TYPE == 'd') {
+              // 차이니즈 월
+              const chineseWall = yield call(getChineseWall, {
+                userId: response.data.result.id,
+                myInfo: response.data.result,
+              });
+
+              let chineseWallResult = [];
+
+              if (chineseWall.status === 'SUCCESS') {
+                chineseWallResult = chineseWall.result;
+                yield put(setChineseWall(chineseWall.result));
+              }
+
               // 동기화
-              yield call(syncAppData, response.data);
+              yield call(syncAppData, {
+                data: response.data,
+                chineseWall: chineseWallResult,
+              });
 
               // AppData 에서 조회하여 store에 세팅
               const rooms = yield call(evalConnector, {
@@ -314,8 +334,23 @@ function createExtLoginRequestSaga(loginType, syncType) {
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
             if (DEVICE_TYPE == 'd') {
+              // 차이니즈 월
+              const chineseWall = yield call(getChineseWall, {
+                userId: response.data.result.id,
+                myInfo: response.data.result,
+              });
+
+              let chineseWallResult = [];
+              if (chineseWall.status === 'SUCCESS') {
+                chineseWallResult = chineseWall.result;
+                yield put(setChineseWall(chineseWall.result));
+              }
+
               // 동기화
-              yield call(syncAppData, response.data);
+              yield call(syncAppData, {
+                data: response.data,
+                chineseWall: chineseWallResult,
+              });
 
               // AppData 에서 조회하여 store에 세팅
               const rooms = yield call(evalConnector, {
@@ -514,6 +549,16 @@ function createSyncTokenRequestSaga(type) {
               yield put(setChannels(channels.data));
             }
 
+            // 차이니즈 월
+            const chineseWall = yield call(getChineseWall, {
+              userId: authData.id,
+              myInfo: authData,
+            });
+
+            if (chineseWall.status === 'SUCCESS') {
+              yield put(setChineseWall(chineseWall.result));
+            }
+
             // Store 세팅 끝
             yield put(finishLoading(type));
           }
@@ -583,6 +628,7 @@ const initialState = {
   errMessage: null,
   errStatus: null,
   socketConnect: 'NC',
+  chineseWall: null,
 };
 
 const login = handleActions(
@@ -596,6 +642,7 @@ const login = handleActions(
           // SaaS버전 대응을 위해 token에서 id값 추출->result.id로 대체
           draft.id = action.payload.result.id; //draft.id = action.payload.token.split('^')[0];
           draft.registDate = action.payload.createDate;
+          draft.chineseWall = action.payload.chineseWall;
 
           const appConfig = evalConnector({
             method: 'getGlobal',
@@ -629,6 +676,7 @@ const login = handleActions(
           // SaaS버전 대응을 위해 token에서 id값 추출->result.id로 대체
           draft.id = action.payload.result.id; //draft.id = action.payload.token.split('^')[0];
           draft.registDate = action.payload.createDate;
+          draft.chineseWall = action.payload.chineseWall;
         } else {
           draft.authFail = true;
           draft.token = initialState.token;
@@ -665,6 +713,7 @@ const login = handleActions(
           // SaaS버전 대응을 위해 token에서 id값 추출->userInfo.id로 대체
           draft.id = action.payload.userInfo.id; //draft.id = action.payload.token.split('^')[0];
           draft.registDate = action.payload.createDate;
+          draft.chineseWall = action.payload.chineseWall;
         } else {
           draft.authFail = true;
           draft.token = '';
@@ -731,6 +780,11 @@ const login = handleActions(
         draft.userInfo.mailAddress = action.payload.mailAddress;
         draft.userInfo.phoneNumber = action.payload.phoneNumber;
         draft.userInfo.work = action.payload.chargeBusiness;
+      });
+    },
+    [SET_CHINESEWALL]: (state, action) => {
+      return produce(state, draft => {
+        draft.chineseWall = action.payload;
       });
     },
   },

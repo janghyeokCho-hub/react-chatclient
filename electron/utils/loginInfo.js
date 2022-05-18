@@ -1,11 +1,12 @@
 let loginInfo;
 
 class LoginInfo {
-  constructor(id, token, userInfo) {
+  constructor(id, token, userInfo, chineseWall) {
     if (!loginInfo) {
       this.id = id;
       this.token = token;
       this.userInfo = userInfo;
+      this.chineseWall = chineseWall;
 
       loginInfo = this;
     }
@@ -18,9 +19,9 @@ export const getData = () => {
   return loginInfo;
 };
 
-export const setData = (id, token, userInfo) => {
+export const setData = (id, token, userInfo, chineseWall = []) => {
   clearData();
-  loginInfo = new LoginInfo(id, token, userInfo);
+  loginInfo = new LoginInfo(id, token, userInfo, chineseWall);
 };
 
 export const isNull = () => {

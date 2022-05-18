@@ -43,8 +43,11 @@ export const handleNewMessage = (dispatch, userInfo) => {
   return data => {
     const json_data = JSON.parse(data);
     json_data.senderInfo = JSON.parse(json_data.senderInfo);
-
-    if (json_data.sender == userInfo.id) json_data.isMine = 'Y';
+    if (json_data.sender == userInfo.id) {
+      json_data.isMine = 'Y';
+    } else {
+      json_data.isMine = 'N';
+    }
     json_data.isNotice = false;
 
     // browser mode만 직접 알림 발송
@@ -321,7 +324,11 @@ export const handleNewChannelMessage = (dispatch, userInfo) => {
 
     json_data.senderInfo = JSON.parse(json_data.senderInfo);
 
-    if (json_data.sender == userInfo.id) json_data.isMine = 'Y';
+    if (json_data.sender == userInfo.id) {
+      json_data.isMine = 'Y';
+    } else {
+      json_data.isMine = 'N';
+    }
 
     // browser mode만 직접 알림 발송
     if (json_data.isMine != 'Y' && DEVICE_TYPE == 'b') {
@@ -497,7 +504,11 @@ export const handleNewChannelNotice = (dispatch, userInfo) => {
 
     json_data.senderInfo = JSON.parse(json_data.senderInfo);
 
-    if (json_data.sender == userInfo.id) json_data.isMine = 'Y';
+    if (json_data.sender == userInfo.id) {
+      json_data.isMine = 'Y';
+    } else {
+      json_data.isMine = 'N';
+    }
 
     // browser mode만 직접 알림 발송
     if (json_data.isMine != 'Y' && DEVICE_TYPE == 'b') {

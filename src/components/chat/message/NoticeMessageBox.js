@@ -6,11 +6,13 @@ import { format } from 'date-fns';
 import * as common from '@/lib/common';
 import { useChatFontSize } from '@/hooks/useChat';
 
-const NoticeMessageBox = ({ message, isMine, nameBox, timeBox }) => {
+const NoticeMessageBox = ({ message, isMine, nameBox, timeBox, isBlock }) => {
   const [fontSize] = useChatFontSize();
 
   const drawMessage = useMemo(() => {
-    let drawData = message.context;
+    let drawData = isBlock
+      ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
+      : message.context;
     let isJSONData = common.isJSONStr(drawData);
     let drawText = '';
 
@@ -58,7 +60,9 @@ const NoticeMessageBox = ({ message, isMine, nameBox, timeBox }) => {
                       img={senderInfo.photoPath}
                       handleClick={false}
                     ></ProfileBox>
-                    <p className="msgname" style={{ fontSize }}>{common.getJobInfo(senderInfo)}</p>
+                    <p className="msgname" style={{ fontSize }}>
+                      {common.getJobInfo(senderInfo)}
+                    </p>
                   </>
                 )}
                 {(isJSONData && (
@@ -72,7 +76,10 @@ const NoticeMessageBox = ({ message, isMine, nameBox, timeBox }) => {
                   <Notice type={message.messageType} value={drawText}></Notice>
                 )}
 
-                <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
+                <div
+                  className="chatinfo"
+                  style={{ fontSize: smallFontSize, lineHeight: 'normal' }}
+                >
                   {message.unreadCnt > 0 && message.messageType != 'I' && (
                     <span className="Unreadcount">{message.unreadCnt}</span>
                   )}
@@ -93,7 +100,10 @@ const NoticeMessageBox = ({ message, isMine, nameBox, timeBox }) => {
           {drawText && (
             <>
               <li className="replies system-talk">
-                <div className="chatinfo" style={{ fontSize: smallFontSize, lineHeight: 'normal' }}>
+                <div
+                  className="chatinfo"
+                  style={{ fontSize: smallFontSize, lineHeight: 'normal' }}
+                >
                   {message.unreadCnt > 0 && message.messageType != 'I' && (
                     <span className="Unreadcount">{message.unreadCnt}</span>
                   )}
@@ -119,7 +129,7 @@ const NoticeMessageBox = ({ message, isMine, nameBox, timeBox }) => {
         </>
       );
     }
-  }, [message, fontSize]);
+  }, [message, fontSize, isBlock]);
 
   return <>{drawMessage}</>;
 };

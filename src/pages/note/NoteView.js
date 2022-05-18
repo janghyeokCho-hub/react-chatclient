@@ -35,7 +35,7 @@ import {
 } from '@/lib/deviceConnector';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import NoteHeader from '@/pages/note/NoteHeader';
-import { openPopup } from '@/lib/common';
+import { isJSONStr, openPopup } from '@/lib/common';
 import ProfileBox from '@/components/common/ProfileBox';
 import { openProfilePopup } from '@/lib/profileUtil';
 import { convertFileSize } from '@/lib/fileUpload/coviFile';
@@ -45,6 +45,10 @@ import Progress from '@C/common/buttons/Progress';
 // WYSIWYG Editor
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Viewer } from '@toast-ui/react-editor';
+
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
 
 function _popupResult(dispatch, message, cb) {
   openPopup(
@@ -84,6 +88,7 @@ function _DrawFile({
   progressData,
   setProgressData,
   handleProgress,
+  isBlockFile,
 }) {
   const dispatch = useDispatch();
   const [isSaving, setIsSaving] = useState(false);
@@ -217,8 +222,8 @@ function _DrawFile({
 
   // < div style={{}}/>
   return (
-    files &&
-    files.length > 0 && (
+    !isBlockFile &&
+    files?.length && (
       <div className="input full">
         <label
           className="string optional ml20"
@@ -281,6 +286,8 @@ function _DrawNote({
   progressData,
   setProgressData,
   handleProgress,
+  isBlockChat,
+  isBlockFile,
 }) {
   if (!noteInfo) {
     return null;
@@ -305,7 +312,7 @@ function _DrawNote({
 
   useEffect(() => {
     // 쪽지 전환시 뷰어 업데이트
-    viewerRef.current.getInstance().setMarkdown(noteInfo.context);
+    viewerRef.current?.getInstance().setMarkdown(noteInfo.context);
   }, [viewerRef, noteInfo.context]);
 
   return (
@@ -390,26 +397,31 @@ function _DrawNote({
           >
             <span style={{ lineHeight: '1.5' }}>
               {noteInfo?.emergency === 'Y' && emergencyMark}
-              {noteInfo.subject}
+              {isBlockChat
+                ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
+                : noteInfo.subject}
             </span>
           </div>
-          <div
-            className="note-txt-cont"
-            style={{
-              userSelect: 'text',
-              minHeight: '50px',
-            }}
-          >
-            {/* {noteInfo.context} */}
-            {/* <Viewer ref={viewerRef}/> */}
-            <Viewer ref={viewerRef} />
-          </div>
+          {!isBlockChat && (
+            <div
+              className="note-txt-cont"
+              style={{
+                userSelect: 'text',
+                minHeight: '50px',
+              }}
+            >
+              {/* {noteInfo.context} */}
+              {/* <Viewer ref={viewerRef}/> */}
+              <Viewer ref={viewerRef} />
+            </div>
+          )}
           <_DrawFile
             files={noteInfo.files}
             loginId={loginId}
             progressData={progressData}
             setProgressData={setProgressData}
             handleProgress={handleProgress}
+            isBlockFile={isBlockFile}
           />
         </div>
       </div>
@@ -437,6 +449,12 @@ export default function NoteView({ match }) {
   const loginId = useSelector(({ login }) => login.id);
 
   const [progressData, setProgressData] = useState(null);
+
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+  const [chineseWallState, setChineseWallState] = useState([]);
+  const [isBlockChat, setIsBlockChat] = useState(false);
+  const [isBlockFile, setIsBlockFile] = useState(false);
 
   /**
    * @param {*} load
@@ -569,6 +587,52 @@ export default function NoteView({ match }) {
     }
   }, [noteInfo, error, isValidating]);
 
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (noteInfo && chineseWallState?.length) {
+      const senderInfo = isJSONStr(noteInfo.senderInfo)
+        ? JSON.parse(noteInfo.senderInfo)
+        : noteInfo.senderInfo;
+      const targetInfo = {
+        ...senderInfo,
+        id: senderInfo.sender,
+      };
+
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo,
+        chineseWall: chineseWallState,
+      });
+      setIsBlockChat(blockChat);
+      setIsBlockFile(blockFile);
+    }
+  }, [noteInfo, chineseWallState]);
+
   // 로딩중
   if (!noteInfo && !error) {
     return <LoadingWrap />;
@@ -593,6 +657,8 @@ export default function NoteView({ match }) {
             progressData={progressData}
             setProgressData={setProgressData}
             handleProgress={handleProgress}
+            isBlockChat={isBlockChat}
+            isBlockFile={isBlockFile}
           />
         </Scrollbars>
         {progressData && (
@@ -634,12 +700,14 @@ export default function NoteView({ match }) {
           >
             {covi.getDic('ReplyAll', '전체답장')}
           </a>
-          <a
-            className="Btn-pointcolor-mini"
-            onClick={() => _openNewNote(dispatch, 'forward', noteInfo)}
-          >
-            {covi.getDic('Forward', '전달')}
-          </a>
+          {!isBlockChat && (
+            <a
+              className="Btn-pointcolor-mini"
+              onClick={() => _openNewNote(dispatch, 'forward', noteInfo)}
+            >
+              {covi.getDic('Forward', '전달')}
+            </a>
+          )}
         </div>
       </ConditionalWrapper>
       {isNewWin && <LayerTemplate />}

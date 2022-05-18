@@ -6,6 +6,7 @@ import {
   deleteLayer,
   openPopup,
   getSysMsgFormatStr,
+  isJSONStr,
 } from '@/lib/common';
 import { getRoomFiles } from '@/lib/message';
 import {
@@ -21,6 +22,7 @@ import { getConfig } from '@/lib/util/configUtil';
 import * as viewerApi from '@/lib/viewer';
 import { getDic } from '@/lib/util/configUtil';
 import Progress from '@C/common/buttons/Progress';
+import { isBlockCheck } from '@/lib/orgchart';
 
 const synapDocViewServer = getConfig('SynapDocViewServer');
 const fileAttachViewMode = getConfig('FileAttachViewMode');
@@ -586,7 +588,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
   );
 };
 
-const FileSummary = ({ roomId }) => {
+const FileSummary = ({ roomId, chineseWall }) => {
   const dispatch = useDispatch();
   const loadCnt = 30;
   const [select, setSelect] = useState(false);
@@ -697,31 +699,6 @@ const FileSummary = ({ roomId }) => {
     setProgressData(null);
   }, []);
 
-  const handleAllDownLoad = async () => {
-    const resp = await downloadByTokenAll(selectItems, true, handleProgress);
-    if (resp !== null) {
-      if (!resp.result) {
-        openPopup(
-          {
-            type: 'Alert',
-            message: resp.data.message,
-          },
-          dispatch,
-        );
-      } else {
-        openPopup(
-          {
-            type: 'Alert',
-            message: covi.getDic('Msg_Save', '저장되었습니다.'),
-          },
-          dispatch,
-        );
-      }
-    }
-    // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
-    setProgressData(null);
-  };
-
   useEffect(() => {
     // fileData 호출
     // initialData
@@ -733,7 +710,24 @@ const FileSummary = ({ roomId }) => {
       isImage: 'N',
     }).then(({ data }) => {
       if (data.status == 'SUCCESS') {
-        setFiles(data.result);
+        const result = data.result.filter(item => {
+          let isBlock = false;
+          if (item?.FileID && chineseWall?.length) {
+            const senderInfo = isJSONStr(item.SenderInfo)
+              ? JSON.parse(item.SenderInfo)
+              : item.SenderInfo;
+            const { blockFile } = isBlockCheck({
+              targetInfo: {
+                ...senderInfo,
+                id: item.sender || senderInfo.sender,
+              },
+              chineseWall,
+            });
+            isBlock = blockFile;
+          }
+          return !isBlock && item;
+        });
+        setFiles(result);
       } else {
         setFiles([]);
       }
@@ -755,7 +749,24 @@ const FileSummary = ({ roomId }) => {
       }).then(({ data }) => {
         if (data.status == 'SUCCESS') {
           if (data.result.length > 0) {
-            setFiles([...files, ...data.result]);
+            const result = data.result.filter(item => {
+              let isBlock = false;
+              if (item?.FileID && chineseWall?.length) {
+                const senderInfo = isJSONStr(item.SenderInfo)
+                  ? JSON.parse(item.SenderInfo)
+                  : item.SenderInfo;
+                const { blockFile } = isBlockCheck({
+                  targetInfo: {
+                    ...senderInfo,
+                    id: item.sender || senderInfo.sender,
+                  },
+                  chineseWall,
+                });
+                isBlock = blockFile;
+              }
+              return !isBlock && item;
+            });
+            setFiles([...files, result]);
             if (data.result.length < loadCnt) {
               setPageEnd(true);
             }
@@ -779,8 +790,8 @@ const FileSummary = ({ roomId }) => {
       data.forEach((item, index) => {
         // 86400000 = 1000 * 60 * 60 * 24 (1day)
         const compareDate = Math.floor(item.SendDate / 86400000);
-        if (firstDate != compareDate) {
-          if (firstDate != 0 && sameDateArr.length > 0)
+        if (firstDate !== compareDate) {
+          if (firstDate !== 0 && sameDateArr?.length) {
             returnJSX.push(
               <FileList
                 key={`flist_${firstDate}`}
@@ -790,6 +801,7 @@ const FileSummary = ({ roomId }) => {
                 handleProgress={handleProgress}
               ></FileList>,
             );
+          }
 
           returnJSX.push(
             <div className="datetxt" key={`flist_${firstDate}_txt`}>
@@ -803,7 +815,7 @@ const FileSummary = ({ roomId }) => {
 
         sameDateArr.push(item);
 
-        if (index == data.length - 1 && sameDateArr.length > 0) {
+        if (index === data.length - 1 && sameDateArr?.length) {
           returnJSX.push(
             <FileList
               key={`flist_${firstDate}`}
@@ -816,7 +828,6 @@ const FileSummary = ({ roomId }) => {
         }
       });
     }
-
     return returnJSX;
   };
 
