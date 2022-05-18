@@ -177,12 +177,12 @@ const appReady = async () => {
       description: '메신저에서 그룹웨어를 사용해보세요',
       type: 'I',
       downloadURL: 'http://192.168.11.126:8080',
-      photoPath: 'http://192.168.11.232/storage/no_image.jpg',
+      photoPath: 'http://192.168.11.80/storage/no_image.jpg',
       createDate: new Date(),
       updateDate: new Date(),
       owner: 'ldh',
       version: '1.0.0',
-      iconPath: 'http://192.168.11.232/storage/extension/3.svg',
+      iconPath: 'http://192.168.11.80/storage/extension/3.svg',
     },
   ]);
 
