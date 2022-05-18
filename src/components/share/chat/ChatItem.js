@@ -9,9 +9,15 @@ import { useSelector } from 'react-redux';
 import RoomMemberBox from '@C/chat/RoomMemberBox';
 import ProfileBox from '@COMMON/ProfileBox';
 import { getConfig } from '@/lib/util/configUtil';
-import { getJobInfo, makeMessageText, getFilterMember } from '@/lib/common';
+import {
+  getJobInfo,
+  makeMessageText,
+  getFilterMember,
+  isJSONStr,
+} from '@/lib/common';
+import { isBlockCheck } from '@/lib/orgchart';
 
-const ChatItem = ({ room, checkObj, pinnedTop }) => {
+const ChatItem = ({ room, checkObj, pinnedTop, chineseWall }) => {
   const id = useSelector(({ login }) => login.id);
   const checkRef = useRef(null);
 
@@ -19,8 +25,32 @@ const ChatItem = ({ room, checkObj, pinnedTop }) => {
   const [lastMessageText, setLastMessageText] = useState('');
 
   useLayoutEffect(() => {
-    makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
-  }, [room]);
+    if (room?.lastMessage && chineseWall.length) {
+      const lastMessageInfo = isJSONStr(room.lastMessage)
+        ? JSON.parse(room.lastMessage)
+        : room.lastMessage;
+      const targetInfo = {
+        id: lastMessageInfo.sender,
+        companyCode: lastMessageInfo.companyCode,
+        deptCode: lastMessageInfo.deptCode,
+      };
+
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo,
+        chineseWall,
+      });
+      const isFile = !!lastMessageInfo?.File;
+      const result = isFile ? blockFile : blockChat;
+
+      if (result) {
+        setLastMessageText(covi.getDic('BlockChat', '차단된 메시지 입니다.'));
+      } else {
+        makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
+      }
+    } else {
+      makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
+    }
+  }, [room, chineseWall]);
 
   const filterMember = useMemo(
     () => getFilterMember(room.members, id, room.roomType),

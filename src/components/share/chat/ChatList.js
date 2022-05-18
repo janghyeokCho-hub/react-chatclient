@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import { Scrollbars } from 'react-custom-scrollbars';
 import useOffset from '@/hooks/useOffset';
 import SearchBar from '@COMMON/SearchBar';
@@ -7,10 +6,8 @@ import ChatItem from './ChatItem';
 import { getConfig } from '@/lib/util/configUtil';
 import { isEmptyObj, getSettings } from '../share';
 
-const ChatList = ({ roomList, checkObj }) => {
+const ChatList = ({ roomList, checkObj, chineseWall, myInfo }) => {
   const RENDER_UNIT = 5;
-
-  const myInfo = useSelector(({ login }) => login.userInfo);
 
   const [listMode, setListMode] = useState('N');
   const [searchText, setSearchText] = useState('');
@@ -58,7 +55,7 @@ const ChatList = ({ roomList, checkObj }) => {
   );
 
   useEffect(() => {
-    if (listMode == 'S') {
+    if (listMode === 'S') {
       handleSearch(searchText);
     }
   }, [roomList]);
@@ -133,6 +130,7 @@ const ChatList = ({ roomList, checkObj }) => {
                     checkObj={checkObj}
                     isClick={false}
                     pinnedTop={isPinTop}
+                    chineseWall={chineseWall}
                   />
                 );
               }

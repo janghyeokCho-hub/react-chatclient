@@ -1,34 +1,34 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import loadable from '@loadable/component';
-
 import MessageBox from '@C/channels/message/MessageBox';
 import TempMessageBox from '@C/chat/message/TempMessageBox';
 import SystemMessageBox from '@C/chat/message/SystemMessageBox';
 import NoticeMessageBox from '@C/chat/message/NoticeMessageBox'; // 그대로 사용
-const ListScrollBox = loadable(() =>
-  import('@/components/chat/chatroom/normal/ListScrollBox'),
-);
-
 import NoticeBox from '@C/channels/channel/normal/NoticeBox';
-
 import { format } from 'date-fns';
-
 import { setMessages, initMessages } from '@/modules/channel';
 import { setChannelNotice } from '@/lib/channel';
 import { getChannelMessages, deleteChannelMessage } from '@/lib/message';
 import {
+  isJSONStr,
   openPopup,
   eumTalkRegularExp,
   convertEumTalkProtocol,
   convertEumTalkProtocolPreviewForChannelItem,
 } from '@/lib/common';
 import { scrollIntoView } from '@/lib/util/domUtil';
-import { updateChannelLastMessage } from '@/modules/channel';
 import { openLayer } from '@/lib/common';
 import ShareContainer from '@C/share/ShareContainer';
 import { checkFileTokenValidation } from '@/lib/fileUpload/coviFile';
 import { getConfig } from '@/lib/util/configUtil';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
+
+const ListScrollBox = loadable(() =>
+  import('@/components/chat/chatroom/normal/ListScrollBox'),
+);
 
 const makeMessage = async msg => {
   const flag = eumTalkRegularExp.test(msg);
@@ -46,6 +46,8 @@ const makeMessage = async msg => {
 };
 
 const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
   const tempMessage = useSelector(({ message }) => message.tempChannelMessage);
   const tempFiles = useSelector(({ message }) => message.tempFiles);
   const messages = useSelector(({ channel }) => channel.messages);
@@ -62,6 +64,8 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const [showNewMessageSeperator, setShowNewMessageSeperator] = useState(false);
   const [clickNewMessageSeperator, setClickNewMessageSeperator] =
     useState(false);
+  const [chineseWallState, setChineseWallState] = useState([]);
+  const [noticeIsBlock, setNoticeIsBlock] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -117,6 +121,33 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       }, 500);
     }
   }, [clickNewMessageSeperator]);
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   const getNext = useCallback(
     roomID => {
@@ -251,55 +282,56 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
         } else if (messageType === 'files') {
           const useForwardFile = getConfig('UseForwardFile') || false;
           // 파일을 전달할 경우 파일 토큰의 유효성을 먼저 검증
-          useForwardFile && menus.push({
-            code: 'shareMessage',
-            isline: false,
-            onClick: async () => {
-              let files = JSON.parse(message.fileInfos);
-              if (!Array.isArray(files) && files) {
-                files = Array(files);
-              }
-              files = files.map(item => item.token);
-              const result = await checkFileTokenValidation({
-                token: files,
-                serviceType: 'CHAT',
-              });
-              if (result.status === 204) {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_FileExpired'),
-                  },
-                  dispatch,
-                );
-                return;
-              } else if (result.status === 403) {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: covi.getDic('Msg_FilePermission'),
-                  },
-                  dispatch,
-                );
-                return;
-              } else {
-                openLayer(
-                  {
-                    component: (
-                      <ShareContainer
-                        headerName={covi.getDic('Msg_Note_Forward')}
-                        message={message}
-                        context={message.context}
-                        messageType={messageType}
-                      />
-                    ),
-                  },
-                  dispatch,
-                );
-              }
-            },
-            name: covi.getDic('Forward'),
-          });
+          useForwardFile &&
+            menus.push({
+              code: 'shareMessage',
+              isline: false,
+              onClick: async () => {
+                let files = JSON.parse(message.fileInfos);
+                if (!Array.isArray(files) && files) {
+                  files = Array(files);
+                }
+                files = files.map(item => item.token);
+                const result = await checkFileTokenValidation({
+                  token: files,
+                  serviceType: 'CHAT',
+                });
+                if (result.status === 204) {
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: covi.getDic('Msg_FileExpired'),
+                    },
+                    dispatch,
+                  );
+                  return;
+                } else if (result.status === 403) {
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: covi.getDic('Msg_FilePermission'),
+                    },
+                    dispatch,
+                  );
+                  return;
+                } else {
+                  openLayer(
+                    {
+                      component: (
+                        <ShareContainer
+                          headerName={covi.getDic('Msg_Note_Forward')}
+                          message={message}
+                          context={message.context}
+                          messageType={messageType}
+                        />
+                      ),
+                    },
+                    dispatch,
+                  );
+                }
+              },
+              name: covi.getDic('Forward'),
+            });
         }
 
         if (useMessageDelete && message.isMine == 'Y') {
@@ -367,32 +399,41 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   );
 
   const drawMessage = useMemo(() => {
-    if (messages.length > 0) {
+    if (messages?.length) {
       let lastDate = '';
-      /*
-      if (messages[messages.length - 1].sendDate != null) {
-        lastDate = format(
-          new Date(messages[messages.length - 1].sendDate),
-          'yyyyMMdd',
-        );
-      }
-      */
-
       // new message seperator
       let hasNewMessageSeperator = newMessageSeperator;
       if (hasNewMessageSeperator === null) {
         hasNewMessageSeperator =
           messages[messages.length - 1].sendDate > currentChannel.lastViewedAt;
       }
-      //
 
       let currentSender = '';
-
       let currentTime = Math.floor(
         messages[messages.length - 1].sendDate / 60000,
       );
       let returnJSX = [];
       messages.forEach((message, index) => {
+        let isBlock = false;
+        if (message?.isMine === 'N' && chineseWallState?.length) {
+          const senderInfo = isJSONStr(message?.senderInfo)
+            ? JSON.parse(message?.senderInfo)
+            : message?.senderInfo;
+          const { blockChat, blockFile } = isBlockCheck({
+            targetInfo: {
+              ...senderInfo,
+              id: message.sender,
+            },
+            chineseWall: chineseWallState,
+          });
+          const isFile = !!message?.fileInfos;
+          isBlock = isFile ? blockFile : blockChat;
+
+          if (message.messageType === 'I') {
+            setNoticeIsBlock(isBlock);
+          }
+        }
+
         let nameBox = !(message.sender == currentSender);
         let sendDate = format(new Date(message.sendDate), 'yyyyMMdd');
         let nextSendTime = '';
@@ -468,6 +509,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               isMine={message.isMine == 'Y'}
               nameBox={nameBox}
               timeBox={timeBox}
+              isBlock={isBlock}
             ></NoticeMessageBox>,
           );
         } else {
@@ -480,6 +522,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               nameBox={nameBox}
               timeBox={timeBox}
               getMenuData={getMenuData}
+              isBlock={isBlock}
             ></MessageBox>,
           );
         }
@@ -487,7 +530,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
 
       return returnJSX;
     }
-  }, [messages]);
+  }, [messages, chineseWallState]);
 
   const drawTempMessage = useMemo(() => {
     return tempMessage.map(message => {
@@ -586,7 +629,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               </span>
             </a>
           )}
-          {currentChannel && currentChannel.notice && <NoticeBox />}
+          {currentChannel?.notice && <NoticeBox isBlock={noticeIsBlock} />}
         </>
       )}
     </>

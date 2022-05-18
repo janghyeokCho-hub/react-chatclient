@@ -790,7 +790,7 @@ const setIdleChecker = () => {
 // ipcMain Event Listener
 // 로그인 요청
 ipcMain.on('req-login', async (event, args) => {
-  loginInfo.setData(args.id, args.token, args.userInfo);
+  loginInfo.setData(args.id, args.token, args.userInfo, args.chineseWall);
   openRoomList.clearData();
   notReadList.clearData();
 

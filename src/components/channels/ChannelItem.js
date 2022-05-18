@@ -17,10 +17,17 @@ import RightConxtMenu from '../common/popup/RightConxtMenu';
 import { newChannel } from '@/lib/deviceConnector';
 import Config from '@/config/config';
 import { getAesUtil } from '@/lib/aesUtil';
-import { clearLayer, openPopup, makeMessageText } from '@/lib/common';
-import * as channelApi from '@/lib/channel';
+import {
+  clearLayer,
+  openPopup,
+  makeMessageText,
+  isJSONStr,
+} from '@/lib/common';
+import { joinChannel as joinChannelAPI } from '@/lib/channel';
 import { evalConnector } from '@/lib/deviceConnector';
 import { modifyChannelSetting } from '@/modules/channel';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
 
 const makeDateTime = timestamp => {
   if (timestamp && isValid(new Date(timestamp))) {
@@ -56,7 +63,8 @@ const ChannelItem = ({
   pinToTopLimit = -1,
 }) => {
   const id = useSelector(({ login }) => login.id);
-  const channels = useSelector(({ channel }) => channel.channels);
+  const myInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
 
   const menuId = useMemo(() => 'channel_' + channel.roomId, [channel]);
   const [pinnedTop, setPinnedTop] = useState(false);
@@ -64,8 +72,36 @@ const ChannelItem = ({
     () => getChannelSettings && getChannelSettings(channel),
     [channel],
   );
+  const [chineseWallState, setChineseWallState] = useState([]);
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: myInfo?.id,
+        myInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, [userChineseWall]);
 
   useEffect(() => {
     if (pinToTopLimit >= 0) {
@@ -217,7 +253,7 @@ const ChannelItem = ({
 
   const joinChannel = useCallback(
     params => {
-      channelApi.joinChannel(params).then(({ data }) => {
+      joinChannelAPI(params).then(({ data }) => {
         if (data.status === 'SUCCESS') {
           const roomId = params.roomId;
           dispatch(openChannel({ roomId }));
@@ -375,15 +411,33 @@ const ChannelItem = ({
   const [lastMessageText, setLastMessageText] = useState('');
 
   useLayoutEffect(() => {
-    const changeTargetChannel = channels.find(c => c.roomId == channel.roomId);
-    if (changeTargetChannel) {
-      makeMessageText(changeTargetChannel.lastMessage, 'CHANNEL').then(
-        setLastMessageText,
-      );
+    if (channel?.lastMessage && chineseWallState.length) {
+      const lastMessageInfo = isJSONStr(channel.lastMessage)
+        ? JSON.parse(channel.lastMessage)
+        : channel.lastMessage;
+      const targetInfo = {
+        id: lastMessageInfo.sender,
+        companyCode: lastMessageInfo.companyCode,
+        deptCode: lastMessageInfo.deptCode,
+      };
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo,
+        chineseWall: chineseWallState,
+      });
+      const isFile = !!lastMessageInfo?.File;
+      const result = isFile ? blockFile : blockChat;
+
+      if (result) {
+        setLastMessageText(covi.getDic('BlockChat', '차단된 메시지 입니다.'));
+      } else {
+        makeMessageText(channel.lastMessage, 'CHANNEL').then(
+          setLastMessageText,
+        );
+      }
     } else {
       makeMessageText(channel.lastMessage, 'CHANNEL').then(setLastMessageText);
     }
-  }, [channel]);
+  }, [channel, chineseWallState]);
 
   return (
     <RightConxtMenu

@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import clsx from 'clsx';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { useSelector, useDispatch } from 'react-redux';
 import produce from 'immer';
 import useOffset from '@/hooks/useOffset';
-import { openPopup } from '@/lib/common';
+import { isJSONStr, openPopup } from '@/lib/common';
 import { closeRooms } from '@/modules/note';
 import { openNote } from '@/lib/deviceConnector';
 import {
@@ -22,6 +22,9 @@ import {
 } from '@/lib/note';
 import RightContextMenu from '@/components/common/popup/RightConxtMenu';
 import ProfileBox from '@/components/common/ProfileBox';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
 
 function popupResult(dispatch, message) {
   openPopup(
@@ -46,7 +49,7 @@ function _popup(dispatch, type = 'Alert', message, cb) {
   });
 }
 
-function _NoteItem({ note, viewType, history }) {
+function _NoteItem({ note, viewType, history, blockChat, blockFile }) {
   const dispatch = useDispatch();
   const deviceViewType = useSelector(({ room }) => room.viewType);
   const { mutate: setNoteList, readNote } = useNoteList({ viewType });
@@ -123,7 +126,7 @@ function _NoteItem({ note, viewType, history }) {
         },
         name: covi.getDic('Msg_Note_Reply', '답장하기'),
       },
-      {
+      !blockChat && {
         code: 'forwardNote',
         isline: false,
         onClick() {
@@ -323,7 +326,9 @@ function _NoteItem({ note, viewType, history }) {
             style={{ maxWidth: 'calc(100% - 200px)' }}
           >
             {note?.emergency === 'Y' && emergencyMark}
-            {note.subject}
+            {blockChat
+              ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
+              : note.subject}
           </span>
           {note.readFlag === 'N' && (
             <span
@@ -345,7 +350,10 @@ function _NoteItem({ note, viewType, history }) {
         </a>
         <div className="fuction_btn">
           <a
-            className={clsx('btn_file', note.fileFlag === 'Y' && 'active')}
+            className={clsx(
+              'btn_file',
+              !blockFile && note.fileFlag === 'Y' && 'active',
+            )}
             style={{ marginRight: '3.5px' }}
           ></a>
           <a
@@ -364,6 +372,37 @@ function _NoteItem({ note, viewType, history }) {
 const NoteItem = withRouter(_NoteItem);
 
 export default function Notes({ viewType, noteList }) {
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+  const [chineseWallState, setChineseWallState] = useState([]);
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
+
   const initialNumToRender = window.innerWidth
     ? Math.ceil(window.innerWidth / 60) + 2
     : 15;
@@ -376,7 +415,27 @@ export default function Notes({ viewType, noteList }) {
 
   const drawList =
     list &&
-    list((note, idx) => <NoteItem key={idx} note={note} viewType={viewType} />);
+    list((note, idx) => {
+      const senderInfo = isJSONStr(note.senderInfo)
+        ? JSON.parse(note.senderInfo)
+        : note.senderInfo;
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo: {
+          ...senderInfo,
+          id: senderInfo.sender,
+        },
+        chineseWall: chineseWallState,
+      });
+      return (
+        <NoteItem
+          key={idx}
+          note={note}
+          viewType={viewType}
+          blockChat={blockChat}
+          blockFile={blockFile}
+        />
+      );
+    });
 
   return (
     <Scrollbars

@@ -1,14 +1,19 @@
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import Message from '@C/chat/message/Message';
 import RightConxtMenu from '@C/common/popup/RightConxtMenu';
 import { format } from 'date-fns';
-import * as common from '@/lib/common';
+import {
+  eumTalkRegularExp,
+  convertEumTalkProtocol,
+  checkURL,
+  convertURLMessage,
+  getJobInfo,
+} from '@/lib/common';
 import LinkMessageBox from '@C/chat/message/LinkMessageBox';
 import FileMessageBox from '@C/chat/message/FileMessageBox';
 import { useChatFontSize } from '@/hooks/useChat';
-
 import { setMessageLinkInfo } from '@/modules/room';
 import { evalConnector } from '@/lib/deviceConnector';
 
@@ -23,16 +28,14 @@ const MessageBox = ({
   id,
   marking,
   getMenuData,
+  isBlock,
 }) => {
   const currMember = useSelector(({ room }) => room.currentRoom.members);
   const [fontSize] = useChatFontSize();
   const dispatch = useDispatch();
 
   const isOldMember = useMemo(() => {
-    return (
-      currMember &&
-      currMember.find(item => item.id == message.sender) == undefined
-    );
+    return currMember?.find(item => item.id == message.sender) === undefined;
   }, [currMember, message]);
 
   const handleMessageLinkInfo = useCallback(
@@ -43,7 +46,8 @@ const MessageBox = ({
   );
 
   const drawMessage = useMemo(() => {
-    let drawText = (message.context && message.context) || '';
+    // 차단된 메시지 다국어 처리
+    let drawText = isBlock ? '차단된 메시지 입니다.' : message?.context || '';
     let nameBoxVisible = nameBox;
 
     let senderInfo = null;
@@ -56,7 +60,7 @@ const MessageBox = ({
 
     let menus = [];
     let menuId = '';
-    if (getMenuData) {
+    if (!isBlock && getMenuData) {
       menus = getMenuData(message);
       menuId = `channelmessage_${message.messageID}`;
     }
@@ -64,8 +68,8 @@ const MessageBox = ({
     const smallFontSize = Math.max(10, fontSize - 2);
 
     // 처리가 필요한 message의 경우 ( protocol 이 포함된 경우 )
-    if (common.eumTalkRegularExp.test(drawText)) {
-      const processMsg = common.convertEumTalkProtocol(drawText);
+    if (!isBlock && eumTalkRegularExp.test(drawText)) {
+      const processMsg = convertEumTalkProtocol(drawText);
       messageType = processMsg.type;
       drawText = processMsg.message;
       mentionInfo = processMsg.mentionInfo;
@@ -79,7 +83,7 @@ const MessageBox = ({
       }
     }
 
-    if (messageType == 'message') {
+    if (!isBlock && messageType === 'message') {
       let index = 0;
 
       if (drawText) {
@@ -89,7 +93,7 @@ const MessageBox = ({
       // 링크 썸네일 처리
       if (message.linkInfo) {
         let linkInfoObj = null;
-        if (typeof message.linkInfo == 'object') {
+        if (typeof message.linkInfo === 'object') {
           linkInfoObj = message.linkInfo;
         } else {
           linkInfoObj = JSON.parse(message.linkInfo);
@@ -134,14 +138,14 @@ const MessageBox = ({
             </li>
           );
         }
-      } else if (message.linkInfo == null && DEVICE_TYPE != 'b') {
-        const checkURLResult = common.checkURL(drawText);
+      } else if (message.linkInfo === null && DEVICE_TYPE !== 'b') {
+        const checkURLResult = checkURL(drawText);
 
         if (checkURLResult.isURL) {
           evalConnector({
             method: 'once',
             channel: `onLinkThumbnailInfo_${message.messageID}`,
-            callback: (event, args) => {
+            callback: (_, args) => {
               handleMessageLinkInfo(args);
             },
           });
@@ -159,7 +163,7 @@ const MessageBox = ({
         }
       }
 
-      drawText = common.convertURLMessage(drawText);
+      drawText = convertURLMessage(drawText);
 
       if (message.fileInfos) {
         const fileInfoJSON = JSON.parse(message.fileInfos);
@@ -181,7 +185,7 @@ const MessageBox = ({
                     img={senderInfo.photoPath}
                   ></ProfileBox>
                   <p className="msgname" style={{ fontSize }}>
-                    {common.getJobInfo(senderInfo)}
+                    {getJobInfo(senderInfo)}
                     {senderInfo.isMobile === 'Y' && (
                       <span style={{ padding: '0px 5px' }}>
                         <svg
@@ -280,7 +284,7 @@ const MessageBox = ({
         );
 
         // Mention 처리
-        if (mentionInfo.length > 0) {
+        if (mentionInfo?.length) {
           drawText = message.context;
         }
       }
@@ -328,7 +332,7 @@ const MessageBox = ({
                       img={senderInfo.photoPath}
                     ></ProfileBox>
                     <p className="msgname" style={{ fontSize }}>
-                      {common.getJobInfo(senderInfo)}
+                      {getJobInfo(senderInfo)}
                       {senderInfo.isMobile === 'Y' && (
                         <span style={{ padding: '0px 5px' }}>
                           <svg
@@ -462,7 +466,16 @@ const MessageBox = ({
         </>
       );
     }
-  }, [message, marking, startMessage, endMessage, fontSize, timeBox, nameBox]);
+  }, [
+    message,
+    marking,
+    startMessage,
+    endMessage,
+    fontSize,
+    timeBox,
+    nameBox,
+    isBlock,
+  ]);
 
   return drawMessage;
 };

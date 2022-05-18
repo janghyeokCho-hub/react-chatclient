@@ -1212,7 +1212,16 @@ export const reqGetRoomInfo = async (event, args) => {
         offset = offset < 0 ? 0 : offset;
 
         const selectSenderInfo = dbCon.raw(
-          `(select '{"name":"' || name || '","PN":"' || PN || '","LN":"' || LN || '","TN":"' || TN || '","photoPath":"' || ifnull(photoPath, '') || '","presence":"' || ifnull(presence, '') || '","isMobile":"' || isMobile || '"}' from users where id = m.sender) as senderInfo`,
+          `(select 
+            '{"name":"' || name || '"
+            ,"PN":"' || PN || '"
+            ,"LN":"' || LN || '"
+            ,"TN":"' || TN || '"
+            ,"photoPath":"' || ifnull(photoPath, '') || '"
+            ,"presence":"' || ifnull(presence, '') || '"
+            ,"isMobile":"' || isMobile || '" }' 
+            from users 
+            where id = m.sender) as senderInfo`,
         );
 
         const selectMessage = dbCon
@@ -1301,7 +1310,11 @@ export const reqSaveMessage = async params => {
                     senderInfo.TN ? senderInfo.TN : ''
                   }', 'photoPath', '${senderInfo.photoPath}', 'presence', '${
                     senderInfo.presence ? senderInfo.presence : 'offline'
-                  }', 'isMobile', '${senderInfo.isMobile}') ` +
+                  }', 'isMobile', '${senderInfo.isMobile}', 'sender', '${
+                    senderInfo.sender
+                  }', 'companyCode', '${
+                    senderInfo.companyCode
+                  }', 'deptCode', '${senderInfo.deptCode}') ` +
                   `WHERE messageId = ${params.messageID}`,
               )
               .then(() => {});
@@ -1769,10 +1782,20 @@ export const reqGetMessages = async (event, args) => {
 };
 
 const selectMessages = async params => {
+  logger.info('selectMessages');
   const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
 
   const selectSenderInfo = dbCon.raw(
-    `(select '{"name":"' || name || '","PN":"' || PN || '","LN":"' || LN || '","TN":"' || TN || '","photoPath":"' || ifnull(photoPath, '') || '","presence":"' || ifnull(presence, '') || '","isMobile":"' || isMobile || '"}' from users where id = m.sender) as senderInfo`,
+    `(select 
+      '{"name":"' || name || '"
+      ,"PN":"' || PN || '"
+      ,"LN":"' || LN || '"
+      ,"TN":"' || TN || '"
+      ,"photoPath":"' || ifnull(photoPath, '') || '"
+      ,"presence":"' || ifnull(presence, '') || '"
+      ,"isMobile":"' || isMobile || '"}' 
+      from users 
+      where id = m.sender) as senderInfo`,
   );
 
   const subQuery = dbCon

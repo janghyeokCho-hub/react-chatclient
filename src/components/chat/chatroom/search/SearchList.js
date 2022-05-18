@@ -1,18 +1,23 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import MessageBox from '@C/chat/message/MessageBox';
 import SystemMessageBox from '@C/chat/message/SystemMessageBox';
 import NoticeMessageBox from '@C/chat/message/NoticeMessageBox';
 import SearchScrollBox from '@/components/chat/chatroom/search/SearchScrollBox';
 import {
+  isJSONStr,
   openPopup,
   eumTalkRegularExp,
   convertEumTalkProtocol,
 } from '@/lib/common';
 import { format } from 'date-fns';
 import { getMessage } from '@/lib/messageUtil';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
 
 const SearchList = ({ moveData, markingText, roomID }) => {
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
   const [messages, setMessages] = useState([]);
   const [moveId, setMoveId] = useState('');
   const [topEnd, setTopEnd] = useState(false);
@@ -24,8 +29,35 @@ const SearchList = ({ moveData, markingText, roomID }) => {
 
   const [beforeId, setBeforeId] = useState(-1);
   const [beforeMessages, setBeforeMessages] = useState([]);
-
+  const [chineseWallState, setChineseWallState] = useState([]);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   useEffect(() => {
     if (moveData != null) {
@@ -80,7 +112,6 @@ const SearchList = ({ moveData, markingText, roomID }) => {
           const response = await getMessage(roomID, beforeId, 'BEFORE');
           if (response.data.status == 'SUCCESS') {
             const data = response.data.result;
-
             if (data.length > 0) {
               setBeforeMessages(data);
             } else {
@@ -164,6 +195,24 @@ const SearchList = ({ moveData, markingText, roomID }) => {
       );
       let returnJSX = [];
       messages.forEach((message, index) => {
+        let isBlock = false;
+
+        if (message?.isMine === 'N' && chineseWallState?.length) {
+          const senderInfo = isJSONStr(message?.senderInfo)
+            ? JSON.parse(message?.senderInfo)
+            : message?.senderInfo;
+
+          const { blockChat, blockFile } = isBlockCheck({
+            targetInfo: {
+              ...senderInfo,
+              id: message.sender,
+            },
+            chineseWall: chineseWallState,
+          });
+          const isFile = !!message.fileInfos;
+          isBlock = isFile ? blockFile : blockChat;
+        }
+
         let nameBox = !(message.sender == currentSender);
         let sendDate = format(new Date(message.sendDate), 'yyyyMMdd');
         let nextSendTime = '';
@@ -212,6 +261,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                 id={`msg_${message.messageID}`}
                 marking={markingText}
                 getMenuData={getMenuData}
+                isBlock={isBlock}
               ></MessageBox>,
             );
           } else {
@@ -224,6 +274,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
                 timeBox={timeBox}
                 marking={markingText}
                 getMenuData={getMenuData}
+                isBlock={isBlock}
               ></MessageBox>,
             );
           }
@@ -235,6 +286,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
               isMine={message.isMine == 'Y'}
               nameBox={nameBox}
               timeBox={timeBox}
+              isBlock={isBlock}
             ></NoticeMessageBox>,
           );
         } else if (message.messageType === 'S') {

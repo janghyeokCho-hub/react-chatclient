@@ -16,13 +16,12 @@ import useTyping from '@/hooks/useTyping';
 import { useSyncFavorite } from '@/hooks/useSyncFavorite';
 
 const ProfilePopup = ({ userInfo }) => {
-  const { viewType, rooms, selectId, myInfo, contact } = useSelector(
-    ({ room, login, contact }) => ({
+  const { viewType, rooms, selectId, myInfo } = useSelector(
+    ({ room, login }) => ({
       viewType: room.viewType,
       rooms: room.rooms,
       selectId: room.selectId,
       myInfo: login.userInfo,
-      contact: contact.contacts,
     }),
   );
 
@@ -299,7 +298,7 @@ const ProfilePopup = ({ userInfo }) => {
             <ul>
               <li className="link-btn-chat">
                 <a
-                  onClick={() => {
+                  onClick={async () => {
                     const openChatRoomArgs = [
                       dispatch,
                       viewType,

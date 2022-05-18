@@ -11,7 +11,6 @@ export const sendChatBotKeyMessage = (key, params) => {
 };
 
 export const readMessage = params => {
-  console.log(params);
   return chatsvr('put', '/message', params);
 };
 
@@ -35,8 +34,6 @@ export const uploadFile = params => {
   let url = '';
   const formData = new FormData();
 
-  console.log(params);
-
   // url 및 formData 생성
   if (params.sendFileInfo.files.length == 1) {
     url = '/upload';
@@ -49,7 +46,6 @@ export const uploadFile = params => {
   }
 
   formData.append('tempId', params.tempId);
-
   formData.append('fileInfos', JSON.stringify(params.sendFileInfo.fileInfos));
 
   if (params.roomID) {

@@ -8,10 +8,15 @@ import * as messageApi from '@/lib/message';
 import { evalConnector } from '@/lib/deviceConnector';
 import * as common from '@/lib/common';
 import { getMessage } from '@/lib/messageUtil';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
 
 const SearchView = ({ onSearchBox }) => {
   // match 가 null이 아닌경우, match가 null인 경우
   const roomID = useSelector(({ room }) => room.currentRoom.roomID);
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+  const [chineseWallState, setChineseWallState] = useState([]);
 
   const dispatch = useDispatch();
 
@@ -19,6 +24,33 @@ const SearchView = ({ onSearchBox }) => {
   const [moveData, setMoveData] = useState(null);
   const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof covi.changeSearchText == 'string') {
@@ -35,21 +67,45 @@ const SearchView = ({ onSearchBox }) => {
     onSearchBox(false);
   }, [onSearchBox]);
 
-  const setMoveMessagesData = useCallback(data => {
-    if (data.status == 'SUCCESS') {
-      if (data.search.length > 0 && data.firstPage.length > 0) {
-        setMoveData({
-          firstPage: data.firstPage,
-          moveId: data.search[0],
+  const setMoveMessagesData = useCallback(
+    data => {
+      if (data.status == 'SUCCESS') {
+        // 차이니즈월 적용
+        let { firstPage, search } = data;
+        const blockList = firstPage?.map(item => {
+          const senderInfo = common.isJSONStr(item.senderInfo)
+            ? JSON.parse(item.senderInfo)
+            : item.senderInfo;
+          const targetInfo = {
+            ...senderInfo,
+            id: item.sender,
+          };
+          console.log('targetInfo : ', targetInfo);
+          console.log('chineseWallState : ', chineseWallState);
+          const { blockChat } = isBlockCheck({
+            targetInfo,
+            chineseWall: chineseWallState,
+          });
+          return blockChat && item.messageID;
         });
-        setSearchResult(data.search);
-      }
-    } else {
-      setSearchText('');
-    }
 
-    setLoading(false);
-  }, []);
+        search = search.filter(item => !blockList.includes(item));
+
+        if (search?.length && firstPage?.length) {
+          setMoveData({
+            firstPage: firstPage,
+            moveId: search[0],
+          });
+          setSearchResult(search);
+        }
+      } else {
+        setSearchText('');
+      }
+
+      setLoading(false);
+    },
+    [chineseWallState],
+  );
 
   const handleSearch = useCallback(
     searchText => {

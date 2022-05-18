@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Config from '@/config/config';
 import { Scrollbars } from 'react-custom-scrollbars';
 import {
@@ -7,6 +7,7 @@ import {
   deleteLayer,
   openPopup,
   getSysMsgFormatStr,
+  isJSONStr,
 } from '@/lib/common';
 import { getConfig } from '@/lib/util/configUtil';
 import { getRoomFiles, getThumbnail } from '@/lib/message';
@@ -20,6 +21,7 @@ import { setMoveView } from '@/modules/message';
 import LoadingWrap from '@/components/common/LoadingWrap';
 import { format } from 'date-fns';
 import Progress from '@C/common/buttons/Progress';
+import { isBlockCheck } from '@/lib/orgchart';
 
 // [0] PC [1] MOBILE
 const downloadOption = getConfig('FileAttachViewMode') || [];
@@ -46,7 +48,6 @@ const drawThumbnail = photo => {
     token: photo.FileID,
   }).then(response => {
     const data = Buffer.from(response.data, 'binary').toString('base64');
-
     const image = new Image();
     image.src = `data:image/png;base64,${data}`;
     image.onload = () => {
@@ -87,15 +88,19 @@ const Photo = ({ photo, onSelect, selectMode, handleProgress }) => {
   };
 
   const handleMenu = item => {
-    if (DEVICE_TYPE == 'd') {
-      const file = {
-        token: item.FileID,
-        fileName: item.FileName,
-        size: item.FileSize,
-        sendDate: item.SendDate,
-        MessageID: item.MessageID,
-      };
-      openFilePreview(file, null, 'A', { roomID: item.RoomID });
+    if (DEVICE_TYPE === 'd') {
+      openFilePreview(
+        {
+          token: item.FileID,
+          fileName: item.FileName,
+          size: item.FileSize,
+          sendDate: item.SendDate,
+          MessageID: item.MessageID,
+        },
+        null,
+        'A',
+        { roomID: item.RoomID },
+      );
     } else {
       let buttonArrs = [
         {
@@ -138,7 +143,7 @@ const Photo = ({ photo, onSelect, selectMode, handleProgress }) => {
         },
       ];
       // 파일 다운로드 허용일 경우에만 다운로드 옵션 노출
-      if (downloadOption.length === 0 || downloadOption[0].Download === true) {
+      if (!downloadOption.length || downloadOption[0].Download === true) {
         buttonArrs.push({
           name: covi.getDic('Download', '다운로드'),
           callback: () => {
@@ -146,7 +151,7 @@ const Photo = ({ photo, onSelect, selectMode, handleProgress }) => {
               item.FileID,
               item.FileName,
               data => {
-                if (data.result != 'SUCCESS') {
+                if (data.result !== 'SUCCESS') {
                   openPopup(
                     {
                       type: 'Alert',
@@ -232,7 +237,7 @@ const Photo = ({ photo, onSelect, selectMode, handleProgress }) => {
   );
 };
 
-const PhotoSummary = ({ roomId }) => {
+const PhotoSummary = ({ roomId, chineseWall }) => {
   const dispatch = useDispatch();
   const loadCnt = 30;
   const [select, setSelect] = useState(false);
@@ -251,12 +256,9 @@ const PhotoSummary = ({ roomId }) => {
     if (select) {
       // 이전 상태가 선택모드였다면 변경시 cnt도 0으로 초기화
 
-      if (selectItems.length > 0) {
+      if (selectItems.length) {
         // 다운로드가 금지되어 있는 경우
-        if (
-          downloadOption.length !== 0 &&
-          downloadOption[0].Download === false
-        ) {
+        if (downloadOption.length && downloadOption[0].Download === false) {
           openPopup(
             {
               type: 'Alert',
@@ -273,30 +275,27 @@ const PhotoSummary = ({ roomId }) => {
         // 다운로드 가능 && 선택개수 15개 미만
         else if (selectItems.length <= 15) {
           // 2개 이상은 압축
-          const isZip = selectItems.length > 1;
           const resp = await downloadByTokenAll(
             selectItems,
-            isZip,
+            selectItems.length > 1,
             handleProgress,
           );
-          if (resp !== null) {
-            if (!resp.result) {
-              openPopup(
-                {
-                  type: 'Alert',
-                  message: resp.data.message,
-                },
-                dispatch,
-              );
-            } else {
-              openPopup(
-                {
-                  type: 'Alert',
-                  message: covi.getDic('Msg_Save', '저장되었습니다.'),
-                },
-                dispatch,
-              );
-            }
+          if (resp?.result) {
+            openPopup(
+              {
+                type: 'Alert',
+                message: covi.getDic('Msg_Save', '저장되었습니다.'),
+              },
+              dispatch,
+            );
+          } else {
+            openPopup(
+              {
+                type: 'Alert',
+                message: resp.data.message,
+              },
+              dispatch,
+            );
           }
           // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
           setProgressData(null);
@@ -372,15 +371,38 @@ const PhotoSummary = ({ roomId }) => {
       loadCnt: loadCnt,
       isImage: 'Y',
     }).then(({ data }) => {
-      setFiles(data.status == 'SUCCESS' ? data.result : []);
+      if (data.status == 'SUCCESS') {
+        const result = data.result.filter(item => {
+          let isBlock = false;
+          if (item?.FileID && chineseWall?.length) {
+            const senderInfo = isJSONStr(item.SenderInfo)
+              ? JSON.parse(item.SenderInfo)
+              : item.SenderInfo;
+            const { blockFile } = isBlockCheck({
+              targetInfo: {
+                ...senderInfo,
+                id: item.sender || senderInfo.sender,
+              },
+              chineseWall,
+            });
+            isBlock = blockFile;
+          }
+          return !isBlock && item;
+        });
+        setFiles(result);
+      } else {
+        setFiles([]);
+      }
       setLoading(false);
     });
+
+    return () => {
+      setLoading(false);
+    };
   }, []);
 
   const handleUpdate = value => {
-    const { top } = value;
-
-    if (top > 0.85 && !loading && !pageEnd) {
+    if (value?.top > 0.85 && !loading && !pageEnd) {
       // 하위 페이지 추가
       setLoading(true);
       getRoomFiles({
@@ -389,9 +411,27 @@ const PhotoSummary = ({ roomId }) => {
         loadCnt: loadCnt,
         isImage: 'Y',
       }).then(({ data }) => {
-        if (data.status == 'SUCCESS') {
-          if (data.result.length > 0) {
-            setFiles([...files, ...data.result]);
+        if (data?.status === 'SUCCESS') {
+          if (data?.result?.length) {
+            const result = data.result.filter(item => {
+              let isBlock = false;
+              if (item?.FileID && chineseWall?.length) {
+                const senderInfo = isJSONStr(item.SenderInfo)
+                  ? JSON.parse(item.SenderInfo)
+                  : item.SenderInfo;
+                const { blockFile } = isBlockCheck({
+                  targetInfo: {
+                    ...senderInfo,
+                    id: item.sender || senderInfo.sender,
+                  },
+                  chineseWall,
+                });
+                isBlock = blockFile;
+              }
+              return !isBlock && item;
+            });
+            setFiles([...files, result]);
+
             if (data.result.length < loadCnt) {
               setPageEnd(true);
             }
@@ -413,10 +453,9 @@ const PhotoSummary = ({ roomId }) => {
       let firstDate = 0;
       let sameDateArr = [];
       data.forEach((item, index) => {
-        // 86400000 = 1000 * 60 * 60 * 24 (1day)
         const compareDate = Math.floor(item.SendDate / 86400000);
-        if (firstDate != compareDate) {
-          if (firstDate != 0 && sameDateArr.length > 0)
+        if (firstDate !== compareDate) {
+          if (firstDate !== 0 && sameDateArr?.length) {
             returnJSX.push(
               <PhotoList
                 key={`plist_${firstDate}`}
@@ -426,6 +465,7 @@ const PhotoSummary = ({ roomId }) => {
                 handleProgress={handleProgress}
               ></PhotoList>,
             );
+          }
 
           returnJSX.push(
             <div className="datetxt" key={`plist_date_${item.SendDate}`}>
@@ -439,7 +479,7 @@ const PhotoSummary = ({ roomId }) => {
 
         sameDateArr.push(item);
 
-        if (index == data.length - 1 && sameDateArr.length > 0) {
+        if (index === data.length - 1 && sameDateArr?.length) {
           returnJSX.push(
             <PhotoList
               key={`plist_${firstDate}`}
@@ -451,7 +491,6 @@ const PhotoSummary = ({ roomId }) => {
         }
       });
     }
-
     return returnJSX;
   };
 
@@ -484,7 +523,7 @@ const PhotoSummary = ({ roomId }) => {
             </a>
           )}
         </div>
-        {(files && files.length > 0 && (
+        {(files?.length && (
           <Scrollbars
             className="container"
             style={{ height: 'calc(100% - 50px)' }}

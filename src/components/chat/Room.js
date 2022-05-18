@@ -18,6 +18,7 @@ import ProfileBox from '@COMMON/ProfileBox';
 import RightConxtMenu from '../common/popup/RightConxtMenu';
 import { newChatRoom, evalConnector } from '@/lib/deviceConnector';
 import {
+  isJSONStr,
   getJobInfo,
   openPopup,
   makeMessageText,
@@ -26,6 +27,8 @@ import {
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import { modifyRoomSetting } from '@/modules/room';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
 
 const makeDateTime = timestamp => {
   if (isValid(new Date(timestamp))) {
@@ -60,16 +63,69 @@ const Room = ({
   pinToTopLimit = -1,
 }) => {
   const id = useSelector(({ login }) => login.id);
+  const myInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
   const [isNoti, setIsNoti] = useState(true);
   const chatBotConfig = getConfig('ChatBot');
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
   const [pinnedTop, setPinnedTop] = useState(false);
   const setting = useMemo(() => getRoomSettings(room), [room]);
   const [lastMessageText, setLastMessageText] = useState('');
+  const [chineseWallState, setChineseWallState] = useState([]);
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: myInfo?.id,
+        myInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   useLayoutEffect(() => {
-    makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
-  }, [room]);
+    if (room?.lastMessage && chineseWallState.length) {
+      const lastMessageInfo = isJSONStr(room.lastMessage)
+        ? JSON.parse(room.lastMessage)
+        : room.lastMessage;
+      const targetInfo = {
+        id: lastMessageInfo.sender,
+        companyCode: lastMessageInfo.companyCode,
+        deptCode: lastMessageInfo.deptCode,
+      };
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo,
+        chineseWall: chineseWallState,
+      });
+      const isFile = !!lastMessageInfo?.File;
+      const result = isFile ? blockFile : blockChat;
+
+      if (result) {
+        setLastMessageText(covi.getDic('BlockChat', '차단된 메시지 입니다.'));
+      } else {
+        makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
+      }
+    } else {
+      makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
+    }
+  }, [room, userChineseWall, chineseWallState]);
 
   const filterMember = useMemo(
     () => getFilterMember(room.members, id, room.roomType),

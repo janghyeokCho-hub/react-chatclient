@@ -7,12 +7,9 @@ import ChannelItem from './ChannelItem';
 import { getConfig } from '@/lib/util/configUtil';
 import { isEmptyObj, getSettings } from '../share';
 
-const ChannelList = ({ channels, checkObj }) => {
+const ChannelList = ({ channels, checkObj, chineseWall }) => {
   const RENDER_UNIT = 5;
-
-  const myInfo = useSelector(({ login }) => login.userInfo);
   const joinedChannelList = useSelector(({ channel }) => channel.channels);
-
   const [listMode, setListMode] = useState('N');
   const [searchText, setSearchText] = useState('');
   const [searchList, setSearchList] = useState([]);
@@ -64,7 +61,7 @@ const ChannelList = ({ channels, checkObj }) => {
   );
 
   useEffect(() => {
-    if (listMode == 'S') {
+    if (listMode === 'S') {
       handleSearch(searchText);
     }
   }, [channels]);
@@ -141,6 +138,7 @@ const ChannelList = ({ channels, checkObj }) => {
                   isClick={false}
                   isJoin={isJoined === -1}
                   pinnedTop={isPinTop}
+                  chineseWall={chineseWall}
                 />
               );
             })}

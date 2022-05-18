@@ -6,9 +6,14 @@ import SearchHeader from '@C/channels/channel/search/SearchHeader';
 import LoadingWrap from '@/components/common/LoadingWrap';
 import * as messageApi from '@/lib/message';
 import * as common from '@/lib/common';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
 
 const SearchView = ({ onSearchBox }) => {
   const roomID = useSelector(({ channel }) => channel.currentChannel.roomId);
+  const userInfo = useSelector(({ login }) => login.userInfo);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+  const [chineseWallState, setChineseWallState] = useState([]);
 
   const dispatch = useDispatch();
 
@@ -16,6 +21,33 @@ const SearchView = ({ onSearchBox }) => {
   const [moveData, setMoveData] = useState(null);
   const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof covi.changeSearchText == 'string') {
@@ -34,12 +66,31 @@ const SearchView = ({ onSearchBox }) => {
 
   const setMoveMessagesData = useCallback(data => {
     if (data.status == 'SUCCESS') {
-      if (data.search.length > 0 && data.firstPage.length > 0) {
-        setMoveData({
-          firstPage: data.firstPage,
-          moveId: data.search[0],
+      // 차이니즈월 적용
+      let { firstPage, search } = data;
+      const blockList = firstPage?.map(item => {
+        const senderInfo = common.isJSONStr(item.senderInfo)
+          ? JSON.parse(item.senderInfo)
+          : item.senderInfo;
+        const targetInfo = {
+          ...senderInfo,
+          id: item.sender,
+        };
+        const { blockChat } = isBlockCheck({
+          targetInfo,
+          chineseWall: chineseWallState,
         });
-        setSearchResult(data.search);
+        return blockChat && item.messageID;
+      });
+
+      search = search.filter(item => !blockList.includes(item));
+
+      if (search?.length && firstPage?.length) {
+        setMoveData({
+          firstPage: firstPage,
+          moveId: search[0],
+        });
+        setSearchResult(search);
       }
     } else {
       setSearchText('');
