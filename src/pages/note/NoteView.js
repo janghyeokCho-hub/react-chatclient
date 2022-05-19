@@ -690,24 +690,49 @@ export default function NoteView({ match }) {
           </a>
           <a
             className="Btn-pointcolor-mini"
-            onClick={() => _openNewNote(dispatch, 'reply', noteInfo)}
+            onClick={() => {
+              if (isBlockChat || isBlockFile) {
+                _popupResult(
+                  dispatch,
+                  covi.getDic('BlockChat', '차단된 메시지 입니다.'),
+                );
+              } else {
+                _openNewNote(dispatch, 'reply', noteInfo);
+              }
+            }}
           >
             {covi.getDic('Reply', '답장')}
           </a>
           <a
             className="Btn-pointcolor-mini"
-            onClick={() => _openNewNote(dispatch, 'replyAll', noteInfo)}
+            onClick={() => {
+              if (isBlockChat || isBlockFile) {
+                _popupResult(
+                  dispatch,
+                  covi.getDic('BlockChat', '차단된 메시지 입니다.'),
+                );
+              } else {
+                _openNewNote(dispatch, 'replyAll', noteInfo);
+              }
+            }}
           >
             {covi.getDic('ReplyAll', '전체답장')}
           </a>
-          {!isBlockChat && (
-            <a
-              className="Btn-pointcolor-mini"
-              onClick={() => _openNewNote(dispatch, 'forward', noteInfo)}
-            >
-              {covi.getDic('Forward', '전달')}
-            </a>
-          )}
+          <a
+            className="Btn-pointcolor-mini"
+            onClick={() => {
+              if (isBlockChat || isBlockFile) {
+                _popupResult(
+                  dispatch,
+                  covi.getDic('BlockChat', '차단된 메시지 입니다.'),
+                );
+              } else {
+                _openNewNote(dispatch, 'forward', noteInfo);
+              }
+            }}
+          >
+            {covi.getDic('Forward', '전달')}
+          </a>
         </div>
       </ConditionalWrapper>
       {isNewWin && <LayerTemplate />}

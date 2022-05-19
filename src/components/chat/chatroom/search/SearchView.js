@@ -80,8 +80,6 @@ const SearchView = ({ onSearchBox }) => {
             ...senderInfo,
             id: item.sender,
           };
-          console.log('targetInfo : ', targetInfo);
-          console.log('chineseWallState : ', chineseWallState);
           const { blockChat } = isBlockCheck({
             targetInfo,
             chineseWall: chineseWallState,
