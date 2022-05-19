@@ -231,7 +231,10 @@ function createGetRoomInfoSaga() {
       if (data?.room) {
         yield put({
           type: 'room/GET_ROOM_INFO_SUCCESS',
-          payload: data,
+          payload: {
+            ...data,
+            rooms: [],
+          }
         });
       }
 
