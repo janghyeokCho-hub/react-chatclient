@@ -47,7 +47,9 @@ const MessageBox = ({
 
   const drawMessage = useMemo(() => {
     // 차단된 메시지 다국어 처리
-    let drawText = isBlock ? '차단된 메시지 입니다.' : message?.context || '';
+    let drawText = isBlock
+      ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
+      : message?.context || '';
     let nameBoxVisible = nameBox;
 
     let senderInfo = null;

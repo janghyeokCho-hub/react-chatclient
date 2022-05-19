@@ -117,7 +117,7 @@ function _NoteItem({ note, viewType, history, blockChat, blockFile }) {
         },
         name: covi.getDic('Msg_Note_Open', '열기'),
       },
-      {
+      (!blockChat || !blockFile) && {
         code: 'replyNote',
         isline: false,
         onClick() {
@@ -126,7 +126,7 @@ function _NoteItem({ note, viewType, history, blockChat, blockFile }) {
         },
         name: covi.getDic('Msg_Note_Reply', '답장하기'),
       },
-      !blockChat && {
+      (!blockChat || !blockFile) && {
         code: 'forwardNote',
         isline: false,
         onClick() {
@@ -280,7 +280,7 @@ function _NoteItem({ note, viewType, history, blockChat, blockFile }) {
       });
     }
     return _menus;
-  }, [note]);
+  }, [note, blockChat, blockFile]);
 
   const senderInfo = useMemo(() => {
     const info = parseSender(note);
