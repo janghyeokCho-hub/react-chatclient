@@ -1,5 +1,6 @@
 import { chatsvr, managesvr } from '@/lib/api';
 import { getJobInfo } from '@/lib/userSettingUtil';
+import { getConfig } from '@/lib/util/configUtil';
 
 export const getOrgChart = ({ deptID }, { CompanyCode }) => {
   return managesvr('get', `/org/${deptID}/gr/${CompanyCode}`);
@@ -15,6 +16,10 @@ export const searchOrgChart = ({ userID, value, type }) => {
 
 export const getChineseWall = async ({ userId, myInfo }) => {
   try {
+    const useChineseWall = getConfig('UseChineseWall', false);
+    if (!useChineseWall) {
+      return { result: [], status: 'SUCCESS' };
+    }
     const { data } = await managesvr('get', `/org/block/${userId}`);
     const { result, status } = data;
     let blockList = [];
