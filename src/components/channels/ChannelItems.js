@@ -33,6 +33,7 @@ const ChannelItems = ({
   loading,
   onChannelChange,
   isDoubleClick,
+  chineseWall = [],
 }) => {
   const selectId = useSelector(({ channel }) => channel.selectedId);
   const joinedChannelList = useSelector(({ channel }) => channel.channels);
@@ -152,6 +153,7 @@ const ChannelItems = ({
                 isEmptyObj={isEmptyObj}
                 pinnedChannels={pinnedChannels}
                 pinToTopLimit={pinToTopLimit}
+                chineseWall={chineseWall}
               />
             );
           })}

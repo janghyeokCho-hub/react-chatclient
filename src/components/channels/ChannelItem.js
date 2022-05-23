@@ -26,8 +26,7 @@ import {
 import { joinChannel as joinChannelAPI } from '@/lib/channel';
 import { evalConnector } from '@/lib/deviceConnector';
 import { modifyChannelSetting } from '@/modules/channel';
-import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
-import { isMainWindow } from '@/lib/deviceConnector';
+import { isBlockCheck } from '@/lib/orgchart';
 
 const makeDateTime = timestamp => {
   if (timestamp && isValid(new Date(timestamp))) {
@@ -61,47 +60,17 @@ const ChannelItem = ({
   pinnedChannels,
   isCategory = false,
   pinToTopLimit = -1,
+  chineseWall = [],
 }) => {
   const id = useSelector(({ login }) => login.id);
-  const myInfo = useSelector(({ login }) => login.userInfo);
-  const userChineseWall = useSelector(({ login }) => login.chineseWall);
-
   const menuId = useMemo(() => 'channel_' + channel.roomId, [channel]);
   const [pinnedTop, setPinnedTop] = useState(false);
   const setting = useMemo(
     () => getChannelSettings && getChannelSettings(channel),
     [channel],
   );
-  const [chineseWallState, setChineseWallState] = useState([]);
 
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: myInfo?.id,
-        myInfo,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (userChineseWall?.length) {
-      setChineseWallState(userChineseWall);
-    } else {
-      getChineseWallList();
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, [userChineseWall]);
 
   useEffect(() => {
     if (pinToTopLimit >= 0) {
@@ -411,7 +380,7 @@ const ChannelItem = ({
   const [lastMessageText, setLastMessageText] = useState('');
 
   useLayoutEffect(() => {
-    if (channel?.lastMessage && chineseWallState.length) {
+    if (channel?.lastMessage && chineseWall.length) {
       const lastMessageInfo = isJSONStr(channel.lastMessage)
         ? JSON.parse(channel.lastMessage)
         : channel.lastMessage;
@@ -422,7 +391,7 @@ const ChannelItem = ({
       };
       const { blockChat, blockFile } = isBlockCheck({
         targetInfo,
-        chineseWall: chineseWallState,
+        chineseWall,
       });
       const isFile = !!lastMessageInfo?.File;
       const result = isFile ? blockFile : blockChat;
@@ -437,7 +406,7 @@ const ChannelItem = ({
     } else {
       makeMessageText(channel.lastMessage, 'CHANNEL').then(setLastMessageText);
     }
-  }, [channel, chineseWallState]);
+  }, [channel, chineseWall]);
 
   return (
     <RightConxtMenu
