@@ -27,8 +27,7 @@ import {
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import { modifyRoomSetting } from '@/modules/room';
-import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
-import { isMainWindow } from '@/lib/deviceConnector';
+import { isBlockCheck } from '@/lib/orgchart';
 
 const makeDateTime = timestamp => {
   if (isValid(new Date(timestamp))) {
@@ -61,47 +60,19 @@ const Room = ({
   getRoomSettings,
   isEmptyObj,
   pinToTopLimit = -1,
+  chineseWall = [],
 }) => {
   const id = useSelector(({ login }) => login.id);
-  const myInfo = useSelector(({ login }) => login.userInfo);
-  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+
   const [isNoti, setIsNoti] = useState(true);
   const chatBotConfig = getConfig('ChatBot');
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
   const [pinnedTop, setPinnedTop] = useState(false);
   const setting = useMemo(() => getRoomSettings(room), [room]);
   const [lastMessageText, setLastMessageText] = useState('');
-  const [chineseWallState, setChineseWallState] = useState([]);
 
   useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: myInfo?.id,
-        myInfo,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (userChineseWall?.length) {
-      setChineseWallState(userChineseWall);
-    } else {
-      getChineseWallList();
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, []);
-
-  useLayoutEffect(() => {
-    if (room?.lastMessage && chineseWallState.length) {
+    if (room?.lastMessage && chineseWall.length) {
       const lastMessageInfo = isJSONStr(room.lastMessage)
         ? JSON.parse(room.lastMessage)
         : room.lastMessage;
@@ -112,7 +83,7 @@ const Room = ({
       };
       const { blockChat, blockFile } = isBlockCheck({
         targetInfo,
-        chineseWall: chineseWallState,
+        chineseWall,
       });
       const isFile = !!lastMessageInfo?.File;
       const result = isFile ? blockFile : blockChat;
@@ -125,7 +96,7 @@ const Room = ({
     } else {
       makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
     }
-  }, [room, userChineseWall, chineseWallState]);
+  }, [room?.lastMessage, chineseWall]);
 
   const filterMember = useMemo(
     () => getFilterMember(room.members, id, room.roomType),

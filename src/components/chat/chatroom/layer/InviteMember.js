@@ -10,6 +10,7 @@ import { makeChatRoom } from '@/lib/deviceConnector';
 import { getAllUserWithGroup, getAllUserWithGroupList } from '@/lib/room';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { getDictionary, getSysMsgFormatStr } from '@/lib/common';
+import { isBlockCheck } from '@/lib/orgchart';
 
 const InviteMember = ({
   headerName,
@@ -26,6 +27,7 @@ const InviteMember = ({
       myInfo: login.userInfo,
     }),
   );
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [members, setMembers] = useState([]);
   const [selectTab, setSelectTab] = useState('C');
   const [oldMembers, setOldMembers] = useState([]);
@@ -255,14 +257,26 @@ const InviteMember = ({
         dispatch(makeRoomView(makeInfo));
       }
     } else if (isNewRoom && inviteMembers.length == 2) {
-      openChatRoomView(
-        dispatch,
-        viewType,
-        rooms,
-        selectId,
-        inviteMembers.find(item => item.id != myInfo.id),
-        myInfo,
-      );
+      const targetInfo = inviteMembers.filter(item => item.id !== myInfo.id)[0];
+      const { blockChat } = isBlockCheck({ targetInfo, chineseWall });
+      if (blockChat) {
+        openPopup(
+          {
+            type: 'Alert',
+            message: covi.getDic('Msg_BlockTarget', '차단된 대상입니다.'),
+          },
+          dispatch,
+        );
+      } else {
+        openChatRoomView(
+          dispatch,
+          viewType,
+          rooms,
+          selectId,
+          inviteMembers.find(item => item.id != myInfo.id),
+          myInfo,
+        );
+      }
     } else {
       const params = {
         roomID: roomId,

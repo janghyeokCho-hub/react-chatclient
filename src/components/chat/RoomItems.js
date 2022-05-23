@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import Room from '@C/chat/Room';
 import LoadingWrap from '@COMMON/LoadingWrap';
@@ -25,8 +25,15 @@ const getRoomSettings = (room = {}) => {
   return setting;
 };
 
-const RoomItems = ({ rooms, loading, onRoomChange, isDoubleClick }) => {
+const RoomItems = ({
+  rooms,
+  loading,
+  onRoomChange,
+  isDoubleClick,
+  chineseWall = [],
+}) => {
   const selectId = useSelector(({ room }) => room.selectId);
+
   const RENDER_UNIT = 5;
   const pinToTopLimit = useMemo(
     () => getConfig('PinToTop_Limit_Chat', -1),
@@ -96,6 +103,7 @@ const RoomItems = ({ rooms, loading, onRoomChange, isDoubleClick }) => {
                 isEmptyObj={isEmptyObj}
                 pinnedRooms={pinnedRooms}
                 pinToTopLimit={pinToTopLimit}
+                chineseWall={chineseWall}
               />
             );
           })}

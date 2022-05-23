@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import { openChatRoomView } from '@/lib/roomUtil';
@@ -7,6 +7,7 @@ import { getProfileInfo } from '@/lib/profile';
 import { getConfig } from '@/lib/util/configUtil';
 import axios from 'axios';
 import {
+  openPopup,
   deleteLayer,
   clearLayer,
   getJobInfo,
@@ -14,8 +15,12 @@ import {
 } from '@/lib/common';
 import useTyping from '@/hooks/useTyping';
 import { useSyncFavorite } from '@/hooks/useSyncFavorite';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
+import { setChineseWall } from '@/modules/login';
+import { isMainWindow } from '@/lib/deviceConnector';
 
 const ProfilePopup = ({ userInfo }) => {
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const { viewType, rooms, selectId, myInfo } = useSelector(
     ({ room, login }) => ({
       viewType: room.viewType,
@@ -26,11 +31,56 @@ const ProfilePopup = ({ userInfo }) => {
   );
 
   const [isFavorite, setIsFavorite] = useState(userInfo.isFavorite);
+  const [chineseWallState, setChineseWallState] = useState([]);
+  const [isBlockChat, setIsBlockChat] = useState(false);
+  const [isBlockFile, setIsBlockFile] = useState(false);
   const { confirm } = useTyping();
   const dispatch = useDispatch();
 
   const makeCall = getConfig('makeCall', null);
   const { syncFavorite } = useSyncFavorite();
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: userInfo?.id,
+        myInfo: userInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, [userInfo, chineseWall]);
+
+  useEffect(() => {
+    if (userInfo && chineseWallState?.length) {
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo: userInfo,
+        chineseWall: chineseWallState,
+      });
+      setIsBlockChat(blockChat);
+      setIsBlockFile(blockFile);
+    }
+    return () => {
+      setIsBlockChat(false);
+      setIsBlockFile(false);
+    };
+  }, [userInfo, chineseWallState]);
 
   const getAbsenceInfo = useMemo(() => {
     try {
@@ -175,7 +225,7 @@ const ProfilePopup = ({ userInfo }) => {
             <dl>
               <dt>{covi.getDic('Mobile', '휴대폰')}</dt>
               <dd>
-                  {userInfo.phoneNumber}
+                {userInfo.phoneNumber}
                 {'  '}
                 {makeCall?.isUse && userInfo?.phoneNumber?.length > 0 && (
                   <button
@@ -228,7 +278,7 @@ const ProfilePopup = ({ userInfo }) => {
             <dl>
               <dt>{covi.getDic('Phone', '내선번호')}</dt>
               <dd>
-                  {userInfo.companyNumber}
+                {userInfo.companyNumber}
                 {'  '}
                 {makeCall?.isUse && userInfo?.companyNumber?.length > 0 && (
                   <button
@@ -280,15 +330,13 @@ const ProfilePopup = ({ userInfo }) => {
             <dl>
               <dt>{covi.getDic('Email', '이메일')}</dt>
               <dd>
-                  {userInfo.mailAddress == null ? '' : userInfo.mailAddress}
+                {userInfo.mailAddress == null ? '' : userInfo.mailAddress}
               </dd>
             </dl>
             <dl>
               <dt>{covi.getDic('Work', '담당업무')}</dt>
               <dd>
-                <a>
-                    {userInfo.work == null ? '' : userInfo.work}
-                </a>
+                <a>{userInfo.work == null ? '' : userInfo.work}</a>
               </dd>
             </dl>
           </div>
@@ -299,16 +347,29 @@ const ProfilePopup = ({ userInfo }) => {
               <li className="link-btn-chat">
                 <a
                   onClick={async () => {
-                    const openChatRoomArgs = [
-                      dispatch,
-                      viewType,
-                      rooms,
-                      selectId,
-                      userInfo,
-                      myInfo,
-                    ];
-                    confirm(dispatch, openChatRoomView, openChatRoomArgs);
-                    clearLayer(dispatch);
+                    if (isBlockChat && isBlockFile) {
+                      openPopup(
+                        {
+                          type: 'Alert',
+                          message: covi.getDic(
+                            'Msg_BlockTarget',
+                            '차단된 대상입니다.',
+                          ),
+                        },
+                        dispatch,
+                      );
+                    } else {
+                      const openChatRoomArgs = [
+                        dispatch,
+                        viewType,
+                        rooms,
+                        selectId,
+                        userInfo,
+                        myInfo,
+                      ];
+                      confirm(dispatch, openChatRoomView, openChatRoomArgs);
+                      clearLayer(dispatch);
+                    }
                   }}
                 >
                   <span>{covi.getDic('StartChat', '대화시작')}</span>

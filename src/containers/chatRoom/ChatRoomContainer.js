@@ -5,11 +5,17 @@ import SearchBar from '@COMMON/SearchBar';
 import RoomItems from '@C/chat/RoomItems';
 import { openPopup } from '@/lib/common';
 import useTyping from '@/hooks/useTyping';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
 
 const ChatRoomContainer = () => {
   const [searchText, setSearchText] = useState('');
   const [listMode, setListMode] = useState('N'); //Normal, Search
   const [searchList, setSearchList] = useState([]);
+  const myInfo = useSelector(({ login }) => login.userInfo);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const [chineseWallState, setChineseWallState] = useState([]);
 
   const roomList = useSelector(({ room }) => room.rooms);
   const viewType = useSelector(({ room }) => room.viewType);
@@ -25,6 +31,33 @@ const ChatRoomContainer = () => {
     },
     [dispatch],
   );
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: myInfo?.id,
+        myInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   useEffect(() => {
     if (listMode == 'S') {
@@ -107,6 +140,7 @@ const ChatRoomContainer = () => {
               loading={loading}
               onRoomChange={handleRoomChange}
               isDoubleClick={viewType == 'S' && SCREEN_OPTION != 'G'}
+              chineseWall={chineseWallState}
             />
           )}
           {roomList?.length == 0 && (
@@ -127,6 +161,7 @@ const ChatRoomContainer = () => {
           loading={false}
           onRoomChange={handleRoomChange}
           isDoubleClick={viewType == 'S' && SCREEN_OPTION != 'G'}
+          chineseWall={chineseWallState}
         />
       )}
     </>

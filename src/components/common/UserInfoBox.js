@@ -12,6 +12,9 @@ import { openPopup, getJobInfo, getDictionary } from '@/lib/common';
 import { format } from 'date-fns';
 import useTyping from '@/hooks/useTyping';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
 
 const UserInfoBox = ({
   userInfo,
@@ -21,6 +24,7 @@ const UserInfoBox = ({
   isMine,
   removeWork,
 }) => {
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const viewType = useSelector(({ room }) => room.viewType);
   const rooms = useSelector(({ room }) => room.rooms);
   const selectId = useSelector(({ room }) => room.selectId);
@@ -30,8 +34,36 @@ const UserInfoBox = ({
   const nameEl = useRef(null);
   const [picAreaWidth, setPicAreaWidth] = useState('calc(100% - 250px)');
   const [picMaxWidth, setPicMaxWidth] = useState(0);
+  const [chineseWallState, setChineseWallState] = useState([]);
   const dispatch = useDispatch();
   const { confirm } = useTyping();
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: myInfo?.id,
+        myInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, [userInfo, chineseWall]);
 
   // removeWork: 사용자의 업무 표기박스 미표기 플래그
   const info = isMine
@@ -92,18 +124,37 @@ const UserInfoBox = ({
     isDoubleClick => {
       if (isClick) {
         if (userInfo.pChat == 'Y') {
-          const openChatRoomArgs = [
-            dispatch,
-            viewType,
-            rooms,
-            selectId,
-            userInfo,
-            myInfo,
-            isDoubleClick,
-          ];
-          // 2020.12.22
-          // input값 남아있을때 경고창 출력
-          confirm(dispatch, openChatRoomView, openChatRoomArgs);
+          console.log('userInfo : ', userInfo);
+          console.log('chineseWall : ', chineseWallState);
+          const { blockChat, blockFile } = isBlockCheck({
+            targetInfo: userInfo,
+            chineseWall: chineseWallState,
+          });
+          console.log('blockChat : ', blockChat);
+          console.log('blockFile : ', blockFile);
+          console.log(blockChat && blockFile);
+          if (blockChat && blockFile) {
+            openPopup(
+              {
+                type: 'Alert',
+                message: covi.getDic('Msg_BlockTarget', '차단된 대상입니다.'),
+              },
+              dispatch,
+            );
+          } else {
+            const openChatRoomArgs = [
+              dispatch,
+              viewType,
+              rooms,
+              selectId,
+              userInfo,
+              myInfo,
+              isDoubleClick,
+            ];
+            // 2020.12.22
+            // input값 남아있을때 경고창 출력
+            confirm(dispatch, openChatRoomView, openChatRoomArgs);
+          }
         } else {
           if (
             (!isDoubleClick && (viewType != 'S' || SCREEN_OPTION == 'G')) ||
@@ -125,7 +176,17 @@ const UserInfoBox = ({
         checkRef && checkRef.current && checkRef.current.click();
       }
     },
-    [isClick, viewType, userInfo, rooms, selectId, myInfo, dispatch, checkRef],
+    [
+      isClick,
+      viewType,
+      userInfo,
+      rooms,
+      selectId,
+      myInfo,
+      dispatch,
+      checkRef,
+      chineseWallState,
+    ],
   );
 
   const drawUserInfoBox = useMemo(() => {

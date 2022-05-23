@@ -91,7 +91,6 @@ export const handleNewNoteMessage = (dispatch, userInfo, setNoteList) => {
         PN: json_data.multiJobPositionName,
         TN: json_data.multiJobTitleName,
       };
-
       if (DEVICE_TYPE === 'b') {
         // 브라우저 noti
         if (Notification.permission !== 'granted') {
@@ -116,6 +115,11 @@ export const handleNewNoteMessage = (dispatch, userInfo, setNoteList) => {
         // 쪽지 리스트에 추가할 데이터 (쪽지 조회시 sender 구조와 동일해야 함)
         const receivedInfo = {
           noteId: parseInt(json_data.noteId) || json_data.noteId,
+          senderInfo: {
+            companyCode: json_data.companyCode,
+            deptCode: json_data.deptCode,
+            sender: json_data.userId,
+          },
           senderUserId: json_data.userId,
           senderDisplayName: json_data.multiDisplayName,
           senderJobPositionName: json_data.multiJobPositionName,
