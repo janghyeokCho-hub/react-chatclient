@@ -10,14 +10,19 @@ import SearchBar from '@COMMON/SearchBar';
 import ChannelItems from '@C/channels/ChannelItems';
 import { getConfig } from '@/lib/util/configUtil';
 import useTyping from '@/hooks/useTyping';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
 
 const ChannelContainer = () => {
-  const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
   const myInfo = useSelector(({ login }) => login.userInfo);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
 
   const [searchText, setSearchText] = useState('');
   const [listMode, setListMode] = useState('N'); //Normal, Search
   const [searchList, setSearchList] = useState([]);
+  const [chineseWallState, setChineseWallState] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
   const channelList = useSelector(({ channel }) => channel.channels);
@@ -103,6 +108,33 @@ const ChannelContainer = () => {
   );
 
   useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: myInfo?.id,
+        myInfo,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
+    } else {
+      getChineseWallList();
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, [chineseWall]);
+
+  useEffect(() => {
     // channelList가 변할때 categoryCode가 null인 속성들을 찾아 요청 및 데이터 채워줌
     let updateList = [];
     if (channelList) {
@@ -152,6 +184,7 @@ const ChannelContainer = () => {
           onChannelChange={handleChannelChange}
           isDoubleClick={viewType == 'S' && SCREEN_OPTION != 'G'}
           isSearch={listMode === 'S'}
+          chineseWall={chineseWallState}
         />
       )}
       {listMode == 'S' && (
@@ -161,6 +194,7 @@ const ChannelContainer = () => {
           onChannelChange={handleChannelChange}
           isDoubleClick={viewType == 'S' && SCREEN_OPTION != 'G'}
           isSearch={listMode === 'S'}
+          chineseWall={chineseWallState}
         />
       )}
     </>
