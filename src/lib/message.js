@@ -130,9 +130,26 @@ export const getMessages = params => {
 };
 
 export const searchMessage = params => {
+  console.log('searchMessage ::   ', params);
+  let requestMethod = 'get';
+  let requestURL;
+  let requestBody = {};
+  if (params?.searchOption === 'Name') {
+    requestMethod = 'post';
+    requestURL = '/messages/sender/search';
+    requestBody = {
+      roomId: params.roomId,
+      loadCnt: params.loadCnt,
+      userId: params.search,
+      messageId: params.messageId,
+    }
+  } else {
+    requestURL = `/messages/search/${params.search}?roomID=${params.roomId}&loadCnt=${params.loadCnt}`;
+  }
   return managesvr(
-    'get',
-    `/messages/search/${params.search}?roomID=${params.roomID}&loadCnt=${params.loadCnt}`,
+    requestMethod,
+    requestURL,
+    requestBody,
   );
 };
 
@@ -158,10 +175,25 @@ export const sendChannelMessage = params => {
 
 export const searchChannelMessage = params => {
   const searchText = encodeURIComponent(params.search);
-
+  let requestMethod = 'get';
+  let requestURL;
+  let requestBody = {};
+  if (params?.searchOption === 'Name') {
+    requestMethod = 'post';
+    requestURL = '/channel/sender/search';
+    requestBody = {
+      roomId: params.roomId,
+      loadCnt: params.loadCnt,
+      userId: params.search,
+      messageId: params.messageId,
+    }
+  } else {
+    requestURL = `/channel/messages/search?roomID=${params.roomId}&loadCnt=${params.loadCnt}&searchText=${searchText}`;
+  }
   return managesvr(
-    'get',
-    `/channel/messages/search?roomID=${params.roomId}&loadCnt=${params.loadCnt}&searchText=${searchText}`,
+    requestMethod,
+    requestURL,
+    requestBody,
   );
 };
 

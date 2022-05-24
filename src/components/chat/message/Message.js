@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { Plain, Link, Tag, Sticker, Mention } from '@C/chat/message/types';
 import { useChatFontSize, useMyChatFontColor } from '@/hooks/useChat';
 import { getAttribute } from '@/lib/messageUtil';
@@ -15,7 +14,6 @@ const Message = ({
 }) => {
   const [fontSize] = useChatFontSize();
   const [myChatColor] = useMyChatFontColor();
-
   const drawText = useMemo(() => {
     const pattern = new RegExp(
       /[<](LINK|NEWLINE|TAG|STICKER|MENTION)[^>]*[/>]/,
