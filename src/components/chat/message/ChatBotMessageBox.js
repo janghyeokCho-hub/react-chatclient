@@ -347,7 +347,7 @@ const ChatBotMessageBox = ({
                             )}
                           </div>
                         )) || (
-                          <div>{covi.getDic('SeeMore', '자세히 보기')}</div>
+                          <div>{covi.getDic('SeeDetails', '자세히 보기')}</div>
                         )}
                       </p>
                     </button>

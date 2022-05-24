@@ -21,7 +21,7 @@ import MessageView from '@C/chat/chatroom/normal/MessageView';
 import ChatBackground from './layer/ChatBackground';
 import { useChatFontType } from '../../../hooks/useChat';
 
-const SearchView = loadable(() => import('@C/chat/chatroom/search/SearchView'));
+const SearchView = loadable(() => import('@C/common/search/SearchView'));
 const MoveView = loadable(() => import('@C/chat/chatroom/move/MoveView'));
 const NoticeView = loadable(() => import('@C/chat/chatroom/notice/NoticeView'));
 

@@ -23,6 +23,8 @@ const UserInfoBox = ({
   checkObj,
   isMine,
   removeWork,
+  onClick,
+  onMouseDown,
 }) => {
   const chineseWall = useSelector(({ login }) => login.chineseWall);
   const viewType = useSelector(({ room }) => room.viewType);
@@ -122,6 +124,14 @@ const UserInfoBox = ({
   // 대화목록에서 상대 클릭시 이벤트 처리
   const handleClick = useCallback(
     isDoubleClick => {
+      if (typeof onClick === 'function') {
+        onClick(userInfo);
+        return;
+      }
+      if (typeof onMouseDown === 'function') {
+        onMouseDown(userInfo);
+        return;
+      }
       if (isClick) {
         if (userInfo.pChat == 'Y') {
           console.log('userInfo : ', userInfo);
@@ -193,13 +203,12 @@ const UserInfoBox = ({
     const type = userInfo.type;
     console.log('usertype >> ', userInfo.type);
     if (type == 'G') {
-      return (
-        <a>
+      return <>
           <div className="profile-photo group"></div>
-          <span className="name">{getDictionary(info.name)}</span>
-          {info.dept && <span className="team">{getDeptName()}</span>}
-        </a>
-      );
+          <div className="name">{getDictionary(info.name)}</div>
+          {info?.dept && <div className="team">{getDeptName()}</div>}
+          </>
+      ;
     } else if (type == 'B') {
     } else {
       const getAdditionalInfoBox = info => {
@@ -256,7 +265,7 @@ const UserInfoBox = ({
       };
 
       return (
-        <a>
+        <>
           <ProfileBox
             userId={info.id}
             userName={info.name}
@@ -270,11 +279,11 @@ const UserInfoBox = ({
           {info.channelAuth && info.channelAuth === 'Y' && (
             <span className="admintag">{covi.getDic('Admin', '관리자')}</span>
           )}
-          {info.isMobile === 'Y' && <span className="mobileico ml5"></span>}
-          <span className="team">{getDeptName()}</span>
+          {info?.isMobile === 'Y' && <div className="mobileico ml5"></div>}
+          {info?.dept && <div className="team">{getDeptName()}</div>}
           {/* {!checkObj && isClick && getAdditionalInfoBox(info)} */}
           {getAdditionalInfoBox(info)}
-        </a>
+        </>
       );
     }
   }, [userInfo, myInfo, isMine, picAreaWidth]);
@@ -298,6 +307,7 @@ const UserInfoBox = ({
         info.type == 'G' && info.dept == '' ? 'group' : '',
       ].join(' ')}
       onClick={() => handleClick(false)}
+      onMouseDown={() => handleClick(false)}
       onDoubleClick={() => handleClick(true)}
     >
       {drawUserInfoBox}

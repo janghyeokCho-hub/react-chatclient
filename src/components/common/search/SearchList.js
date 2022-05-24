@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import MessageBox from '@C/channels/message/MessageBox';
 import { useDispatch, useSelector } from 'react-redux';
-import MessageBox from '@C/chat/message/MessageBox';
 import SystemMessageBox from '@C/chat/message/SystemMessageBox';
 import NoticeMessageBox from '@C/chat/message/NoticeMessageBox';
-import SearchScrollBox from '@/components/chat/chatroom/search/SearchScrollBox';
+import SearchScrollBox from '@/components/common/search/SearchScrollBox';
 import {
   isJSONStr,
   openPopup,
