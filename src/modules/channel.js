@@ -21,6 +21,7 @@ import {
 import { startLoading, finishLoading } from '@/modules/loading';
 import { changeOpenRoom } from '@/modules/room';
 import { get } from '@/lib/util/storageUtil';
+import { isJSONStr } from '@/lib/common';
 
 const INIT = 'channel/INIT';
 const SET_CHANNELS = 'channel/SET_CHANNELS';
@@ -1076,7 +1077,7 @@ const channel = handleActions(
 
             // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
             try {
-              draft.currentChannel.setting = JSON.parse(changeChannel.setting);
+              draft.currentChannel.setting = isJSONStr(changeChannel.setting) ?  JSON.parse(changeChannel.setting) : changeChannel.setting;
             } catch (e) {
               draft.currentChannel.setting = null;
             }
@@ -1184,7 +1185,7 @@ const channel = handleActions(
 
         // current channel 내의 setting 은 Object type으로 처리
         try {
-          draft.currentChannel.setting = JSON.parse(newChannel.setting);
+          draft.currentChannel.setting = isJSONStr(newChannel.setting) ?  JSON.parse(newChannel.setting) : newChannel.setting;
         } catch (e) {
           draft.currentChannel.setting = null;
         }
@@ -1784,9 +1785,9 @@ const channel = handleActions(
           ) {
             // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
             try {
-              draft.currentChannel.settingJSON = JSON.parse(
-                action.payload.setting,
-              );
+              draft.currentChannel.settingJSON = isJSONStr(action.payload.setting) ?  JSON.parse(
+                action.payload.setting
+              ) : action.payload.setting;
             } catch (e) {
               draft.currentChannel.settingJSON = null;
             }
@@ -1832,7 +1833,7 @@ const channel = handleActions(
               if (typeof item === 'object') {
                 return item;
               } else {
-                return JSON.parse(item);
+                return isJSONStr(item) ?  JSON.parse(item) :  item ;
               }
             }
           };

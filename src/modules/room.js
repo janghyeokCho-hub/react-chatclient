@@ -26,6 +26,7 @@ import { startLoading, finishLoading } from '@/modules/loading';
 import { changeOpenChannel } from '@/modules/channel'; // 채널
 import { addFixedUsers } from '@/modules/presence';
 import { get } from '@/lib/util/storageUtil';
+import { isJSONStr } from '@/lib/common';
 
 const [GET_ROOMS, GET_ROOMS_SUCCESS, GET_ROOMS_FAILURE] =
   createRequestActionTypes('room/GET_ROOMS');
@@ -819,7 +820,7 @@ const room = handleActions(
 
         // current room 내의 setting 은 Object type으로 처리
         try {
-          draft.currentRoom.setting = JSON.parse(newRoom.setting);
+          draft.currentRoom.setting = isJSONStr(newRoom.setting) ? JSON.parse(newRoom.setting) : newRoom.setting;
         } catch (e) {
           draft.currentRoom.setting = null;
         }
@@ -1005,7 +1006,6 @@ const room = handleActions(
         if (!action.payload.newRoom) {
           const room = draft.rooms.find(r => r.roomID == action.payload.roomID);
           let changeRoom = null;
-
           if (room) {
             // room 새창여부 및 닫힘여부 체크
             if (room.newWin && room.winObj) {
@@ -1035,12 +1035,13 @@ const room = handleActions(
               draft.messages = [];
             }
 
-            // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
-            try {
-              draft.currentRoom.setting = JSON.parse(changeRoom.setting);
-            } catch (e) {
-              draft.currentRoom.setting = null;
-            }
+          }
+          // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
+          try {
+            draft.currentRoom.setting = isJSONStr(changeRoom.setting) ? JSON.parse(changeRoom.setting) : changeRoom.setting;
+
+          } catch (e) {
+            draft.currentRoom.setting = null;
           }
 
           draft.makeInfo = null;
@@ -1522,7 +1523,7 @@ const room = handleActions(
           ) {
             // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
             try {
-              draft.currentRoom.setting = JSON.parse(action.payload.setting);
+              draft.currentRoom.setting = isJSONStr(action.payload.setting) ?  JSON.parse(action.payload.setting) : action.payload.setting;
             } catch (e) {
               draft.currentRoom.setting = null;
             }
@@ -1562,7 +1563,7 @@ const room = handleActions(
             originSetting[key] = setting[key];
           }
           room.setting = originSetting;
-
+          
           if (!!draft.currentRoom && draft.currentRoom.roomID === roomID) {
             try {
               for (const [_, key] of Object.keys(setting).entries()) {
