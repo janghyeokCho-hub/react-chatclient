@@ -1918,14 +1918,22 @@ const selectBetweenMessages = async params => {
 };
 
 export const reqGetSearchMessages = async (event, args) => {
-  logger.info('reqGetSearchMessages');
+  logger.info('reqGetSearchMessages:: ' + JSON.stringify(args || {}));
 
+  // args.option: 'Context' | 'Name';
+  // default: 'Context'
+  const searchOption = args?.searchOption || 'Context';
   const returnObj = {};
 
   if (loginInfo.getData()) {
     try {
       let messages = null;
-      let search = await searchMessages(args);
+      let search = [];
+      if (searchOption === 'Name') {
+        search = await searchMessagesByName(args);
+      } else {
+        search = await searchMessages(args);
+      }
       if (search.length > 0) {
         search = search.map(item => item.messageId);
         args.startId = search[0];
@@ -1946,6 +1954,7 @@ export const reqGetSearchMessages = async (event, args) => {
   } else return { data: {} };
 };
 
+// 메시지 내용(context)으로 대화검색
 const searchMessages = async param => {
   const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
 
@@ -1957,6 +1966,23 @@ const searchMessages = async param => {
     .andWhere('context', 'not like', '%eumtalk://emoticon.%')
     .andWhere('messageType', 'N')
     .orderBy('messageId', 'desc');
+
+  return search;
+};
+
+// 이름(senderInfo)으로 검색 대화검색
+export const searchMessagesByName = async param => {
+  const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
+
+  const search = dbCon
+    .select('messageId')
+    .from('message')
+    .where('roomId', param?.roomID)
+    .andWhere('messageId', '<=', param.messageId)
+    .andWhere('sender', param.search)
+    .andWhere('messageType', 'N')
+    .orderBy('messageId', 'desc')
+    .limit(param?.loadCnt || 50);
 
   return search;
 };

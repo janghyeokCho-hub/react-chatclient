@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import loadable from '@loadable/component';
-import useSWR from 'swr';
 
 import LoadingWrap from '@COMMON/LoadingWrap';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
@@ -11,14 +10,12 @@ import {
   getChannelInfo,
   getChannelNotice,
   readMessage,
-  resetUnreadCount,
 } from '@/modules/channel';
 import {
   sendChannelMessage,
   clearFiles,
   updateChannelTempMessage,
 } from '@/modules/message';
-import * as messageApi from '@/lib/message';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import * as common from '@/lib/common';
 import { addTargetUserList, delTargetUserList } from '@/modules/presence';
@@ -26,13 +23,9 @@ import { newChannel, evalConnector, focusWin } from '@/lib/deviceConnector';
 
 import MessageView from '@C/channels/channel/normal/MessageView';
 import ChatBackground from '@C/chat/chatroom/layer/ChatBackground';
-/*
-import SearchView from '@C/channels/channel/search/SearchView';
-import MoveView from '@C/channels/channel/move/MoveView';
-*/
 
 const SearchView = loadable(() =>
-  import('@C/channels/channel/search/SearchView'),
+  import('@/components/common/search/SearchView'),
 );
 const MoveView = loadable(() => import('@C/channels/channel/move/MoveView'));
 

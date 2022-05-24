@@ -961,8 +961,8 @@ ipcMain.on('req-get-messages-between', async (event, args) => {
   const returnValue = await appDataEvt.selectBetweenMessagesByIDs(event, args);
   event.returnValue = returnValue;
 });
-ipcMain.on('req-get-search-messages', async (event, args) => {
-  event.returnValue = await appDataEvt.reqGetSearchMessages(event, args);
+ipcMain.handle('req-get-search-messages', async (event, args) => {
+  return appDataEvt.reqGetSearchMessages(event, args);
 });
 // AppData 세팅
 ipcMain.on('req-save-rooms', appDataEvt.reqSaveRooms);
