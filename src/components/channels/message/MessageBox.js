@@ -1,15 +1,16 @@
 import React, { useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import useSWR from 'swr';
 import ProfileBox from '@COMMON/ProfileBox';
 import Message from '@C/channels/message/Message';
 import RightConxtMenu from '@C/common/popup/RightConxtMenu';
 import { format } from 'date-fns';
 import {
-  eumTalkRegularExp,
-  convertEumTalkProtocol,
   convertURLMessage,
   checkURL,
   getJobInfo,
+  convertEumTalkProtocol,
+  eumTalkRegularExp,
 } from '@/lib/common';
 import LinkMessageBox from '@C/chat/message/LinkMessageBox'; // 그대로 사용
 import FileMessageBox from '@C/chat/message/FileMessageBox'; // 그대로 사용
@@ -31,7 +32,8 @@ const MessageBox = ({
 }) => {
   const [fontSize] = useChatFontSize();
   const currMember = useSelector(
-    ({ channel }) => channel.currentChannel.members,
+    ({ room, channel }) =>
+      room.currentRoom?.members || channel.currentChannel?.members,
   );
   const loading = useSelector(
     ({ loading }) => loading['channel/GET_CHANNEL_INFO'],
@@ -39,6 +41,7 @@ const MessageBox = ({
   const loginId = useSelector(({ login }) => login.id);
 
   const dispatch = useDispatch();
+  const { data: searchOptionState } = useSWR('message/search', null);
 
   const isOldMember = useMemo(() => {
     return !loading && typeof currMember != 'undefined'
@@ -67,14 +70,7 @@ const MessageBox = ({
     let messageType = 'message';
     let mentionInfo = [];
 
-    const smallFontSize = Math.max(10, fontSize - 2);
-    // protocol check
-    if (!isBlock && eumTalkRegularExp.test(drawText)) {
-      const processMsg = convertEumTalkProtocol(drawText);
-      messageType = processMsg.type;
-      drawText = processMsg.message;
-      mentionInfo = processMsg.mentionInfo;
-    }
+    let _marking = null;
 
     if (!isMine) {
       if (!(typeof message.senderInfo === 'object')) {
@@ -84,23 +80,32 @@ const MessageBox = ({
       }
     }
 
-    if (!isBlock && messageType == 'message') {
-      // 2. 검색 시 marking 처리 ---> marking은 props로 최하위 컴포넌트 까지 전달
-      /*
-      if (marking) {
-        const regExp = new RegExp(marking, 'gi');
-        drawText = drawText.replace(regExp, item => {
-          return `<span style='background-color : #222; color : #fff;'>${item}</span>`;
-        });
+    if (searchOptionState?.type === 'Context') {
+      _marking = marking;
+    } else if (
+      searchOptionState?.type === 'Name' &&
+      searchOptionState?.value &&
+      message?.sender
+    ) {
+      if (message.sender === searchOptionState.value) {
+        _marking = '.*';
       }
-      */
+    }
 
+    const smallFontSize = Math.max(10, fontSize - 2);
+    // protocol check
+    if (!isBlock && eumTalkRegularExp.test(drawText)) {
+      const processMsg = convertEumTalkProtocol(drawText);
+      messageType = processMsg.type;
+      drawText = processMsg.message;
+      mentionInfo = processMsg.mentionInfo;
+    }
+
+    if (!isBlock && messageType == 'message') {
       let index = 0;
-
       if (drawText) {
         index = 1;
       }
-
       // 링크 썸네일 처리
       if (message.linkInfo) {
         let linkInfoObj = null;
@@ -366,7 +371,7 @@ const MessageBox = ({
                         : `msgtxt ${messageType}`
                     }
                     eleId={id}
-                    marking={marking}
+                    marking={_marking}
                     mentionInfo={mentionInfo}
                     isMine={isMine}
                   >
@@ -425,7 +430,7 @@ const MessageBox = ({
                       : `msgtxt ${messageType}`
                   }
                   eleId={id}
-                  marking={marking}
+                  marking={_marking}
                   mentionInfo={mentionInfo}
                   isMine={isMine}
                 >
@@ -441,7 +446,15 @@ const MessageBox = ({
         </>
       );
     }
-  }, [message, marking, fontSize, nameBox, timeBox, isBlock]);
+  }, [
+    message,
+    marking,
+    fontSize,
+    nameBox,
+    timeBox,
+    isBlock,
+    searchOptionState,
+  ]);
 
   return drawMessage;
 };
