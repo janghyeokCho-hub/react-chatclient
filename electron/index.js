@@ -127,11 +127,6 @@ app.whenReady().then(() => {
       .catch(error => console.log(`An error ocurred: ${error}`));
   }
 
-  globalShortcut.register('ESC', () => {
-    if (cropWin) {
-      cropWin.close();
-    }
-  });
 });
 
 const appReady = async () => {
