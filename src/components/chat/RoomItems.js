@@ -45,7 +45,7 @@ const RoomItems = ({
     const pinned = [];
     const unpinned = [];
     const result = [];
-
+    
     if (pinToTopLimit >= 0) {
       rooms.forEach(r => {
         const setting = getRoomSettings(r);
