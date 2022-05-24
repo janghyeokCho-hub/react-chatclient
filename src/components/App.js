@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch } from 'react-router-dom';
-import { closeWindow, evalConnector } from '@/lib/deviceConnector';
+import { closeWindow, evalConnector, isMainWindow } from '@/lib/deviceConnector';
 import TokenChecker from '@COMMON/TokenChecker';
 import URLChecker from '@COMMON/URLChecker';
 import SocketContainer from '@/containers/socket/SocketContainer';
@@ -53,7 +53,7 @@ class App extends Component {
         const { layer, popLayer } = this.props;
         if (layer.length == 1) {
           popLayer();
-        } else if (DEVICE_TYPE == 'd') {
+        } else if (DEVICE_TYPE == 'd' && !isMainWindow()) {
           closeWindow();
         }
       }
