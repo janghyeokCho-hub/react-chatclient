@@ -12,6 +12,7 @@ import {
   clipboard,
   globalShortcut,
 } from 'electron';
+import address from 'macaddress';
 import path from 'path';
 import url from 'url';
 const fs = require('fs');
@@ -1072,7 +1073,7 @@ ipcMain.on('get-server-configs', async (event, args) => {
 
     const response = await managesvr(
       'get',
-      `/na/config?lang=${lang}`,
+      `/na/nf/config?lang=${lang}`,
       {},
       {
         'Cache-Control': 'public, max-age=86400',
@@ -1576,4 +1577,15 @@ ipcMain.on('full-screen-capture', (_, args) => {
         combineCaptureImage(folderName, combineFolderName);
       }, 500);
     });
+});
+
+ipcMain.handle('req-mac-address', async () => {
+  try {
+    const addr = await address.one();
+    const addrString = addr.split(':').join('');
+    return addrString;
+  } catch (err) {
+    logger.info('Get mac-address occured an error: ' + JSON.stringify(err));
+    return null;
+  }
 });

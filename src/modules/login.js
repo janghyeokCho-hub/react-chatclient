@@ -43,6 +43,8 @@ import {
 // ChineseWall
 import { getChineseWall } from '@/lib/orgchart';
 
+import { getConfig } from '@/lib/util/configUtil';
+
 const [LOGIN_REQUEST, LOGIN_REQUEST_SUCCESS, LOGIN_REQUEST_FAILURE] =
   createRequestActionTypes('login/REQUEST');
 
@@ -79,6 +81,8 @@ const RESYNC = 'login/RESYNC';
 
 const SET_CHINESEWALL = 'login/SET_CHINESEWALL';
 
+const PRE_LOGIN_SUCCESS = 'login/PRE_LOGIN_SUCCESS';
+
 export const loginRequest = createAction(LOGIN_REQUEST);
 export const extLoginRequest = createAction(EXT_LOGIN_REQUEST);
 export const loginInit = createAction(LOGIN_INIT);
@@ -97,6 +101,8 @@ export const changeMyInfo = createAction(CHANGE_MYINFO);
 
 export const reSync = createAction(RESYNC);
 export const setChineseWall = createAction(SET_CHINESEWALL);
+
+export const preLoginSuccess = createAction(PRE_LOGIN_SUCCESS);
 
 function createLoginRequestSaga(loginType, syncType) {
   const SUCCESS = `${loginType}_SUCCESS`;
@@ -123,6 +129,9 @@ function createLoginRequestSaga(loginType, syncType) {
             // login 후처리 시작
             // 동기화 시작
             yield put(startLoading(syncType));
+
+            // LOGIN SUCCESS 처리 전 hook
+            yield put(preLoginSuccess(response.data?.result));
 
             // desktop sync
             if (DEVICE_TYPE == 'd') {
@@ -308,6 +317,10 @@ function createExtLoginRequestSaga(loginType, syncType) {
             // login 후처리 시작
             // 동기화 시작
             yield put(startLoading(syncType));
+            
+            // LOGIN SUCCESS 처리 전 hook
+            yield put(preLoginSuccess(response.data?.result));
+
             // 1. presence online 처리
             if (DEVICE_TYPE == 'd') {
               yield call(presenceApi.pubPresence, {
@@ -481,7 +494,11 @@ function createSyncTokenRequestSaga(type) {
       try {
         const result = action.payload.result;
         if (result.status == 'SUCCESS') {
-          const authData = result.userInfo;
+          const authData = result?.userInfo;
+
+          // LOGIN SUCCESS 처리 전 hook
+          yield put(preLoginSuccess(authData));
+
           // login 후처리 시작
 
           if (action.payload.sync) {
@@ -610,12 +627,32 @@ function createReSyncRequestSaga() {
 
 const reSyncRequestSaga = createReSyncRequestSaga();
 
+function* preLoginSuccessSaga(action) {
+  const isSaaSClient = getConfig('IsSasSClient', 'N') === 'Y';
+  if (isSaaSClient && action.payload?.CompanyCode) {
+    /**
+     * @TODO fetch SaaS configurations
+     */
+    
+    const response = yield call(loginApi.getSystemConfigSaaS, {
+      companyCode: action.payload.CompanyCode
+    });
+    if (response?.data?.result?.config) {
+      window.covi.config = {
+        ...window.covi.config,
+        ...response.data.result.config,
+      }
+    }
+  }
+}
+
 export function* loginSaga() {
   yield takeLatest(LOGIN_REQUEST, loginRequestSaga);
   yield takeLatest(EXT_LOGIN_REQUEST, extLoginRequestSaga);
   yield takeLatest(LOGOUT_REQUEST, logoutRequestSaga);
   yield takeLatest(SYNC_TOKEN_REQUEST, syncTokenRequestSaga);
   yield takeLatest(RESYNC, reSyncRequestSaga);
+  yield takeLatest(PRE_LOGIN_SUCCESS, preLoginSuccessSaga);
 }
 
 const initialState = {

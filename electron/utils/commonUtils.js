@@ -457,7 +457,7 @@ export const reloadApp = clearConfig => {
 
     managesvr(
       'get',
-      `/na/config?lang=${lang}`,
+      `/na/nf/config?lang=${lang}`,
       {},
       {
         'Cache-Control': 'public, max-age=86400',
