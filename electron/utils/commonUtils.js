@@ -189,11 +189,44 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
           });
 
           // click evt 정의
-          noti.on('click', e => {
-            openFocusRoom(roomID, payload.isChannel);
-          });
+          // noti.on('click', e => {
+          //   openFocusRoom(roomID, payload.isChannel);
+          // });
 
-          noti.show();
+          // noti.show();
+
+          
+          const WindowsToaster = require("node-notifier").WindowsToaster;
+            const notifier = new WindowsToaster({
+              withFallback: false
+            });
+        
+          console.log('notifier',notifier)
+          notifier.notify(
+            {
+              title: title,
+              message: message,
+              icon: localIconImage, // Absolute path (doesn't work on balloons)
+              sound: true, // Only Notification Center or Windows Toasters
+              // wait: false // Wait with callback, until user action is taken against notification
+            },
+            function(err, response) {
+              console.log('response', response);
+              console.log('err',err)
+              // response 값이 'activate' 일때가 알림 클릭시
+              if (response === 'activate') {
+                openFocusRoom(roomID, payload.isChannel);
+        
+              }
+              // Response is response from notification
+            }
+          );
+        
+     
+ 
+
+
+
         }
       }
 
