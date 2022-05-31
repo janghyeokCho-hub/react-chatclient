@@ -40,6 +40,7 @@ export const onNewMessage = payload => {
       } else {
         focusWin = BrowserWindow.fromId(1);
       }
+      focusWin.blur();
 
       if (!focusWin.isVisible() && !focusWin.isMinimized()) {
         // tray

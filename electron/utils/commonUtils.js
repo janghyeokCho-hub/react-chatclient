@@ -168,6 +168,7 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
 
     if (isNoti) {
       if (exportProps.isWin && global?.CUSTOM_ALARM) {
+
         // custom toast 사용
         showCustomAlarm({
           title: title,
@@ -181,21 +182,7 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
           },
         });
       } else {
-        if (Notification.isSupported()) {
-          const noti = new Notification({
-            title: title,
-            icon: localIconImage,
-            body: message,
-          });
-
-          // click evt 정의
-          // noti.on('click', e => {
-          //   openFocusRoom(roomID, payload.isChannel);
-          // });
-
-          // noti.show();
-
-          
+        if (Notification.isSupported()) {          
           const WindowsToaster = require("node-notifier").WindowsToaster;
             const notifier = new WindowsToaster({
               withFallback: false
@@ -208,7 +195,7 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
               message: message,
               icon: localIconImage, // Absolute path (doesn't work on balloons)
               sound: true, // Only Notification Center or Windows Toasters
-              // wait: false // Wait with callback, until user action is taken against notification
+              wait: false // Wait with callback, until user action is taken against notification
             },
             function(err, response) {
               console.log('response', response);
@@ -218,15 +205,8 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
                 openFocusRoom(roomID, payload.isChannel);
         
               }
-              // Response is response from notification
             }
           );
-        
-     
- 
-
-
-
         }
       }
 
@@ -239,6 +219,11 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
 
 const openFocusRoom = (roomID, isChannel) => {
   logger.info(`click roomID : ${roomID}`);
+  
+ const MainWindow = BrowserWindow.fromId(1);
+  MainWindow.flashFrame(false);
+  MainWindow.focus();
+
 
   const id = ROOM_WIN_MAP[roomID];
   let focusWin = null;
@@ -256,14 +241,22 @@ const openFocusRoom = (roomID, isChannel) => {
     focusWin.webContents.send('onAlarmClick', { roomID, isChannel });
   }
 
-  if (focusWin.isMinimized()) {
-    focusWin.restore();
-  } else if (!focusWin.isVisible()) {
-    focusWin.show();
-  }
-
+  focusWin.setAlwaysOnTop(true, "normal");
+  focusWin.setVisibleOnAllWorkspaces(true);
+  focusWin.setFullScreenable(false);
+  focusWin.show();
+  focusWin.restore();
   focusWin.flashFrame(false);
   focusWin.focus();
+
+
+  setTimeout(() => {
+    MainWindow.setAlwaysOnTop(false);
+    focusWin.setAlwaysOnTop(false);
+    MainWindow.blur();
+    focusWin.blur()
+  }, 100);
+
 };
 
 /** 쪽지 push알림 */
