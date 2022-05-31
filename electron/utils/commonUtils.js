@@ -10,6 +10,7 @@ import * as netUtils from 'node-macaddress';
 import { openNoteWindow } from './note';
 import { networkInterfaces } from 'os';
 
+
 const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
   let result = {
     blockChat: false,
@@ -191,6 +192,7 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
           console.log('notifier',notifier)
           notifier.notify(
             {
+              appID:'com.covision.eumtalk',
               title: title,
               message: message,
               icon: localIconImage, // Absolute path (doesn't work on balloons)
