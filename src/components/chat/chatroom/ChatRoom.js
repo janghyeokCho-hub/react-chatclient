@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import loadable from '@loadable/component';
-import useSWR from 'swr';
-
 import LoadingWrap from '@COMMON/LoadingWrap';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import {
@@ -203,7 +201,7 @@ const ChatRoom = ({ match, roomInfo }) => {
     [roomID, dispatch],
   );
 
-  useEffect(()=>{
+  useEffect(() => {
     const setCtrlFEventListner = e => {
       if (e.ctrlKey && e.key == 'f') {
         setSearchVisible(true);
@@ -215,9 +213,7 @@ const ChatRoom = ({ match, roomInfo }) => {
     return () => {
       window.removeEventListener('keydown', setCtrlFEventListner);
     };
-
-  },[])
-
+  }, []);
 
   return (
     <>

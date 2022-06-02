@@ -1,27 +1,29 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { getRooms, openRoom, updateRooms } from '@/modules/room';
 import SearchBar from '@COMMON/SearchBar';
 import RoomItems from '@C/chat/RoomItems';
-import { openPopup } from '@/lib/common';
 import useTyping from '@/hooks/useTyping';
 import { setChineseWall } from '@/modules/login';
 import { getChineseWall } from '@/lib/orgchart';
 import { isMainWindow } from '@/lib/deviceConnector';
+import { getConfig } from '@/lib/util/configUtil';
 
 const ChatRoomContainer = () => {
+  const { id } = useSelector(({ login }) => ({
+    id: login.id,
+  }));
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [searchText, setSearchText] = useState('');
   const [listMode, setListMode] = useState('N'); //Normal, Search
   const [searchList, setSearchList] = useState([]);
-  const myInfo = useSelector(({ login }) => login.userInfo);
-  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [chineseWallState, setChineseWallState] = useState([]);
 
   const roomList = useSelector(({ room }) => room.rooms);
   const viewType = useSelector(({ room }) => room.viewType);
   const loading = useSelector(({ loading }) => loading['room/GET_ROOMS']);
   const userId = useSelector(({ login }) => login.id);
-  const { needAlert, confirm } = useTyping();
+  const { confirm } = useTyping();
 
   const dispatch = useDispatch();
 
@@ -35,8 +37,7 @@ const ChatRoomContainer = () => {
   useEffect(() => {
     const getChineseWallList = async () => {
       const { result, status } = await getChineseWall({
-        userId: myInfo?.id,
-        myInfo,
+        userId: id,
       });
       if (status === 'SUCCESS') {
         setChineseWallState(result);
@@ -51,16 +52,21 @@ const ChatRoomContainer = () => {
     if (chineseWall?.length) {
       setChineseWallState(chineseWall);
     } else {
-      getChineseWallList();
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+      }
     }
 
     return () => {
       setChineseWallState([]);
     };
-  }, []);
+  }, [chineseWall]);
 
   useEffect(() => {
-    if (listMode == 'S') {
+    if (listMode === 'S') {
       handleSearch(searchText);
     }
   }, [roomList]);
@@ -132,18 +138,18 @@ const ChatRoomContainer = () => {
           handleSearch(e.target.value);
         }}
       />
-      {listMode == 'N' && (
+      {listMode === 'N' && (
         <>
-          {roomList?.length > 0 && (
+          {roomList?.length && (
             <RoomItems
               rooms={roomList}
               loading={loading}
               onRoomChange={handleRoomChange}
-              isDoubleClick={viewType == 'S' && SCREEN_OPTION != 'G'}
+              isDoubleClick={viewType === 'S' && SCREEN_OPTION !== 'G'}
               chineseWall={chineseWallState}
             />
           )}
-          {roomList?.length == 0 && (
+          {!roomList?.length && (
             <div className="nodataBox" style={{ marginTop: '80px' }}>
               <p className="subtxt">
                 {covi.getDic(
@@ -155,12 +161,12 @@ const ChatRoomContainer = () => {
           )}
         </>
       )}
-      {listMode == 'S' && (
+      {listMode === 'S' && (
         <RoomItems
           rooms={searchList}
           loading={false}
           onRoomChange={handleRoomChange}
-          isDoubleClick={viewType == 'S' && SCREEN_OPTION != 'G'}
+          isDoubleClick={viewType === 'S' && SCREEN_OPTION !== 'G'}
           chineseWall={chineseWallState}
         />
       )}

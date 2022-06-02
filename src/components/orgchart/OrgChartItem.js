@@ -1,14 +1,14 @@
 // orgchartitem
 import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addFavorite, addContact } from '@/lib/contactUtil';
+import { addContact } from '@/lib/contactUtil';
 import RightConxtMenu from '@COMMON/popup/RightConxtMenu';
 import UserInfoBox from '@COMMON/UserInfoBox';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { openPopup } from '@/lib/common';
 import { useSyncFavorite } from '@/hooks/useSyncFavorite';
 
-const OrgChartItem = ({ result }) => {
+const OrgChartItem = ({ result, chineseWall = [] }) => {
   const contacts = useSelector(({ contact }) => contact.contacts);
   const viewType = useSelector(({ room }) => room.viewType);
   const rooms = useSelector(
@@ -121,6 +121,7 @@ const OrgChartItem = ({ result }) => {
         userInfo={result}
         isInherit={false}
         isClick={result.type == 'U' ? true : false}
+        chineseWall={chineseWall}
       />
     </RightConxtMenu>
   );
