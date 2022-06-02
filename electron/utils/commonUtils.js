@@ -189,23 +189,18 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
               withFallback: false
             });
         
-          console.log('notifier',notifier)
           notifier.notify(
             {
-              appID:'com.covision.eumtalk',
+              appID:exportProps.appId,
               title: title,
               message: message,
-              icon: localIconImage, // Absolute path (doesn't work on balloons)
-              sound: true, // Only Notification Center or Windows Toasters
+              icon: localIconImage, 
+              sound: true, 
               wait: false // Wait with callback, until user action is taken against notification
             },
             function(err, response) {
-              console.log('response', response);
-              console.log('err',err)
-              // response 값이 'activate' 일때가 알림 클릭시
-              if (response === 'activate') {
-                openFocusRoom(roomID, payload.isChannel);
-        
+              if (response !== 'timeout') {
+                openFocusRoom(roomID, payload.isChannel);       
               }
             }
           );
