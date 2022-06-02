@@ -29,7 +29,7 @@ const ChannelContainer = () => {
   const viewType = useSelector(({ channel }) => channel.viewType);
   const loading = useSelector(({ loading }) => loading['channel/GET_CHANNELS']);
   const userId = useSelector(({ login }) => login.id);
-  const { needAlert, confirm } = useTyping();
+  const { confirm } = useTyping();
 
   const dispatch = useDispatch();
 
@@ -42,24 +42,17 @@ const ChannelContainer = () => {
     [dispatch],
   );
 
-  // const handleChannelChange = useCallback(
-  //   roomId => {
-  //     dispatch(openChannel({ roomId }));
-  //   },
-  //   [dispatch],
-  // );
-
   const handleSearchChange = useCallback(
     e => {
       const changeVal = e.target.value;
       setSearchText(changeVal);
 
-      if (changeVal == '') {
+      if (!!changeVal) {
         setListMode('N');
       } else {
         setSearchLoading(true);
         let reqDatas;
-        if (IsSaaSClient == 'Y') {
+        if (IsSaaSClient === 'Y') {
           reqDatas = {
             type: 'name',
             value: changeVal,
@@ -76,7 +69,7 @@ const ChannelContainer = () => {
             reqDatas,
           })
           .then(({ data }) => {
-            if (data.status == 'SUCCESS') {
+            if (data.status === 'SUCCESS') {
               // setSearchList(data.result);
               const searchChannels = data.result;
               searchChannels.map(sc => {
@@ -97,7 +90,8 @@ const ChannelContainer = () => {
             setListMode('S');
             setSearchLoading(false);
           })
-          .catch(() => {
+          .catch(e => {
+            console.error(e);
             // 초기화
             setSearchText('');
             setSearchLoading(false);
@@ -111,8 +105,9 @@ const ChannelContainer = () => {
     const getChineseWallList = async () => {
       const { result, status } = await getChineseWall({
         userId: myInfo?.id,
-        myInfo,
       });
+      console.log('result : ', result);
+      console.log('status : ', status);
       if (status === 'SUCCESS') {
         setChineseWallState(result);
         if (DEVICE_TYPE === 'd' && !isMainWindow()) {
@@ -123,10 +118,16 @@ const ChannelContainer = () => {
       }
     };
 
+    console.log('chineseWall : ', chineseWall);
     if (chineseWall?.length) {
       setChineseWallState(chineseWall);
     } else {
-      getChineseWallList();
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+      }
     }
 
     return () => {
@@ -138,13 +139,17 @@ const ChannelContainer = () => {
     // channelList가 변할때 categoryCode가 null인 속성들을 찾아 요청 및 데이터 채워줌
     let updateList = [];
     if (channelList) {
+      console.log('channelList : ', channelList);
       channelList.forEach(c => {
-        if (c.categoryCode === null) updateList.push(c.roomId);
-        else if (c.updateDate === null) updateList.push(c.roomId);
+        if (!c.categoryCode) {
+          updateList.push(c.roomId);
+        } else if (!c.updateDate) {
+          updateList.push(c.roomId);
+        }
       });
     }
 
-    if (updateList.length > 0) {
+    if (updateList?.length) {
       dispatch(
         updateChannels({
           userId,
@@ -155,13 +160,13 @@ const ChannelContainer = () => {
   }, [channelList]);
 
   useEffect(() => {
-    if (channelList == null || channelList.length == 0)
-      dispatch(
-        getChannels({
-          userId,
-          members: [userId],
-        }),
-      );
+    if (!channelList?.length) console.log('channelList.length 0000000 ');
+    dispatch(
+      getChannels({
+        userId,
+        members: [userId],
+      }),
+    );
   }, []);
 
   return (
@@ -170,29 +175,29 @@ const ChannelContainer = () => {
         placeholder={covi.getDic('Msg_channelSearch', '채널이름 검색')}
         input={searchText}
         onChange={handleSearchChange}
-        disabled={isExtUser == 'Y'}
+        disabled={isExtUser === 'Y'}
       />
       <div className="ListDivisionLine noarrow">
-        {listMode == 'N'
+        {listMode === 'N'
           ? covi.getDic('SubscribedChannel', '가입한 채널')
           : covi.getDic('SearchResult', '검색 결과')}
       </div>
-      {listMode == 'N' && (
+      {listMode === 'N' && (
         <ChannelItems
           channels={channelList}
           loading={loading}
           onChannelChange={handleChannelChange}
-          isDoubleClick={viewType == 'S' && SCREEN_OPTION != 'G'}
+          isDoubleClick={viewType === 'S' && SCREEN_OPTION !== 'G'}
           isSearch={listMode === 'S'}
           chineseWall={chineseWallState}
         />
       )}
-      {listMode == 'S' && (
+      {listMode === 'S' && (
         <ChannelItems
           channels={searchList}
           loading={searchLoading}
           onChannelChange={handleChannelChange}
-          isDoubleClick={viewType == 'S' && SCREEN_OPTION != 'G'}
+          isDoubleClick={viewType === 'S' && SCREEN_OPTION !== 'G'}
           isSearch={listMode === 'S'}
           chineseWall={chineseWallState}
         />

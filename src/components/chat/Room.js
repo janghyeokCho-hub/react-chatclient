@@ -87,7 +87,6 @@ const Room = ({
       });
       const isFile = !!lastMessageInfo?.File;
       const result = isFile ? blockFile : blockChat;
-
       if (result) {
         setLastMessageText(covi.getDic('BlockChat', '차단된 메시지 입니다.'));
       } else {
@@ -96,7 +95,7 @@ const Room = ({
     } else {
       makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
     }
-  }, [room?.lastMessage, chineseWall]);
+  }, [room, chineseWall]);
 
   const filterMember = useMemo(
     () => getFilterMember(room.members, id, room.roomType),
@@ -104,14 +103,14 @@ const Room = ({
   );
 
   useEffect(() => {
-    if (DEVICE_TYPE == 'd') {
+    if (DEVICE_TYPE === 'd') {
       const userConfig = evalConnector({
         method: 'getGlobal',
         name: 'USER_SETTING',
       });
 
       // notiExRooms에 없거나 등록된경우에도 false로 등록됨으로 not 연산자 처리
-      if (userConfig && userConfig.config) {
+      if (userConfig?.config) {
         const notiExRooms = userConfig.get(`notiExRooms.${room.roomID}`);
         setIsNoti(!notiExRooms);
       }
@@ -144,7 +143,7 @@ const Room = ({
           return (
             <>
               <span>{room.roomName}</span>
-              {room.roomType != 'B' && (
+              {room.roomType !== 'B' && (
                 <span className="roomMemberCtn">
                   {room.members && `(${room.members.length})`}
                 </span>
@@ -152,7 +151,7 @@ const Room = ({
             </>
           );
         } else {
-          if (room.roomType == 'B') {
+          if (room.roomType === 'B') {
             return (
               <>
                 <span>{'이음이'}</span>
@@ -161,18 +160,19 @@ const Room = ({
           }
         }
 
-        if (!filterMember.length)
+        if (!filterMember.length) {
           return <>{covi.getDic('NoChatMembers', '대화상대없음')}</>;
+        }
 
         return (
           <>
             <span>
               {filterMember.map((item, index) => {
-                if (index == filterMember.length - 1) return getJobInfo(item);
+                if (index === filterMember.length - 1) return getJobInfo(item);
                 else return getJobInfo(item) + ',';
               })}
             </span>
-            {room.roomType != 'A' && room.roomType != 'B' && room.members && (
+            {room.roomType !== 'A' && room.roomType !== 'B' && room.members && (
               <span className="roomMemberCtn">({room.members.length})</span>
             )}
           </>
@@ -188,7 +188,7 @@ const Room = ({
 
       const winName = `wrf${room.roomID}`;
 
-      const openURL = `${DEVICE_TYPE == 'd' ? '#' : ''}/client/nw/chatroom/${
+      const openURL = `${DEVICE_TYPE === 'd' ? '#' : ''}/client/nw/chatroom/${
         room.roomID
       }`;
 
@@ -196,7 +196,7 @@ const Room = ({
 
       dispatch(newWinRoom({ id: room.roomID, obj: roomObj, name: winName }));
     } else if (dbClickEvent && room.newWin) {
-      if (DEVICE_TYPE == 'd') {
+      if (DEVICE_TYPE === 'd') {
         try {
           if (room.winObj) {
             if (room.winObj.isMinimized()) {

@@ -7,7 +7,7 @@ import Contact from '@/components/contact/Contact';
     - list : 대화상대 리스트 
     - checklist : 채팅방 생성 및 채팅방 초대
 */
-const ContactContainer = ({ viewType, checkObj }) => {
+const ContactContainer = ({ viewType, checkObj, chineseWall = [] }) => {
   const contactList = useSelector(({ contact }) => contact.contacts);
   const deptCode = useSelector(({ login }) => login.userInfo.DeptCode);
   const dispatch = useDispatch();
@@ -28,6 +28,7 @@ const ContactContainer = ({ viewType, checkObj }) => {
             contact={contact}
             viewType={viewType}
             checkObj={checkObj}
+            chineseWall={chineseWall}
           />
         ))}
     </>

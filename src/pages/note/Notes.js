@@ -25,6 +25,7 @@ import ProfileBox from '@/components/common/ProfileBox';
 import { setChineseWall } from '@/modules/login';
 import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
 import { isMainWindow } from '@/lib/deviceConnector';
+import { getConfig } from '@/lib/util/configUtil';
 
 function popupResult(dispatch, message) {
   openPopup(
@@ -372,15 +373,16 @@ function _NoteItem({ note, viewType, history, blockChat, blockFile }) {
 const NoteItem = withRouter(_NoteItem);
 
 export default function Notes({ viewType, noteList }) {
-  const userInfo = useSelector(({ login }) => login.userInfo);
+  const { id } = useSelector(({ login }) => ({
+    id: login.id,
+  }));
   const userChineseWall = useSelector(({ login }) => login.chineseWall);
   const [chineseWallState, setChineseWallState] = useState([]);
 
   useEffect(() => {
     const getChineseWallList = async () => {
       const { result, status } = await getChineseWall({
-        userId: userInfo?.id,
-        myInfo: userInfo,
+        userId: id,
       });
       if (status === 'SUCCESS') {
         setChineseWallState(result);
@@ -395,7 +397,12 @@ export default function Notes({ viewType, noteList }) {
     if (userChineseWall?.length) {
       setChineseWallState(userChineseWall);
     } else {
-      getChineseWallList();
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+      }
     }
 
     return () => {

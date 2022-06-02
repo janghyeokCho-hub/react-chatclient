@@ -22,9 +22,7 @@ import { openLayer } from '@/lib/common';
 import ShareContainer from '@C/share/ShareContainer';
 import { checkFileTokenValidation } from '@/lib/fileUpload/coviFile';
 import { getConfig } from '@/lib/util/configUtil';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
-import { isMainWindow } from '@/lib/deviceConnector';
+import { isBlockCheck } from '@/lib/orgchart';
 
 const ListScrollBox = loadable(() =>
   import('@/components/chat/chatroom/normal/ListScrollBox'),
@@ -46,8 +44,7 @@ const makeMessage = async msg => {
 };
 
 const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
-  const userInfo = useSelector(({ login }) => login.userInfo);
-  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const tempMessage = useSelector(({ message }) => message.tempChannelMessage);
   const tempFiles = useSelector(({ message }) => message.tempFiles);
   const messages = useSelector(({ channel }) => channel.messages);
@@ -64,7 +61,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const [showNewMessageSeperator, setShowNewMessageSeperator] = useState(false);
   const [clickNewMessageSeperator, setClickNewMessageSeperator] =
     useState(false);
-  const [chineseWallState, setChineseWallState] = useState([]);
   const [noticeIsBlock, setNoticeIsBlock] = useState(false);
 
   const dispatch = useDispatch();
@@ -121,33 +117,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       }, 500);
     }
   }, [clickNewMessageSeperator]);
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: userInfo?.id,
-        myInfo: userInfo,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (userChineseWall?.length) {
-      setChineseWallState(userChineseWall);
-    } else {
-      getChineseWallList();
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, []);
 
   const getNext = useCallback(
     roomID => {
@@ -415,7 +384,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       let returnJSX = [];
       messages.forEach((message, index) => {
         let isBlock = false;
-        if (message?.isMine === 'N' && chineseWallState?.length) {
+        if (message?.isMine === 'N' && chineseWall?.length) {
           const senderInfo = isJSONStr(message?.senderInfo)
             ? JSON.parse(message?.senderInfo)
             : message?.senderInfo;
@@ -424,7 +393,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               ...senderInfo,
               id: message.sender,
             },
-            chineseWall: chineseWallState,
+            chineseWall,
           });
           const isFile = !!message?.fileInfos;
           isBlock = isFile ? blockFile : blockChat;
@@ -530,7 +499,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
 
       return returnJSX;
     }
-  }, [messages, chineseWallState]);
+  }, [messages, chineseWall]);
 
   const drawTempMessage = useMemo(() => {
     return tempMessage.map(message => {
