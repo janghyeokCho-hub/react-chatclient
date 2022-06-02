@@ -235,7 +235,7 @@ function createGetRoomInfoSaga() {
           payload: {
             ...data,
             rooms: [],
-          }
+          },
         });
       }
 
@@ -559,7 +559,6 @@ const modifyRoomSettingSaga = createModifyRoomSettingSaga();
 
 function createRematchingMemberSaga() {
   return function* (action) {
-    console.log(action.payload);
     if (action.payload) {
       try {
         const response = yield call(roomApi.rematchMember, {
@@ -820,7 +819,9 @@ const room = handleActions(
 
         // current room 내의 setting 은 Object type으로 처리
         try {
-          draft.currentRoom.setting = isJSONStr(newRoom.setting) ? JSON.parse(newRoom.setting) : newRoom.setting;
+          draft.currentRoom.setting = isJSONStr(newRoom.setting)
+            ? JSON.parse(newRoom.setting)
+            : newRoom.setting;
         } catch (e) {
           draft.currentRoom.setting = null;
         }
@@ -957,7 +958,6 @@ const room = handleActions(
        */
       return produce(state, draft => {
         const { payload } = action;
-        console.log('ROOM_MESSAGE_DELETE  ', payload);
         if (!payload) {
           return;
         }
@@ -977,21 +977,22 @@ const room = handleActions(
 
         /* lastMessage 교체 */
         if (payload.lastMessage) {
-          console.log('Update LastMessage   ', payload.lastMessage);
           const room = draft.rooms.find(
             r => `${r.roomID}` === `${payload.roomID}`,
           );
+
           if (!room) {
             return;
           }
+
           const lastMessage = {
             Message: payload.lastMessage.context,
             File: payload.lastMessage.fileInfos,
+            sender: payload.lastMessage.sender || '',
+            companyCode: payload.lastMessage.senderInfo?.companyCode || '',
+            deptCode: payload.lastMessage.senderInfo?.deptCode || '',
           };
-          console.log(
-            `Update lastMessage on Room ${room.roomID}: `,
-            lastMessage,
-          );
+
           if (draft.currentRoom && room.roomID === draft.currentRoom.roomID) {
             draft.currentRoom.lastMessage = lastMessage;
           }
@@ -1034,12 +1035,12 @@ const room = handleActions(
               draft.currentRoom = changeRoom;
               draft.messages = [];
             }
-
           }
           // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
           try {
-            draft.currentRoom.setting = isJSONStr(changeRoom.setting) ? JSON.parse(changeRoom.setting) : changeRoom.setting;
-
+            draft.currentRoom.setting = isJSONStr(changeRoom.setting)
+              ? JSON.parse(changeRoom.setting)
+              : changeRoom.setting;
           } catch (e) {
             draft.currentRoom.setting = null;
           }
@@ -1384,8 +1385,10 @@ const room = handleActions(
            * action.payload의 첫번째 메시지와 기존 스토어의 첫번째 메시지가 동일하면 > 메시지 중복로드 발생
            * => Array append 처리 생략
            */
-          if (draft.messages?.at(0)?.messageID === action.payload?.messages?.at(0)?.messageID) {
-            console.log('SET_MESSAGES:: mesage duplicate :: ', draft.messages?.at(0)?.messageID, action.payload?.messages?.at(0));
+          if (
+            draft.messages?.at(0)?.messageID ===
+            action.payload?.messages?.at(0)?.messageID
+          ) {
             return;
           }
           draft.messages = [...action.payload.messages, ...draft.messages];
@@ -1523,7 +1526,9 @@ const room = handleActions(
           ) {
             // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
             try {
-              draft.currentRoom.setting = isJSONStr(action.payload.setting) ?  JSON.parse(action.payload.setting) : action.payload.setting;
+              draft.currentRoom.setting = isJSONStr(action.payload.setting)
+                ? JSON.parse(action.payload.setting)
+                : action.payload.setting;
             } catch (e) {
               draft.currentRoom.setting = null;
             }
@@ -1563,7 +1568,7 @@ const room = handleActions(
             originSetting[key] = setting[key];
           }
           room.setting = originSetting;
-          
+
           if (!!draft.currentRoom && draft.currentRoom.roomID === roomID) {
             try {
               for (const [_, key] of Object.keys(setting).entries()) {

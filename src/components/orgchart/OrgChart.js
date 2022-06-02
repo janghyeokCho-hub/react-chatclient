@@ -24,6 +24,7 @@ import AddChatIcon from '@/icons/svg/AddChat';
 */
 
 const OrgChart = ({ viewType, checkObj, group }) => {
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   let searchTimer = null;
   const RENDER_UNIT = 10;
   const userID = useSelector(({ login }) => login.id);
@@ -147,6 +148,7 @@ const OrgChart = ({ viewType, checkObj, group }) => {
             checkObj={checkObj}
             searchData={items}
             handleGroup={handleSearchGroup}
+            chineseWall={chineseWall}
           />
         </Scrollbars>
       )}
@@ -164,6 +166,7 @@ const OrgChart = ({ viewType, checkObj, group }) => {
             searchResult={searchResult}
             searchCompanyCode={searchCompanyCode}
             group={group}
+            chineseWall={chineseWall}
           />
         </Scrollbars>
       )}

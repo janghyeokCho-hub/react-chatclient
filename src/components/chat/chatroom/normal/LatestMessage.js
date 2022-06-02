@@ -6,10 +6,12 @@ import {
   eumTalkRegularExp,
   convertEumTalkProtocolPreview,
 } from '@/lib/common';
+import { isBlockCheck } from '@/lib/orgchart';
 
 let hiddenTimer = null;
 
 const LatestMessage = () => {
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const { latestMessage } = useSelector(({ room }) => ({
     latestMessage: room.messages[room.messages.length - 1],
   }));
@@ -44,12 +46,30 @@ const LatestMessage = () => {
       senderInfo = message.senderInfo;
     }
 
-    context = message.context;
+    let isBlock = false;
+    if (chineseWall.length) {
+      const targetInfo = {
+        ...senderInfo,
+        id: senderInfo.sender,
+      };
+
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo,
+        chineseWall,
+      });
+      const isFile = !!message?.File;
+      isBlock = isFile ? blockFile : blockChat;
+    }
+
+    if (isBlock) {
+      context = covi.getDic('BlockChat', '차단된 메시지 입니다.');
+    } else {
+      context = message.context;
+    }
 
     // protocol check
     if (eumTalkRegularExp.test(context)) {
       const messageObj = convertEumTalkProtocolPreview(context);
-      console.log(messageObj);
       if (messageObj.type == 'emoticon')
         context = covi.getDic('Emoticon', '이모티콘');
       else context = messageObj.message.split('\n')[0];

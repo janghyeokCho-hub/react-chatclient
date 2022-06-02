@@ -7,8 +7,11 @@ import NoticeMessageBox from '@C/chat/message/NoticeMessageBox'; // 그대로 �
 import MoveScrollBox from '@/components/chat/chatroom/move/MoveScrollBox';
 import { format } from 'date-fns';
 import * as messageApi from '@/lib/message';
+import { getMessage } from '@/lib/messageUtil';
+import { isBlockCheck } from '@/lib/orgchart';
+import { isJSONStr } from '@/lib/common';
 
-const MoveList = ({ moveData, roomID }) => {
+const MoveList = ({ moveData, roomID, chineseWall }) => {
   const [messages, setMessages] = useState([]);
   const [moveId, setMoveId] = useState('');
   const [topEnd, setTopEnd] = useState(false);
@@ -35,25 +38,17 @@ const MoveList = ({ moveData, roomID }) => {
     }
   }, [moveData]);
 
-  const getMessage = (roomID, startId, dist) => {
-    const response = messageApi.getChannelMessages({
-      roomId: roomID,
-      startId,
-      loadCnt: 100,
-      dist,
-    });
-
-    return response;
-  };
-
   useEffect(() => {
     if (!loading && !topEnd && nextId > -1) {
       setLoading(true);
-      getMessage(roomID, nextId, 'NEXT')
-        .then(({ data }) => {
-          if (data.status == 'SUCCESS') {
-            if (data.result.length > 0) {
-              setNextMessages(data.result);
+      const getNextMessage = async () => {
+        try {
+          const response = await getMessage(roomID, nextId, 'NEXT');
+          if (response.data.status == 'SUCCESS') {
+            const data = response.data.result;
+
+            if (data.length > 0) {
+              setNextMessages(data);
             } else {
               setTopEnd(true);
               setNextId(-1);
@@ -64,23 +59,27 @@ const MoveList = ({ moveData, roomID }) => {
           }
 
           setLoading(false);
-        })
-        .catch(() => {
+        } catch (e) {
           setTopEnd(true);
           setNextId(-1);
           setLoading(false);
-        });
+        }
+      };
+      getNextMessage();
     }
   }, [nextId]);
 
   useEffect(() => {
     if (!loading && !bottomEnd && beforeId > -1) {
       setLoading(true);
-      getMessage(roomID, beforeId, 'BEFORE')
-        .then(({ data }) => {
-          if (data.status == 'SUCCESS') {
-            if (data.result.length > 0) {
-              setBeforeMessages(data.result);
+      const getBeforeMessage = async () => {
+        try {
+          const response = await getMessage(roomID, beforeId, 'BEFORE');
+          if (response.data.status == 'SUCCESS') {
+            const data = response.data.result;
+
+            if (data.length > 0) {
+              setBeforeMessages(data);
             } else {
               setBottomEnd(true);
               setBeforeId(-1);
@@ -91,12 +90,13 @@ const MoveList = ({ moveData, roomID }) => {
           }
 
           setLoading(false);
-        })
-        .catch(() => {
+        } catch (e) {
           setBottomEnd(true);
           setBeforeId(-1);
           setLoading(false);
-        });
+        }
+      };
+      getBeforeMessage();
     }
   }, [beforeId]);
 
@@ -127,6 +127,22 @@ const MoveList = ({ moveData, roomID }) => {
       );
       let returnJSX = [];
       messages.forEach((message, index) => {
+        let isBlock = false;
+        if (message.isMine === 'N' && chineseWall.length) {
+          const senderInfo = isJSONStr(message.senderInfo)
+            ? JSON.parse(message.senderInfo)
+            : message.senderInfo;
+          const targetInfo = {
+            ...senderInfo,
+            id: senderInfo.sender,
+          };
+          const isFile = !!message.fileInfos;
+          const { blockChat, blockFile } = isBlockCheck({
+            targetInfo,
+            chineseWall,
+          });
+          isBlock = isFile ? blockFile : blockChat;
+        }
         let nameBox = !(message.sender == currentSender);
         let sendDate = format(new Date(message.sendDate), 'yyyyMMdd');
         let nextSendTime = '';
@@ -174,6 +190,7 @@ const MoveList = ({ moveData, roomID }) => {
                 nameBox={nameBox}
                 timeBox={timeBox}
                 id={`msg_${message.messageID}`}
+                isBlock={isBlock}
               ></MessageBox>,
             );
           } else {
@@ -184,6 +201,7 @@ const MoveList = ({ moveData, roomID }) => {
                 isMine={message.isMine == 'Y'}
                 nameBox={nameBox}
                 timeBox={timeBox}
+                isBlock={isBlock}
               ></MessageBox>,
             );
           }
@@ -208,6 +226,7 @@ const MoveList = ({ moveData, roomID }) => {
                 isMine={message.isMine == 'Y'}
                 nameBox={nameBox}
                 timeBox={timeBox}
+                isBlock={isBlock}
               ></NoticeMessageBox>,
             );
           }

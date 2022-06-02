@@ -23,6 +23,7 @@ import { getConfig } from '@/lib/util/configUtil';
 import useOffset from '@/hooks/useOffset';
 import { setChineseWall } from '@/modules/login';
 import { getChineseWall } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
 
 const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
 
@@ -33,7 +34,6 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     viewType: room.viewType,
   }));
   const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
-  const userInfo = useSelector(({ login }) => login.userInfo);
   const userChineseWall = useSelector(({ login }) => login.chineseWall);
 
   const [isNoti, setIsNoti] = useState(true);
@@ -55,8 +55,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
   useEffect(() => {
     const getChineseWallList = async () => {
       const { result, status } = await getChineseWall({
-        userId: userInfo?.id,
-        myInfo: userInfo,
+        userId: id,
       });
       if (status === 'SUCCESS') {
         setChineseWallState(result);
@@ -71,7 +70,12 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     if (userChineseWall?.length) {
       setChineseWallState(userChineseWall);
     } else {
-      getChineseWallList();
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+      }
     }
 
     return () => {
@@ -233,7 +237,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     );
   };
 
-  const handlePhotoSummary = useCallback(() => {
+  const handlePhotoSummary = () => {
     appendLayer(
       {
         component: (
@@ -245,7 +249,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
       },
       dispatch,
     );
-  }, [chineseWallState]);
+  };
 
   const handleFileSummary = () => {
     appendLayer(

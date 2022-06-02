@@ -12,9 +12,7 @@ import { openPopup, getJobInfo, getDictionary } from '@/lib/common';
 import { format } from 'date-fns';
 import useTyping from '@/hooks/useTyping';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
-import { isMainWindow } from '@/lib/deviceConnector';
+import { isBlockCheck } from '@/lib/orgchart';
 
 const UserInfoBox = ({
   userInfo,
@@ -25,8 +23,8 @@ const UserInfoBox = ({
   removeWork,
   onClick,
   onMouseDown,
+  chineseWall = [],
 }) => {
-  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const viewType = useSelector(({ room }) => room.viewType);
   const rooms = useSelector(({ room }) => room.rooms);
   const selectId = useSelector(({ room }) => room.selectId);
@@ -36,36 +34,8 @@ const UserInfoBox = ({
   const nameEl = useRef(null);
   const [picAreaWidth, setPicAreaWidth] = useState('calc(100% - 250px)');
   const [picMaxWidth, setPicMaxWidth] = useState(0);
-  const [chineseWallState, setChineseWallState] = useState([]);
   const dispatch = useDispatch();
   const { confirm } = useTyping();
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: myInfo?.id,
-        myInfo,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-    } else {
-      getChineseWallList();
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, [userInfo, chineseWall]);
 
   // removeWork: 사용자의 업무 표기박스 미표기 플래그
   const info = isMine
@@ -134,15 +104,10 @@ const UserInfoBox = ({
       }
       if (isClick) {
         if (userInfo.pChat == 'Y') {
-          console.log('userInfo : ', userInfo);
-          console.log('chineseWall : ', chineseWallState);
           const { blockChat, blockFile } = isBlockCheck({
             targetInfo: userInfo,
-            chineseWall: chineseWallState,
+            chineseWall,
           });
-          console.log('blockChat : ', blockChat);
-          console.log('blockFile : ', blockFile);
-          console.log(blockChat && blockFile);
           if (blockChat && blockFile) {
             openPopup(
               {
@@ -186,29 +151,20 @@ const UserInfoBox = ({
         checkRef && checkRef.current && checkRef.current.click();
       }
     },
-    [
-      isClick,
-      viewType,
-      userInfo,
-      rooms,
-      selectId,
-      myInfo,
-      dispatch,
-      checkRef,
-      chineseWallState,
-    ],
+    [isClick, viewType, userInfo, rooms, selectId, myInfo, dispatch, checkRef],
   );
 
   const drawUserInfoBox = useMemo(() => {
     const type = userInfo.type;
     console.log('usertype >> ', userInfo.type);
     if (type == 'G') {
-      return <>
+      return (
+        <>
           <div className="profile-photo group"></div>
           <div className="name">{getDictionary(info.name)}</div>
           {info?.dept && <div className="team">{getDeptName()}</div>}
-          </>
-      ;
+        </>
+      );
     } else if (type == 'B') {
     } else {
       const getAdditionalInfoBox = info => {

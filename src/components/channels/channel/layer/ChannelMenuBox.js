@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { clearLayer, appendLayer, openPopup } from '@/lib/common';
@@ -24,8 +24,6 @@ import ColorBox from '@COMMON/buttons/ColorBox';
 import { insert, remove } from '@/lib/util/storageUtil';
 import { closureChannel } from '@/lib/channel';
 import useOffset from '@/hooks/useOffset';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall } from '@/lib/orgchart';
 
 const enabledExtUser = getConfig('EnabledExtUser', 'Y');
 const SMTPConfig = getConfig('SMTPConfig', 'Y');
@@ -35,46 +33,16 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   const { id } = useSelector(({ login }) => ({
     id: login.id,
   }));
-  const userInfo = useSelector(({ login }) => login.userInfo);
-  const userChineseWall = useSelector(({ login }) => login.chineseWall);
-
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [isNoti, setIsNoti] = useState(true);
   const [channelAuth, setChannelAuth] = useState(false);
   const [channelAdminMembers, setChannelAdminMembers] = useState([]);
-  const [chineseWallState, setChineseWallState] = useState([]);
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: userInfo?.id,
-        myInfo: userInfo,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (userChineseWall?.length) {
-      setChineseWallState(userChineseWall);
-    } else {
-      getChineseWallList();
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (DEVICE_TYPE == 'd') {
+    if (DEVICE_TYPE === 'd') {
       const userConfig = evalConnector({
         method: 'getGlobal',
         name: 'USER_SETTING',
@@ -89,8 +57,8 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   useEffect(() => {
     if (channelInfo) {
       const tempAdmin = [];
-      channelInfo.members.forEach(item => {
-        if (item.channelAuth == 'Y') {
+      channelInfo.members?.forEach(item => {
+        if (item.channelAuth === 'Y') {
           tempAdmin.push(item);
 
           if (item.id == id) {
@@ -158,7 +126,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
       () => {
         if (isNewWin) {
           window.onunload = null;
-          if (DEVICE_TYPE == 'b') {
+          if (DEVICE_TYPE === 'b') {
             if (
               window.opener &&
               typeof window.opener.parent.newWinChannelLeaveCallback ==
@@ -182,8 +150,8 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   };
 
   const handleAlarm = () => {
-    if (DEVICE_TYPE == 'd') {
-      const result = evalConnector({
+    if (DEVICE_TYPE === 'd') {
+      evalConnector({
         method: 'sendSync',
         channel: 'room-noti-setting',
         message: { type: 'noti', roomID: channelInfo.roomId, noti: !isNoti },
@@ -193,35 +161,11 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
     }
   };
 
-  const handleModifyChannelnfo = useCallback(() => {
-    /* openPopup(
-      {
-        type: 'Prompt',
-        title: '채널 이름 바꾸기',
-        message: '채널 이름을 입력해 주세요',
-        initValue: channelInfo.roomName,
-        callback: result => {
-          dispatch(
-            modifyChannelName({
-              roomId: channelInfo.roomId,
-              roomName: result,
-            }),
-          );
-          clearLayer(dispatch);
-        },
-      },
-      dispatch,
-    ); */
-  }, [channelInfo]);
-
   const handlePhotoSummary = () => {
     appendLayer(
       {
         component: (
-          <PhotoSummary
-            roomId={channelInfo.roomId}
-            chineseWall={chineseWallState}
-          />
+          <PhotoSummary roomId={channelInfo.roomId} chineseWall={chineseWall} />
         ),
       },
       dispatch,
@@ -232,10 +176,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
     appendLayer(
       {
         component: (
-          <FileSummary
-            roomId={channelInfo.roomId}
-            chineseWall={chineseWallState}
-          />
+          <FileSummary roomId={channelInfo.roomId} chineseWall={chineseWall} />
         ),
       },
       dispatch,
@@ -272,7 +213,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
       userId,
       () => {
         if (isNewWin) {
-          if (DEVICE_TYPE == 'b') {
+          if (DEVICE_TYPE === 'b') {
             window.onunload = null;
             if (
               typeof window.opener.parent.newWinChannelLeaveByAdminCallback ==
@@ -293,7 +234,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
     );
   };
 
-  const getMenuData = (dispatch, userInfo, roomId) => {
+  const getMenuData = (dispatch, userInfo) => {
     const menus = [
       {
         code: 'removeChannelMember',
@@ -324,7 +265,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
               {
                 type: 'Confirm',
                 message:
-                  userInfo.channelAuth == 'Y'
+                  userInfo.channelAuth === 'Y'
                     ? userInfo.id === id
                       ? covi.getDic(
                           'Msg_SelfDemotion',
@@ -340,7 +281,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                     dispatch(
                       modifyChannelMemberAuth({
                         roomId: channelInfo.roomId,
-                        auth: userInfo.channelAuth == 'Y' ? 'N' : 'Y',
+                        auth: userInfo.channelAuth === 'Y' ? 'N' : 'Y',
                         members: [userInfo.id],
                       }),
                     );
@@ -487,7 +428,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
       >
         <div className="MenuList">
           <ul>
-            {DEVICE_TYPE != 'b' && forceDisableNoti === false && (
+            {DEVICE_TYPE !== 'b' && forceDisableNoti === false && (
               <li className="divideline">
                 <a onClick={handleAlarm}>
                   <span className="c_menu_ico c_menu_ico_01"></span>
@@ -551,12 +492,6 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                 </a>
               </li>
             )}
-            {/*<li className="divideline">
-                <a onClick={handleDeleteChat}>
-                  <span className="c_menu_ico c_menu_ico_05"></span>대화내용
-                  삭제
-                </a>
-              </li>*/}
           </ul>
         </div>
         {channelInfo && channelInfo.members && (
