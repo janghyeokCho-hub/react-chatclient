@@ -8,6 +8,7 @@ import { setMoveView } from '@/modules/message';
 import { evalConnector } from '@/lib/deviceConnector';
 
 const MoveView = () => {
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const roomId = useSelector(({ channel }) => channel.currentChannel.roomId);
   const moveId = useSelector(({ message }) => message.moveId);
 
@@ -19,10 +20,23 @@ const MoveView = () => {
   const setMoveMessagesData = useCallback(
     data => {
       if (data.status == 'SUCCESS') {
-        setMoveData({
-          firstPage: data.result,
-          moveId: moveId,
-        });
+        if (data.result?.length) {
+          setMoveData({
+            firstPage: data.result,
+            moveId: moveId,
+          });
+        } else {
+          openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic(
+                'Msg_noSearchResult',
+                '검색결과가 없습니다.',
+              ),
+            },
+            dispatch,
+          );
+        }
       }
 
       setLoading(false);
@@ -48,26 +62,6 @@ const MoveView = () => {
       dist: 'CENTER',
     };
 
-    /*
-    // TODO: AppData 저장 여부값 조건 추가 필요
-    if (DEVICE_TYPE == 'd') {
-      const response = evalConnector({
-        method: 'sendSync',
-        channel: 'req-get-messages',
-        message: param,
-      });
-      setMoveMessagesData(response.data);
-    } else {
-      messageApi
-        .getChannelMessages(param)
-        .then(({ data }) => {
-          setMoveMessagesData(data);
-        })
-        .catch(() => {
-          // 초기화
-          setLoading(false);
-        });
-    } */
     messageApi
       .getChannelMessages(param)
       .then(({ data }) => {
@@ -90,7 +84,11 @@ const MoveView = () => {
     >
       {loading && <LoadingWrap></LoadingWrap>}
       <MoveHeader onMoveBox={handleMoveBox}></MoveHeader>
-      <MoveList moveData={moveData} roomID={roomId}></MoveList>
+      <MoveList
+        moveData={moveData}
+        roomID={roomId}
+        chineseWall={chineseWall}
+      ></MoveList>
     </div>
   );
 };

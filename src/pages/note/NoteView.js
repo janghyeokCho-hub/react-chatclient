@@ -49,6 +49,7 @@ import { Viewer } from '@toast-ui/react-editor';
 import { setChineseWall } from '@/modules/login';
 import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
 import { isMainWindow } from '@/lib/deviceConnector';
+import { getConfig } from '@/lib/util/configUtil';
 
 function _popupResult(dispatch, message, cb) {
   openPopup(
@@ -449,8 +450,6 @@ export default function NoteView({ match }) {
   const loginId = useSelector(({ login }) => login.id);
 
   const [progressData, setProgressData] = useState(null);
-
-  const userInfo = useSelector(({ login }) => login.userInfo);
   const userChineseWall = useSelector(({ login }) => login.chineseWall);
   const [chineseWallState, setChineseWallState] = useState([]);
   const [isBlockChat, setIsBlockChat] = useState(false);
@@ -590,8 +589,7 @@ export default function NoteView({ match }) {
   useEffect(() => {
     const getChineseWallList = async () => {
       const { result, status } = await getChineseWall({
-        userId: userInfo?.id,
-        myInfo: userInfo,
+        userId: loginId,
       });
       if (status === 'SUCCESS') {
         setChineseWallState(result);
@@ -606,7 +604,12 @@ export default function NoteView({ match }) {
     if (userChineseWall?.length) {
       setChineseWallState(userChineseWall);
     } else {
-      getChineseWallList();
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+      }
     }
 
     return () => {

@@ -16,6 +16,7 @@ const OrgchartContainer = ({
   handleGroup,
   searchCompanyCode,
   group,
+  chineseWall = [],
 }) => {
   const { userInfo, userID } = useSelector(({ login }) => ({
     userInfo: login.userInfo,
@@ -147,6 +148,7 @@ const OrgchartContainer = ({
                         isInherit={false}
                         isClick={false}
                         checkObj={checkObj}
+                        chineseWall={chineseWall}
                       />
                     )}
                   </div>
@@ -158,6 +160,7 @@ const OrgchartContainer = ({
                       <OrgChartItem
                         key={'orgchart_' + resultItem.id}
                         result={resultItem}
+                        chineseWall={chineseWall}
                       />
                     );
                   else
@@ -167,6 +170,7 @@ const OrgchartContainer = ({
                         userInfo={resultItem}
                         isInherit={false}
                         isClick={true}
+                        chineseWall={chineseWall}
                       />
                     );
                 } else {
@@ -177,6 +181,7 @@ const OrgchartContainer = ({
                       isInherit={false}
                       isClick={false}
                       checkObj={checkObj}
+                      chineseWall={chineseWall}
                     />
                   );
                 }

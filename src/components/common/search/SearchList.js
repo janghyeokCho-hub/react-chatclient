@@ -12,12 +12,10 @@ import {
 } from '@/lib/common';
 import { format } from 'date-fns';
 import { getMessage } from '@/lib/messageUtil';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
+import { isBlockCheck } from '@/lib/orgchart';
 
 const SearchList = ({ moveData, markingText, roomID }) => {
-  const userInfo = useSelector(({ login }) => login.userInfo);
-  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [messages, setMessages] = useState([]);
   const [moveId, setMoveId] = useState('');
   const [topEnd, setTopEnd] = useState(false);
@@ -29,35 +27,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
 
   const [beforeId, setBeforeId] = useState(-1);
   const [beforeMessages, setBeforeMessages] = useState([]);
-  const [chineseWallState, setChineseWallState] = useState([]);
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: userInfo?.id,
-        myInfo: userInfo,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (userChineseWall?.length) {
-      setChineseWallState(userChineseWall);
-    } else {
-      getChineseWallList();
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, []);
 
   useEffect(() => {
     if (moveData != null) {
@@ -197,7 +167,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
       messages.forEach((message, index) => {
         let isBlock = false;
 
-        if (message?.isMine === 'N' && chineseWallState?.length) {
+        if (message?.isMine === 'N' && chineseWall?.length) {
           const senderInfo = isJSONStr(message?.senderInfo)
             ? JSON.parse(message?.senderInfo)
             : message?.senderInfo;
@@ -207,7 +177,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
               ...senderInfo,
               id: message.sender,
             },
-            chineseWall: chineseWallState,
+            chineseWall,
           });
           const isFile = !!message.fileInfos;
           isBlock = isFile ? blockFile : blockChat;

@@ -6,8 +6,10 @@ import LoadingWrap from '@/components/common/LoadingWrap';
 import * as messageApi from '@/lib/message';
 import { setMoveView } from '@/modules/message';
 import { evalConnector } from '@/lib/deviceConnector';
+import { openPopup } from '@/lib/common';
 
 const MoveView = () => {
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const roomID = useSelector(({ message }) => message.moveRoomID);
   const moveId = useSelector(({ message }) => message.moveId);
 
@@ -18,11 +20,24 @@ const MoveView = () => {
 
   const setMoveMessagesData = useCallback(
     data => {
-      if (data.status == 'SUCCESS') {
-        setMoveData({
-          firstPage: data.result,
-          moveId: moveId,
-        });
+      if (data.status === 'SUCCESS') {
+        if (data.result?.length) {
+          setMoveData({
+            firstPage: data.result,
+            moveId: moveId,
+          });
+        } else {
+          openPopup(
+            {
+              type: 'Alert',
+              message: covi.getDic(
+                'Msg_noSearchResult',
+                '검색결과가 없습니다.',
+              ),
+            },
+            dispatch,
+          );
+        }
       }
 
       setLoading(false);
@@ -79,7 +94,11 @@ const MoveView = () => {
     >
       {loading && <LoadingWrap></LoadingWrap>}
       <MoveHeader onMoveBox={handleMoveBox}></MoveHeader>
-      <MoveList moveData={moveData} roomID={roomID}></MoveList>
+      <MoveList
+        moveData={moveData}
+        roomID={roomID}
+        chineseWall={chineseWall}
+      ></MoveList>
     </div>
   );
 };

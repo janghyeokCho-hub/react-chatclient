@@ -1,6 +1,5 @@
-import { chatsvr, managesvr } from '@/lib/api';
+import { managesvr } from '@/lib/api';
 import { getJobInfo } from '@/lib/userSettingUtil';
-import { getConfig } from '@/lib/util/configUtil';
 
 export const getOrgChart = ({ deptID }, { CompanyCode }) => {
   return managesvr('get', `/org/${deptID}/gr/${CompanyCode}`);
@@ -14,35 +13,39 @@ export const searchOrgChart = ({ userID, value, type }) => {
   return managesvr('get', `/org/search/${userID}?${param}`);
 };
 
-export const getChineseWall = async ({ userId, myInfo }) => {
+const stringArrToArray = str => {
+  const regStr = /\[.*\]/gi;
+  str = str.match(regStr);
+  str += '';
+  str = str.split('[').join('');
+  str = str.split(']').join('');
+  str = str.replace(/"/gi, '');
+  if (str.includes(',')) {
+    return str.split(',');
+  } else {
+    return Array(str);
+  }
+};
+
+export const getChineseWall = async ({ userId }) => {
   try {
-    const useChineseWall = getConfig('UseChineseWall', false);
-    if (!useChineseWall) {
-      return { result: [], status: 'SUCCESS' };
-    }
     const { data } = await managesvr('get', `/org/block/${userId}`);
     const { result, status } = data;
     let blockList = [];
     if (status === 'SUCCESS' && result?.length) {
       for (const item of result) {
         const jsonData = {
-          target: '',
-          blockType: '',
-          isChat: item.isChat,
-          isFile: item.isFile,
+          target: stringArrToArray(item.target),
+          targetType: item.targetType,
+          blockChat: item.blockChat,
+          blockFile: item.blockFile,
         };
-        if (item.block1 === myInfo.id || item.block1 === myInfo.DeptCode) {
-          jsonData.target = item.block2;
-          jsonData.blockType = item.blockType2;
-        } else {
-          jsonData.target = item.block1;
-          jsonData.blockType = item.blockType1;
-        }
         blockList.push(jsonData);
       }
     }
     return { result: blockList, status };
   } catch (e) {
+    console.error(e);
     return { result: [], status: 'ERROR' };
   }
 };
@@ -52,22 +55,39 @@ export const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
     blockChat: false,
     blockFile: false,
   };
-
   if (!chineseWall.length) {
     return result;
   }
 
-  const chineseData = chineseWall.filter(
-    item =>
-      item.target === targetInfo.id || item.target === targetInfo.deptCode,
-  );
-
-  for (const data of chineseData) {
-    if (data.isChat === 'Y') {
-      result.blockChat = true;
+  for (const data of chineseWall) {
+    const target = data.target;
+    if (target.includes(targetInfo.companyCode)) {
+      result.blockChat = result.blockChat
+        ? result.blockChat
+        : data.blockChat === 'Y';
+      result.blockFile = result.blockFile
+        ? result.blockFile
+        : data.blockFile === 'Y';
     }
-    if (data.isFile === 'Y') {
-      result.blockFile = true;
+    if (target.includes(targetInfo.deptCode)) {
+      result.blockChat = result.blockChat
+        ? result.blockChat
+        : data.blockChat === 'Y';
+      result.blockFile = result.blockFile
+        ? result.blockFile
+        : data.blockFile === 'Y';
+    }
+    if (target.includes(targetInfo.id)) {
+      result.blockChat = result.blockChat
+        ? result.blockChat
+        : data.blockChat === 'Y';
+      result.blockFile = result.blockFile
+        ? result.blockFile
+        : data.blockFile === 'Y';
+    }
+
+    if (result.blockChat && result.blockFile) {
+      break;
     }
   }
   return result;

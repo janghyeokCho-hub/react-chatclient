@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import UserInfoBox from '@COMMON/UserInfoBox';
 import OrgChartItem from '@C/orgchart/OrgChartItem';
 
-const SearchOrgChart = ({ viewType, checkObj, searchData, handleGroup }) => {
+const SearchOrgChart = ({
+  viewType,
+  checkObj,
+  searchData,
+  handleGroup,
+  chineseWall = [],
+}) => {
   const userID = useSelector(({ login }) => login.id);
   const handleClick = (groupCode, companyCode) => {
     if (handleGroup) handleGroup(groupCode, companyCode);
@@ -21,7 +27,7 @@ const SearchOrgChart = ({ viewType, checkObj, searchData, handleGroup }) => {
                     handleClick(resultItem.id, resultItem.companyCode);
                 }}
               >
-                <OrgChartItem result={resultItem} />
+                <OrgChartItem result={resultItem} chineseWall={chineseWall} />
               </div>
             );
           else
@@ -31,6 +37,7 @@ const SearchOrgChart = ({ viewType, checkObj, searchData, handleGroup }) => {
                 userInfo={resultItem}
                 isInherit={false}
                 isClick={true}
+                chineseWall={chineseWall}
               />
             );
         } else {
@@ -47,6 +54,7 @@ const SearchOrgChart = ({ viewType, checkObj, searchData, handleGroup }) => {
                 isInherit={false}
                 isClick={false}
                 checkObj={checkObj}
+                chineseWall={chineseWall}
               />
             </div>
           );

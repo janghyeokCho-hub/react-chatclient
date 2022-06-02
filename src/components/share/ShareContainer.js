@@ -22,6 +22,7 @@ import { getJobInfo, deleteLayer, openPopup, clearLayer } from '@/lib/common';
 import { makeMessage } from './share';
 import { setChineseWall } from '@/modules/login';
 import { getChineseWall } from '@/lib/orgchart';
+import { getConfig } from '@/lib/util/configUtil';
 
 const ShareContainer = ({
   headerName = covi.getDic('Msg_Note_Forward', '전달하기'),
@@ -48,7 +49,6 @@ const ShareContainer = ({
     const getChineseWallList = async () => {
       const { result, status } = await getChineseWall({
         userId: userInfo?.id,
-        myInfo: userInfo,
       });
       if (status === 'SUCCESS') {
         setChineseWallState(result);
@@ -63,7 +63,12 @@ const ShareContainer = ({
     if (userChineseWall?.length) {
       setChineseWallState(userChineseWall);
     } else {
-      getChineseWallList();
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+      }
     }
 
     return () => {
