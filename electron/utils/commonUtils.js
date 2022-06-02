@@ -196,10 +196,11 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
               message: message,
               icon: localIconImage, 
               sound: true, 
-              wait: false // Wait with callback, until user action is taken against notification
+              // wait: false // Wait with callback, until user action is taken against notification
             },
             function(err, response) {
-              if (response !== 'timeout') {
+              console.log('response', response)
+              if (response === undefined) {
                 openFocusRoom(roomID, payload.isChannel);       
               }
             }
@@ -221,7 +222,6 @@ const openFocusRoom = (roomID, isChannel) => {
   MainWindow.flashFrame(false);
   MainWindow.focus();
 
-
   const id = ROOM_WIN_MAP[roomID];
   let focusWin = null;
 
@@ -238,21 +238,19 @@ const openFocusRoom = (roomID, isChannel) => {
     focusWin.webContents.send('onAlarmClick', { roomID, isChannel });
   }
 
+  if(focusWin.isMinimized()){
+      focusWin.restore();
+  }
+
+  focusWin.flashFrame(false);
   focusWin.setAlwaysOnTop(true, "normal");
   focusWin.setVisibleOnAllWorkspaces(true);
-  focusWin.setFullScreenable(false);
-  focusWin.show();
-  focusWin.restore();
-  focusWin.flashFrame(false);
-  focusWin.focus();
 
 
   setTimeout(() => {
     MainWindow.setAlwaysOnTop(false);
     focusWin.setAlwaysOnTop(false);
-    MainWindow.blur();
-    focusWin.blur()
-  }, 100);
+  }, 200);
 
 };
 
