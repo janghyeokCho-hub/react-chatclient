@@ -317,7 +317,7 @@ function createExtLoginRequestSaga(loginType, syncType) {
             // login 후처리 시작
             // 동기화 시작
             yield put(startLoading(syncType));
-            
+
             // LOGIN SUCCESS 처리 전 hook
             yield put(preLoginSuccess(response.data?.result));
 
@@ -628,20 +628,20 @@ function createReSyncRequestSaga() {
 const reSyncRequestSaga = createReSyncRequestSaga();
 
 function* preLoginSuccessSaga(action) {
-  const isSaaSClient = getConfig('IsSasSClient', 'N') === 'Y';
+  const isSaaSClient = getConfig('IsSaaSClient', 'N') === 'Y';
   if (isSaaSClient && action.payload?.CompanyCode) {
     /**
      * @TODO fetch SaaS configurations
      */
-    
+
     const response = yield call(loginApi.getSystemConfigSaaS, {
-      companyCode: action.payload.CompanyCode
+      companyCode: action.payload.CompanyCode,
     });
     if (response?.data?.result?.config) {
       window.covi.config = {
         ...window.covi.config,
         ...response.data.result.config,
-      }
+      };
     }
   }
 }
