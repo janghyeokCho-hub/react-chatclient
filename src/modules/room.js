@@ -816,14 +816,15 @@ const room = handleActions(
         }
 
         draft.messages = action.payload.messages;
-
-        // current room 내의 setting 은 Object type으로 처리
+        if(draft.currentRoom){
+      // current room 내의 setting 은 Object type으로 처리
         try {
           draft.currentRoom.setting = isJSONStr(newRoom.setting)
             ? JSON.parse(newRoom.setting)
             : newRoom.setting;
         } catch (e) {
           draft.currentRoom.setting = null;
+        }
         }
       });
     },
@@ -1037,14 +1038,15 @@ const room = handleActions(
             }
           }
           // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
-          try {
-            draft.currentRoom.setting = isJSONStr(changeRoom.setting)
-              ? JSON.parse(changeRoom.setting)
-              : changeRoom.setting;
-          } catch (e) {
-            draft.currentRoom.setting = null;
+          if(draft.currentRoom){
+            try {
+              draft.currentRoom.setting = isJSONStr(changeRoom.setting)
+                ? JSON.parse(changeRoom.setting)
+                : changeRoom.setting;
+            } catch (e) {
+              draft.currentRoom.setting = null;
+            }  
           }
-
           draft.makeInfo = null;
         } else {
           draft.currentRoom = {
