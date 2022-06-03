@@ -183,8 +183,10 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
           },
         });
       } else {
-        if (Notification.isSupported()) {          
-          const WindowsToaster = require("node-notifier").WindowsToaster;
+        if (Notification.isSupported()) {  
+          console.log('?!?!?!?!?!??!!?',exportProps.isWin)   
+          if(exportProps.isWin){
+            const WindowsToaster = require("node-notifier").WindowsToaster;
             const notifier = new WindowsToaster({
               withFallback: false
             });
@@ -205,6 +207,19 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
               }
             }
           );
+          }else{
+            const noti = new Notification({
+              title: title,
+              icon: localIconImage,
+              body: message,
+            });
+            // click evt 정의
+            noti.on('click', e => {
+              openFocusRoom(roomID, payload.isChannel);
+            });
+            noti.show();
+          }    
+
         }
       }
 
@@ -218,9 +233,7 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
 const openFocusRoom = (roomID, isChannel) => {
   logger.info(`click roomID : ${roomID}`);
   
- const MainWindow = BrowserWindow.fromId(1);
-  MainWindow.flashFrame(false);
-  MainWindow.focus();
+
 
   const id = ROOM_WIN_MAP[roomID];
   let focusWin = null;
@@ -238,7 +251,14 @@ const openFocusRoom = (roomID, isChannel) => {
     focusWin.webContents.send('onAlarmClick', { roomID, isChannel });
   }
 
-  if(focusWin.isMinimized()){
+  if(exportProps.isWin){
+
+    const MainWindow = BrowserWindow.fromId(1);
+    MainWindow.flashFrame(false);
+    MainWindow.focus();
+
+    
+    if(focusWin.isMinimized()){
       focusWin.restore();
   }
 
@@ -251,7 +271,15 @@ const openFocusRoom = (roomID, isChannel) => {
     MainWindow.setAlwaysOnTop(false);
     focusWin.setAlwaysOnTop(false);
   }, 200);
-
+  }else{
+    if (focusWin.isMinimized()) {
+      focusWin.restore();
+    } else if (!focusWin.isVisible()) {
+      focusWin.show();
+    }
+    focusWin.flashFrame(false);
+    focusWin.focus();
+  }
 };
 
 /** 쪽지 push알림 */
