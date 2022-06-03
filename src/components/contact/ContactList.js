@@ -16,8 +16,8 @@ import AddUserIcon from '@/icons/svg/AddUser';
 import AddChatIcon from '@/icons/svg/AddChat';
 
 const ContactList = ({ viewType, checkObj }) => {
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const userID = useSelector(({ login }) => login.id);
-
   const [searchText, setSearchText] = useState('');
   const [searchResult, setSearchResult] = useState([]);
   const [type, setType] = useState(viewType);
@@ -144,6 +144,7 @@ const ContactList = ({ viewType, checkObj }) => {
           viewType={type}
           checkObj={checkObj}
           searchData={items}
+          chineseWall={chineseWall}
         />
       </Scrollbars>
       <Scrollbars
@@ -152,7 +153,11 @@ const ContactList = ({ viewType, checkObj }) => {
         className="PeopleList"
         style={{ height: 'calc(100% - 124px)' }}
       >
-        <ContactContainer viewType={type} checkObj={checkObj} />
+        <ContactContainer
+          viewType={type}
+          checkObj={checkObj}
+          chineseWall={chineseWall}
+        />
       </Scrollbars>
     </>
   );

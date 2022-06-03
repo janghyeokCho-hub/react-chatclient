@@ -410,7 +410,10 @@ const NoticeBox = ({ isBlock }) => {
 
   useEffect(() => {
     processContext().then(str => {
-      _isMounted.current && setNoticeContext(str);
+      const text = isBlock
+        ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
+        : str;
+      _isMounted.current && setNoticeContext(text);
     });
   }, [currentChannel.notice, _isMounted, isBlock]);
 

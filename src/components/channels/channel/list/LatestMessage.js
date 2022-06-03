@@ -6,9 +6,11 @@ import {
   eumTalkRegularExp,
   convertEumTalkProtocolPreview,
 } from '@/lib/common';
+import { isBlockCheck } from '@/lib/orgchart';
 
 const LatestMessage = () => {
   let hiddenTimer = null;
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
 
   const { latestMessage } = useSelector(({ channel }) => ({
     latestMessage: channel.messages[channel.messages.length - 1],
@@ -44,7 +46,20 @@ const LatestMessage = () => {
       senderInfo = message.senderInfo;
     }
 
-    context = message.context;
+    let isBlock = false;
+    if (chineseWall.length) {
+      const targetInfo = {
+        ...senderInfo,
+        id: senderInfo.sender,
+      };
+
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo,
+        chineseWall,
+      });
+      const isFile = !!message?.File;
+      isBlock = isFile ? blockFile : blockChat;
+    }
 
     // protocol check
     if (eumTalkRegularExp.test(context)) {

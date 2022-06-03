@@ -8,7 +8,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { getItemGroup } from '@/modules/contact';
 import UserInfoBox from '@COMMON/UserInfoBox';
-import { addFavorite, deleteContact } from '@/lib/contactUtil';
+import { deleteContact } from '@/lib/contactUtil';
 import RightConxtMenu from '@COMMON/popup/RightConxtMenu';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { openPopup, getDictionary, openLayer } from '@/lib/common';
@@ -16,120 +16,127 @@ import GroupItem from '@C/contact/GroupItem';
 import AddContact from '@C/contact/AddContact';
 import { useSyncFavorite } from '@/hooks/useSyncFavorite';
 
-const ContactItem = React.memo(({ contact, subItem, isMine }) => {
-  const viewType = useSelector(({ room }) => room.viewType);
-  const rooms = useSelector(
-    ({ room }) => room.rooms,
-    (left, right) => left.length == right.length,
-  );
-  const selectId = useSelector(({ room }) => room.selectId);
-  const myInfo = useSelector(({ login }) => login.userInfo);
+const ContactItem = React.memo(
+  ({ contact, subItem, isMine, chineseWall = [] }) => {
+    const viewType = useSelector(({ room }) => room.viewType);
+    const rooms = useSelector(
+      ({ room }) => room.rooms,
+      (left, right) => left.length == right.length,
+    );
+    const selectId = useSelector(({ room }) => room.selectId);
+    const myInfo = useSelector(({ login }) => login.userInfo);
 
-  const dispatch = useDispatch();
-  const { syncFavorite } = useSyncFavorite();
-  const menus = useMemo(() => {
-    const returnMenu = [];
+    const dispatch = useDispatch();
+    const { syncFavorite } = useSyncFavorite();
+    const menus = useMemo(() => {
+      const returnMenu = [];
 
-    if (subItem.type != 'G' && !isMine) {
-      if (contact.folderType != 'F' && subItem.isContact != 'F') {
-        returnMenu.push({
-          code: 'addFavorite',
-          isline: false,
-          onClick: () => {
-            syncFavorite({
-              op: 'add',
-              userInfo: subItem,
-              folderType:
-                subItem.isContact && subItem.isContact != ''
-                  ? subItem.isContact
-                  : contact.folderType,
-            });
-          },
-          name: covi.getDic('AddFavorite', '즐겨찾기 추가'),
-        });
-
-        if (contact.folderType != 'M' && contact.folderType != 'G') {
+      if (subItem.type != 'G' && !isMine) {
+        if (contact.folderType != 'F' && subItem.isContact != 'F') {
           returnMenu.push({
-            code: 'deleteContact',
+            code: 'addFavorite',
             isline: false,
             onClick: () => {
-              deleteContact(
-                dispatch,
-                subItem.id,
-                contact.folderID,
-                contact.folderType,
-              );
+              syncFavorite({
+                op: 'add',
+                userInfo: subItem,
+                folderType:
+                  subItem.isContact && subItem.isContact != ''
+                    ? subItem.isContact
+                    : contact.folderType,
+              });
             },
-            name: covi.getDic('DelContact', '내 대화상대 삭제'),
+            name: covi.getDic('AddFavorite', '즐겨찾기 추가'),
+          });
+
+          if (contact.folderType != 'M' && contact.folderType != 'G') {
+            returnMenu.push({
+              code: 'deleteContact',
+              isline: false,
+              onClick: () => {
+                deleteContact(
+                  dispatch,
+                  subItem.id,
+                  contact.folderID,
+                  contact.folderType,
+                );
+              },
+              name: covi.getDic('DelContact', '내 대화상대 삭제'),
+            });
+          }
+        } else {
+          returnMenu.push({
+            code: 'deleteFavorite',
+            isline: false,
+            onClick: () => {
+              /**
+               * 2021.11.29
+               * 부서탭에서 '즐겨찾기 삭제'시 folderID 파라미터가 부서코드로 넘어가면 삭제오류 발생
+               * => folderID 파라미터 "1"로 고정
+               */
+              deleteContact(dispatch, subItem.id, '1', 'F');
+            },
+            name: covi.getDic('DelFavorite', '즐겨찾기 삭제'),
           });
         }
-      } else {
-        returnMenu.push({
-          code: 'deleteFavorite',
-          isline: false,
-          onClick: () => {
-            /**
-             * 2021.11.29
-             * 부서탭에서 '즐겨찾기 삭제'시 folderID 파라미터가 부서코드로 넘어가면 삭제오류 발생
-             * => folderID 파라미터 "1"로 고정
-             */
-            deleteContact(dispatch, subItem.id, '1', 'F');
-          },
-          name: covi.getDic('DelFavorite', '즐겨찾기 삭제'),
-        });
       }
-    }
 
-    if (returnMenu.length > 0)
+      if (returnMenu.length > 0)
+        returnMenu.push({
+          code: 'line',
+          isline: true,
+          onClick: () => {},
+          name: '',
+        });
+
       returnMenu.push({
-        code: 'line',
-        isline: true,
-        onClick: () => {},
-        name: '',
+        code: 'startChat',
+        isline: false,
+        onClick: () => {
+          if (subItem.pChat == 'Y')
+            openChatRoomView(
+              dispatch,
+              viewType,
+              rooms,
+              selectId,
+              subItem,
+              myInfo,
+            );
+          else
+            openPopup(
+              {
+                type: 'Alert',
+                message: covi.getDic(
+                  'Msg_GroupInviteError',
+                  '해당 그룹은 그룹채팅을 시작할 수 없습니다.',
+                ),
+              },
+              dispatch,
+            );
+        },
+        name: covi.getDic('StartChat', '대화시작'),
       });
 
-    returnMenu.push({
-      code: 'startChat',
-      isline: false,
-      onClick: () => {
-        if (subItem.pChat == 'Y')
-          openChatRoomView(
-            dispatch,
-            viewType,
-            rooms,
-            selectId,
-            subItem,
-            myInfo,
-          );
-        else
-          openPopup(
-            {
-              type: 'Alert',
-              message: covi.getDic(
-                'Msg_GroupInviteError',
-                '해당 그룹은 그룹채팅을 시작할 수 없습니다.',
-              ),
-            },
-            dispatch,
-          );
-      },
-      name: covi.getDic('StartChat', '대화시작'),
-    });
+      return returnMenu;
+    }, [subItem, contact, dispatch, viewType, rooms, selectId, myInfo]);
 
-    return returnMenu;
-  }, [subItem, contact, dispatch, viewType, rooms, selectId, myInfo]);
+    return (
+      <RightConxtMenu
+        menuId={`contact_${subItem.id}_${contact.folderID}`}
+        menus={menus}
+      >
+        <UserInfoBox
+          userInfo={subItem}
+          isInherit={true}
+          isClick={true}
+          chineseWall={chineseWall}
+        />
+      </RightConxtMenu>
+    );
+  },
+);
 
-  return (
-    <RightConxtMenu
-      menuId={`contact_${subItem.id}_${contact.folderID}`}
-      menus={menus}
-    >
-      <UserInfoBox userInfo={subItem} isInherit={true} isClick={true} />
-    </RightConxtMenu>
-  );
-});
-
-const Contact = ({ contact, viewType, checkObj }) => {
+const Contact = ({ contact, viewType, checkObj, chineseWall = [] }) => {
   const userID = useSelector(({ login }) => login.id);
   const myInfo = useSelector(({ login }) => login.userInfo);
   const viewTypeChat = useSelector(({ room }) => room.viewType);
@@ -296,6 +303,7 @@ const Contact = ({ contact, viewType, checkObj }) => {
                     contact={contact}
                     subItem={sub}
                     isMine={sub.id == userID}
+                    chineseWall={chineseWall}
                   />
                 );
               } else if (viewType == 'checklist') {
@@ -307,6 +315,7 @@ const Contact = ({ contact, viewType, checkObj }) => {
                     isClick={false}
                     checkObj={checkObj}
                     isMine={sub.id == userID}
+                    chineseWall={chineseWall}
                   />
                 );
               }

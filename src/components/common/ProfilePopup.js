@@ -44,7 +44,6 @@ const ProfilePopup = ({ userInfo }) => {
     const getChineseWallList = async () => {
       const { result, status } = await getChineseWall({
         userId: userInfo?.id,
-        myInfo: userInfo,
       });
       if (status === 'SUCCESS') {
         setChineseWallState(result);
@@ -59,7 +58,12 @@ const ProfilePopup = ({ userInfo }) => {
     if (chineseWall?.length) {
       setChineseWallState(chineseWall);
     } else {
-      getChineseWallList();
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+      }
     }
 
     return () => {

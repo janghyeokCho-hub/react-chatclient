@@ -5,8 +5,10 @@ import NoticeMessageBox from '@C/chat/message/NoticeMessageBox';
 import MoveScrollBox from '@/components/chat/chatroom/move/MoveScrollBox';
 import { format } from 'date-fns';
 import { getMessage } from '@/lib/messageUtil';
+import { isBlockCheck } from '@/lib/orgchart';
+import { isJSONStr } from '@/lib/common';
 
-const MoveList = ({ moveData, roomID }) => {
+const MoveList = ({ moveData, roomID, chineseWall = [] }) => {
   const [messages, setMessages] = useState([]);
   const [moveId, setMoveId] = useState('');
   const [topEnd, setTopEnd] = useState(false);
@@ -18,10 +20,6 @@ const MoveList = ({ moveData, roomID }) => {
 
   const [beforeId, setBeforeId] = useState(-1);
   const [beforeMessages, setBeforeMessages] = useState([]);
-
-  useEffect(() => {
-    // console.log('isMounted');
-  }, []);
 
   useEffect(() => {
     if (moveData != null) {
@@ -126,6 +124,22 @@ const MoveList = ({ moveData, roomID }) => {
       );
       let returnJSX = [];
       messages.forEach((message, index) => {
+        let isBlock = false;
+        if (message.isMine === 'N' && chineseWall?.length) {
+          const senderInfo = isJSONStr(message.senderInfo)
+            ? JSON.parse(message.senderInfo)
+            : message.senderInfo;
+          const targetInfo = {
+            ...senderInfo,
+            id: senderInfo.sender,
+          };
+          const isFile = !!message.fileInfos;
+          const { blockChat, blockFile } = isBlockCheck({
+            targetInfo,
+            chineseWall,
+          });
+          isBlock = isFile ? blockFile : blockChat;
+        }
         let nameBox = !(message.sender == currentSender);
         let sendDate = format(new Date(message.sendDate), 'yyyyMMdd');
         let nextSendTime = '';
@@ -172,6 +186,7 @@ const MoveList = ({ moveData, roomID }) => {
                 nameBox={nameBox}
                 timeBox={timeBox}
                 id={`msg_${message.messageID}`}
+                isBlock={isBlock}
               ></MessageBox>,
             );
           } else {
@@ -182,6 +197,7 @@ const MoveList = ({ moveData, roomID }) => {
                 isMine={message.isMine == 'Y'}
                 nameBox={nameBox}
                 timeBox={timeBox}
+                isBlock={isBlock}
               ></MessageBox>,
             );
           }
@@ -193,6 +209,7 @@ const MoveList = ({ moveData, roomID }) => {
               isMine={message.isMine == 'Y'}
               nameBox={nameBox}
               timeBox={timeBox}
+              isBlock={isBlock}
             ></NoticeMessageBox>,
           );
         } else if (message.messageType === 'S') {

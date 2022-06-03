@@ -11,6 +11,10 @@ import { getAllUserWithGroup, getAllUserWithGroupList } from '@/lib/room';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { getDictionary, getSysMsgFormatStr } from '@/lib/common';
 import { isBlockCheck } from '@/lib/orgchart';
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
+import { isMainWindow } from '@/lib/deviceConnector';
+import { getConfig } from '@/lib/util/configUtil';
 
 const InviteMember = ({
   headerName,
@@ -28,10 +32,42 @@ const InviteMember = ({
     }),
   );
   const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const [chineseWallState, setChineseWallState] = useState([]);
   const [members, setMembers] = useState([]);
   const [selectTab, setSelectTab] = useState('C');
   const [oldMembers, setOldMembers] = useState([]);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId: myInfo?.id,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
+    } else {
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+      }
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
 
   useEffect(() => {
     if (oldMemberList) {
@@ -76,6 +112,7 @@ const InviteMember = ({
     () => ({
       name: 'invite_',
       onChange: (e, userInfo) => {
+        console.log('invite_', e);
         if (e.target.checked) {
           if (userInfo.pChat == 'Y') {
             addInviteMember({
@@ -258,8 +295,11 @@ const InviteMember = ({
       }
     } else if (isNewRoom && inviteMembers.length == 2) {
       const targetInfo = inviteMembers.filter(item => item.id !== myInfo.id)[0];
-      const { blockChat } = isBlockCheck({ targetInfo, chineseWall });
-      if (blockChat) {
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo,
+        chineseWall,
+      });
+      if (blockChat && blockFile) {
         openPopup(
           {
             type: 'Alert',

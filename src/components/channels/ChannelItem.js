@@ -379,7 +379,7 @@ const ChannelItem = ({
 
   const [lastMessageText, setLastMessageText] = useState('');
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (channel?.lastMessage && chineseWall.length) {
       const lastMessageInfo = isJSONStr(channel.lastMessage)
         ? JSON.parse(channel.lastMessage)
