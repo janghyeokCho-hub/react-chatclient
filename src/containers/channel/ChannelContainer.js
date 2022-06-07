@@ -106,8 +106,6 @@ const ChannelContainer = () => {
       const { result, status } = await getChineseWall({
         userId: myInfo?.id,
       });
-      console.log('result : ', result);
-      console.log('status : ', status);
       if (status === 'SUCCESS') {
         setChineseWallState(result);
         if (DEVICE_TYPE === 'd' && !isMainWindow()) {
@@ -118,7 +116,6 @@ const ChannelContainer = () => {
       }
     };
 
-    console.log('chineseWall : ', chineseWall);
     if (chineseWall?.length) {
       setChineseWallState(chineseWall);
     } else {
@@ -139,7 +136,6 @@ const ChannelContainer = () => {
     // channelList가 변할때 categoryCode가 null인 속성들을 찾아 요청 및 데이터 채워줌
     let updateList = [];
     if (channelList) {
-      console.log('channelList : ', channelList);
       channelList.forEach(c => {
         if (!c.categoryCode) {
           updateList.push(c.roomId);
@@ -160,7 +156,6 @@ const ChannelContainer = () => {
   }, [channelList]);
 
   useEffect(() => {
-    if (!channelList?.length) console.log('channelList.length 0000000 ');
     dispatch(
       getChannels({
         userId,
