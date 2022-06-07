@@ -299,7 +299,7 @@ function _DrawNote({
     const receivedTime = convertTimeFormat(noteInfo.sendDate);
     // Sender
     const senderInfo = parseSender(noteInfo);
-    const senderName = translateName(senderInfo.sender);
+    const senderName = translateName(senderInfo?.sender);
     const attachFilesMargin = Array.isArray(noteInfo.files)
       ? `${noteInfo.files.length * 60}px`
       : '0px';
@@ -332,8 +332,8 @@ function _DrawNote({
                 className="name"
                 onClick={() =>
                   onUserNameClicked(
-                    data.senderInfo.sender.id,
-                    data.senderInfo.sender.type,
+                    data.senderInfo?.sender.id,
+                    data.senderInfo?.sender.type,
                   )
                 }
               >
@@ -624,7 +624,7 @@ export default function NoteView({ match }) {
         : noteInfo.senderInfo;
       const targetInfo = {
         ...senderInfo,
-        id: senderInfo.sender,
+        id: senderInfo?.sender,
       };
 
       const { blockChat, blockFile } = isBlockCheck({

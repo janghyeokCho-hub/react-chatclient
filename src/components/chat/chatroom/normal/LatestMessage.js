@@ -50,7 +50,7 @@ const LatestMessage = () => {
     if (chineseWall.length) {
       const targetInfo = {
         ...senderInfo,
-        id: senderInfo.sender,
+        id: senderInfo?.sender,
       };
 
       const { blockChat, blockFile } = isBlockCheck({
