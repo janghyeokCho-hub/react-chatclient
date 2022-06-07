@@ -245,7 +245,6 @@ const openFocusRoom = (roomID, isChannel) => {
   if (exportProps.isWin) {
     const MainWindow = BrowserWindow.fromId(1);
     MainWindow.flashFrame(false);
-    MainWindow.focus();
 
     if (focusWin.isMinimized()) {
       focusWin.restore();
@@ -256,9 +255,9 @@ const openFocusRoom = (roomID, isChannel) => {
     focusWin.setVisibleOnAllWorkspaces(true);
 
     setTimeout(() => {
-      MainWindow.setAlwaysOnTop(false);
       focusWin.setAlwaysOnTop(false);
     }, 200);
+    
   } else {
     if (focusWin.isMinimized()) {
       focusWin.restore();
