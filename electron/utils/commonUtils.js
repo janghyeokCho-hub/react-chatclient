@@ -10,7 +10,6 @@ import * as netUtils from 'node-macaddress';
 import { openNoteWindow } from './note';
 import { networkInterfaces } from 'os';
 
-
 const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
   let result = {
     blockChat: false,
@@ -169,7 +168,6 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
 
     if (isNoti) {
       if (exportProps.isWin && global?.CUSTOM_ALARM) {
-
         // custom toast 사용
         showCustomAlarm({
           title: title,
@@ -183,43 +181,39 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
           },
         });
       } else {
-        if (Notification.isSupported()) {  
-          console.log('?!?!?!?!?!??!!?',exportProps.isWin)   
-          if(exportProps.isWin){
-            const WindowsToaster = require("node-notifier").WindowsToaster;
+        if (Notification.isSupported()) {
+          if (exportProps.isWin) {
+            const WindowsToaster = require('node-notifier').WindowsToaster;
             const notifier = new WindowsToaster({
-              withFallback: false
+              withFallback: false,
             });
-        
-          notifier.notify(
-            {
-              appID:exportProps.appId,
-              title: title,
-              message: message,
-              icon: localIconImage, 
-              sound: true, 
-              // wait: false // Wait with callback, until user action is taken against notification
-            },
-            function(err, response) {
-              console.log('response', response)
-              if (response === undefined) {
-                openFocusRoom(roomID, payload.isChannel);       
-              }
-            }
-          );
-          }else{
+
+            notifier.notify(
+              {
+                appID: exportProps.appId,
+                title: title,
+                message: message,
+                icon: localIconImage,
+                sound: true,
+              },
+              function (err, response) {
+                console.log('response', response);
+                if (response === undefined) {
+                  openFocusRoom(roomID, payload.isChannel);
+                }
+              },
+            );
+          } else {
             const noti = new Notification({
               title: title,
               icon: localIconImage,
               body: message,
             });
-            // click evt 정의
             noti.on('click', e => {
               openFocusRoom(roomID, payload.isChannel);
             });
             noti.show();
-          }    
-
+          }
         }
       }
 
@@ -232,8 +226,6 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
 
 const openFocusRoom = (roomID, isChannel) => {
   logger.info(`click roomID : ${roomID}`);
-  
-
 
   const id = ROOM_WIN_MAP[roomID];
   let focusWin = null;
@@ -251,27 +243,24 @@ const openFocusRoom = (roomID, isChannel) => {
     focusWin.webContents.send('onAlarmClick', { roomID, isChannel });
   }
 
-  if(exportProps.isWin){
-
+  if (exportProps.isWin) {
     const MainWindow = BrowserWindow.fromId(1);
     MainWindow.flashFrame(false);
     MainWindow.focus();
 
-    
-    if(focusWin.isMinimized()){
+    if (focusWin.isMinimized()) {
       focusWin.restore();
-  }
+    }
 
-  focusWin.flashFrame(false);
-  focusWin.setAlwaysOnTop(true, "normal");
-  focusWin.setVisibleOnAllWorkspaces(true);
+    focusWin.flashFrame(false);
+    focusWin.setAlwaysOnTop(true, 'normal');
+    focusWin.setVisibleOnAllWorkspaces(true);
 
-
-  setTimeout(() => {
-    MainWindow.setAlwaysOnTop(false);
-    focusWin.setAlwaysOnTop(false);
-  }, 200);
-  }else{
+    setTimeout(() => {
+      MainWindow.setAlwaysOnTop(false);
+      focusWin.setAlwaysOnTop(false);
+    }, 200);
+  } else {
     if (focusWin.isMinimized()) {
       focusWin.restore();
     } else if (!focusWin.isVisible()) {
