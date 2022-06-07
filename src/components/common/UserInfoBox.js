@@ -97,58 +97,58 @@ const UserInfoBox = ({
       if (typeof onClick === 'function') {
         onClick(userInfo);
         return;
-      }
-      if (typeof onMouseDown === 'function') {
+      } else if (typeof onMouseDown === 'function') {
         onMouseDown(userInfo);
         return;
-      }
-      if (isClick) {
-        if (userInfo.pChat == 'Y') {
-          const { blockChat, blockFile } = isBlockCheck({
-            targetInfo: userInfo,
-            chineseWall,
-          });
-          if (blockChat && blockFile) {
-            openPopup(
-              {
-                type: 'Alert',
-                message: covi.getDic('Msg_BlockTarget', '차단된 대상입니다.'),
-              },
-              dispatch,
-            );
+      } else {
+        if (isClick) {
+          if (userInfo.pChat == 'Y') {
+            const { blockChat, blockFile } = isBlockCheck({
+              targetInfo: userInfo,
+              chineseWall,
+            });
+            if (blockChat && blockFile) {
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: covi.getDic('Msg_BlockTarget', '차단된 대상입니다.'),
+                },
+                dispatch,
+              );
+            } else {
+              const openChatRoomArgs = [
+                dispatch,
+                viewType,
+                rooms,
+                selectId,
+                userInfo,
+                myInfo,
+                isDoubleClick,
+              ];
+              // 2020.12.22
+              // input값 남아있을때 경고창 출력
+              confirm(dispatch, openChatRoomView, openChatRoomArgs);
+            }
           } else {
-            const openChatRoomArgs = [
-              dispatch,
-              viewType,
-              rooms,
-              selectId,
-              userInfo,
-              myInfo,
-              isDoubleClick,
-            ];
-            // 2020.12.22
-            // input값 남아있을때 경고창 출력
-            confirm(dispatch, openChatRoomView, openChatRoomArgs);
+            if (
+              (!isDoubleClick && (viewType != 'S' || SCREEN_OPTION == 'G')) ||
+              (isDoubleClick && viewType == 'S' && SCREEN_OPTION != 'G')
+            ) {
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: covi.getDic(
+                    'Msg_GroupInviteError',
+                    '해당 그룹은 그룹채팅을 시작할 수 없습니다.',
+                  ),
+                },
+                dispatch,
+              );
+            }
           }
-        } else {
-          if (
-            (!isDoubleClick && (viewType != 'S' || SCREEN_OPTION == 'G')) ||
-            (isDoubleClick && viewType == 'S' && SCREEN_OPTION != 'G')
-          ) {
-            openPopup(
-              {
-                type: 'Alert',
-                message: covi.getDic(
-                  'Msg_GroupInviteError',
-                  '해당 그룹은 그룹채팅을 시작할 수 없습니다.',
-                ),
-              },
-              dispatch,
-            );
-          }
+        } else if (checkObj && userInfo.type !== 'G') {
+          checkRef && checkRef.current && checkRef.current.click();
         }
-      } else if (checkObj && userInfo.type !== 'G') {
-        checkRef && checkRef.current && checkRef.current.click();
       }
     },
     [isClick, viewType, userInfo, rooms, selectId, myInfo, dispatch, checkRef],
@@ -262,7 +262,6 @@ const UserInfoBox = ({
         'person',
         info.type == 'G' && info.dept == '' ? 'group' : '',
       ].join(' ')}
-      onClick={() => handleClick(false)}
       onMouseDown={() => handleClick(false)}
       onDoubleClick={() => handleClick(true)}
     >

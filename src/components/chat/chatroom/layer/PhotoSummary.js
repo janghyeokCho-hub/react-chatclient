@@ -381,7 +381,7 @@ const PhotoSummary = ({ roomId, chineseWall }) => {
             const { blockFile } = isBlockCheck({
               targetInfo: {
                 ...senderInfo,
-                id: item.sender || senderInfo.sender,
+                id: item?.sender || senderInfo?.sender,
               },
               chineseWall,
             });
@@ -422,7 +422,7 @@ const PhotoSummary = ({ roomId, chineseWall }) => {
                 const { blockFile } = isBlockCheck({
                   targetInfo: {
                     ...senderInfo,
-                    id: item.sender || senderInfo.sender,
+                    id: item?.sender || senderInfo?.sender,
                   },
                   chineseWall,
                 });

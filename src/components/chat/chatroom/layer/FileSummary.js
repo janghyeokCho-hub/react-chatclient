@@ -48,7 +48,10 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
   const dispatch = useDispatch();
   const currentRoom = useSelector(({ room }) => room.currentRoom);
   const currentChannel = useSelector(({ channel }) => channel.currentChannel);
-  const roomID = useMemo(() => currentRoom?.roomID || currentChannel?.roomId, [currentRoom, currentChannel]);
+  const roomID = useMemo(
+    () => currentRoom?.roomID || currentChannel?.roomId,
+    [currentRoom, currentChannel],
+  );
 
   useEffect(() => {
     setCheck(false);
@@ -639,7 +642,7 @@ const FileSummary = ({ roomId, chineseWall }) => {
             const { blockFile } = isBlockCheck({
               targetInfo: {
                 ...senderInfo,
-                id: item.sender || senderInfo.sender,
+                id: item?.sender || senderInfo?.sender,
               },
               chineseWall,
             });
@@ -678,7 +681,7 @@ const FileSummary = ({ roomId, chineseWall }) => {
                 const { blockFile } = isBlockCheck({
                   targetInfo: {
                     ...senderInfo,
-                    id: item.sender || senderInfo.sender,
+                    id: item?.sender || senderInfo?.sender,
                   },
                   chineseWall,
                 });

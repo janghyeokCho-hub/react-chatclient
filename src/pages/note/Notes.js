@@ -376,7 +376,7 @@ export default function Notes({ viewType, noteList }) {
   const { id } = useSelector(({ login }) => ({
     id: login.id,
   }));
-  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [chineseWallState, setChineseWallState] = useState([]);
 
   useEffect(() => {
@@ -394,8 +394,8 @@ export default function Notes({ viewType, noteList }) {
       }
     };
 
-    if (userChineseWall?.length) {
-      setChineseWallState(userChineseWall);
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
     } else {
       const useChineseWall = getConfig('UseChineseWall', false);
       if (useChineseWall) {
@@ -426,10 +426,11 @@ export default function Notes({ viewType, noteList }) {
       const senderInfo = isJSONStr(note.senderInfo)
         ? JSON.parse(note.senderInfo)
         : note.senderInfo;
+
       const { blockChat, blockFile } = isBlockCheck({
         targetInfo: {
           ...senderInfo,
-          id: senderInfo.sender,
+          id: senderInfo?.sender,
         },
         chineseWall: chineseWallState,
       });
