@@ -134,7 +134,7 @@ const MoveList = ({ moveData, roomID, chineseWall }) => {
             : message.senderInfo;
           const targetInfo = {
             ...senderInfo,
-            id: senderInfo.sender,
+            id: senderInfo?.sender,
           };
           const isFile = !!message.fileInfos;
           const { blockChat, blockFile } = isBlockCheck({
