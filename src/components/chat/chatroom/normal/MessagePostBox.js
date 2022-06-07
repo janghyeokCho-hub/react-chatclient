@@ -13,6 +13,7 @@ import { changeFiles, clearFiles, deleteFile } from '@/modules/message';
 import { messageCurrentTyping } from '@/modules/room';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import * as commonApi from '@/lib/common';
+import * as common from '@/lib/common';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { evalConnector, openSubPop, getEmitter } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
@@ -46,6 +47,11 @@ const MessagePostBox = forwardRef(
   ) => {
     const tempFiles = useSelector(({ message }) => message.tempFiles);
     const selectEmoticon = useSelector(({ channel }) => channel.selectEmoticon);
+    const roomID = useSelector(
+      ({ room }) =>
+        room.currentRoom?.roomID 
+    );
+    
 
     const useRemoteVNC = getConfig('useRemoteVNC', {
       isUse: false,
@@ -418,19 +424,8 @@ const MessagePostBox = forwardRef(
     };
 
     const callRemoteVNC = useCallback(async () => {
-      const ip = await evalConnector({
-        method: 'sendSync',
-        channel: 'req-get-remote-info',
-        message: {},
-      });
-      if (ip != null) {
         try {
-          let useableIPList = [];
-
-          ip.map(ipInfo => {
-            useableIPList.push({
-              name: ipInfo,
-              callback: () => {
+            const handleRemoteBtn = () => {
                 const msgObj = {
                   title: covi.getDic('RemoteSupport', 'RemoteSupport'),
                   context: `${covi.getDic(
@@ -441,8 +436,9 @@ const MessagePostBox = forwardRef(
                     name: covi.getDic('StartRemoteSupport', '원격 지원 시작'),
                     type: 'remotevnc',
                     data: {
-                      hostAddr: ipInfo,
                       hostId: myInfo,
+                      roomId : roomID,
+                      
                     },
                   },
                 };
@@ -457,24 +453,25 @@ const MessagePostBox = forwardRef(
                   method: 'send',
                   channel: 'onVNCRemoteHost',
                   message: {
-                    options: useRemoteVNC.hostOptions,
+                    roomId : roomID
                   },
                 });
+            };
+            common.openPopup(
+              {
+                type: 'Confirm',
+                message: covi.getDic(
+                  'Msg_RemoteNotice',
+                  '원격 데스크톱을 연결하시겠습니까?',
+                ),
+                callback: result => {
+                  if (result) {
+                      handleRemoteBtn()
+                  }
+                },
               },
-            });
-          });
-
-          commonApi.openPopup(
-            {
-              type: 'Select',
-              title: covi.getDic(
-                'RemoteIPBandwidthSelection',
-                '원격 IP 대역 선택',
-              ),
-              buttons: useableIPList,
-            },
-            dispatch,
-          );
+              dispatch,
+            );
         } catch (ex) {
           commonApi.openPopup(
             {
@@ -488,7 +485,6 @@ const MessagePostBox = forwardRef(
           );
           console.log(ex);
         }
-      }
     }, [remoteHost]);
 
     const callRemoteHost = useCallback(
@@ -702,8 +698,8 @@ const MessagePostBox = forwardRef(
                       />
                     </button>
                   )}
-
-                  {DEVICE_TYPE == 'd' && useRemoteVNC.isUse && (
+                  
+                  {DEVICE_TYPE === 'd' && useRemoteVNC.isUse && (
                     <button
                       type="button"
                       alt="RemoteVNC"

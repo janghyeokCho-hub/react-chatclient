@@ -71,18 +71,25 @@ export const connectRemoteHost = sessionKey => {
     logger.info('KoinoHostLaunch.exe occured error: ' + data);
   });
 };
+
+
+function matchDigit8(str) {
+  const leng = String(str).length;
+  let result = String(str);
+  if (leng < 8) {
+      for (let i = 0; i < 7 - leng; i++) {
+          result = '0' + result;
+      }
+  }
+  return  "1" + result;
+}
+
 export const createRemoteVNCHost = vncArgs => {
   const appPath = dirname(app.getAppPath());
   const filePath = resolve(appPath, 'vncremote', 'winvnc.exe');
 
-  let vncHostProcess = null;
-
-  console.log(vncArgs);
-
-  if (vncArgs)
-    vncHostProcess = spawn(`${filePath} ${vncArgs}`, [], { shell: true });
-  else vncHostProcess = spawn(`${filePath}`, [], { shell: true });
-
+  let vncHostProcess = spawn(`${filePath}`, ['-sc_prompt','-sc_exit',`-id:${matchDigit8(vncArgs)}`,'-connect', 'eum.covision.co.kr:5500','-run' ], { shell: true });
+  
   vncHostProcess.stderr.on('data', data => {
     console.log('winvnc.exe call stderr =>');
     console.log(data);
@@ -109,13 +116,15 @@ export const createRemoteVNCHost = vncArgs => {
   });
 };
 
-export const createRemoteVNC = hostAddr => {
+
+
+export const createRemoteVNC = roomId => {
   const appPath = dirname(app.getAppPath());
   const filePath = resolve(appPath, 'vncremote', 'vncviewer.exe');
 
   const vncProcess = spawn(
-    `${filePath} /ip ${hostAddr} /password Covi@2020 /notoolbar /disablesponsor /nostatus /autoreconnect 0`,
-    [],
+    `${filePath}`,
+    ['-proxy', 'eum.covision.co.kr:5901', `ID:${matchDigit8(roomId)}`],
     { shell: true },
   );
 
