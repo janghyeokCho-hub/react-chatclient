@@ -197,7 +197,6 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
                 sound: true,
               },
               function (err, response) {
-                console.log('response', response);
                 if (response === undefined) {
                   openFocusRoom(roomID, payload.isChannel);
                 }
