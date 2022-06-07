@@ -4,6 +4,7 @@ import * as appData from '../event/appData';
 import { setHot } from '../utils/trayUtils';
 import * as loginInfo from '../utils/loginInfo';
 import logger from '../utils/logger';
+import exportProps from '../config/exportProps';
 
 //앱 자동 동기화
 export const onAppUpdateConfig = payload => {
@@ -40,7 +41,11 @@ export const onNewMessage = payload => {
       } else {
         focusWin = BrowserWindow.fromId(1);
       }
-      focusWin.blur();
+      
+      if (exportProps.isWin) {
+        focusWin.blur();
+      }
+
 
       if (!focusWin.isVisible() && !focusWin.isMinimized()) {
         // tray
