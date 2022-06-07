@@ -191,7 +191,7 @@ const Notice = ({ type, value, title, func }) => {
             method: 'send',
             channel: 'onVNCRemote',
             message: {
-              hostAddr: data.hostAddr,
+              roomId: data.roomId,
             },
           });
         };
