@@ -162,18 +162,20 @@ function createLoginRequestSaga(loginType, syncType) {
 
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
-            if (DEVICE_TYPE == 'd') {
+            if (DEVICE_TYPE === 'd') {
               // 차이니즈 월
-              const chineseWall = yield call(getChineseWall, {
-                userId: response.data.result.id,
-                myInfo: response.data.result,
-              });
-
               let chineseWallResult = [];
+              const useChineseWall = getConfig('UseChineseWall', false);
+              if (useChineseWall) {
+                const chineseWall = yield call(getChineseWall, {
+                  userId: response.data.result.id,
+                  myInfo: response.data.result,
+                });
 
-              if (chineseWall.status === 'SUCCESS') {
-                chineseWallResult = chineseWall.result;
-                yield put(setChineseWall(chineseWall.result));
+                if (chineseWall.status === 'SUCCESS') {
+                  chineseWallResult = chineseWall.result;
+                  yield put(setChineseWall(chineseWall.result));
+                }
               }
 
               // 동기화
@@ -346,17 +348,19 @@ function createExtLoginRequestSaga(loginType, syncType) {
 
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
-            if (DEVICE_TYPE == 'd') {
+            if (DEVICE_TYPE === 'd') {
               // 차이니즈 월
-              const chineseWall = yield call(getChineseWall, {
-                userId: response.data.result.id,
-                myInfo: response.data.result,
-              });
-
               let chineseWallResult = [];
-              if (chineseWall.status === 'SUCCESS') {
-                chineseWallResult = chineseWall.result;
-                yield put(setChineseWall(chineseWall.result));
+              const useChineseWall = getConfig('UseChineseWall', false);
+              if (useChineseWall) {
+                const chineseWall = yield call(getChineseWall, {
+                  userId: response.data.result.id,
+                  myInfo: response.data.result,
+                });
+                if (chineseWall.status === 'SUCCESS') {
+                  chineseWallResult = chineseWall.result;
+                  yield put(setChineseWall(chineseWall.result));
+                }
               }
 
               // 동기화
@@ -516,7 +520,7 @@ function createSyncTokenRequestSaga(type) {
 
             // 1 채팅방 정보 불러오기
             // TODO: AppData 저장 여부값 조건 추가 필요
-            if (DEVICE_TYPE == 'd') {
+            if (DEVICE_TYPE === 'd') {
               const rooms = yield call(evalConnector, {
                 method: 'sendSync',
                 channel: 'req-get-room',
@@ -567,13 +571,16 @@ function createSyncTokenRequestSaga(type) {
             }
 
             // 차이니즈 월
-            const chineseWall = yield call(getChineseWall, {
-              userId: authData.id,
-              myInfo: authData,
-            });
+            const useChineseWall = getConfig('UseChineseWall', false);
+            if (useChineseWall) {
+              const chineseWall = yield call(getChineseWall, {
+                userId: authData.id,
+                myInfo: authData,
+              });
 
-            if (chineseWall.status === 'SUCCESS') {
-              yield put(setChineseWall(chineseWall.result));
+              if (chineseWall.status === 'SUCCESS') {
+                yield put(setChineseWall(chineseWall.result));
+              }
             }
 
             // Store 세팅 끝
