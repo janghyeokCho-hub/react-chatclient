@@ -256,7 +256,7 @@ const openFocusRoom = (roomID, isChannel) => {
 
     setTimeout(() => {
       focusWin.setAlwaysOnTop(false);
-    }, 200);
+    }, 300);
     
   } else {
     if (focusWin.isMinimized()) {
