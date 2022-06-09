@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { loginInit, syncTokenRequest } from '@/modules/login';
+import { loginTokenAuth, loginInit, syncTokenRequest } from '@/modules/login';
 import SyncWrap from '@C/login/SyncWrap';
 import * as api from '@/lib/login';
 import { evalConnector } from '@/lib/deviceConnector';
 import { clearUserData } from '@/lib/util/localStorageUtil';
 import { getChineseWall } from '@/lib/orgchart';
-import { getConfig } from '@/lib/util/configUtil';
 
 const TokenChecker = ({ history, returnURL }) => {
   // localStorage에 존재하는 token을 검증하고 검증성공시 login처리 수행
@@ -32,17 +31,12 @@ const TokenChecker = ({ history, returnURL }) => {
            * 토큰인증 성공시 response로부터 id를 얻어 localStorage에 저장
            */
           localStorage.setItem('covi_user_access_id', data.userInfo.id);
-          const useChineseWall = getConfig('UseChineseWall', false);
-          if (useChineseWall) {
-            const { result, status } = await getChineseWall({
-              userId: data.userInfo.id,
-            });
+          const { result, status } = await getChineseWall({
+            userId: data.userInfo.id,
+          });
 
-            if (status === 'SUCCESS') {
-              data.chineseWall = result;
-            } else {
-              data.chineseWall = [];
-            }
+          if (status === 'SUCCESS') {
+            data.chineseWall = result;
           } else {
             data.chineseWall = [];
           }

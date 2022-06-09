@@ -34,7 +34,7 @@ const ShareContainer = ({
   const roomList = useSelector(({ room }) => room.rooms);
   const channelList = useSelector(({ channel }) => channel.channels);
   const userInfo = useSelector(({ login }) => login.userInfo);
-  const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const userChineseWall = useSelector(({ login }) => login.chineseWall);
 
   const dispatch = useDispatch();
 
@@ -60,8 +60,8 @@ const ShareContainer = ({
       }
     };
 
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
+    if (userChineseWall?.length) {
+      setChineseWallState(userChineseWall);
     } else {
       const useChineseWall = getConfig('UseChineseWall', false);
       if (useChineseWall) {
