@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import InviteMember from '@/components/chat/chatroom/layer/InviteMember';
 import UserInfoBox from '@/components/common/UserInfoBox';
@@ -15,15 +15,18 @@ import ChatSettingBox from '@/components/chat/chatroom/layer/ChatSettingBox';
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { modifyRoomName, setBackground } from '@/modules/room';
 import { downloadMessageData } from '@/lib/fileUpload/coviFile';
-import { bindLeaveChatRoom } from '@/lib/deviceConnector';
-import { evalConnector } from '@/lib/deviceConnector';
+import { getExportMessages } from '@/lib/message';
+import {
+  evalConnector,
+  bindLeaveChatRoom,
+  isMainWindow,
+} from '@/lib/deviceConnector';
 import ColorBox from '@COMMON/buttons/ColorBox';
 import { insert, remove } from '@/lib/util/storageUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import useOffset from '@/hooks/useOffset';
 import { setChineseWall } from '@/modules/login';
 import { getChineseWall } from '@/lib/orgchart';
-import { isMainWindow } from '@/lib/deviceConnector';
 
 const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
 
@@ -34,7 +37,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     viewType: room.viewType,
   }));
   const isExtUser = useSelector(({ login }) => login.userInfo.isExtUser);
-  const userChineseWall = useSelector(({ login }) => login.chineseWall);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
 
   const [isNoti, setIsNoti] = useState(true);
   const [isFix, setIsFix] = useState(false);
@@ -67,8 +70,8 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
       }
     };
 
-    if (userChineseWall?.length) {
-      setChineseWallState(userChineseWall);
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
     } else {
       const useChineseWall = getConfig('UseChineseWall', false);
       if (useChineseWall) {
@@ -273,22 +276,41 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
           'Msg_SaveChat',
           '채팅방 내용을 텍스트 파일로 저장합니다. 저장하시겠습니까?',
         ),
-        callback: result => {
+        callback: async result => {
           if (result) {
             let fileName = roomInfo.roomName;
 
-            if (fileName == '') {
-              if (roomInfo.roomType == 'G') {
+            if (fileName === '') {
+              if (roomInfo.roomType === 'G') {
                 fileName = `groupchat_(${roomInfo.members.length})`;
-              } else if (roomInfo.roomType == 'M') {
+              } else if (roomInfo.roomType === 'M') {
                 const userName = roomInfo.members.find(
                   item => item.id != id,
                 ).name;
                 fileName = getDictionary(userName) || userName;
               }
             }
-            fileName = fileName + '_chat.txt';
-            downloadMessageData(roomInfo.roomID, fileName);
+            const roomName = fileName;
+            fileName = `${fileName}_chat.txt`;
+
+            const result = await downloadMessageData({
+              roomID: roomInfo.roomID,
+              fileName,
+              roomName,
+              chineseWall,
+            });
+            if (result !== 'SUCCESS') {
+              openPopup(
+                {
+                  type: 'Alert',
+                  message: covi.getDic(
+                    'Msg_Error',
+                    '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+                  ),
+                },
+                dispatch,
+              );
+            }
           }
         },
       },
@@ -420,7 +442,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                         {covi.getDic('FileSummary', '사진 모아보기')}
                       </a>
                     </li>
-                    {getConfig('UseMsgExport', false) && (
+                    {DEVICE_TYPE === 'd' && getConfig('UseMsgExport', false) && (
                       <li>
                         <a onClick={handleSaveChat}>
                           <span className="c_menu_ico c_menu_ico_04"></span>
