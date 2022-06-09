@@ -21,8 +21,8 @@
     "start": "webpack-dev-server --mode development --hot --config ./webpack.config.dev",
     "electron-dev": "electron ./dev-build/electron/main.js dev",
     "electron-prod": "electron ./build/electron/main.js",
-    "electron-dev-all": "node moveCustomNotifyLib.js && cd node_modules/node-notifier && yarn install && cd ../.. && webpack --mode development --target electron-renderer --config ./webpack.config.dev && webpack --mode development --config ./webpack.config.ele && electron ./dev-build/electron/main.js dev",
-    "build-prod-all": "node moveCustomNotifyLib.js && cd node_modules/node-notifier && yarn install && cd ../.. && webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --config ./webpack.config.ele",
+    "electron-dev-all": "webpack --mode development --target electron-renderer --config ./webpack.config.dev && webpack --mode development --config ./webpack.config.ele && electron ./dev-build/electron/main.js dev",
+    "build-prod-all": "webpack --mode production --target electron-renderer --config ./webpack.config.prod && webpack --mode production --config ./webpack.config.ele",
     "postinstall": "electron-builder install-app-deps",
     "browserslist": "browserslist"
   },
@@ -98,7 +98,6 @@
     "combine-image": "^1.0.3",
     "exif-js": "^2.3.0",
     "exif2css": "^1.3.0",
-    "fs-extra": "^10.1.0",
     "iconv-lite": "^0.6.2",
     "image-extensions": "^1.1.0",
     "ip": "^1.1.5",
