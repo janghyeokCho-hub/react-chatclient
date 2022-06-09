@@ -9,26 +9,46 @@ import { removeLocalDatabaseDir } from '../utils/fileUtils';
 import * as netUtils from 'node-macaddress';
 import { openNoteWindow } from './note';
 import { networkInterfaces } from 'os';
+import { getConfig } from '@/lib/util/configUtil';
 
 const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
   let result = {
     blockChat: false,
     blockFile: false,
   };
-
   if (!chineseWall.length) {
     return result;
   }
-  const chineseData = chineseWall.filter(
-    item =>
-      item.target === targetInfo.sender || item.target === targetInfo.deptCode,
-  );
-  for (const data of chineseData) {
-    if (data.isChat === 'Y') {
-      result.blockChat = true;
+
+  for (const data of chineseWall) {
+    const target = data.target;
+    if (target.includes(targetInfo.companyCode)) {
+      result.blockChat = result.blockChat
+        ? result.blockChat
+        : data.blockChat === 'Y';
+      result.blockFile = result.blockFile
+        ? result.blockFile
+        : data.blockFile === 'Y';
     }
-    if (data.isFile === 'Y') {
-      result.blockFile = true;
+    if (target.includes(targetInfo.deptCode)) {
+      result.blockChat = result.blockChat
+        ? result.blockChat
+        : data.blockChat === 'Y';
+      result.blockFile = result.blockFile
+        ? result.blockFile
+        : data.blockFile === 'Y';
+    }
+    if (target.includes(targetInfo.id)) {
+      result.blockChat = result.blockChat
+        ? result.blockChat
+        : data.blockChat === 'Y';
+      result.blockFile = result.blockFile
+        ? result.blockFile
+        : data.blockFile === 'Y';
+    }
+
+    if (result.blockChat && result.blockFile) {
+      break;
     }
   }
   return result;
@@ -56,14 +76,20 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
   // if (payload.isMine != 'Y') {
   // TODO: notify 설정상태, payload에 따른 notify 설정정보 처리, os에 따른 notify 처리 추가 등등 개발 필요
   try {
+    let isBlock = false;
+    const useChineseWall = getConfig('UseChineseWall', false);
     const senderInfo = JSON.parse(payload.senderInfo);
-
-    const { blockChat, blockFile } = isBlockCheck({
-      targetInfo: senderInfo,
-      chineseWall: loginInfo.chineseWall,
-    });
-    const isFile = !!payload.fileInfos;
-    const isBlock = isFile ? blockFile : blockChat;
+    if (useChineseWall) {
+      const { blockChat, blockFile } = isBlockCheck({
+        targetInfo: {
+          ...senderInfo,
+          id: senderInfo.sender || senderInfo.id,
+        },
+        chineseWall: loginInfo.chineseWall,
+      });
+      const isFile = !!payload.fileInfos;
+      isBlock = isFile ? blockFile : blockChat;
+    }
 
     // let iconImage = path.join(exportProps.resourcePath, 'icons', 'alarm.png'); // full path여야함
     let iconImage = senderInfo.photoPath;
@@ -257,7 +283,6 @@ const openFocusRoom = (roomID, isChannel) => {
     setTimeout(() => {
       focusWin.setAlwaysOnTop(false);
     }, 300);
-    
   } else {
     if (focusWin.isMinimized()) {
       focusWin.restore();
