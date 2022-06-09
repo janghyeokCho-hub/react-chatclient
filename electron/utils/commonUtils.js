@@ -9,7 +9,6 @@ import { removeLocalDatabaseDir } from '../utils/fileUtils';
 import * as netUtils from 'node-macaddress';
 import { openNoteWindow } from './note';
 import { networkInterfaces } from 'os';
-import { getConfig } from '@/lib/util/configUtil';
 
 const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
   let result = {
@@ -75,10 +74,11 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
   // 자기자신에게 온 메세지는 알림처리 안함 (socketAction에서 미리 검사)
   // if (payload.isMine != 'Y') {
   // TODO: notify 설정상태, payload에 따른 notify 설정정보 처리, os에 따른 notify 처리 추가 등등 개발 필요
+  let isBlock = false;
   try {
-    let isBlock = false;
-    const useChineseWall = getConfig('UseChineseWall', false);
     const senderInfo = JSON.parse(payload.senderInfo);
+    const useChineseWall =
+      SERVER_SECURITY_SETTING.get('config.DefaultClientLang') || false;
     if (useChineseWall) {
       const { blockChat, blockFile } = isBlockCheck({
         targetInfo: {
