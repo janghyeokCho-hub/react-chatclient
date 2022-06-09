@@ -142,11 +142,15 @@ export const searchMessage = params => {
       loadCnt: params.loadCnt,
       userId: params.search,
       messageId: params.messageId,
-    };
+    }
   } else {
     requestURL = `/messages/search/${params.search}?roomID=${params.roomId}&loadCnt=${params.loadCnt}`;
   }
-  return managesvr(requestMethod, requestURL, requestBody);
+  return managesvr(
+    requestMethod,
+    requestURL,
+    requestBody,
+  );
 };
 
 export const getFileInfo = params => {
@@ -182,11 +186,15 @@ export const searchChannelMessage = params => {
       loadCnt: params.loadCnt,
       userId: params.search,
       messageId: params.messageId,
-    };
+    }
   } else {
     requestURL = `/channel/messages/search?roomID=${params.roomId}&loadCnt=${params.loadCnt}&searchText=${searchText}`;
   }
-  return managesvr(requestMethod, requestURL, requestBody);
+  return managesvr(
+    requestMethod,
+    requestURL,
+    requestBody,
+  );
 };
 
 export const getNotice = params => {
