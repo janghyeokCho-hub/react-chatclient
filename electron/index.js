@@ -127,7 +127,6 @@ app.whenReady().then(() => {
       .then(name => console.log(`Added Extension: ${name}`))
       .catch(error => console.log(`An error ocurred: ${error}`));
   }
-
 });
 
 const appReady = async () => {
@@ -958,6 +957,11 @@ ipcMain.on('req-get-messages', async (event, args) => {
     appDataEvt.reqUnreadCountForSync(event, param);
   }
 });
+ipcMain.on('req-get-all-messages', async (event, args) => {
+  console.log('ipcMain args : ', args);
+  const returnValue = await appDataEvt.reqGetAllMessages(event, args);
+  event.returnValue = returnValue;
+});
 ipcMain.on('req-get-messages-between', async (event, args) => {
   const returnValue = await appDataEvt.selectBetweenMessagesByIDs(event, args);
   event.returnValue = returnValue;
@@ -1247,7 +1251,6 @@ ipcMain.on('req-del-chatroom-message', (_, args) => {
   appDataEvt.deleteChatroomMessage(args);
 });
 
-
 ipcMain.on('create-crop-window', (_, args) => {
   cropWin = new BrowserWindow({
     width: 600,
@@ -1318,7 +1321,7 @@ function combineCaptureImage(folderName, combineFolderName) {
   }, 500);
 }
 
-ipcMain.on('crop-capture', (event) => {
+ipcMain.on('crop-capture', event => {
   const CropPosition = cropWin.getPosition();
   const CropSize = cropWin.getSize();
   folderName = 'cropCapture';
@@ -1536,7 +1539,6 @@ ipcMain.on('crop-capture', (event) => {
           item.webContents.send('openSnipWin');
         });
       }, 500);
-
     });
 });
 
