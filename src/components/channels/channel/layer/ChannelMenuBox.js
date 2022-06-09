@@ -15,7 +15,6 @@ import {
   leaveChannelByAdminUtil,
   leaveChannelByAdminUtilAfter,
 } from '@/lib/channelUtil';
-import { downloadMessageData } from '@/lib/fileUpload/coviFile';
 import { evalConnector, bindLeaveChannel } from '@/lib/deviceConnector';
 import ChannelUserInfoBox from '../ChannelUserInfoBox';
 import InviteExtUser from './InviteExtUser';
@@ -178,25 +177,6 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
         component: (
           <FileSummary roomId={channelInfo.roomId} chineseWall={chineseWall} />
         ),
-      },
-      dispatch,
-    );
-  };
-
-  const handleSaveChat = () => {
-    openPopup(
-      {
-        type: 'Confirm',
-        message: covi.getDic(
-          'Msg_SaveChat',
-          '채팅방 내용을 텍스트 파일로 저장합니다. 저장하시겠습니까?',
-        ),
-        callback: result => {
-          if (result) {
-            const fileName = channelInfo.roomName + '_channel.txt';
-            downloadMessageData(channelInfo.roomId, fileName);
-          }
-        },
       },
       dispatch,
     );
@@ -484,14 +464,6 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                 {covi.getDic('FileSummary', '파일 모아보기')}
               </a>
             </li>
-            {getConfig('UseMsgExport', false) && (
-              <li>
-                <a onClick={handleSaveChat}>
-                  <span className="c_menu_ico c_menu_ico_04"></span>
-                  {covi.getDic('SaveChat', '대화내용 저장하기')}
-                </a>
-              </li>
-            )}
           </ul>
         </div>
         {channelInfo && channelInfo.members && (
