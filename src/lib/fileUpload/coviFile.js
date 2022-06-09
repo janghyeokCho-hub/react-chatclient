@@ -2,12 +2,24 @@ import * as messageApi from '@/lib/message';
 import * as roomApi from '@/lib/room';
 import { getConfig } from '@/lib/util/configUtil';
 import fileDownload from 'js-file-download';
-import { openSubPop, saveFile, getDownloadPath } from '@/lib/deviceConnector';
+import {
+  openSubPop,
+  saveFile,
+  getDownloadPath,
+  evalConnector,
+} from '@/lib/deviceConnector';
 import { getSysMsgFormatStr } from '@/lib/common';
 import EXIF from 'exif-js';
 import exif2css from 'exif2css';
 import imageExtensions from 'image-extensions';
 import { filesvr } from '../api';
+import { format } from 'date-fns';
+import { isBlockCheck } from '../orgchart';
+import {
+  eumTalkRegularExp,
+  convertEumTalkProtocolPreview,
+  convertEumTalkProtocolPreviewForChannelItem,
+} from '@/lib/common';
 
 const extensionImage = new Set(imageExtensions);
 
@@ -563,9 +575,68 @@ export const downloadByToken = async (
     );
 };
 
-export const downloadMessageData = async (roomID, fileName) => {
-  const response = await roomApi.getMessageDataFile(roomID);
-  fileDownload(response.data, fileName);
+export const downloadMessageData = async ({
+  roomID,
+  fileName,
+  roomName,
+  chineseWall = [],
+}) => {
+  const { data } = await evalConnector({
+    method: 'sendSync',
+    channel: 'req-get-all-messages',
+    message: {
+      roomID,
+    },
+  });
+  const { result, status } = data;
+  if (status === 'SUCCESS') {
+    if (!result?.length) {
+      // 대화내용없음
+      return 'NONE';
+    } else {
+      let txt = `${roomName}\n`;
+      txt += `저장한 날짜 : ${format(new Date(), 'yyyy년 MM월 dd일 HH:mm')}\n`;
+
+      // 파일 대화내용 지우기
+      const items = result.filter(item => !item.fileInfos);
+      // 동기 처리를 위해 forEach 대신 for 사용
+      for (const item of items) {
+        if (item.messageType === 'N') {
+          const sendDate = format(item.sendDate, 'yyyy년 MM월 dd일 HH:mm:ss');
+          const senderInfo = isJSONStr(item.senderInfo)
+            ? JSON.parse(item.senderInfo)
+            : item.senderInfo;
+          const name = senderInfo.name?.split(';')[0];
+          let isBlock = false;
+
+          if (item.isMine !== 'Y' && chineseWall.length) {
+            const { blockChat } = isBlockCheck({
+              targetInfo: {
+                ...senderInfo,
+                id: item.sender,
+              },
+              chineseWall,
+            });
+            isBlock = blockChat;
+          }
+
+          let context = isBlock
+            ? covi.getDic('BlockChat', '차단된 메시지입니다.')
+            : item.context;
+
+          if (eumTalkRegularExp.test(context)) {
+            const messageObj =
+              await convertEumTalkProtocolPreviewForChannelItem(context);
+            context = messageObj.message;
+          }
+          txt += `\n${sendDate} ${name} : ${context}`;
+        }
+      }
+
+      fileDownload(txt, fileName);
+    }
+  }
+  return status;
 };
 
 export const convertFileSize = size => {

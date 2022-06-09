@@ -1780,6 +1780,26 @@ export const reqGetMessages = async (event, args) => {
   } else return { data: {} };
 };
 
+export const reqGetAllMessages = async (_, args) => {
+  logger.info('reqGetAllMessages' + JSON.stringify(args));
+  let messages = [];
+  const returnObj = {};
+
+  if (loginInfo.getData()) {
+    try {
+      messages = await selectAllMessages(args);
+
+      returnObj.status = 'SUCCESS';
+      returnObj.result = messages;
+    } catch (e) {
+      returnObj.status = 'FAIL';
+      logger.info(e.stack);
+    }
+
+    return { data: returnObj };
+  } else return { data: {} };
+};
+
 const selectMessages = async params => {
   logger.info('selectMessages');
   const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
@@ -1827,6 +1847,43 @@ const selectMessages = async params => {
     })
     .orderBy('messageId', params.dist == 'BEFORE' ? 'asc' : 'desc')
     .limit(params.loadCnt)
+    .offset(0);
+
+  const messages = await dbCon
+    .select('*')
+    .from(subQuery.as('a'))
+    .orderBy('a.messageId');
+
+  return messages;
+};
+
+const selectAllMessages = async params => {
+  logger.info('selectAllMessages');
+  logger.info('dbPath : ', dbPath);
+  const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
+
+  const subQuery = dbCon
+    .select(
+      'messageId AS messageID',
+      'context',
+      'sender',
+      'sendDate',
+      'roomId AS roomID',
+      'roomType',
+      'receiver',
+      'messageType',
+      'unreadCnt',
+      'readYN',
+      'isMine',
+      'tempId',
+      'fileInfos',
+      'senderInfo',
+      'linkInfo',
+      'botInfo',
+    )
+    .from('message as m')
+    .where('roomId', params.roomID)
+    .orderBy('messageId', 'asc')
     .offset(0);
 
   const messages = await dbCon
