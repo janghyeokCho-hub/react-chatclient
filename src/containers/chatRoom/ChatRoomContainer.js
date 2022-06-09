@@ -140,7 +140,7 @@ const ChatRoomContainer = () => {
       />
       {listMode === 'N' && (
         <>
-          {roomList?.length && (
+          {roomList?.length > 0 && (
             <RoomItems
               rooms={roomList}
               loading={loading}
@@ -149,7 +149,7 @@ const ChatRoomContainer = () => {
               chineseWall={chineseWallState}
             />
           )}
-          {!roomList?.length && (
+          {roomList?.length == 0 && (
             <div className="nodataBox" style={{ marginTop: '80px' }}>
               <p className="subtxt">
                 {covi.getDic(
