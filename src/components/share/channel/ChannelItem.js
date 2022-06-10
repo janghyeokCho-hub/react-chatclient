@@ -10,7 +10,13 @@ import { makeMessageText, isJSONStr } from '@/lib/common';
 import Config from '@/config/config';
 import { isBlockCheck } from '@/lib/orgchart';
 
-const ChannelItem = ({ channel, checkObj, isJoin, pinnedTop, chineseWall }) => {
+const ChannelItem = ({
+  channel,
+  checkObj,
+  isJoin,
+  pinnedTop,
+  chineseWall = [],
+}) => {
   const channels = useSelector(({ channel }) => channel.channels);
   const checkRef = useRef(null);
 

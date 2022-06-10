@@ -62,9 +62,11 @@ const MessageBox = ({
 
     let menus = [];
     let menuId = '';
+    let fileMenuId = '';
     if (!isBlock && getMenuData) {
       menus = getMenuData(message);
-      menuId = `channelmessage_${message.messageID}`;
+      menuId = `chatmessage_${message.messageID}`;
+      fileMenuId = `chatfilemessage_${message.messageID}`;
     }
 
     const smallFontSize = Math.max(10, fontSize - 2);
@@ -223,7 +225,7 @@ const MessageBox = ({
                   </p>
                 </>
               )}
-              <RightConxtMenu menuId={menuId} menus={menus}>
+              <RightConxtMenu menuId={fileMenuId} menus={menus}>
                 <FileMessageBox
                   messageId={message.messageID}
                   fileObj={fileInfoJSON}
@@ -265,7 +267,7 @@ const MessageBox = ({
                   </span>
                 )}
               </div>
-              <RightConxtMenu menuId={menuId} menus={menus}>
+              <RightConxtMenu menuId={fileMenuId} menus={menus}>
                 <FileMessageBox
                   messageId={message.messageID}
                   fileObj={fileInfoJSON}
