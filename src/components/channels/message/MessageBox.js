@@ -70,6 +70,15 @@ const MessageBox = ({
     let messageType = 'message';
     let mentionInfo = [];
 
+    let menus = [];
+    let menuId = '';
+    let fileMenuId = '';
+    if (!isBlock && getMenuData) {
+      menus = getMenuData(message);
+      menuId = `channelmessage_${message.messageID}`;
+      fileMenuId = `channelfilemessage_${message.messageID}`;
+    }
+
     let _marking = null;
 
     if (!isMine) {
@@ -234,11 +243,13 @@ const MessageBox = ({
                   </p>
                 </>
               )}
-              <FileMessageBox
-                messageId={message.messageID}
-                fileObj={fileInfoJSON}
-                id={!drawText && id}
-              />
+              <RightConxtMenu menuId={fileMenuId} menus={menus}>
+                <FileMessageBox
+                  messageId={message.messageID}
+                  fileObj={fileInfoJSON}
+                  id={!drawText && id}
+                />
+              </RightConxtMenu>
               <div className="chatinfo">
                 {timeBox && (
                   <span
@@ -276,11 +287,13 @@ const MessageBox = ({
                   </span>
                 )}
               </div>
-              <FileMessageBox
-                messageId={message.messageID}
-                fileObj={fileInfoJSON}
-                id={!drawText && id}
-              />
+              <RightConxtMenu menuId={fileMenuId} menus={menus}>
+                <FileMessageBox
+                  messageId={message.messageID}
+                  fileObj={fileInfoJSON}
+                  id={!drawText && id}
+                />
+              </RightConxtMenu>
             </li>
           );
         }
@@ -302,13 +315,6 @@ const MessageBox = ({
 
       // NEW LINE 처리
       drawText = drawText.replace(/\n/gi, '<NEWLINE />');
-    }
-
-    let menus = [];
-    let menuId = '';
-    if (getMenuData) {
-      menus = !isBlock && getMenuData(message);
-      menuId = `channelmessage_${message.messageID}`;
     }
 
     if (!isMine) {
