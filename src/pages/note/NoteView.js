@@ -224,7 +224,7 @@ function _DrawFile({
   // < div style={{}}/>
   return (
     !isBlockFile &&
-    files?.length && (
+    files?.length > 0 && (
       <div className="input full">
         <label
           className="string optional ml20"
