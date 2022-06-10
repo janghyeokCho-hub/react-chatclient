@@ -17,7 +17,7 @@ import {
 } from '@/lib/common';
 import { isBlockCheck } from '@/lib/orgchart';
 
-const ChatItem = ({ room, checkObj, pinnedTop, chineseWall }) => {
+const ChatItem = ({ room, checkObj, pinnedTop, chineseWall = [] }) => {
   const id = useSelector(({ login }) => login.id);
   const checkRef = useRef(null);
 

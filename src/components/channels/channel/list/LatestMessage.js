@@ -47,7 +47,7 @@ const LatestMessage = () => {
     }
 
     let isBlock = false;
-    if (chineseWall.length) {
+    if (chineseWall?.length) {
       const targetInfo = {
         ...senderInfo,
         id: senderInfo?.sender,
