@@ -8,7 +8,7 @@ import React, {
 import { useSelector, useDispatch } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import { openChatRoomView } from '@/lib/roomUtil';
-import { openPopup, getJobInfo, getDictionary } from '@/lib/common';
+import { openPopup, getJobInfo, getDictionary, isJSONStr } from '@/lib/common';
 import { format } from 'date-fns';
 import useTyping from '@/hooks/useTyping';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
@@ -50,7 +50,7 @@ const UserInfoBox = ({
     const debounceTimer = createTakeLatestTimer(100);
 
     /* 여기서 길이계산 */
-    const setPicWidth = e => {
+    const setPicWidth = () => {
       const personWidth = personEl.current?.getBoundingClientRect();
       const nameWidth = nameEl.current?.getBoundingClientRect();
       const picWidth = personWidth
@@ -76,19 +76,23 @@ const UserInfoBox = ({
   const getDeptName = useCallback(() => {
     let jobjParsedDept = '';
     try {
-      jobjParsedDept = JSON.parse(info.dept);
+      jobjParsedDept = isJSONStr(info?.dept)
+        ? JSON.parse(info?.dept)
+        : info?.dept;
     } catch (e) {
-      return getDictionary(info.dept);
+      return getDictionary(info?.dept);
     }
     if (Array.isArray(jobjParsedDept)) {
       let arrDeptDics = [];
       jobjParsedDept.forEach(item => {
-        if (item == null) return false;
+        if (!item) {
+          return false;
+        }
         arrDeptDics.push(getDictionary(item));
       });
       return arrDeptDics.join('/');
     }
-    return getDictionary(info.dept);
+    return getDictionary(info?.dept);
   }, [userInfo, myInfo, isMine]);
 
   // 대화목록에서 상대 클릭시 이벤트 처리
@@ -102,7 +106,7 @@ const UserInfoBox = ({
         return;
       } else {
         if (isClick) {
-          if (userInfo.pChat == 'Y') {
+          if (userInfo.pChat === 'Y') {
             const { blockChat, blockFile } = isBlockCheck({
               targetInfo: userInfo,
               chineseWall,
@@ -131,8 +135,8 @@ const UserInfoBox = ({
             }
           } else {
             if (
-              (!isDoubleClick && (viewType != 'S' || SCREEN_OPTION == 'G')) ||
-              (isDoubleClick && viewType == 'S' && SCREEN_OPTION != 'G')
+              (!isDoubleClick && (viewType != 'S' || SCREEN_OPTION === 'G')) ||
+              (isDoubleClick && viewType === 'S' && SCREEN_OPTION !== 'G')
             ) {
               openPopup(
                 {
@@ -147,7 +151,7 @@ const UserInfoBox = ({
             }
           }
         } else if (checkObj && userInfo.type !== 'G') {
-          checkRef && checkRef.current && checkRef.current.click();
+          checkRef?.current?.click();
         }
       }
     },
@@ -156,8 +160,7 @@ const UserInfoBox = ({
 
   const drawUserInfoBox = useMemo(() => {
     const type = userInfo.type;
-    console.log('usertype >> ', userInfo.type);
-    if (type == 'G') {
+    if (type === 'G') {
       return (
         <>
           <div className="profile-photo group"></div>
@@ -165,7 +168,7 @@ const UserInfoBox = ({
           {info?.dept && <div className="team">{getDeptName()}</div>}
         </>
       );
-    } else if (type == 'B') {
+    } else if (type === 'B') {
     } else {
       const getAdditionalInfoBox = info => {
         try {
@@ -260,7 +263,7 @@ const UserInfoBox = ({
       ref={personEl}
       className={[
         'person',
-        info.type == 'G' && info.dept == '' ? 'group' : '',
+        info.type === 'G' && info.dept === '' ? 'group' : '',
       ].join(' ')}
       onMouseDown={() => handleClick(false)}
       onDoubleClick={() => handleClick(true)}
@@ -277,6 +280,9 @@ const UserInfoBox = ({
               id={checkObj.name + checkedValue}
               name={checkObj.name + checkedValue}
               onClick={e => {
+                e.stopPropagation();
+              }}
+              onMouseDown={e => {
                 e.stopPropagation();
               }}
               onChange={e => {
@@ -301,6 +307,9 @@ const UserInfoBox = ({
               // htmlFor={checkObj.name + userInfo.id}
               htmlFor={checkObj.name + checkedValue}
               onClick={e => {
+                e.stopPropagation();
+              }}
+              onMouseDown={e => {
                 e.stopPropagation();
               }}
             >
