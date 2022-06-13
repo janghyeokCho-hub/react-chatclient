@@ -69,7 +69,6 @@ const ChannelItem = ({
     () => getChannelSettings && getChannelSettings(channel),
     [channel],
   );
-
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -82,7 +81,7 @@ const ChannelItem = ({
     } else {
       setPinnedTop(false);
     }
-  }, [setting, pinToTopLimit]);
+  }, [channel, pinToTopLimit]);
 
   useEffect(() => {
     evalConnector({

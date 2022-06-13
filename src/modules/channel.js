@@ -904,12 +904,12 @@ const channel = handleActions(
             );
 
             const channel = channelIdx > -1 ? draft.channels[channelIdx] : null;
-
             // 기존 channel 내용 복사
             if (channel) {
               item.newWin = channel.newWin;
               item.winObj = channel.winObj;
               item.winName = channel.winName;
+              item.settingJSON = channel.settingJSON;
 
               // 채널 아이콘
               if (channel.iconPath && !item.iconPath) {
@@ -1076,9 +1076,11 @@ const channel = handleActions(
             }
 
             // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
-            if(draft.currentChannel){
+            if (draft.currentChannel) {
               try {
-                draft.currentChannel.setting = isJSONStr(changeChannel.setting) ?  JSON.parse(changeChannel.setting) : changeChannel.setting;
+                draft.currentChannel.setting = isJSONStr(changeChannel.setting)
+                  ? JSON.parse(changeChannel.setting)
+                  : changeChannel.setting;
               } catch (e) {
                 draft.currentChannel.setting = null;
               }
@@ -1186,9 +1188,11 @@ const channel = handleActions(
         draft.messages = action.payload.messages;
 
         // current channel 내의 setting 은 Object type으로 처리
-        if(draft.currentChannel){
+        if (draft.currentChannel) {
           try {
-            draft.currentChannel.setting = isJSONStr(newChannel.setting) ?  JSON.parse(newChannel.setting) : newChannel.setting;
+            draft.currentChannel.setting = isJSONStr(newChannel.setting)
+              ? JSON.parse(newChannel.setting)
+              : newChannel.setting;
           } catch (e) {
             draft.currentChannel.setting = null;
           }
@@ -1789,9 +1793,11 @@ const channel = handleActions(
           ) {
             // currentRoom 의 경우 setting 정보가 object로 변환되도록 작업
             try {
-              draft.currentChannel.settingJSON = isJSONStr(action.payload.setting) ?  JSON.parse(
-                action.payload.setting
-              ) : action.payload.setting;
+              draft.currentChannel.settingJSON = isJSONStr(
+                action.payload.setting,
+              )
+                ? JSON.parse(action.payload.setting)
+                : action.payload.setting;
             } catch (e) {
               draft.currentChannel.settingJSON = null;
             }
@@ -1837,7 +1843,7 @@ const channel = handleActions(
               if (typeof item === 'object') {
                 return item;
               } else {
-                return isJSONStr(item) ?  JSON.parse(item) :  item ;
+                return isJSONStr(item) ? JSON.parse(item) : item;
               }
             }
           };
