@@ -46,8 +46,7 @@ const ChannelContainer = () => {
     e => {
       const changeVal = e.target.value;
       setSearchText(changeVal);
-
-      if (!!changeVal) {
+      if (!changeVal) {
         setListMode('N');
       } else {
         setSearchLoading(true);
