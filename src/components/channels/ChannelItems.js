@@ -1,42 +1,28 @@
 // components\chat\RoomItems.js
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import ChannelItem from '@C/channels/ChannelItem';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import { Scrollbars } from 'react-custom-scrollbars';
-import { evalConnector } from '@/lib/deviceConnector';
+import { evalConnector, isMainWindow } from '@/lib/deviceConnector';
 import useOffset from '@/hooks/useOffset';
 import { isJSONStr } from '@/lib/common';
 import { getConfig } from '@/lib/util/configUtil';
-
-const isEmptyObj = obj => {
-  if (obj && obj.constructor === Object && Object.keys(obj).length === 0) {
-    return true;
-  }
-  return false;
-};
-
-const getChannelSettings = (channel = {}) => {
-  let setting = {};
-
-  if (typeof channel.settingJSON === 'object') {
-    setting = { ...channel.settingJSON };
-  } else if (isJSONStr(channel.settingJSON)) {
-    setting = JSON.parse(channel.settingJSON);
-  }
-  return setting;
-};
+import { setChineseWall } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
 
 const ChannelItems = ({
   channels,
   loading,
   onChannelChange,
   isDoubleClick,
-  chineseWall = [],
 }) => {
+  const userId = useSelector(({ login }) => login.id);
   const selectId = useSelector(({ channel }) => channel.selectedId);
   const joinedChannelList = useSelector(({ channel }) => channel.channels);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const [chineseWallState, setChineseWallState] = useState([]);
   const [pinnedChannels, setPinnedChannels] = useState([]);
   const pinToTopLimit = useMemo(
     () => getConfig('PinToTop_Limit_Channel', -1),
@@ -45,6 +31,54 @@ const ChannelItems = ({
 
   const [isNotis, setIsNotis] = useState({});
   const RENDER_UNIT = 5;
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status } = await getChineseWall({
+        userId,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+        }
+      } else {
+        setChineseWallState([]);
+      }
+    };
+
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
+    } else {
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+      }
+    }
+
+    return () => {
+      setChineseWallState([]);
+    };
+  }, []);
+
+  const isEmptyObj = obj => {
+    if (obj?.constructor === Object && Object.keys(obj).length === 0) {
+      return true;
+    }
+    return false;
+  };
+
+  const getChannelSettings = channel => {
+    const settingJSON =
+      (isJSONStr(channel?.settingJSON)
+        ? JSON.parse(channel?.settingJSON)
+        : channel?.settingJSON) || {};
+    return settingJSON;
+  };
 
   const sortedChannels = useMemo(() => {
     const pinned = [];
@@ -134,12 +168,6 @@ const ChannelItems = ({
             const isJoined = joinedChannelList?.findIndex(
               chan => chan.roomId === channel.roomId,
             );
-            const setting = getChannelSettings(channel);
-
-            let isPinTop = false;
-            if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
-              isPinTop = true;
-            }
             return (
               <ChannelItem
                 key={channel.roomId}
@@ -153,7 +181,7 @@ const ChannelItems = ({
                 isEmptyObj={isEmptyObj}
                 pinnedChannels={pinnedChannels}
                 pinToTopLimit={pinToTopLimit}
-                chineseWall={chineseWall}
+                chineseWall={chineseWallState}
               />
             );
           })}
