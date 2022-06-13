@@ -1,6 +1,6 @@
 {
   "name": "eumtalk",
-  "version": "1.13.0",
+  "version": "1.13.1",
   "description": "Eumtalk Messenger Client",
   "author": "Covision Corp.",
   "main": "build/electron/main.js",
