@@ -26,7 +26,7 @@ const SearchHeader = ({
   const handleSearch = (option = searchOption, text = null) => {
     if (!text) {
       if (option === 'Context') {
-        text = searchText;  
+        text = searchText;
       } else if (option === 'Name') {
         text = targetId;
       }
@@ -43,7 +43,7 @@ const SearchHeader = ({
   const clearSearch = () => {
     onChange('');
     setTargetId('');
-  }
+  };
   useEffect(() => {
     searchInput.current.focus();
   }, [searchOption]);
@@ -99,7 +99,7 @@ const SearchHeader = ({
                   setOpenSelectBox(false);
                 }}
               >
-                {covi.getDic('Name', '이름')}
+                {covi.getDic('Note_Sender', '보낸사람')}
               </li>
             )}
           </ul>
@@ -126,7 +126,7 @@ const SearchHeader = ({
               if (e.keyCode == 13) {
                 if (searchOption === 'Name' && !targetId) {
                   onEmptyTarget?.();
-                  return;  
+                  return;
                 }
                 handleSearch();
               }
