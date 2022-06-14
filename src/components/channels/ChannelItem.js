@@ -63,6 +63,7 @@ const ChannelItem = ({
   chineseWall = [],
 }) => {
   const id = useSelector(({ login }) => login.id);
+  const channels = useSelector(({ channel }) => channel.channels);
   const menuId = useMemo(() => 'channel_' + channel.roomId, [channel]);
   const [pinnedTop, setPinnedTop] = useState(false);
   const setting = useMemo(
@@ -379,10 +380,11 @@ const ChannelItem = ({
   const [lastMessageText, setLastMessageText] = useState('');
 
   useEffect(() => {
-    if (channel?.lastMessage && chineseWall.length) {
-      const lastMessageInfo = isJSONStr(channel.lastMessage)
-        ? JSON.parse(channel.lastMessage)
-        : channel.lastMessage;
+    const changeTargetChannel = channels.find(c => c.roomId == channel.roomId);
+    if (changeTargetChannel?.lastMessage && chineseWall.length) {
+      const lastMessageInfo = isJSONStr(changeTargetChannel.lastMessage)
+        ? JSON.parse(changeTargetChannel.lastMessage)
+        : changeTargetChannel.lastMessage;
       const targetInfo = {
         id: lastMessageInfo.sender,
         companyCode: lastMessageInfo.companyCode,
@@ -398,12 +400,14 @@ const ChannelItem = ({
       if (result) {
         setLastMessageText(covi.getDic('BlockChat', '차단된 메시지 입니다.'));
       } else {
-        makeMessageText(channel.lastMessage, 'CHANNEL').then(
+        makeMessageText(changeTargetChannel.lastMessage, 'CHANNEL').then(
           setLastMessageText,
         );
       }
     } else {
-      makeMessageText(channel.lastMessage, 'CHANNEL').then(setLastMessageText);
+      makeMessageText(changeTargetChannel.lastMessage, 'CHANNEL').then(
+        setLastMessageText,
+      );
     }
   }, [channel, chineseWall]);
 
