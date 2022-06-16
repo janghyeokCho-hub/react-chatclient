@@ -49,13 +49,16 @@ const excludeDeps = [
   '!node_modules/jszip/**/*',
   '!node_modules/jspdf',
   '!node_modules/canvg',
-  '!node_modules/dompurify',
+  '!node_modules/dompurify'
 ];
 
 module.exports = {
   productName: 'eumtalk',
   appId,
   asar: true,
+  asarUnpack: [
+    "./node_modules/node-notifier/vendor/**"
+  ],
   files: ['build/electron/templates/**', 'build/electron/main.js', ...excludeDeps],
   extraFiles: [
     {
