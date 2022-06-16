@@ -1,17 +1,5 @@
-import React, {
-  useMemo,
-  useCallback,
-  useState,
-  useEffect,
-  useLayoutEffect,
-} from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-  format,
-  isValid,
-  startOfToday,
-  differenceInMilliseconds,
-} from 'date-fns';
 import { newWinChannel, openChannel } from '@/modules/channel';
 import RightConxtMenu from '../common/popup/RightConxtMenu';
 import { newChannel } from '@/lib/deviceConnector';
@@ -22,31 +10,12 @@ import {
   openPopup,
   makeMessageText,
   isJSONStr,
+  makeDateTime,
 } from '@/lib/common';
 import { joinChannel as joinChannelAPI } from '@/lib/channel';
 import { evalConnector } from '@/lib/deviceConnector';
 import { modifyChannelSetting } from '@/modules/channel';
 import { isBlockCheck } from '@/lib/orgchart';
-
-const makeDateTime = timestamp => {
-  if (timestamp && isValid(new Date(timestamp))) {
-    const toDay = startOfToday();
-    const procTime = new Date(timestamp);
-    let dateText = '';
-
-    if (differenceInMilliseconds(procTime, toDay) >= 0) {
-      // 오늘보다 큰 경우 시간 표시
-      dateText = format(procTime, 'HH:mm');
-    } else {
-      // 오늘과 이틀이상 차이나는 경우 날짜로 표시
-      dateText = format(procTime, 'yyyy.MM.dd');
-    }
-    // 오늘과 하루 차이인 경우 어제로 표시 -- 차후에 추가 ( 다국어처리 )
-    return dateText;
-  } else {
-    return '';
-  }
-};
 
 const ChannelItem = ({
   channel,
@@ -106,7 +75,7 @@ const ChannelItem = ({
 
       const winName = `wrf${channel.roomId}`;
 
-      const openURL = `${DEVICE_TYPE == 'd' ? '#' : ''}/client/nw/channel/${
+      const openURL = `${DEVICE_TYPE === 'd' ? '#' : ''}/client/nw/channel/${
         channel.roomId
       }`;
 
@@ -116,7 +85,7 @@ const ChannelItem = ({
         newWinChannel({ id: channel.roomId, obj: channelObj, name: winName }),
       );
     } else if (dbClickEvent && channel.newWin) {
-      if (DEVICE_TYPE == 'd') {
+      if (DEVICE_TYPE === 'd') {
         if (channel.winObj) {
           try {
             if (channel.winObj) {
@@ -132,7 +101,7 @@ const ChannelItem = ({
             onChannelChange(channel.roomId);
             const winName = `wrf${channel.roomId}`;
             const openURL = `${
-              DEVICE_TYPE == 'd' ? '#' : ''
+              DEVICE_TYPE === 'd' ? '#' : ''
             }/client/nw/channel/${channel.roomId}`;
             const channelObj = newChannel(winName, channel.roomId, openURL);
             dispatch(
@@ -173,7 +142,7 @@ const ChannelItem = ({
             callback: result => {
               if (result) {
                 //채널 입장
-                if (channel.openType != 'O') {
+                if (channel.openType !== 'O') {
                   openPopup(
                     {
                       type: 'Prompt',
@@ -235,7 +204,7 @@ const ChannelItem = ({
 
   const handleClick = useCallback(
     channel => {
-      if (channel.openType != 'O' && channel.channelUnlock == 'N') {
+      if (channel.openType !== 'O' && channel.channelUnlock === 'N') {
         const params = {
           roomId: channel.roomId,
           openType: channel.openType,
@@ -405,7 +374,7 @@ const ChannelItem = ({
         );
       }
     } else {
-      makeMessageText(changeTargetChannel.lastMessage, 'CHANNEL').then(
+      makeMessageText(changeTargetChannel?.lastMessage, 'CHANNEL').then(
         setLastMessageText,
       );
     }
@@ -425,7 +394,7 @@ const ChannelItem = ({
         <>
           <div
             className={
-              isJoin && channel.openType != 'O'
+              isJoin && channel.openType !== 'O'
                 ? ['profile-photo', 'private-img'].join(' ')
                 : 'profile-photo'
             }
@@ -446,10 +415,10 @@ const ChannelItem = ({
               ))}
           </div>
         </>
-        {channel.openType != 'O' && <span className="private" />}
+        {channel.openType !== 'O' && <span className="private" />}
         <span className="channelName">
           <span>
-            {channel.roomName == ''
+            {channel.roomName === ''
               ? covi.getDic('NoTitle', '제목없음')
               : channel.roomName}
           </span>
@@ -464,7 +433,7 @@ const ChannelItem = ({
               onClick={() => handleJoinChannel(channel)}
             ></span>
             <span className="preview">
-              {channel.description == ''
+              {channel.description === ''
                 ? covi.getDic('NoDescription', '설명없음')
                 : channel.description}
             </span>

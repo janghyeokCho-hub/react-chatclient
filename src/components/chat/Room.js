@@ -1,18 +1,6 @@
-import React, {
-  useMemo,
-  useCallback,
-  useState,
-  useEffect,
-  useLayoutEffect,
-} from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import RoomMemberBox from '@C/chat/RoomMemberBox';
-import {
-  format,
-  isValid,
-  startOfToday,
-  differenceInMilliseconds,
-} from 'date-fns';
 import { newWinRoom } from '@/modules/room';
 import ProfileBox from '@COMMON/ProfileBox';
 import RightConxtMenu from '../common/popup/RightConxtMenu';
@@ -23,33 +11,12 @@ import {
   openPopup,
   makeMessageText,
   getFilterMember,
+  makeDateTime,
 } from '@/lib/common';
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import { modifyRoomSetting } from '@/modules/room';
 import { isBlockCheck } from '@/lib/orgchart';
-
-const makeDateTime = timestamp => {
-  if (isValid(new Date(timestamp))) {
-    const toDay = startOfToday();
-    const procTime = new Date(timestamp);
-    let dateText = '';
-
-    if (differenceInMilliseconds(procTime, toDay) >= 0) {
-      // 오늘보다 큰 경우 시간 표시
-      dateText = format(procTime, 'HH:mm');
-    } else {
-      // 오늘과 이틀이상 차이나는 경우 날짜로 표시
-      dateText = format(procTime, 'yyyy.MM.dd');
-    }
-
-    // 오늘과 하루 차이인 경우 어제로 표시 -- 차후에 추가 ( 다국어처리 )
-
-    return dateText;
-  } else {
-    return '';
-  }
-};
 
 const Room = ({
   room,
@@ -93,7 +60,7 @@ const Room = ({
         makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
       }
     } else {
-      makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
+      makeMessageText(room?.lastMessage, 'CHAT').then(setLastMessageText);
     }
   }, [room, chineseWall]);
 

@@ -59,7 +59,7 @@ const ChannelItem = ({
         );
       }
     } else {
-      makeMessageText(channel.lastMessage, 'CHANNEL').then(setLastMessageText);
+      makeMessageText(channel?.lastMessage, 'CHANNEL').then(setLastMessageText);
     }
   }, [channel, chineseWall]);
 
