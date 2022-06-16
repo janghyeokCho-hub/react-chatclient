@@ -48,7 +48,7 @@ const ChatItem = ({ room, checkObj, pinnedTop, chineseWall = [] }) => {
         makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
       }
     } else {
-      makeMessageText(room.lastMessage, 'CHAT').then(setLastMessageText);
+      makeMessageText(room?.lastMessage, 'CHAT').then(setLastMessageText);
     }
   }, [room, chineseWall]);
 
