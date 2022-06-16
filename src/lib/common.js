@@ -434,19 +434,15 @@ export const moveRoom = (moveId, isChannel, dispatch) => {
 export const makeMessageText = async (lastMessage, type) => {
   let returnText = covi.getDic('Msg_NoMessages', '대화내용 없음');
   try {
-    let msgObj = null;
-
-    if (typeof lastMessage === 'string') {
-      msgObj = JSON.parse(lastMessage);
-    } else if (typeof lastMessage === 'object') {
-      msgObj = lastMessage;
-    }
+    const msgObj = isJSONStr(lastMessage)
+      ? JSON.parse(lastMessage)
+      : lastMessage;
 
     if (!msgObj) {
       return returnText;
     }
 
-    if (!!msgObj.Message) {
+    if (!!msgObj?.Message) {
       let drawText = (msgObj.Message && msgObj.Message) || '';
       if (isJSONStr(msgObj.Message)) {
         const drawData = JSON.parse(msgObj.Message);
@@ -471,14 +467,10 @@ export const makeMessageText = async (lastMessage, type) => {
       } else {
         returnText = drawText.split('\n')[0];
       }
-    } else if (msgObj.File) {
-      let fileObj = null;
-
-      if (typeof msgObj.File == 'string') {
-        fileObj = JSON.parse(msgObj.File);
-      } else if (typeof msgObj.File == 'object') {
-        fileObj = msgObj.File;
-      }
+    } else if (msgObj?.File) {
+      const fileObj = isJSONStr(msgObj.File)
+        ? JSON.parse(msgObj.File)
+        : msgObj.File;
 
       if (!fileObj) {
         return returnText;

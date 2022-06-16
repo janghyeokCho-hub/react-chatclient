@@ -159,24 +159,23 @@ function createLoginRequestSaga(loginType, syncType) {
                 },
               ]),
             );
+            // 차이니즈 월
+            let chineseWallResult = [];
+            const useChineseWall = getConfig('UseChineseWall', false);
+            if (useChineseWall) {
+              const chineseWall = yield call(getChineseWall, {
+                userId: action.payload.id,
+              });
+
+              if (chineseWall.status === 'SUCCESS') {
+                chineseWallResult = chineseWall.result;
+                yield put(setChineseWall(chineseWall.result));
+              }
+            }
 
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
             if (DEVICE_TYPE === 'd') {
-              // 차이니즈 월
-              let chineseWallResult = [];
-              const useChineseWall = getConfig('UseChineseWall', false);
-              if (useChineseWall) {
-                const chineseWall = yield call(getChineseWall, {
-                  userId: action.payload.id,
-                });
-
-                if (chineseWall.status === 'SUCCESS') {
-                  chineseWallResult = chineseWall.result;
-                  yield put(setChineseWall(chineseWall.result));
-                }
-              }
-
               // 동기화
               yield call(syncAppData, {
                 data: response.data,
@@ -345,22 +344,22 @@ function createExtLoginRequestSaga(loginType, syncType) {
               ]),
             );
 
+            // 차이니즈 월
+            let chineseWallResult = [];
+            const useChineseWall = getConfig('UseChineseWall', false);
+            if (useChineseWall) {
+              const chineseWall = yield call(getChineseWall, {
+                userId: action.payload.id,
+              });
+              if (chineseWall.status === 'SUCCESS') {
+                chineseWallResult = chineseWall.result;
+                yield put(setChineseWall(chineseWall.result));
+              }
+            }
+
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
             if (DEVICE_TYPE === 'd') {
-              // 차이니즈 월
-              let chineseWallResult = [];
-              const useChineseWall = getConfig('UseChineseWall', false);
-              if (useChineseWall) {
-                const chineseWall = yield call(getChineseWall, {
-                  userId: action.payload.id,
-                });
-                if (chineseWall.status === 'SUCCESS') {
-                  chineseWallResult = chineseWall.result;
-                  yield put(setChineseWall(chineseWall.result));
-                }
-              }
-
               // 동기화
               yield call(syncAppData, {
                 data: response.data,

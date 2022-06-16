@@ -39,7 +39,7 @@ const Room = ({
   const [lastMessageText, setLastMessageText] = useState('');
 
   useEffect(() => {
-    if (room?.lastMessage && chineseWall.length) {
+    if (room?.lastMessage && chineseWall?.length) {
       const lastMessageInfo = isJSONStr(room.lastMessage)
         ? JSON.parse(room.lastMessage)
         : room.lastMessage;
@@ -62,7 +62,7 @@ const Room = ({
     } else {
       makeMessageText(room?.lastMessage, 'CHAT').then(setLastMessageText);
     }
-  }, [room, chineseWall]);
+  }, [room, chineseWall, lastMessageText]);
 
   const filterMember = useMemo(
     () => getFilterMember(room.members, id, room.roomType),

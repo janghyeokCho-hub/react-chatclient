@@ -8,21 +8,16 @@ import { isJSONStr } from '@/lib/common';
 import { getConfig } from '@/lib/util/configUtil';
 
 const isEmptyObj = obj => {
-  if (obj && obj.constructor === Object && Object.keys(obj).length === 0) {
+  if (obj?.constructor === Object && Object.keys(obj).length === 0) {
     return true;
   }
   return false;
 };
 
 const getRoomSettings = (room = {}) => {
-  let setting = {};
-
-  if (typeof room.setting === 'object') {
-    setting = { ...room.setting };
-  } else if (isJSONStr(room.setting)) {
-    setting = JSON.parse(room.setting);
-  }
-  return setting;
+  return (
+    (isJSONStr(room.setting) ? JSON.parse(room.setting) : room.setting) || {}
+  );
 };
 
 const RoomItems = ({
@@ -45,7 +40,7 @@ const RoomItems = ({
     const pinned = [];
     const unpinned = [];
     const result = [];
-    
+
     if (pinToTopLimit >= 0) {
       rooms.forEach(r => {
         const setting = getRoomSettings(r);
