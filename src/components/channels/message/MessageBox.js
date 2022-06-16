@@ -11,6 +11,8 @@ import {
   getJobInfo,
   convertEumTalkProtocol,
   eumTalkRegularExp,
+  tagPattern,
+  isJSONStr,
 } from '@/lib/common';
 import LinkMessageBox from '@C/chat/message/LinkMessageBox'; // 그대로 사용
 import FileMessageBox from '@C/chat/message/FileMessageBox'; // 그대로 사용
@@ -31,6 +33,7 @@ const MessageBox = ({
   isBlock,
 }) => {
   const [fontSize] = useChatFontSize();
+  const loginId = useSelector(({ login }) => login.id);
   const currMember = useSelector(
     ({ room, channel }) =>
       room.currentRoom?.members || channel.currentChannel?.members,
@@ -38,7 +41,6 @@ const MessageBox = ({
   const loading = useSelector(
     ({ loading }) => loading['channel/GET_CHANNEL_INFO'],
   );
-  const loginId = useSelector(({ login }) => login.id);
 
   const dispatch = useDispatch();
   const { data: searchOptionState } = useSWR('message/search', null);
@@ -82,11 +84,9 @@ const MessageBox = ({
     let _marking = null;
 
     if (!isMine) {
-      if (!(typeof message.senderInfo === 'object')) {
-        senderInfo = JSON.parse(message.senderInfo);
-      } else {
-        senderInfo = message.senderInfo;
-      }
+      senderInfo = isJSONStr(message.senderInfo)
+        ? JSON.parse(message.senderInfo)
+        : message.senderInfo;
     }
 
     if (searchOptionState?.type === 'Context') {
@@ -110,23 +110,20 @@ const MessageBox = ({
       mentionInfo = processMsg.mentionInfo;
     }
 
-    if (!isBlock && messageType == 'message') {
+    if (!isBlock && messageType === 'message') {
       let index = 0;
       if (drawText) {
         index = 1;
       }
       // 링크 썸네일 처리
       if (message.linkInfo) {
-        let linkInfoObj = null;
-        if (typeof message.linkInfo == 'object') {
-          linkInfoObj = message.linkInfo;
-        } else {
-          linkInfoObj = JSON.parse(message.linkInfo);
-        }
+        let linkInfoObj = isJSONStr(message.linkInfo)
+          ? JSON.parse(message.linkInfo)
+          : message.linkInfo;
 
         drawText = convertURLMessage(drawText);
 
-        if (linkInfoObj.thumbNailInfo) {
+        if (linkInfoObj?.thumbNailInfo) {
           const linkThumbnailObj = linkInfoObj.thumbNailInfo;
 
           index = 2;
@@ -162,14 +159,14 @@ const MessageBox = ({
             </li>
           );
         }
-      } else if (message.linkInfo == null && DEVICE_TYPE != 'b') {
+      } else if (!message?.linkInfo && DEVICE_TYPE !== 'b') {
         const checkURLResult = checkURL(drawText);
 
         if (checkURLResult.isURL) {
           evalConnector({
             method: 'once',
             channel: `onLinkThumbnailInfo_${message.messageID}`,
-            callback: (event, args) => {
+            callback: (_, args) => {
               handleMessageLinkInfo(args);
             },
           });
@@ -188,7 +185,9 @@ const MessageBox = ({
       }
 
       if (message.fileInfos) {
-        const fileInfoJSON = JSON.parse(message.fileInfos);
+        const fileInfoJSON = isJSONStr(message.fileInfos)
+          ? JSON.parse(message.fileInfos)
+          : message.fileInfos;
 
         if (!isMine) {
           fileInfoJSX = (
@@ -300,11 +299,10 @@ const MessageBox = ({
       }
 
       // Tag 처리
-      const tagPattern = new RegExp(/(#)([a-z가-힣0-9ㄱ-ㅎ]+)/, 'gmi');
       drawText = drawText.replace(tagPattern, `<TAG text="$1$2" value="$2" />`);
 
       // Mention 처리
-      if (mentionInfo.length > 0) {
+      if (mentionInfo?.length) {
         mentionInfo.map((m, idx) => {
           const member = currMember.find(item => item.id == m.id);
           if (member) {
@@ -431,7 +429,7 @@ const MessageBox = ({
               {drawText ? (
                 <Message
                   className={
-                    messageType == 'message'
+                    messageType === 'message'
                       ? 'msgtxt'
                       : `msgtxt ${messageType}`
                   }

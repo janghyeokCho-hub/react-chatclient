@@ -70,7 +70,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   }, []);
 
   useEffect(() => {
-    if (currentChannel && currentChannel.roomId > -1) {
+    if (currentChannel?.roomId > -1) {
       setNextPage([]);
       setTopEnd(false);
     }
@@ -120,7 +120,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
 
   const getNext = useCallback(
     roomID => {
-      if (!loading && messages.length > 0 && !topEnd) {
+      if (!loading && messages?.length && !topEnd) {
         // 실제로 불러와야 할 메시지가 달라진 경우에만 처리
         setLoading(true);
         const startID = messages[0].messageID;
@@ -130,9 +130,9 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
           loadCnt: 100,
           dist: 'NEXT',
         }).then(({ data }) => {
-          if (data.status == 'SUCCESS') {
+          if (data.status === 'SUCCESS') {
             const result = data.result;
-            if (result.length > 0) {
+            if (result?.length) {
               setNextPage(result);
             } else {
               setNextPage([]);
@@ -151,7 +151,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   );
 
   const handleScrollTop = useCallback(() => {
-    if (!topEnd && !loading && nextPage.length > 0) {
+    if (!topEnd && !loading && nextPage?.length) {
       dispatch(setMessages({ messages: nextPage, dist: 'NEXT' }));
     }
   }, [dispatch, loading, nextPage, topEnd]);
@@ -167,14 +167,14 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     message => {
       const menus = [];
 
-      if (message.messageType != 'S' && message.messageType != 'I') {
+      if (message.messageType !== 'S' && message.messageType !== 'I') {
         let messageType = 'message';
         if (eumTalkRegularExp.test(message.context)) {
           const processMsg = convertEumTalkProtocol(message.context);
           messageType = processMsg.type;
         }
 
-        if (message.fileInfos !== null) {
+        if (!!message?.fileInfos) {
           messageType = 'files';
         }
 
@@ -184,15 +184,13 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               {
                 code: 'copyClipboardMessage',
                 isline: false,
-                onClick: () => {
+                onClick: async () => {
+                  const context = await makeMessage(message.context);
+                  navigator.clipboard.writeText(context);
                   openPopup(
                     {
                       type: 'Alert',
                       message: covi.getDic('Msg_Copy', '복사되었습니다.'),
-                      callback: async () => {
-                        const context = await makeMessage(message.context);
-                        navigator.clipboard.writeText(context);
-                      },
                     },
                     dispatch,
                   );
@@ -263,24 +261,32 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                   files = Array(files);
                 }
                 files = files.map(item => item.token);
-                const result = await checkFileTokenValidation({
+                const { status } = await checkFileTokenValidation({
                   token: files,
                   serviceType: 'CHAT',
                 });
-                if (result.status === 204) {
+
+                let popMessage = null;
+                switch (status) {
+                  case 204:
+                    popMessage = covi.getDic(
+                      'Msg_FileExpired',
+                      '만료된 파일입니다.',
+                    );
+                    break;
+                  case 403:
+                    popMessage = covi.getDic(
+                      'Msg_FilePermission',
+                      '권한이 없는 파일입니다.',
+                    );
+                    break;
+                }
+
+                if (popMessage) {
                   openPopup(
                     {
                       type: 'Alert',
-                      message: covi.getDic('Msg_FileExpired'),
-                    },
-                    dispatch,
-                  );
-                  return;
-                } else if (result.status === 403) {
-                  openPopup(
-                    {
-                      type: 'Alert',
-                      message: covi.getDic('Msg_FilePermission'),
+                      message: popMessage,
                     },
                     dispatch,
                   );
@@ -290,7 +296,10 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                     {
                       component: (
                         <ShareContainer
-                          headerName={covi.getDic('Msg_Note_Forward')}
+                          headerName={covi.getDic(
+                            'Msg_Note_Forward',
+                            '전달하기',
+                          )}
                           message={message}
                           context={message.context}
                           messageType={messageType}
@@ -301,7 +310,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                   );
                 }
               },
-              name: covi.getDic('Forward'),
+              name: covi.getDic('Forward', '전달'),
             });
           }
         }
@@ -375,7 +384,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       let lastDate = '';
       // new message seperator
       let hasNewMessageSeperator = newMessageSeperator;
-      if (hasNewMessageSeperator === null) {
+      if (!hasNewMessageSeperator) {
         hasNewMessageSeperator =
           messages[messages.length - 1].sendDate > currentChannel.lastViewedAt;
       }
@@ -412,9 +421,15 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
         let nextSender = '';
         let dateBox = !(lastDate == sendDate);
 
-        if (message.sender != currentSender) currentSender = message.sender;
-        if (message.messageType == 'S') currentSender = '';
-        if (dateBox) nameBox = true;
+        if (message.sender !== currentSender) {
+          currentSender = message.sender;
+        }
+        if (message.messageType === 'S') {
+          currentSender = '';
+        }
+        if (dateBox) {
+          nameBox = true;
+        }
 
         if (messages.length > index + 1) {
           nextSendTime = Math.floor(messages[index + 1].sendDate / 60000);
@@ -478,7 +493,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
             <NoticeMessageBox
               key={message.messageID}
               message={message}
-              isMine={message.isMine == 'Y'}
+              isMine={message.isMine === 'Y'}
               nameBox={nameBox}
               timeBox={timeBox}
               isBlock={isBlock}
@@ -523,11 +538,11 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const layerClass = useMemo(() => {
     let layerClass = '';
 
-    if (viewExtension != '' && tempFiles.length > 0) {
+    if (viewExtension !== '' && tempFiles?.length) {
       layerClass = 'layer-all';
-    } else if (viewExtension != '' && tempFiles.length == 0) {
+    } else if (viewExtension !== '' && tempFiles.length === 0) {
       layerClass = 'layer';
-    } else if (viewExtension == '' && tempFiles.length > 0) {
+    } else if (viewExtension === '' && tempFiles?.length) {
       layerClass = 'layer-file';
     }
 
@@ -559,7 +574,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
           {showNewMessageSeperator && (
             <a className="NewMessageBtn">
               <span
-                onClick={e => {
+                onClick={() => {
                   setClickNewMessageSeperator(true);
                 }}
               >
@@ -573,7 +588,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               </span>
               <span
                 style={{ position: 'absolute', right: '-25px', top: '7px' }}
-                onClick={e => {
+                onClick={() => {
                   setShowNewMessageSeperator(false);
                 }}
               >

@@ -10,6 +10,7 @@ import {
   checkURL,
   convertURLMessage,
   getJobInfo,
+  isJSONStr,
 } from '@/lib/common';
 import LinkMessageBox from '@C/chat/message/LinkMessageBox';
 import FileMessageBox from '@C/chat/message/FileMessageBox';
@@ -58,7 +59,6 @@ const MessageBox = ({
     let fileInfoJSX = null;
 
     let messageType = 'message';
-    let mentionInfo = [];
 
     let menus = [];
     let menuId = '';
@@ -76,15 +76,12 @@ const MessageBox = ({
       const processMsg = convertEumTalkProtocol(drawText);
       messageType = processMsg.type;
       drawText = processMsg.message;
-      mentionInfo = processMsg.mentionInfo;
     }
 
     if (!isMine) {
-      if (!(typeof message.senderInfo === 'object')) {
-        senderInfo = JSON.parse(message.senderInfo);
-      } else {
-        senderInfo = message.senderInfo;
-      }
+      senderInfo = isJSONStr(message.senderInfo)
+        ? JSON.parse(message.senderInfo)
+        : message.senderInfo;
     }
 
     if (!isBlock && messageType === 'message') {
@@ -96,14 +93,11 @@ const MessageBox = ({
 
       // 링크 썸네일 처리
       if (message.linkInfo) {
-        let linkInfoObj = null;
-        if (typeof message.linkInfo === 'object') {
-          linkInfoObj = message.linkInfo;
-        } else {
-          linkInfoObj = JSON.parse(message.linkInfo);
-        }
+        let linkInfoObj = isJSONStr(message.linkInfo)
+          ? JSON.parse(message.linkInfo)
+          : message.linkInfo;
 
-        if (linkInfoObj.thumbNailInfo) {
+        if (linkInfoObj?.thumbNailInfo) {
           const linkThumbnailObj = linkInfoObj.thumbNailInfo;
 
           index = 2;
@@ -142,7 +136,7 @@ const MessageBox = ({
             </li>
           );
         }
-      } else if (message.linkInfo === null && DEVICE_TYPE !== 'b') {
+      } else if (!message?.linkInfo && DEVICE_TYPE !== 'b') {
         const checkURLResult = checkURL(drawText);
 
         if (checkURLResult.isURL) {
@@ -170,7 +164,9 @@ const MessageBox = ({
       drawText = convertURLMessage(drawText);
 
       if (message.fileInfos) {
-        const fileInfoJSON = JSON.parse(message.fileInfos);
+        const fileInfoJSON = isJSONStr(message.fileInfos)
+          ? JSON.parse(message.fileInfos)
+          : message.fileInfos;
 
         if (!isMine) {
           fileInfoJSX = (
@@ -279,20 +275,6 @@ const MessageBox = ({
         }
       }
 
-      // Tag 처리
-      const tagPattern = new RegExp(/(#)([a-z가-힣0-9ㄱ-ㅎ]+)/, 'gmi');
-      if (tagPattern && drawText) {
-        drawText = drawText.replace(
-          tagPattern,
-          `<TAG text="$1$2" value="$2" />`,
-        );
-
-        // Mention 처리
-        if (mentionInfo?.length) {
-          drawText = message.context;
-        }
-      }
-
       // NEW LINE 처리
       drawText = drawText.replace(/(\r\n|\n|\r)/gi, '<NEWLINE />');
     }
@@ -382,7 +364,6 @@ const MessageBox = ({
                     style={isCopy ? { userSelect: 'none' } : {}}
                     eleId={id}
                     marking={marking}
-                    mentionInfo={mentionInfo}
                     messageID={message.messageID}
                     isMine={isMine}
                   >
@@ -455,7 +436,6 @@ const MessageBox = ({
                     style={isCopy ? { userSelect: 'none' } : {}}
                     eleId={id}
                     marking={marking}
-                    mentionInfo={mentionInfo}
                     messageID={message.messageID}
                     isMine={isMine}
                   >

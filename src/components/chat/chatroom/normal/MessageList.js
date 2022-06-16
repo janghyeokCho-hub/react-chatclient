@@ -59,6 +59,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
 
   const [startSelectMessage, setStartSelectMessage] = useState(-1);
   const [endSelectMessage, setEndSelectMessage] = useState(-1);
+  const cbRef = useRef(null);
 
   const dispatch = useDispatch();
 
@@ -66,10 +67,10 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     if ((e.ctrlKey || e.metaKey) && e.keyCode == 67) {
       window.getelestartMessageID;
 
-      let start = document
+      const start = document
         .getElementsByClassName('startMessageID')
         .item(0).value;
-      let end = document.getElementsByClassName('endMessageID').item(0).value;
+      const end = document.getElementsByClassName('endMessageID').item(0).value;
 
       messageCopy(messages, start, end).then(success => {
         if (success) {
@@ -127,16 +128,17 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     setEndSelectMessage(-1);
   };
 
-  const cbRef = useRef(handleSelectionChange);
   useEffect(() => {
     cbRef.current = handleSelectionChange;
-  });
+    return () => {
+      cbRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     setMounted(true);
 
     const cb = e => cbRef.current(e);
-
     document.addEventListener('selectionchange', cb);
     document.addEventListener('mousedown', handleMouseDown);
 
@@ -149,6 +151,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     });
 
     return () => {
+      cbRef.current = null;
       document.removeEventListener('selectionchange', cb);
       document.removeEventListener('mousedown', handleMouseDown);
       evalConnector({
@@ -375,7 +378,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
           messageType = processMsg.type;
         }
 
-        if (message.fileInfos !== null) {
+        if (!!message?.fileInfos) {
           messageType = 'files';
         }
 

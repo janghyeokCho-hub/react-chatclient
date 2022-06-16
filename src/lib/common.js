@@ -6,6 +6,13 @@ import { newChatRoom, newChannel } from '@/lib/deviceConnector';
 import { openRoom, newWinRoom } from '@/modules/room';
 import { openChannel, newWinChannel } from '@/modules/channel';
 
+import {
+  format,
+  isValid,
+  startOfToday,
+  differenceInMilliseconds,
+} from 'date-fns';
+
 export const windowPopup = (openURL, windowName, popupWidth, popupHeight) => {
   let openObj = null;
   openObj = window.open(
@@ -65,7 +72,7 @@ const urlRegularExp =
   /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
 export const eumTalkRegularExp =
   /eumtalk:\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/gim;
-
+export const tagPattern = new RegExp(/(#)([a-z가-힣0-9ㄱ-ㅎ]+)/, 'gmi');
 export const checkURL = message => {
   let isURL = false;
   let result = message.match(urlRegularExp);
@@ -520,5 +527,25 @@ export const getFilterMember = (members, id, roomType = null) => {
 
       return true;
     });
+  }
+};
+
+export const makeDateTime = timestamp => {
+  if (timestamp && isValid(new Date(timestamp))) {
+    const toDay = startOfToday();
+    const procTime = new Date(timestamp);
+    let dateText = '';
+
+    if (differenceInMilliseconds(procTime, toDay) >= 0) {
+      // 오늘보다 큰 경우 시간 표시
+      dateText = format(procTime, 'HH:mm');
+    } else {
+      // 오늘과 이틀이상 차이나는 경우 날짜로 표시
+      dateText = format(procTime, 'yyyy.MM.dd');
+    }
+    // 오늘과 하루 차이인 경우 어제로 표시 -- 차후에 추가 ( 다국어처리 )
+    return dateText;
+  } else {
+    return '';
   }
 };

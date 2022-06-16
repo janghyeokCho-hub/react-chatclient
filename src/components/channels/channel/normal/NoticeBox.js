@@ -14,7 +14,15 @@ import {
 } from 'date-fns';
 import { useSelector, useDispatch } from 'react-redux';
 import Message from '@C/channels/message/Message';
-import * as common from '@/lib/common';
+import {
+  convertURLMessage,
+  eumTalkRegularExp,
+  convertEumTalkProtocol,
+  getJobInfo,
+  openPopup,
+  checkURL,
+  tagPattern,
+} from '@/lib/common';
 import IconConxtMenu from '@C/common/popup/IconConxtMenu';
 import { removeChannelNotice } from '@/modules/channel';
 import { setMessageLinkInfo } from '@/modules/room';
@@ -138,8 +146,8 @@ const NoticeBox = ({ isBlock }) => {
       }
 
       // protocol check
-      if (common.eumTalkRegularExp.test(drawText)) {
-        const processMsg = common.convertEumTalkProtocol(drawText);
+      if (eumTalkRegularExp.test(drawText)) {
+        const processMsg = convertEumTalkProtocol(drawText);
         messageType = processMsg.type;
         drawText = processMsg.message;
         mentionInfo = processMsg.mentionInfo;
@@ -161,7 +169,7 @@ const NoticeBox = ({ isBlock }) => {
             linkInfoObj = JSON.parse(message.linkInfo);
           }
 
-          drawText = common.convertURLMessage(drawText);
+          drawText = convertURLMessage(drawText);
 
           if (linkInfoObj.thumbNailInfo) {
             const linkThumbnailObj = linkInfoObj.thumbNailInfo;
@@ -200,7 +208,7 @@ const NoticeBox = ({ isBlock }) => {
             );
           }
         } else if (message.linkInfo == null && DEVICE_TYPE != 'b') {
-          const checkURLResult = common.checkURL(drawText);
+          const checkURLResult = checkURL(drawText);
 
           if (checkURLResult.isURL) {
             evalConnector({
@@ -225,7 +233,6 @@ const NoticeBox = ({ isBlock }) => {
         }
 
         // Tag 처리
-        const tagPattern = new RegExp(/(#)([a-z가-힣0-9ㄱ-ㅎ]+)/, 'gmi');
         drawText = drawText.replace(
           tagPattern,
           `<TAG text="$1$2" value="$2" />`,
@@ -266,7 +273,7 @@ const NoticeBox = ({ isBlock }) => {
               {drawText}
             </Message>
           </span>
-          <span className="subtxt">{`${dateText}  ${common.getJobInfo(
+          <span className="subtxt">{`${dateText}  ${getJobInfo(
             senderInfo,
           )}`}</span>
         </>
@@ -279,7 +286,7 @@ const NoticeBox = ({ isBlock }) => {
     const { context, senderInfo, sendDate } = currentChannel.notice;
     const _context = isBlock
       ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
-      : common.convertURLMessage(context);
+      : convertURLMessage(context);
     const pattern = new RegExp(/[<](MENTION|LINK)[^>]*[/>]/, 'gi');
     const returnJSX = [];
     let match = null;
@@ -288,13 +295,13 @@ const NoticeBox = ({ isBlock }) => {
     let maxContext = '';
 
     // eumtalk:// http(s)?:// \n
-    // console.log('0000002', common.eumTalkRegularExp.test(_context));
+    // console.log('0000002', eumTalkRegularExp.test(_context));
     if (
-      common.eumTalkRegularExp.test(_context) ||
+      eumTalkRegularExp.test(_context) ||
       /[<](LINK)[^>]*[/>]/.test(_context)
     ) {
-      // if(common.eumTalkRegularExp.test(_context)) {
-      const { message, mentionInfo } = common.convertEumTalkProtocol(_context);
+      // if(eumTalkRegularExp.test(_context)) {
+      const { message, mentionInfo } = convertEumTalkProtocol(_context);
       while ((match = pattern.exec(message)) !== null) {
         maxContext = match.input;
         if (match.index > 0 && match.index > beforeLastIndex) {
@@ -307,7 +314,7 @@ const NoticeBox = ({ isBlock }) => {
           const memberInfo = await findMemberInfo(mentionInfo, attrs.targetId);
           let mention = '@Unknown';
           if (memberInfo.name) {
-            mention = `@${common.getJobInfo(memberInfo)}`;
+            mention = `@${getJobInfo(memberInfo)}`;
           } else if (memberInfo.id) {
             mention = `@${memberInfo.id}`;
           }
@@ -395,7 +402,7 @@ const NoticeBox = ({ isBlock }) => {
           if (typeof senderInfo == 'string') {
             senderInfo = JSON.parse(senderInfo);
           }
-          common.openPopup(
+          openPopup(
             {
               type: 'Alert',
               message: `<p class="normaltxt"><b style="font-size: 16px;">${covi.getDic(
@@ -404,7 +411,7 @@ const NoticeBox = ({ isBlock }) => {
               )}</b><br><br>${noticeContext}<br/><br><font style="color:#999;float: right;">${format(
                 new Date(notice.sendDate),
                 'yyyy.MM.dd HH:mm:ss',
-              )} ${common.getJobInfo(senderInfo)}</font>`,
+              )} ${getJobInfo(senderInfo)}</font>`,
             },
             dispatch,
           );
@@ -429,7 +436,7 @@ const NoticeBox = ({ isBlock }) => {
           code: 'delete',
           isline: false,
           onClick: () => {
-            common.openPopup(
+            openPopup(
               {
                 type: 'Confirm',
                 message: covi.getDic(
