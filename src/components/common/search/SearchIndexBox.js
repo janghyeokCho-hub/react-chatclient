@@ -40,10 +40,13 @@ const SearchIndexBox = ({ length, onChange, handleNext }) => {
           </div>
         </>
       )) || <span className="numbertxt">0 / 0</span>}
-      {searchOptionState?.type === 'Name' &&
+      {searchOptionState?.type === 'Note_Sender' &&
         typeof handleNext === 'function' &&
         length > 0 && (
-          <span style={{ marginLeft: 8, padding: 4 }} onClick={handleNext}>
+          <span
+            style={{ marginLeft: 8, padding: 4 }}
+            onClick={() => handleNext(length)}
+          >
             {getDic('SeeMore')}
           </span>
         )}

@@ -134,23 +134,18 @@ export const searchMessage = params => {
   let requestMethod = 'get';
   let requestURL;
   let requestBody = {};
-  if (params?.searchOption === 'Name') {
+  if (params?.searchOption === 'Note_Sender') {
     requestMethod = 'post';
     requestURL = '/messages/sender/search';
     requestBody = {
       roomId: params.roomId,
       loadCnt: params.loadCnt,
-      userId: params.search,
-      messageId: params.messageId,
-    }
+      searchId: params.search,
+    };
   } else {
     requestURL = `/messages/search/${params.search}?roomID=${params.roomId}&loadCnt=${params.loadCnt}`;
   }
-  return managesvr(
-    requestMethod,
-    requestURL,
-    requestBody,
-  );
+  return managesvr(requestMethod, requestURL, requestBody);
 };
 
 export const getFileInfo = params => {
@@ -178,23 +173,21 @@ export const searchChannelMessage = params => {
   let requestMethod = 'get';
   let requestURL;
   let requestBody = {};
-  if (params?.searchOption === 'Name') {
+  if (params?.searchOption === 'Note_Sender') {
     requestMethod = 'post';
     requestURL = '/channel/sender/search';
     requestBody = {
       roomId: params.roomId,
       loadCnt: params.loadCnt,
-      userId: params.search,
-      messageId: params.messageId,
-    }
+      searchId: params.search,
+      // 해당 작성자가 작성한 마지막 messageId 를 보내야 함
+      // 2022-06-14 윤기현 대리가 쿼리에서 서브쿼리로 messageId 를 가져오도록 수정하기로 함.
+      // messageId: params.messageId,
+    };
   } else {
     requestURL = `/channel/messages/search?roomID=${params.roomId}&loadCnt=${params.loadCnt}&searchText=${searchText}`;
   }
-  return managesvr(
-    requestMethod,
-    requestURL,
-    requestBody,
-  );
+  return managesvr(requestMethod, requestURL, requestBody);
 };
 
 export const getNotice = params => {

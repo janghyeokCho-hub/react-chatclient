@@ -1,4 +1,9 @@
-import React, { useState, useCallback, useEffect, useLayoutEffect } from 'react';
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import SearchIndexBox from '@C/common/search/SearchIndexBox';
 import { SearchList, SearchHeader } from '@C/common/search';
@@ -10,7 +15,7 @@ import { getMessage } from '@/lib/messageUtil';
 import useSWR from 'swr';
 
 function requestSearchMessage(param, isChannel = false) {
-  if (DEVICE_TYPE == 'd' && !isChannel) {
+  if (DEVICE_TYPE === 'd' && !isChannel) {
     return evalConnector({
       method: 'invoke',
       channel: 'req-get-search-messages',
@@ -36,7 +41,6 @@ const SearchView = ({ onSearchBox }) => {
   const currentLastMessage = useSelector(
     ({ room, channel }) => room?.messages?.at(-1) || channel?.messages?.at(-1),
   );
-
   const currMember = useSelector(
     ({ room, channel }) =>
       room.currentRoom?.members || channel.currentChannel?.members,
@@ -53,7 +57,7 @@ const SearchView = ({ onSearchBox }) => {
   );
 
   useEffect(() => {
-    if (typeof covi.changeSearchText == 'string') {
+    if (typeof covi.changeSearchText === 'string') {
       handleSearch(covi.changeSearchText);
       covi.changeSearchText = null;
     }
@@ -64,7 +68,7 @@ const SearchView = ({ onSearchBox }) => {
       // clean-up
       setSearchText('');
       setSearchOptionState(null);
-    }
+    };
   }, []);
 
   const handleSearchBox = useCallback(() => {
@@ -76,8 +80,8 @@ const SearchView = ({ onSearchBox }) => {
   }, [onSearchBox]);
 
   const setMoveMessagesData = useCallback(data => {
-    if (data.status == 'SUCCESS') {
-      if (data.search.length > 0 && data.firstPage.length > 0) {
+    if (data?.status === 'SUCCESS') {
+      if (data.search?.length && data.firstPage?.length) {
         setMoveData({
           firstPage: data.firstPage,
           moveId: data.search[0],
@@ -109,9 +113,10 @@ const SearchView = ({ onSearchBox }) => {
           roomId: roomID,
           search: searchText,
           searchOption,
-          loadCnt: 50,
+          loadCnt: 100,
           messageId: currentLastMessage?.messageID, // for sender search
         };
+
         const response = await requestSearchMessage(param, isChannel);
         if (response?.data?.status !== 'SUCCESS' || !response?.data?.search) {
           setMoveMessagesData(response.data);
@@ -155,7 +160,7 @@ const SearchView = ({ onSearchBox }) => {
           } else {
             response = await getMessage(roomID, searchResult[index], 'CENTER');
           }
-          if (response.data.status == 'SUCCESS') {
+          if (response.data.status === 'SUCCESS') {
             const data = response.data.result;
 
             setMoveData({
@@ -182,41 +187,45 @@ const SearchView = ({ onSearchBox }) => {
     setSearchText(text);
   };
 
-  const handleRequestNext = useCallback(async () => {
-    const lastSearchMessageId = searchResult?.at(-1);
-    console.log('Handle Next', lastSearchMessageId);
-    if (!Number(lastSearchMessageId)) {
-      return;
-    }
-    const param = {
-      roomID: searchOptionState?.roomId,
-      roomId: searchOptionState?.roomId,
-      search: searchOptionState?.value,
-      searchOption: searchOptionState?.type,
-      loadCnt: 50,
-      messageId: Math.max(0, lastSearchMessageId - 1), // for sender search
-    };
-    try {
-      const response = await requestSearchMessage(param, isChannel);
-      if (
-        response?.data?.status === 'SUCCESS' ||
-        response?.data?.search?.length
-      ) {
-        setSearchResult(state => state.concat(response.data.search));
-      } else {
-        throw new Error('Searh result is empty');
+  const handleRequestNext = useCallback(
+    async length => {
+      const lastSearchMessageId = searchResult?.at(-1);
+      if (!Number(lastSearchMessageId)) {
+        return;
       }
-    } catch (err) {
-      // handle error
-      common.openPopup(
-        {
-          type: 'Alert',
-          message: covi.getDic('Msg_noSearchResult', '검색결과가 없습니다.'),
-        },
-        dispatch,
-      );
-    }
-  }, [dispatch, searchResult, searchOptionState, isChannel]);
+      const param = {
+        roomID: searchOptionState?.roomId,
+        roomId: searchOptionState?.roomId,
+        search: searchOptionState?.value,
+        searchOption: searchOptionState?.type,
+        loadCnt: length + 100,
+        messageId: Math.max(0, lastSearchMessageId - 1), // for sender search
+      };
+      try {
+        const response = await requestSearchMessage(param, isChannel);
+        if (
+          response?.data?.status === 'SUCCESS' ||
+          response?.data?.search?.length
+        ) {
+          setSearchResult(state => [
+            ...new Set(state.concat(response.data.search)),
+          ]);
+        } else {
+          throw new Error('Searh result is empty');
+        }
+      } catch (err) {
+        // handle error
+        common.openPopup(
+          {
+            type: 'Alert',
+            message: covi.getDic('Msg_noSearchResult', '검색결과가 없습니다.'),
+          },
+          dispatch,
+        );
+      }
+    },
+    [dispatch, searchResult, searchOptionState, isChannel],
+  );
 
   const handleEmptyTarget = useCallback(() => {
     common.openPopup(

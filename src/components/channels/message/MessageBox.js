@@ -92,7 +92,7 @@ const MessageBox = ({
     if (searchOptionState?.type === 'Context') {
       _marking = marking;
     } else if (
-      searchOptionState?.type === 'Name' &&
+      searchOptionState?.type === 'Note_Sender' &&
       searchOptionState?.value &&
       message?.sender
     ) {
