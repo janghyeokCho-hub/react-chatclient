@@ -27,13 +27,13 @@ const SearchHeader = ({
     if (!text) {
       if (option === 'Context') {
         text = searchText;
-      } else if (option === 'Name') {
+      } else if (option === 'Note_Sender') {
         text = targetId;
       }
     }
     if (option === 'Context' && text) {
       onSearch(option, text);
-    } else if (option === 'Name' && text) {
+    } else if (option === 'Note_Sender' && text) {
       onSearch(option, text);
     }
   };
@@ -94,7 +94,7 @@ const SearchHeader = ({
             {useSearchMessageByName?.use && (
               <li
                 onClick={() => {
-                  setSearchOption('Name');
+                  setSearchOption('Note_Sender');
                   onChange('');
                   setOpenSelectBox(false);
                 }}
@@ -124,7 +124,7 @@ const SearchHeader = ({
             }}
             onKeyDown={e => {
               if (e.keyCode == 13) {
-                if (searchOption === 'Name' && !targetId) {
+                if (searchOption === 'Note_Sender' && !targetId) {
                   onEmptyTarget?.();
                   return;
                 }
@@ -133,13 +133,9 @@ const SearchHeader = ({
             }}
             onFocus={() => {
               // 이름검색 모드 && input focus시에 SuggestionLayer 렌더링
-              if (searchOption === 'Name') {
+              if (searchOption === 'Note_Sender') {
                 setInputFocused(true);
-              }
-            }}
-            onBlur={() => {
-              // 이름검색 모드 && input blur시에 SuggestionLayer 제거
-              if (searchOption === 'Name') {
+              } else {
                 setInputFocused(false);
               }
             }}

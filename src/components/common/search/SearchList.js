@@ -189,9 +189,15 @@ const SearchList = ({ moveData, markingText, roomID }) => {
         let nextSender = '';
         let dateBox = !(lastDate == sendDate);
 
-        if (message.sender != currentSender) currentSender = message.sender;
-        if (message.messageType == 'S') currentSender = '';
-        if (dateBox) nameBox = true;
+        if (message.sender !== currentSender) {
+          currentSender = message.sender;
+        }
+        if (message.messageType === 'S') {
+          currentSender = '';
+        }
+        if (dateBox) {
+          nameBox = true;
+        }
 
         if (messages.length > index + 1) {
           nextSendTime = Math.floor(messages[index + 1].sendDate / 60000);
@@ -225,7 +231,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
               <MessageBox
                 key={message.messageID}
                 message={message}
-                isMine={message.isMine == 'Y'}
+                isMine={message.isMine === 'Y'}
                 nameBox={nameBox}
                 timeBox={timeBox}
                 id={`msg_${message.messageID}`}
@@ -239,7 +245,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
               <MessageBox
                 key={message.messageID}
                 message={message}
-                isMine={message.isMine == 'Y'}
+                isMine={message.isMine === 'Y'}
                 nameBox={nameBox}
                 timeBox={timeBox}
                 marking={markingText}
@@ -253,7 +259,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
             <NoticeMessageBox
               key={message.messageID}
               message={message}
-              isMine={message.isMine == 'Y'}
+              isMine={message.isMine === 'Y'}
               nameBox={nameBox}
               timeBox={timeBox}
               isBlock={isBlock}

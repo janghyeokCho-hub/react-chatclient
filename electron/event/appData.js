@@ -1986,7 +1986,7 @@ export const reqGetSearchMessages = async (event, args) => {
     try {
       let messages = null;
       let search = [];
-      if (searchOption === 'Name') {
+      if (searchOption === 'Note_Sender') {
         search = await searchMessagesByName(args);
       } else {
         search = await searchMessages(args);
