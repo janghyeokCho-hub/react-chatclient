@@ -208,18 +208,37 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
         });
       } else {
         if (Notification.isSupported()) {
-          const noti = new Notification({
-            title: title,
-            icon: localIconImage,
-            body: message,
-          });
+          if (exportProps.isWin) {
+            const WindowsToaster = require('node-notifier').WindowsToaster;
+            const notifier = new WindowsToaster({
+              withFallback: false,
+            });
 
-          // click evt 정의
-          noti.on('click', e => {
-            openFocusRoom(roomID, payload.isChannel);
-          });
-
-          noti.show();
+            notifier.notify(
+              {
+                appID: exportProps.appId,
+                title: title,
+                message: message,
+                icon: localIconImage,
+                sound: true,
+              },
+              function (err, response) {
+                if (response === undefined) {
+                  openFocusRoom(roomID, payload.isChannel);
+                }
+              },
+            );
+          } else {
+            const noti = new Notification({
+              title: title,
+              icon: localIconImage,
+              body: message,
+            });
+            noti.on('click', e => {
+              openFocusRoom(roomID, payload.isChannel);
+            });
+            noti.show();
+          }
         }
       }
 
@@ -249,10 +268,34 @@ const openFocusRoom = (roomID, isChannel) => {
     focusWin.webContents.send('onAlarmClick', { roomID, isChannel });
   }
 
-  if (focusWin.isMinimized()) {
-    focusWin.restore();
-  } else if (!focusWin.isVisible()) {
-    focusWin.show();
+  if (exportProps.isWin) {
+    const MainWindow = BrowserWindow.fromId(1);
+    MainWindow.flashFrame(false);
+
+    if (focusWin.isMinimized()) {
+      focusWin.restore();
+    }
+
+    if(!focusWin.isVisible()){
+      focusWin.show();
+      MainWindow.blur();
+    }
+
+    focusWin.flashFrame(false);
+    focusWin.setAlwaysOnTop(true, 'normal');
+    focusWin.setVisibleOnAllWorkspaces(true);
+    setTimeout(() => {
+      focusWin.setAlwaysOnTop(false);
+    }, 300);
+    
+  } else {
+    if (focusWin.isMinimized()) {
+      focusWin.restore();
+    } else if (!focusWin.isVisible()) {
+      focusWin.show();
+    }
+    focusWin.flashFrame(false);
+    focusWin.focus();
   }
 
   focusWin.flashFrame(false);

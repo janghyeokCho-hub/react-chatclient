@@ -1,6 +1,8 @@
 import { app } from 'electron';
 import os from 'os';
 // process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+const {appId } = require('/package.json');
+
 
 const exportProps = {
   platform: process.platform,
@@ -17,7 +19,7 @@ const exportProps = {
   trayHotName: 'tray_hot.png',
   resourcePath: process.argv[2] == 'dev' ? __dirname : process.resourcesPath,
   appName: process.argv[2] == 'dev' ? 'eumtalk' : app.getName(),
-  appId: APP_ID,
+  appId: appId,
 };
 
 export default exportProps;
