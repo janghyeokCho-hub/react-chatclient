@@ -162,6 +162,7 @@ const ChannelList = ({ channels, checkObj, chineseWall }) => {
                   isClick={false}
                   isJoin={isJoined === -1}
                   pinnedTop={isPinTop}
+                  chineseWall={chineseWall}
                 />
               );
             })}

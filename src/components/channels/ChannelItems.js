@@ -73,11 +73,11 @@ const ChannelItems = ({
   };
 
   const getChannelSettings = channel => {
-    const settingJSON =
+    return (
       (isJSONStr(channel?.settingJSON)
         ? JSON.parse(channel?.settingJSON)
-        : channel?.settingJSON) || {};
-    return settingJSON;
+        : channel?.settingJSON) || {}
+    );
   };
 
   const sortedChannels = useMemo(() => {

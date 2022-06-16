@@ -18,7 +18,13 @@ import ChannelList from './channel/ChannelList';
 import Config from '@/config/config';
 import { isMainWindow } from '@/lib/deviceConnector';
 import { getAllUserWithGroupList } from '@/lib/room';
-import { getJobInfo, deleteLayer, openPopup, clearLayer } from '@/lib/common';
+import {
+  getJobInfo,
+  deleteLayer,
+  openPopup,
+  clearLayer,
+  isJSONStr,
+} from '@/lib/common';
 import { makeMessage } from './share';
 import { setChineseWall } from '@/modules/login';
 import { getChineseWall } from '@/lib/orgchart';
@@ -360,7 +366,9 @@ const ShareContainer = ({
   });
 
   const handleShareFile = useCallback(async params => {
-    let fileInfos = JSON.parse(params.fileInfos);
+    let fileInfos = isJSONStr(params.fileInfos)
+      ? JSON.parse(params.fileInfos)
+      : params.fileInfos;
     if (!Array.isArray(fileInfos)) {
       // 단일 파일일 경우 Array 로 변환 후 전송하기 위함
       fileInfos = new Array(fileInfos);
@@ -412,7 +420,7 @@ const ShareContainer = ({
         const groupIds = members
           .filter(item => item.type === 'G')
           .map(item => item.id);
-        if (groupIds.length) {
+        if (groupIds?.length) {
           // 선택한 부서에 해당되는 유저 ID List
           const { data } = await getAllUserWithGroupList(groupIds);
           const { result, status } = data;
@@ -427,7 +435,7 @@ const ShareContainer = ({
             return;
           }
 
-          if (status === 'SUCCESS' && (!result || !result.length)) {
+          if (status === 'SUCCESS' && !result?.length) {
             // 선택한 부서에 사람이 없을 경우
             sharePopup({
               msg: covi.getDic(
@@ -438,7 +446,7 @@ const ShareContainer = ({
             return;
           }
 
-          if (result && result.length) {
+          if (result?.length) {
             // 부서를 선택할 경우 type = 'GR'
             params.type = 'GR';
             params.groupCode = groupIds[0];
@@ -541,7 +549,7 @@ const ShareContainer = ({
     if (room.roomType === 'M' || room.roomType === 'O') {
       return <>{getJobInfo(filterMember[0])}</>;
     } else {
-      if (room.roomName && room.roomName !== '') {
+      if (!!room?.roomName) {
         return (
           <>
             <span>{room.roomName}</span>
@@ -562,13 +570,13 @@ const ShareContainer = ({
         }
       }
 
-      if (!filterMember.length) {
+      if (!filterMember?.length) {
         return <>{covi.getDic('NoChatMembers', '대화상대없음')}</>;
       }
 
       return (
         <>
-          {filterMember.length > 1
+          {filterMember?.length > 1
             ? `${getJobInfo(filterMember[0])} ...`
             : getJobInfo(filterMember[0])}
         </>
@@ -607,7 +615,7 @@ const ShareContainer = ({
                       }}
                     >
                       {((room.roomType === 'M' ||
-                        room.filterMember.length == 1) &&
+                        room.filterMember.length === 1) &&
                         ((room.roomType === 'A' && (
                           <ProfileBox
                             userId={room.filterMember[0].id}
@@ -625,7 +633,7 @@ const ShareContainer = ({
                             img={room.filterMember[0].photoPath}
                           />
                         ))) ||
-                        (room.roomType != 'B' && (
+                        (room.roomType !== 'B' && (
                           <RoomMemberBox
                             type="G"
                             data={room.filterMember}
@@ -651,7 +659,7 @@ const ShareContainer = ({
                       >
                         <div
                           className={
-                            channel.isJoin && channel.openType != 'O'
+                            channel.isJoin && channel.openType !== 'O'
                               ? ['profile-photo', 'private-img'].join(' ')
                               : 'profile-photo'
                           }
@@ -752,7 +760,7 @@ const ShareContainer = ({
         <div
           className={[
             'tabcontent',
-            selectTab == 'orgchart' ? 'active' : '',
+            selectTab === 'orgchart' ? 'active' : '',
           ].join(' ')}
         >
           <div className="AddUserCon">
@@ -760,7 +768,7 @@ const ShareContainer = ({
           </div>
         </div>
         <div
-          className={['tabcontent', selectTab == 'chat' ? 'active' : ''].join(
+          className={['tabcontent', selectTab === 'chat' ? 'active' : ''].join(
             ' ',
           )}
         >
@@ -776,7 +784,7 @@ const ShareContainer = ({
         <div
           className={[
             'tabcontent',
-            selectTab == 'channel' ? 'active' : '',
+            selectTab === 'channel' ? 'active' : '',
           ].join(' ')}
         >
           <div className="AddUserCon">

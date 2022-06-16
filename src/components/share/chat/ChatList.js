@@ -96,6 +96,10 @@ const ChatList = ({ roomList, checkObj, chineseWall, myInfo }) => {
     threshold: 0.85,
   });
 
+  const getIsPinTop = setting => {
+    return setting && !isEmptyObj(setting) && !!setting.pinTop;
+  };
+
   return (
     <>
       <SearchBar
@@ -116,11 +120,7 @@ const ChatList = ({ roomList, checkObj, chineseWall, myInfo }) => {
             roomList &&
             list((room, _) => {
               const setting = getSettings(room, 'CHAT');
-
-              let isPinTop = false;
-              if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
-                isPinTop = true;
-              }
+              const isPinTop = getIsPinTop(setting);
 
               if (room.roomType !== 'A') {
                 return (
@@ -140,11 +140,7 @@ const ChatList = ({ roomList, checkObj, chineseWall, myInfo }) => {
             searchList.map(room => {
               if (room.roomType !== 'A') {
                 const setting = getSettings(room, 'CHAT');
-
-                let isPinTop = false;
-                if (setting && !isEmptyObj(setting) && !!setting.pinTop) {
-                  isPinTop = true;
-                }
+                const isPinTop = getIsPinTop(setting);
 
                 return (
                   <ChatItem
@@ -153,6 +149,7 @@ const ChatList = ({ roomList, checkObj, chineseWall, myInfo }) => {
                     checkObj={checkObj}
                     isClick={false}
                     pinnedTop={isPinTop}
+                    chineseWall={chineseWall}
                   />
                 );
               }

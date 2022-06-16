@@ -34,10 +34,6 @@ export const getSettings = (item, type) => {
   }
 
   const key = type === 'CHANNEL' ? 'settingJSON' : 'setting';
-  if (typeof item[key] === 'object') {
-    setting = { ...item[key] };
-  } else if (isJSONStr(item[key])) {
-    setting = JSON.parse(item[key]);
-  }
+  setting = isJSONStr(item[key]) ? JSON.parse(item[key]) : item[key];
   return setting;
 };

@@ -350,7 +350,7 @@ const ChannelItem = ({
 
   useEffect(() => {
     const changeTargetChannel = channels.find(c => c.roomId == channel.roomId);
-    if (changeTargetChannel?.lastMessage && chineseWall.length) {
+    if (changeTargetChannel?.lastMessage && chineseWall?.length) {
       const lastMessageInfo = isJSONStr(changeTargetChannel.lastMessage)
         ? JSON.parse(changeTargetChannel.lastMessage)
         : changeTargetChannel.lastMessage;
@@ -378,7 +378,7 @@ const ChannelItem = ({
         setLastMessageText,
       );
     }
-  }, [channel, chineseWall]);
+  }, [channel, chineseWall, channels, lastMessageText]);
 
   return (
     <RightConxtMenu
