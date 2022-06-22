@@ -392,6 +392,7 @@ export const handleNewChannelMessage = (dispatch, userInfo) => {
   };
 };
 
+//채널 초대
 export const handleChannelInvite = dispatch => {
   return data => {
     const json_data = JSON.parse(data);
@@ -410,6 +411,7 @@ export const handleChannelInvite = dispatch => {
   };
 };
 
+//채널 내보내기
 export const handleChannelExit = (dispatch, userInfo) => {
   return data => {
     const json_data = JSON.parse(data);
