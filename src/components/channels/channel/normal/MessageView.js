@@ -76,16 +76,12 @@ const MessageView = ({
   }, []);
 
   const callLiveMeet = useCallback(() => {
-    // TODO: 다국어 처리
     const msgObj = {
       title: covi.getDic('VideoConferencing', '화상회의'),
-      context:
-        liveMeet.type == 'jitsi'
-          ? `${covi.getDic(
-              'Msg_JoinVideoConference',
-              '화상회의에 참석해주세요.',
-            )} ( ${liveMeet.domain}/${roomInfo.roomID} )`
-          : covi.getDic('Msg_JoinVideoConference', '화상회의에 참석해주세요.'),
+      context: covi.getDic(
+        'Msg_JoinVideoConference',
+        '화상회의에 참석해주세요.',
+      ),
       func: {
         name: covi.getDic('GoToPage', '페이지로 이동'),
         type: 'link',
@@ -102,16 +98,6 @@ const MessageView = ({
         },
       },
     };
-
-    if (liveMeet.type == 'saeha') {
-      console.log('channelInfo: ', channelInfo);
-      // const seahaHostURL = 'http://seaha.example.com';
-      // const requestData = {
-      //   userId =
-      // };
-      // axios.post(seahaHostURL + '/api/conf/createRoom')
-    }
-
     postAction(JSON.stringify(msgObj), null, null, null, null, 'A');
   }, [channelInfo]);
 
