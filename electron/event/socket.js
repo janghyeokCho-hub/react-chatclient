@@ -20,6 +20,8 @@ export const reqSocketConnect = (event, args) => {
     onNewChannelMessage: socketAction.onNewChannelMessage,
     onNewChannelNotice: socketAction.onNewChannelMessage,
     onAppUpdateConfig: socketAction.onAppUpdateConfig,
+    onChannelExit :  socketAction.onChannelExit,
+    onChannelInvitation :  socketAction.onChannelInvitation,
     onRoomSettingChanged: payload => {},
   };
 
