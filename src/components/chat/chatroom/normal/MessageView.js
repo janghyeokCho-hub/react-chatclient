@@ -178,98 +178,6 @@ const MessageView = ({
   }, []);
 
   const callLiveMeet = useCallback(() => {
-    // TODO: 다국어 처리
-    if (liveMeet.type == 'saeha') {
-      let inviteUsers = [];
-
-      const filterMember = getFilterMember(roomInfo.members, id);
-
-      // 1. 참여 중인 방인원의 정보를 기반하여 inviteUsers를 생성
-      filterMember.map(user => {
-        inviteUsers.push({
-          inviteId: user.id,
-          inviteName: getDictionary(user.name),
-        });
-      });
-
-      // 2. api 요청 데이터 생성
-      const reqOptions = {
-        method: 'POST',
-        url: liveMeet.domain + '/api/conf/createRoom',
-        data: JSON.stringify({
-          userId: id,
-          companyId: 'company',
-          inviteUsers: inviteUsers,
-        }),
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-      };
-
-      // 3. api 요청
-      axios(reqOptions)
-        .then(response => {
-          const data = response.data;
-          if (data && data.success) {
-            // 4. 반환 링크 오픈
-            if (DEVICE_TYPE == 'd') {
-              window.openExternalPopup(data.hostUrl);
-            } else {
-              window.open(data.hostUrl, '_blank');
-            }
-
-            // 5. 메시지 전송
-            const msgObj = {
-              title: covi.getDic('VideoConferencing', '화상회의'),
-              context: covi.getDic(
-                'Msg_JoinVideoConference',
-                '화상회의에 참석해주세요.',
-              ),
-              func: {
-                name: covi.getDic('GoToPage', '페이지로 이동'),
-                type: 'saeha',
-                data: {
-                  ownerId: id,
-                  hostURL: liveMeet.domain,
-                  inviteUsers: data.inviteUsers,
-                  meetRoomId: data.roomId,
-                  simpleInviteURL: data.simpleInviteLink,
-                },
-              },
-            };
-            postAction(JSON.stringify(msgObj), null, null, 'A');
-          } else {
-            openPopup(
-              {
-                type: 'Alert',
-                message: covi.getDic(
-                  'Msg_UnableVideoConference',
-                  '화상회의를 시작 할 수 없습니다.',
-                ),
-                callback: () => {
-                  console.log(data);
-                },
-              },
-              dispatch,
-            );
-          }
-        })
-        .catch(error => {
-          openPopup(
-            {
-              type: 'Alert',
-              message: covi.getDic(
-                'Msg_UnableVideoConference',
-                '화상회의를 시작 할 수 없습니다.',
-              ),
-              callback: () => {
-                console.log(error);
-              },
-            },
-            dispatch,
-          );
-        });
-    } else {
       const msgObj = {
         title: covi.getDic('VideoConferencing', '화상회의'),
         context: covi.getDic(
@@ -292,9 +200,8 @@ const MessageView = ({
           },
         },
       };
-
       postAction(JSON.stringify(msgObj), null, null, 'A');
-    }
+    
   }, [roomInfo]);
 
   const remoteHost = useCallback(
