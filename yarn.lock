@@ -7298,7 +7298,7 @@ node-macaddress@^0.2.4:
   dependencies:
     async "^0.9.0"
 
-"node-notifier@file:lib/node-notifier":
+"node-notifier@file:lib/noti-prod/node-notifier":
   version "10.0.1"
   dependencies:
     app-root-path "^3.0.0"
