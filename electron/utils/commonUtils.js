@@ -223,7 +223,7 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
                 sound: true,
               },
               function (err, response) {
-                if (response === undefined) {
+                if (response === 'activate') {
                   openFocusRoom(roomID, payload.isChannel);
                 }
               },
