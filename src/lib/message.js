@@ -1,9 +1,11 @@
 import { chatsvr, chatbotsvr, managesvr, filesvr, imgsvr } from '@/lib/api';
 
 export const sendMessage = params => {
-  if (params.roomType == 'B')
+  if (params.roomType === 'B') {
     return chatbotsvr('post', '/api/ai/message', params);
-  else return chatsvr('post', '/message', params);
+  } else {
+    return chatsvr('post', '/message', params);
+  }
 };
 
 export const sendChatBotKeyMessage = (key, params) => {
@@ -35,7 +37,7 @@ export const uploadFile = params => {
   const formData = new FormData();
 
   // url 및 formData 생성
-  if (params.sendFileInfo.files.length == 1) {
+  if (params.sendFileInfo.files.length === 1) {
     url = '/upload';
     formData.append('file', params.sendFileInfo.files[0]);
   } else {
@@ -130,7 +132,6 @@ export const getMessages = params => {
 };
 
 export const searchMessage = params => {
-  console.log('searchMessage ::   ', params);
   let requestMethod = 'get';
   let requestURL;
   let requestBody = {};

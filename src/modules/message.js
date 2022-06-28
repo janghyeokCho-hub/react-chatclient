@@ -69,11 +69,13 @@ function createSendMessageSaga(request, fileRequest, linkRequest) {
         status: action.payload.status,
         tempId: action.payload.tempId,
         messageType: action.payload.messageType,
+        blockList: action.payload.blockList,
       };
+
       if (action.payload.sendFileInfo) {
         const responseFile = yield call(fileRequest, action.payload);
 
-        if (responseFile.data.state == 'SUCCESS') {
+        if (responseFile.data.state === 'SUCCESS') {
           messageParams.fileInfos = JSON.stringify(responseFile.data.result);
         } else {
           yield put({
@@ -93,12 +95,12 @@ function createSendMessageSaga(request, fileRequest, linkRequest) {
 
       const response = yield call(request, messageParams);
 
-      if (response.data.status == 'SUCCESS') {
-        if (action.payload.linkInfo && action.payload.linkInfo.url != '') {
+      if (response.data.status === 'SUCCESS') {
+        if (action.payload.linkInfo?.url) {
           const linkParams = {
             roomId: action.payload.roomID,
             messageId: response.data.result.messageID,
-            url: action.payload.linkInfo.url,
+            url: action.payload.linkInfo?.url,
           };
           yield call(linkRequest, linkParams);
         }
@@ -135,11 +137,12 @@ function createSendChannelMessageSaga(request, fileRequest, linkRequest) {
         status: action.payload.status,
         tempId: action.payload.tempId,
         messageType: action.payload.messageType,
+        blockList: action.payload.blockList,
       };
       if (action.payload.sendFileInfo) {
         const responseFile = yield call(fileRequest, action.payload);
 
-        if (responseFile.data.state == 'SUCCESS') {
+        if (responseFile.data.state === 'SUCCESS') {
           messageParams.fileInfos = JSON.stringify(responseFile.data.result);
         } else {
           yield put({
@@ -162,18 +165,10 @@ function createSendChannelMessageSaga(request, fileRequest, linkRequest) {
       } else {
         messageParams.targetArr = [];
       }
-
       const response = yield call(request, messageParams);
 
-      if (response.data.status == 'SUCCESS') {
-        /*
-        yield put({
-          type: SUCCESS,
-          payload: action.payload,
-        });
-        */
-
-        if (action.payload.linkInfo && action.payload.linkInfo.url != '') {
+      if (response.data.status === 'SUCCESS') {
+        if (action.payload.linkInfo?.url) {
           const linkParams = {
             roomId: action.payload.roomID,
             messageId: response.data.result.messageID,
@@ -287,7 +282,7 @@ const message = handleActions(
         // 해당 메시지를 tempMessage에 넣고 상태를 send으로 지정
         const sendData = action.payload;
         sendData.status = 'send';
-        sendData.tempId = (action.payload.roomID*10000) + tempId++; //임시 메세지 고유키
+        sendData.tempId = action.payload.roomID * 10000 + tempId++; //임시 메세지 고유키
         draft.tempMessage.push(sendData);
       });
     },
@@ -316,8 +311,10 @@ const message = handleActions(
         //     console.dir(pair[1]);
         //   }
         // }
-        
-        draft.tempMessage = draft.tempMessage.filter( m => m.tempId !== action.payload);
+
+        draft.tempMessage = draft.tempMessage.filter(
+          m => m.tempId !== action.payload,
+        );
 
         // draft.tempMessage.splice(
         //   draft.tempMessage.findIndex(m => m.tempId === action.payload),
@@ -366,7 +363,7 @@ const message = handleActions(
         // 해당 채널 메시지를 tempMessage에 넣고 상태를 send으로 지정
         const sendData = action.payload;
         sendData.status = 'send';
-        sendData.tempId = (action.payload.roomID*10000) + tempId++;
+        sendData.tempId = action.payload.roomID * 10000 + tempId++;
         const isLegacyChannelAPI =
           (getConfig('Legacy_ChannelTemp') || false) === true;
         if (!isLegacyChannelAPI) {
@@ -419,7 +416,9 @@ const message = handleActions(
         //     console.dir(pair[1]);
         //   }
         // }
-        draft.tempChannelMessage = draft.tempChannelMessage.filter( m => m.tempId !== action.payload);
+        draft.tempChannelMessage = draft.tempChannelMessage.filter(
+          m => m.tempId !== action.payload,
+        );
       });
     },
   },
