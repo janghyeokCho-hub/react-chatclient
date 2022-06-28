@@ -34,17 +34,20 @@ const TokenChecker = ({ history, returnURL }) => {
           localStorage.setItem('covi_user_access_id', data.userInfo.id);
           const useChineseWall = getConfig('UseChineseWall', false);
           if (useChineseWall) {
-            const { result, status } = await getChineseWall({
+            const { result, status, blockList } = await getChineseWall({
               userId: data.userInfo.id,
             });
 
             if (status === 'SUCCESS') {
               data.chineseWall = result;
+              data.blockList = blockList;
             } else {
               data.chineseWall = [];
+              data.blockList = [];
             }
           } else {
             data.chineseWall = [];
+            data.blockList = [];
           }
         }
 

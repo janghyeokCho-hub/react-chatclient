@@ -29,6 +29,7 @@ import { makeMessage } from './share';
 import { setChineseWall } from '@/modules/login';
 import { getChineseWall } from '@/lib/orgchart';
 import { getConfig } from '@/lib/util/configUtil';
+import { blockUsers } from '@/lib/orgchart';
 
 const ShareContainer = ({
   headerName = covi.getDic('Msg_Note_Forward', '전달하기'),
@@ -41,6 +42,7 @@ const ShareContainer = ({
   const channelList = useSelector(({ channel }) => channel.channels);
   const userInfo = useSelector(({ login }) => login.userInfo);
   const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const blockUser = useSelector(({ login }) => login.blockList);
 
   const dispatch = useDispatch();
 
@@ -50,35 +52,44 @@ const ShareContainer = ({
   const [channels, setChannels] = useState([]);
   const [selectTab, setSelectTab] = useState('orgchart');
   const [chineseWallState, setChineseWallState] = useState([]);
+  const [blockUserState, setBlockUserState] = useState([]);
 
   useEffect(() => {
     const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: userInfo?.id,
+      const { result, status, blockList } = await getChineseWall({
+        userId: userInfo.id,
       });
       if (status === 'SUCCESS') {
         setChineseWallState(result);
+        setBlockUserState(blockList);
         if (DEVICE_TYPE === 'd' && !isMainWindow()) {
           dispatch(setChineseWall(result));
+          dispatch(setBlockList(blockList));
         }
       } else {
         setChineseWallState([]);
+        setBlockUserState(blockList);
       }
     };
 
     if (chineseWall?.length) {
       setChineseWallState(chineseWall);
+      if (blockUser?.length) {
+        setBlockUserState(blockUser);
+      }
     } else {
       const useChineseWall = getConfig('UseChineseWall', false);
       if (useChineseWall) {
         getChineseWallList();
       } else {
         setChineseWallState([]);
+        setBlockUserState([]);
       }
     }
 
     return () => {
       setChineseWallState([]);
+      setBlockUserState([]);
     };
   }, []);
 
@@ -322,21 +333,22 @@ const ShareContainer = ({
     );
   };
 
-  const hasSelectedData = useCallback(() => {
-    switch (selectTab) {
-      case 'orgchart':
-        return Boolean(members.length);
-      case 'chat':
-        return Boolean(rooms.length);
-      case 'channel':
-        return Boolean(channels.length);
-      default:
-        return false;
-    }
-  });
-
   const handleShare = useCallback(async () => {
     // 선택한 대상이 있는지 확인
+
+    const hasSelectedData = () => {
+      switch (selectTab) {
+        case 'orgchart':
+          return Boolean(members.length);
+        case 'chat':
+          return Boolean(rooms.length);
+        case 'channel':
+          return Boolean(channels.length);
+        default:
+          return false;
+      }
+    };
+
     if (!hasSelectedData()) {
       sharePopup({
         msg: covi.getDic('Msg_NoTargetSelected', '선택한 대상이 없습니다.'),
@@ -348,6 +360,8 @@ const ShareContainer = ({
     if (!params) {
       return;
     }
+
+    params.blockList = blockUserState || [];
 
     if (
       params.targetType === 'CHAT' &&
@@ -363,38 +377,51 @@ const ShareContainer = ({
     } else {
       handleShareFile(params);
     }
-  });
+  }, [blockUserState, selectTab, members, rooms, channels]);
 
-  const handleShareFile = useCallback(async params => {
-    let fileInfos = isJSONStr(params.fileInfos)
-      ? JSON.parse(params.fileInfos)
-      : params.fileInfos;
-    if (!Array.isArray(fileInfos)) {
-      // 단일 파일일 경우 Array 로 변환 후 전송하기 위함
-      fileInfos = new Array(fileInfos);
-    }
-    params.fileInfos = JSON.stringify(fileInfos);
+  const handleShareFile = useCallback(
+    async params => {
+      let fileInfos = isJSONStr(params.fileInfos)
+        ? JSON.parse(params.fileInfos)
+        : params.fileInfos;
+      if (!Array.isArray(fileInfos)) {
+        // 단일 파일일 경우 Array 로 변환 후 전송하기 위함
+        fileInfos = new Array(fileInfos);
+      }
+      params.fileInfos = JSON.stringify(fileInfos);
 
-    const formData = new FormData();
-    for (const key in params) {
-      formData.append(key, params[key]);
-    }
+      const formData = new FormData();
+      for (const key in params) {
+        formData.append(key, params[key]);
+      }
 
-    const { data } = await shareFile(formData);
-    if (data.state !== 'SUCCESS') {
-      sharePopup({
-        msg: covi.getDic('Msg_ForwardingWasFailed', '전달에 실패 하였습니다.'),
-      });
-      return;
-    }
-    params.roomID = data.roomID;
-    params.roomType = data.roomType;
-    params.fileInfos = JSON.stringify(data.fileInfos);
-    // 파일 전송의 경우 서버에서 채팅방 생성 후 파일 업로드까지 진행
-    params.targetType =
-      params.targetType === 'NEWROOM' ? 'CHAT' : params.targetType;
-    handleMessage(params);
-  });
+      const { data } = await shareFile(formData);
+      if (data.state !== 'SUCCESS') {
+        sharePopup({
+          msg: covi.getDic(
+            'Msg_ForwardingWasFailed',
+            '전달에 실패 하였습니다.',
+          ),
+        });
+        return;
+      }
+      params.roomID = data.roomID;
+      params.roomType = data.roomType;
+      params.fileInfos = JSON.stringify(data.fileInfos);
+      // 파일 전송의 경우 서버에서 채팅방 생성 후 파일 업로드까지 진행
+      params.targetType =
+        params.targetType === 'NEWROOM' ? 'CHAT' : params.targetType;
+
+      let blockList = [];
+      if (chineseWall?.length) {
+        // Mobile push block
+        blockList = await blockUsers(chineseWall);
+      }
+      params.blockList = blockList || [];
+      handleMessage(params);
+    },
+    [chineseWall],
+  );
 
   const makeParams = useCallback(async () => {
     // type의 정의

@@ -29,6 +29,7 @@ const MakeRoom = ({ history }) => {
     makeInfo: room.makeInfo,
     sender: login.id,
   }));
+  const blockUser = useSelector(({ login }) => login.blockList);
 
   const [viewFileUpload, setViewFileUpload] = useState(false);
 
@@ -144,7 +145,13 @@ const MakeRoom = ({ history }) => {
   };
 
   // TODO: 메시지 전송 실패 여부 처리
-  const handleMessage = (message, filesObj, linkObj, messageType, emoticon) => {
+  const handleMessage = async (
+    message,
+    filesObj,
+    linkObj,
+    messageType,
+    emoticon,
+  ) => {
     // 방생성 api 호출
     // 호출 결과에 따라 ChatRoom으로 화면 전환
     // -- MultiView의 경우 dispatch
@@ -154,11 +161,20 @@ const MakeRoom = ({ history }) => {
     let invites = [];
     makeInfo?.members?.forEach(item => invites.push(item.id));
 
-    if (invites.indexOf(sender) == -1) invites.push(sender);
+    let blockList = [];
+    if (invites?.length && blockUser) {
+      blockList = blockUser.filter(
+        item => item !== sender && invites.includes(item),
+      );
+    }
+
+    if (invites.indexOf(sender) == -1) {
+      invites.push(sender);
+    }
 
     let data;
 
-    if (makeInfo.roomType == 'B') {
+    if (makeInfo.roomType === 'B') {
       data = {
         roomType: makeInfo.roomType,
         name: '이음이',
@@ -168,6 +184,7 @@ const MakeRoom = ({ history }) => {
         sendFileInfo: filesObj,
         linkInfo: linkObj,
         messageType: messageType ? messageType : 'N',
+        blockList: blockList || [],
       };
     } else {
       data = {
@@ -179,10 +196,11 @@ const MakeRoom = ({ history }) => {
         sendFileInfo: filesObj,
         linkInfo: linkObj,
         messageType: messageType ? messageType : 'N',
+        blockList: blockList || [],
       };
     }
 
-    if (messageType == 'A') {
+    if (messageType === 'A') {
       createRoom(data).then(({ data }) => {
         if (data.status === 'SUCCESS') {
           const roomID = data.result.room.roomID;
@@ -204,6 +222,7 @@ const MakeRoom = ({ history }) => {
             sender: sender,
             roomType: makeInfo.roomType,
             fileInfos: JSON.stringify(data.result),
+            blockList: blockList || [],
           };
 
           sendMessage(messageParams).then(({ data }) => {
@@ -222,6 +241,7 @@ const MakeRoom = ({ history }) => {
                   roomID: data.result.roomID,
                   sender,
                   roomType: makeInfo.roomType,
+                  blockList: blockList || [],
                 });
               }
 
@@ -251,6 +271,7 @@ const MakeRoom = ({ history }) => {
               roomID,
               sender,
               roomType: makeInfo.roomType,
+              blockList: blockList || [],
             });
           }
 
