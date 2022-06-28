@@ -38,7 +38,9 @@ import NoteHeader from '@/pages/note/NoteHeader';
 import ConditionalWrapper from '@/components/ConditionalWrapper';
 import { getNote } from '@/lib/note';
 import { sendMain, isMainWindow } from '@/lib/deviceConnector';
-
+import { getConfig } from '@/lib/util/configUtil';
+import { setChineseWall, setBlockList } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
 // WYSIWYG Editor
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor } from '@toast-ui/react-editor';
@@ -59,6 +61,11 @@ export default function NewNote({ match, location }) {
     window.opener !== null || (match && match.url.indexOf('/nw/') > -1);
   const dispatch = useDispatch();
   const { myInfo } = useSelector(({ login }) => ({ myInfo: login.userInfo }));
+  const userId = useSelector(({ login }) => login.id);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const blockUser = useSelector(({ login }) => login.blockList);
+  const [chineseWallState, setChineseWallState] = useState([]);
+  const [blockUserState, setBlockUserState] = useState([]);
   const title = createRef();
   // const context = createRef();
   const editorRef = createRef();
@@ -94,6 +101,45 @@ export default function NewNote({ match, location }) {
   const [files, setFiles] = useState([]);
   const [isSending, setIsSending] = useState(false);
   const [isEmergency, setIsEmergency] = useState(false);
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status, blockList } = await getChineseWall({
+        userId,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        setBlockUserState(blockList);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+          dispatch(setBlockList(blockList));
+        }
+      } else {
+        setChineseWallState([]);
+        setBlockUserState(blockList);
+      }
+    };
+
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
+      if (blockUser?.length) {
+        setBlockUserState(blockUser);
+      }
+    } else {
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+        setBlockUserState([]);
+      }
+    }
+
+    return () => {
+      setChineseWallState([]);
+      setBlockUserState([]);
+    };
+  }, []);
 
   const headerTitle = useMemo(() => {
     const { type } = viewState;
@@ -279,20 +325,17 @@ export default function NewNote({ match, location }) {
       }
     });
 
-    console.log('Target Users   ', receiveUser);
-    console.log('Target Groups   ', receiveGroup);
-    console.log('Title   ', title.current.value);
-
     const _context = editorRef?.current?.getInstance().getHTML();
     // input validation
-    if (receiveUser.length === 0 && receiveGroup.length === 0) {
+    if (!receiveUser.length && !receiveGroup.length) {
       _popupResult(
         dispatch,
         covi.getDic('Msg_Note_EnterRecipient', '받는사람을 선택하세요.'),
       );
       return;
     }
-    if (title.current.value.trim().length === 0) {
+
+    if (!title.current.value.trim().length) {
       _popupResult(
         dispatch,
         covi.getDic('Msg_Note_EnterTitle', '제목을 입력하세요.'),
@@ -308,35 +351,35 @@ export default function NewNote({ match, location }) {
       );
       return;
     }
-    // if (context.current.value.trim().length === 0) {
-    if (_context.trim().length === 0) {
+
+    if (!_context.trim().length) {
       _popupResult(
         dispatch,
         covi.getDic('Msg_Note)EnterContext', '내용을 입력하세요.'),
       );
       return;
     }
-    //
 
     try {
       setIsSending(true);
 
       const fileCtrl = coviFile.getInstance();
+      const subject = title.current.value || '';
       const sendData = {
         sender: myInfo.id,
         receiveUser,
         receiveGroup,
-        subject: title.current.value,
-        // context: context.current.value,
+        subject,
         context: _context,
         files: fileCtrl.getFiles(),
         fileInfos: fileCtrl.getFileInfos(),
         isEmergency: isEmergency ? 'Y' : 'N',
+        blockList: blockUserState || [],
       };
       const { data } = await sendNote(sendData);
 
       // 전송 성공여부 확인조건 수정필요
-      if (data && typeof data.result !== 'undefined') {
+      if (typeof data?.result !== 'undefined') {
         if (DEVICE_TYPE === 'b') {
           /**
            * 2021.05.17
@@ -360,7 +403,7 @@ export default function NewNote({ match, location }) {
               // 쪽지발신 뷰 닫기
               clearViewState();
             } else if (DEVICE_TYPE === 'd') {
-              if (isMainWindow() === true) {
+              if (isMainWindow()) {
                 return;
               }
               window.close();

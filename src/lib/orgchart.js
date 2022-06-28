@@ -1,5 +1,6 @@
 import { managesvr } from '@/lib/api';
 import { getJobInfo } from '@/lib/userSettingUtil';
+import { getAllUserWithGroup } from '@/lib/room';
 
 export const getOrgChart = ({ deptID }, { CompanyCode }) => {
   return managesvr('get', `/org/${deptID}/gr/${CompanyCode}`);
@@ -30,8 +31,8 @@ const stringArrToArray = str => {
 export const getChineseWall = async ({ userId }) => {
   try {
     const { data } = await managesvr('get', `/org/block/${userId}`);
-    const { result, status } = data;
-    let blockList = [];
+    const { result, status, blockList } = data;
+    let chineseWall = [];
     if (status === 'SUCCESS' && result?.length) {
       for (const item of result) {
         const jsonData = {
@@ -40,10 +41,10 @@ export const getChineseWall = async ({ userId }) => {
           blockChat: item.blockChat,
           blockFile: item.blockFile,
         };
-        blockList.push(jsonData);
+        chineseWall.push(jsonData);
       }
     }
-    return { result: blockList, status };
+    return { result: chineseWall, status, blockList };
   } catch (e) {
     console.error(e);
     return { result: [], status: 'ERROR' };
@@ -91,4 +92,31 @@ export const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
     }
   }
   return result;
+};
+
+/**
+ *
+ * @param {Array} chineseWall
+ * @returns 부서에 속한 유저ID를 합한 유저ID 목록
+ */
+export const blockUsers = async (chineseWall = []) => {
+  let groupList = [];
+  let userList = [];
+  for (const item of chineseWall) {
+    if (item.targetType === 'G') {
+      groupList = groupList.concat(item.target);
+    } else if (item.targetType === 'U') {
+      userList = userList.concat(item.target);
+    }
+  }
+
+  for (const group of groupList) {
+    await getAllUserWithGroup(group).then(({ data }) => {
+      if (data.status === 'SUCCESS') {
+        const { result } = data;
+        userList = userList.concat(result.map(item => item.id));
+      }
+    });
+  }
+  return [...new Set(userList)];
 };

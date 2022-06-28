@@ -232,16 +232,8 @@ export function useNoteState(noteId) {
     ...state,
     async mutateNote(newNoteId) {
       try {
-        // 캐시에 쪽지 조회 내역이 남아있으면 ajax request 생략 TODO
-        // const cachedNoteInfo = cachedNote.get(newNoteId);
-        // if(cachedNoteInfo) {
-        //     console.log('Note fetched from LRU cache  ', cachedNoteInfo);
-        //     return state.mutate(cachedNoteInfo, false);
-        // }
-
         // 캐시에 없거나 만료되었으면 서버에 새로 request
         const noteInfo = await getNote(newNoteId);
-        // cachedNote.set(newNoteId, noteInfo);
         console.log('Note fetched   ', noteInfo);
         return state.mutate(noteInfo, false);
       } catch (err) {
@@ -384,37 +376,9 @@ export async function makeZipFile(userId = null, files, handleProgress = null) {
   }
 
   return { results, JSZip };
-  /*
-  return Promise.all(
-    files.map(item => {
-      return new Promise((resolve, reject) => {
-        filesvr(
-          'get',
-          `/na/download/${module}/${userId}/${item.fileID}/${serviceType}`,
-        )
-          .then(resp => {
-            if (resp.status === 200) JSZip.file(item.fileName, resp.data);
-            resp.fileName = item.fileName;
-            resolve(resp);
-          })
-          .catch(err => {
-            console.error(err);
-          });
-      });
-    }),
-  )
-    .then(results => {
-      return { results, JSZip };
-    })
-    .catch(err => {
-      console.error(err);
-      return err;
-    });
-    */
 }
 
 // 쪽지 발송
-// export function sendNote({ receiver, subject, context, files = [] }) {
 export function sendNote({
   sender,
   receiveUser = [],
@@ -424,12 +388,12 @@ export function sendNote({
   files = [],
   fileInfos = [],
   isEmergency,
+  blockList = [],
 }) {
   const AESUtil = getAesUtil();
   const formData = new FormData();
 
   files.forEach(file => {
-    console.log('Attach File   ', file);
     formData.append('files', file);
   });
 
@@ -442,6 +406,7 @@ export function sendNote({
   formData.append('subject', subject);
   formData.append('context', context);
   formData.append('isEmergency', isEmergency);
+  formData.append('blockList', JSON.stringify(blockList));
 
   //POST
   return chatsvr('post', '/note/send', formData);

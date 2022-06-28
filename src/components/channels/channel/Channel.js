@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import loadable from '@loadable/component';
-
 import LoadingWrap from '@COMMON/LoadingWrap';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 import {
@@ -19,10 +18,17 @@ import {
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import * as common from '@/lib/common';
 import { addTargetUserList, delTargetUserList } from '@/modules/presence';
-import { newChannel, evalConnector, focusWin } from '@/lib/deviceConnector';
-
+import {
+  newChannel,
+  evalConnector,
+  focusWin,
+  isMainWindow,
+} from '@/lib/deviceConnector';
 import MessageView from '@C/channels/channel/normal/MessageView';
 import ChatBackground from '@C/chat/chatroom/layer/ChatBackground';
+import { getConfig } from '@/lib/util/configUtil';
+import { setChineseWall, setBlockList } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
 
 const SearchView = loadable(() =>
   import('@/components/common/search/SearchView'),
@@ -38,16 +44,24 @@ const Channel = ({ match, channelInfo }) => {
   const isNewWin =
     window.opener != null || (match && match.url.indexOf('/nw/') > -1);
 
-  if (channelInfo != null) roomId = parseInt(channelInfo.roomId);
-  else if (!channelInfo && match) roomId = parseInt(match.params.roomId);
-  else roomId = null;
+  if (channelInfo != null) {
+    roomId = parseInt(channelInfo.roomId);
+  } else if (!channelInfo && match) {
+    roomId = parseInt(match.params.roomId);
+  } else {
+    roomId = null;
+  }
 
+  const userId = useSelector(({ login }) => login.id);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const blockUser = useSelector(({ login }) => login.blockList);
+  const [chineseWallState, setChineseWallState] = useState([]);
+  const [blockUserState, setBlockUserState] = useState([]);
   const channel = useSelector(({ channel }) => channel.currentChannel);
   const moveVisible = useSelector(({ message }) => message.moveVisible);
   const loading = useSelector(
     ({ loading }) => loading['channel/GET_CHANNEL_INFO'],
   );
-  const userId = useSelector(({ login }) => login.id);
 
   const [searchVisible, setSearchVisible] = useState(false);
   const [viewFileUpload, setViewFileUpload] = useState(false);
@@ -70,6 +84,45 @@ const Channel = ({ match, channelInfo }) => {
 
     dispatch(newWinChannel({ id: roomId, obj: channelObj, name: winName }));
   }, [roomId, dispatch]);
+
+  useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status, blockList } = await getChineseWall({
+        userId,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        setBlockUserState(blockList);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+          dispatch(setBlockList(blockList));
+        }
+      } else {
+        setChineseWallState([]);
+        setBlockUserState(blockList);
+      }
+    };
+
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
+      if (blockUser?.length) {
+        setBlockUserState(blockUser);
+      }
+    } else {
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+        setBlockUserState([]);
+      }
+    }
+
+    return () => {
+      setChineseWallState([]);
+      setBlockUserState([]);
+    };
+  }, []);
 
   useEffect(() => {
     if (isNewWin) {
@@ -171,7 +224,15 @@ const Channel = ({ match, channelInfo }) => {
   }, [loading]);
 
   const handleMessage = useCallback(
-    (message, filesObj, linkObj, tagArr, mentionArr, messageType) => {
+    async (message, filesObj, linkObj, tagArr, mentionArr, messageType) => {
+      const members = channel?.members?.map(item => item.id);
+      let blockList = [];
+      if (members?.length && blockUserState) {
+        blockList = blockUserState.filter(
+          item => item !== userId && members.includes(item),
+        );
+      }
+
       const data = {
         roomID: channel.roomId,
         context: message,
@@ -181,6 +242,7 @@ const Channel = ({ match, channelInfo }) => {
         tagInfo: tagArr,
         mentionInfo: mentionArr,
         messageType: !!messageType ? messageType : 'N',
+        blockList: blockList || [],
         onUploadHandler: (data, cancelHandler) => {
           if (filesObj.fileInfos.length) {
             filesObj.fileInfos[0].tempId;
@@ -201,7 +263,7 @@ const Channel = ({ match, channelInfo }) => {
         window.covi.listBottomBtn.click();
       }
     },
-    [dispatch, channel],
+    [dispatch, channel, chineseWallState, blockUserState],
   );
 
   const handleSearchBox = useCallback(visible => {
@@ -223,7 +285,7 @@ const Channel = ({ match, channelInfo }) => {
     [roomId, dispatch],
   );
 
-  useEffect(()=>{
+  useEffect(() => {
     const setCtrlFEventListner = e => {
       if (e.ctrlKey && e.key == 'f') {
         setSearchVisible(true);
@@ -235,8 +297,7 @@ const Channel = ({ match, channelInfo }) => {
     return () => {
       window.removeEventListener('keydown', setCtrlFEventListner);
     };
-
-  },[])
+  }, []);
 
   return (
     <>
