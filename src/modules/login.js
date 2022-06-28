@@ -80,7 +80,7 @@ const CHANGE_SOCKETCONNECT = 'login/CHANGE_SOCKETCONNECT';
 const RESYNC = 'login/RESYNC';
 
 const SET_CHINESEWALL = 'login/SET_CHINESEWALL';
-
+const SET_BLOCKLIST = 'login/SET_BLOCKLIST';
 const PRE_LOGIN_SUCCESS = 'login/PRE_LOGIN_SUCCESS';
 
 export const loginRequest = createAction(LOGIN_REQUEST);
@@ -101,6 +101,7 @@ export const changeMyInfo = createAction(CHANGE_MYINFO);
 
 export const reSync = createAction(RESYNC);
 export const setChineseWall = createAction(SET_CHINESEWALL);
+export const setBlockList = createAction(SET_BLOCKLIST);
 
 export const preLoginSuccess = createAction(PRE_LOGIN_SUCCESS);
 
@@ -151,6 +152,7 @@ function createLoginRequestSaga(loginType, syncType) {
               const extensions = yield call(getExtension);
               yield put(extensionSet(extensions));
             }
+
             yield put(
               addFixedUsers([
                 {
@@ -159,19 +161,23 @@ function createLoginRequestSaga(loginType, syncType) {
                 },
               ]),
             );
+
             // 차이니즈 월
             let chineseWallResult = [];
+            let blockListResult = [];
             const useChineseWall = getConfig('UseChineseWall', false);
             if (useChineseWall) {
               const chineseWall = yield call(getChineseWall, {
-                userId: action.payload.id,
+                userId: response.data.result.id,
               });
 
               if (chineseWall.status === 'SUCCESS') {
                 chineseWallResult = chineseWall.result;
-                yield put(setChineseWall(chineseWall.result));
+                blockListResult = chineseWall.blockList;
               }
             }
+            yield put(setChineseWall(chineseWallResult));
+            yield put(setBlockList(blockListResult));
 
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
@@ -305,6 +311,7 @@ function createExtLoginRequestSaga(loginType, syncType) {
       try {
         yield put(startLoading(loginType));
         const response = yield call(loginApi.extLoginRequest, action.payload);
+
         yield put(finishLoading(loginType));
         if (response.data.status == 'SUCCESS') {
           if (response.data.result && response.data.token) {
@@ -335,6 +342,7 @@ function createExtLoginRequestSaga(loginType, syncType) {
                 message: response.data.result.presence,
               });
             }
+
             yield put(
               addFixedUsers([
                 {
@@ -346,16 +354,20 @@ function createExtLoginRequestSaga(loginType, syncType) {
 
             // 차이니즈 월
             let chineseWallResult = [];
+            let blockListResult = [];
             const useChineseWall = getConfig('UseChineseWall', false);
             if (useChineseWall) {
               const chineseWall = yield call(getChineseWall, {
-                userId: action.payload.id,
+                userId: response.data.result.id,
               });
+
               if (chineseWall.status === 'SUCCESS') {
                 chineseWallResult = chineseWall.result;
-                yield put(setChineseWall(chineseWall.result));
+                blockListResult = chineseWall.blockList;
               }
             }
+            yield put(setChineseWall(chineseWallResult));
+            yield put(setBlockList(blockListResult));
 
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
@@ -568,6 +580,8 @@ function createSyncTokenRequestSaga(type) {
             }
 
             // 차이니즈 월
+            let chineseWallResult = [];
+            let blockListResult = [];
             const useChineseWall = getConfig('UseChineseWall', false);
             if (useChineseWall) {
               const chineseWall = yield call(getChineseWall, {
@@ -575,9 +589,12 @@ function createSyncTokenRequestSaga(type) {
               });
 
               if (chineseWall.status === 'SUCCESS') {
-                yield put(setChineseWall(chineseWall.result));
+                chineseWallResult = chineseWall.result;
+                blockListResult = chineseWall.blockList;
               }
             }
+            yield put(setChineseWall(chineseWallResult));
+            yield put(setBlockList(blockListResult));
 
             // Store 세팅 끝
             yield put(finishLoading(type));
@@ -669,6 +686,7 @@ const initialState = {
   errStatus: null,
   socketConnect: 'NC',
   chineseWall: null,
+  blockList: null,
 };
 
 const login = handleActions(
@@ -682,7 +700,6 @@ const login = handleActions(
           // SaaS버전 대응을 위해 token에서 id값 추출->result.id로 대체
           draft.id = action.payload.result.id; //draft.id = action.payload.token.split('^')[0];
           draft.registDate = action.payload.createDate;
-          draft.chineseWall = action.payload.chineseWall;
 
           const appConfig = evalConnector({
             method: 'getGlobal',
@@ -716,7 +733,6 @@ const login = handleActions(
           // SaaS버전 대응을 위해 token에서 id값 추출->result.id로 대체
           draft.id = action.payload.result.id; //draft.id = action.payload.token.split('^')[0];
           draft.registDate = action.payload.createDate;
-          draft.chineseWall = action.payload.chineseWall;
         } else {
           draft.authFail = true;
           draft.token = initialState.token;
@@ -753,7 +769,6 @@ const login = handleActions(
           // SaaS버전 대응을 위해 token에서 id값 추출->userInfo.id로 대체
           draft.id = action.payload.userInfo.id; //draft.id = action.payload.token.split('^')[0];
           draft.registDate = action.payload.createDate;
-          draft.chineseWall = action.payload.chineseWall;
         } else {
           draft.authFail = true;
           draft.token = '';
@@ -825,6 +840,11 @@ const login = handleActions(
     [SET_CHINESEWALL]: (state, action) => {
       return produce(state, draft => {
         draft.chineseWall = action.payload;
+      });
+    },
+    [SET_BLOCKLIST]: (state, action) => {
+      return produce(state, draft => {
+        draft.blockList = action.payload;
       });
     },
   },

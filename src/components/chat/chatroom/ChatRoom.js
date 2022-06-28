@@ -13,11 +13,19 @@ import {
 import { sendMessage, clearFiles, updateTempMessage } from '@/modules/message';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import { addTargetUserList, delTargetUserList } from '@/modules/presence';
-import { newChatRoom, evalConnector, focusWin } from '@/lib/deviceConnector';
+import {
+  newChatRoom,
+  evalConnector,
+  focusWin,
+  isMainWindow,
+} from '@/lib/deviceConnector';
 import { clearLayer } from '@/lib/common';
 import MessageView from '@C/chat/chatroom/normal/MessageView';
 import ChatBackground from './layer/ChatBackground';
 import { useChatFontType } from '../../../hooks/useChat';
+import { getConfig } from '@/lib/util/configUtil';
+import { setChineseWall, setBlockList } from '@/modules/login';
+import { getChineseWall } from '@/lib/orgchart';
 
 const SearchView = loadable(() => import('@C/common/search/SearchView'));
 const MoveView = loadable(() => import('@C/chat/chatroom/move/MoveView'));
@@ -29,12 +37,21 @@ const ChatRoom = ({ match, roomInfo }) => {
   const isNewWin =
     window.opener != null || (match && match.url.indexOf('/nw/') > -1);
 
-  if (roomInfo != null) roomID = parseInt(roomInfo.roomID);
-  else if (!roomInfo && match) roomID = parseInt(match.params.roomID);
-  else roomID = null;
+  if (roomInfo != null) {
+    roomID = parseInt(roomInfo.roomID);
+  } else if (!roomInfo && match) {
+    roomID = parseInt(match.params.roomID);
+  } else {
+    roomID = null;
+  }
 
   const room = useSelector(({ room }) => room.currentRoom);
+  const userId = useSelector(({ login }) => login.id);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const blockUser = useSelector(({ login }) => login.blockList);
 
+  const [chineseWallState, setChineseWallState] = useState([]);
+  const [blockUserState, setBlockUserState] = useState([]);
   const moveVisible = useSelector(({ message }) => message.moveVisible);
   const loading = useSelector(({ loading }) => loading['room/GET_ROOM_INFO']);
 
@@ -52,30 +69,69 @@ const ChatRoom = ({ match, roomInfo }) => {
     const winName = `wrf${roomID}`;
 
     const openURL = `${
-      DEVICE_TYPE == 'd' ? '#' : ''
+      DEVICE_TYPE === 'd' ? '#' : ''
     }/client/nw/chatroom/${roomID}`;
 
-    let roomObj = newChatRoom(winName, roomID, openURL);
+    const roomObj = newChatRoom(winName, roomID, openURL);
 
     dispatch(newWinRoom({ id: roomID, obj: roomObj, name: winName }));
   }, [dispatch, roomID]);
 
   useEffect(() => {
+    const getChineseWallList = async () => {
+      const { result, status, blockList } = await getChineseWall({
+        userId,
+      });
+      if (status === 'SUCCESS') {
+        setChineseWallState(result);
+        setBlockUserState(blockList);
+        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
+          dispatch(setChineseWall(result));
+          dispatch(setBlockList(blockList));
+        }
+      } else {
+        setChineseWallState([]);
+        setBlockUserState(blockList);
+      }
+    };
+
+    if (chineseWall?.length) {
+      setChineseWallState(chineseWall);
+      if (blockUser?.length) {
+        setBlockUserState(blockUser);
+      }
+    } else {
+      const useChineseWall = getConfig('UseChineseWall', false);
+      if (useChineseWall) {
+        getChineseWallList();
+      } else {
+        setChineseWallState([]);
+        setBlockUserState([]);
+      }
+    }
+
+    return () => {
+      setChineseWallState([]);
+      setBlockUserState([]);
+    };
+  }, []);
+
+  useEffect(() => {
     if (isNewWin) {
-      if (DEVICE_TYPE == 'b') {
-        window.onunload = e => {
-          if (typeof window.opener.parent.newWincloseCallback == 'function') {
+      if (DEVICE_TYPE === 'b') {
+        window.onunload = () => {
+          if (typeof window.opener.parent.newWincloseCallback === 'function') {
             window.opener.parent.newWincloseCallback(
               { roomID: roomID, isChannel: false },
               window,
             );
           }
         };
-      } else if (DEVICE_TYPE == 'd') {
+      } else if (DEVICE_TYPE === 'd') {
         evalConnector({
           method: 'on',
           channel: 'onMoveView',
-          callback: (event, data) => {
+          callback: (_, data) => {
             //currentRoom인 경우에만 이동
             focusWin();
             clearLayer(dispatch);
@@ -98,7 +154,9 @@ const ChatRoom = ({ match, roomInfo }) => {
       covi.changeSearchText = null;
       covi.changeSearchView = null;
 
-      if (cancelHandlerFn) cancelHandlerFn.cancel();
+      if (cancelHandlerFn) {
+        cancelHandlerFn.cancel();
+      }
 
       if (isNewWin) {
         window.onunload = null;
@@ -113,10 +171,7 @@ const ChatRoom = ({ match, roomInfo }) => {
   useEffect(() => {
     // init
     if (roomID) {
-      console.log('Open ROOM :: ' + roomID);
-
       dispatch(getRoomInfo({ roomID }));
-
       // 메시지 읽음 처리 ( Room Open )
       dispatch(readMessage({ roomID }));
 
@@ -132,20 +187,29 @@ const ChatRoom = ({ match, roomInfo }) => {
 
   useEffect(() => {
     // presence - room members
-    if (room && room.roomType != 'A' && room.members)
+    if (room?.roomType !== 'A' && room?.members) {
       dispatch(
         addTargetUserList(
           room.members.map(item => ({ userId: item.id, state: item.presence })),
         ),
       );
+    }
     return () => {
-      if (room && room.roomType != 'A' && room.members)
+      if (room?.roomType !== 'A' && room?.members) {
         dispatch(delTargetUserList(room.members.map(item => item.presence)));
+      }
     };
   }, [room]);
 
   const handleMessage = useCallback(
-    (message, filesObj, linkObj, messageType) => {
+    async (message, filesObj, linkObj, messageType) => {
+      const members = room?.members?.map(item => item.id);
+      let blockList = [];
+      if (members?.length && blockUserState) {
+        blockList = blockUserState.filter(
+          item => item !== userId && members.includes(item),
+        );
+      }
       const data = {
         roomID: room.roomID,
         context: message,
@@ -153,6 +217,7 @@ const ChatRoom = ({ match, roomInfo }) => {
         sendFileInfo: filesObj,
         linkInfo: linkObj,
         messageType: !!messageType ? messageType : 'N',
+        blockList: blockList || [],
         onUploadHandler: (data, cancelHandler) => {
           if (filesObj.fileInfos.length) {
             filesObj.fileInfos[0].tempId;
@@ -174,15 +239,17 @@ const ChatRoom = ({ match, roomInfo }) => {
         dispatch(sendMessage(data));
       }
 
-      if (window.covi && window.covi.listBottomBtn) {
+      if (window.covi?.listBottomBtn) {
         window.covi.listBottomBtn.click();
       }
     },
-    [dispatch, room],
+    [dispatch, room, chineseWallState, blockUserState],
   );
 
   const handleSearchBox = useCallback(visible => {
-    if (typeof covi.changeSearchText == 'string') covi.changeSearchText = null;
+    if (typeof covi.changeSearchText === 'string') {
+      covi.changeSearchText = null;
+    }
     setSearchVisible(visible);
   }, []);
 
@@ -203,7 +270,7 @@ const ChatRoom = ({ match, roomInfo }) => {
 
   useEffect(() => {
     const setCtrlFEventListner = e => {
-      if (e.ctrlKey && e.key == 'f') {
+      if (e.ctrlKey && e.key === 'f') {
         setSearchVisible(true);
         e.preventDefault();
       }
@@ -225,7 +292,7 @@ const ChatRoom = ({ match, roomInfo }) => {
               className="Chat Newwindow"
               style={{ fontFamily: fontType === 'Default' ? null : fontType }}
             >
-              {DEVICE_TYPE == 'd' && room && (
+              {DEVICE_TYPE === 'd' && room && (
                 <ChatBackground background={room.background} />
               )}
               {(moveVisible && (
@@ -240,7 +307,7 @@ const ChatRoom = ({ match, roomInfo }) => {
                 )) || (
                   <>
                     {room &&
-                      ((room.roomType == 'A' && (
+                      ((room.roomType === 'A' && (
                         <NoticeView
                           roomInfo={room}
                           onNewWin={null}
@@ -268,7 +335,7 @@ const ChatRoom = ({ match, roomInfo }) => {
           )}
           {!isNewWin && (
             <>
-              {DEVICE_TYPE == 'd' && room && (
+              {DEVICE_TYPE === 'd' && room && (
                 <ChatBackground background={room.background} />
               )}
               {(moveVisible && (
@@ -283,7 +350,7 @@ const ChatRoom = ({ match, roomInfo }) => {
                 )) || (
                   <>
                     {room &&
-                      ((room.roomType == 'A' && (
+                      ((room.roomType === 'A' && (
                         <NoticeView
                           roomInfo={room}
                           onNewWin={openCurrentRoom}
