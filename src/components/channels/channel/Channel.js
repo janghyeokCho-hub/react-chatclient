@@ -18,17 +18,9 @@ import {
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import * as common from '@/lib/common';
 import { addTargetUserList, delTargetUserList } from '@/modules/presence';
-import {
-  newChannel,
-  evalConnector,
-  focusWin,
-  isMainWindow,
-} from '@/lib/deviceConnector';
+import { newChannel, evalConnector, focusWin } from '@/lib/deviceConnector';
 import MessageView from '@C/channels/channel/normal/MessageView';
 import ChatBackground from '@C/chat/chatroom/layer/ChatBackground';
-import { getConfig } from '@/lib/util/configUtil';
-import { setChineseWall, setBlockList } from '@/modules/login';
-import { getChineseWall } from '@/lib/orgchart';
 
 const SearchView = loadable(() =>
   import('@/components/common/search/SearchView'),
@@ -53,10 +45,7 @@ const Channel = ({ match, channelInfo }) => {
   }
 
   const userId = useSelector(({ login }) => login.id);
-  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const blockUser = useSelector(({ login }) => login.blockList);
-  const [chineseWallState, setChineseWallState] = useState([]);
-  const [blockUserState, setBlockUserState] = useState([]);
   const channel = useSelector(({ channel }) => channel.currentChannel);
   const moveVisible = useSelector(({ message }) => message.moveVisible);
   const loading = useSelector(
@@ -84,45 +73,6 @@ const Channel = ({ match, channelInfo }) => {
 
     dispatch(newWinChannel({ id: roomId, obj: channelObj, name: winName }));
   }, [roomId, dispatch]);
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status, blockList } = await getChineseWall({
-        userId,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        setBlockUserState(blockList);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-          dispatch(setBlockList(blockList));
-        }
-      } else {
-        setChineseWallState([]);
-        setBlockUserState(blockList);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-      if (blockUser?.length) {
-        setBlockUserState(blockUser);
-      }
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-        setBlockUserState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-      setBlockUserState([]);
-    };
-  }, []);
 
   useEffect(() => {
     if (isNewWin) {
@@ -225,10 +175,12 @@ const Channel = ({ match, channelInfo }) => {
 
   const handleMessage = useCallback(
     async (message, filesObj, linkObj, tagArr, mentionArr, messageType) => {
-      const members = channel?.members?.map(item => item.id);
+      const members = channel?.members?.map(
+        item => item.id !== userId && item.id,
+      );
       let blockList = [];
-      if (members?.length && blockUserState) {
-        blockList = blockUserState.filter(
+      if (members?.length && blockUser) {
+        blockList = blockUser.filter(
           item => item !== userId && members.includes(item),
         );
       }
@@ -263,7 +215,7 @@ const Channel = ({ match, channelInfo }) => {
         window.covi.listBottomBtn.click();
       }
     },
-    [dispatch, channel, chineseWallState, blockUserState],
+    [dispatch, channel, blockUser],
   );
 
   const handleSearchBox = useCallback(visible => {

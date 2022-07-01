@@ -29,9 +29,9 @@ const ChannelItem = ({
   pinnedChannels,
   isCategory = false,
   pinToTopLimit = -1,
-  chineseWall = [],
 }) => {
   const id = useSelector(({ login }) => login.id);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const channels = useSelector(({ channel }) => channel.channels);
   const menuId = useMemo(() => 'channel_' + channel.roomId, [channel]);
   const [pinnedTop, setPinnedTop] = useState(false);
@@ -365,7 +365,6 @@ const ChannelItem = ({
       });
       const isFile = !!lastMessageInfo?.File;
       const result = isFile ? blockFile : blockChat;
-
       if (result) {
         setLastMessageText(covi.getDic('BlockChat', '차단된 메시지 입니다.'));
       } else {

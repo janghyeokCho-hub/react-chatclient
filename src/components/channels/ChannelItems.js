@@ -5,12 +5,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import ChannelItem from '@C/channels/ChannelItem';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import { Scrollbars } from 'react-custom-scrollbars';
-import { evalConnector, isMainWindow } from '@/lib/deviceConnector';
+import { evalConnector } from '@/lib/deviceConnector';
 import useOffset from '@/hooks/useOffset';
 import { isJSONStr } from '@/lib/common';
 import { getConfig } from '@/lib/util/configUtil';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall } from '@/lib/orgchart';
 
 const ChannelItems = ({
   channels,
@@ -18,11 +16,8 @@ const ChannelItems = ({
   onChannelChange,
   isDoubleClick,
 }) => {
-  const userId = useSelector(({ login }) => login.id);
   const selectId = useSelector(({ channel }) => channel.selectedId);
   const joinedChannelList = useSelector(({ channel }) => channel.channels);
-  const chineseWall = useSelector(({ login }) => login.chineseWall);
-  const [chineseWallState, setChineseWallState] = useState([]);
   const [pinnedChannels, setPinnedChannels] = useState([]);
   const pinToTopLimit = useMemo(
     () => getConfig('PinToTop_Limit_Channel', -1),
@@ -31,39 +26,6 @@ const ChannelItems = ({
 
   const [isNotis, setIsNotis] = useState({});
   const RENDER_UNIT = 5;
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, []);
 
   const isEmptyObj = obj => {
     if (obj?.constructor === Object && Object.keys(obj).length === 0) {
@@ -181,7 +143,6 @@ const ChannelItems = ({
                 isEmptyObj={isEmptyObj}
                 pinnedChannels={pinnedChannels}
                 pinToTopLimit={pinToTopLimit}
-                chineseWall={chineseWallState}
               />
             );
           })}

@@ -22,10 +22,7 @@ import {
 } from '@/lib/note';
 import RightContextMenu from '@/components/common/popup/RightConxtMenu';
 import ProfileBox from '@/components/common/ProfileBox';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
-import { isMainWindow } from '@/lib/deviceConnector';
-import { getConfig } from '@/lib/util/configUtil';
+import { isBlockCheck } from '@/lib/orgchart';
 
 function popupResult(dispatch, message) {
   openPopup(
@@ -373,42 +370,7 @@ function _NoteItem({ note, viewType, history, blockChat, blockFile }) {
 const NoteItem = withRouter(_NoteItem);
 
 export default function Notes({ viewType, noteList }) {
-  const { id } = useSelector(({ login }) => ({
-    id: login.id,
-  }));
   const chineseWall = useSelector(({ login }) => login.chineseWall);
-  const [chineseWallState, setChineseWallState] = useState([]);
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: id,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, []);
 
   const initialNumToRender = window.innerWidth
     ? Math.ceil(window.innerWidth / 60) + 2
@@ -432,7 +394,7 @@ export default function Notes({ viewType, noteList }) {
           ...senderInfo,
           id: senderInfo?.sender,
         },
-        chineseWall: chineseWallState,
+        chineseWall: chineseWall,
       });
       return (
         <NoteItem

@@ -27,10 +27,9 @@ const Room = ({
   getRoomSettings,
   isEmptyObj,
   pinToTopLimit = -1,
-  chineseWall = [],
 }) => {
   const id = useSelector(({ login }) => login.id);
-
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [isNoti, setIsNoti] = useState(true);
   const chatBotConfig = getConfig('ChatBot');
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
