@@ -511,9 +511,10 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
   );
 };
 
-const FileSummary = ({ roomId, chineseWall }) => {
+const FileSummary = ({ roomId }) => {
   const dispatch = useDispatch();
   const loadCnt = 30;
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [select, setSelect] = useState(false);
   const [selectItems, setSelectItems] = useState([]);
   const [files, setFiles] = useState([]);
@@ -656,7 +657,7 @@ const FileSummary = ({ roomId, chineseWall }) => {
       }
       setLoading(false);
     });
-  }, []);
+  }, [chineseWall]);
 
   const handleUpdate = value => {
     const { top } = value;

@@ -32,6 +32,9 @@ const TokenChecker = ({ history, returnURL }) => {
            * 토큰인증 성공시 response로부터 id를 얻어 localStorage에 저장
            */
           localStorage.setItem('covi_user_access_id', data.userInfo.id);
+          // 차이니즈월 default value
+          data.chineseWall = [];
+          data.blockList = [];
           const useChineseWall = getConfig('UseChineseWall', false);
           if (useChineseWall) {
             const { result, status, blockList } = await getChineseWall({
@@ -39,15 +42,9 @@ const TokenChecker = ({ history, returnURL }) => {
             });
 
             if (status === 'SUCCESS') {
-              data.chineseWall = result;
-              data.blockList = blockList;
-            } else {
-              data.chineseWall = [];
-              data.blockList = [];
+              data.chineseWall = result || [];
+              data.blockList = blockList || [];
             }
-          } else {
-            data.chineseWall = [];
-            data.blockList = [];
           }
         }
 

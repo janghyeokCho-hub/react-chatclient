@@ -8,7 +8,7 @@ import {
   getDownloadPath,
   evalConnector,
 } from '@/lib/deviceConnector';
-import { getSysMsgFormatStr } from '@/lib/common';
+import { getSysMsgFormatStr, isJSONStr } from '@/lib/common';
 import EXIF from 'exif-js';
 import exif2css from 'exif2css';
 import imageExtensions from 'image-extensions';

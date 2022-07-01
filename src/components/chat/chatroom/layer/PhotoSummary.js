@@ -237,9 +237,11 @@ const Photo = ({ photo, onSelect, selectMode, handleProgress }) => {
   );
 };
 
-const PhotoSummary = ({ roomId, chineseWall }) => {
+const PhotoSummary = ({ roomId }) => {
   const dispatch = useDispatch();
   const loadCnt = 30;
+
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [select, setSelect] = useState(false);
   const [selectItems, setSelectItems] = useState([]);
   const [files, setFiles] = useState([]);
@@ -399,7 +401,7 @@ const PhotoSummary = ({ roomId, chineseWall }) => {
     return () => {
       setLoading(false);
     };
-  }, []);
+  }, [chineseWall]);
 
   const handleUpdate = value => {
     if (value?.top > 0.85 && !loading && !pageEnd) {

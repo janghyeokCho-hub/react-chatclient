@@ -7,14 +7,10 @@ import { deleteLayer, clearLayer, openPopup, getJobInfo } from '@/lib/common';
 import OrgChart from '@C/orgchart/OrgChart';
 import { format } from 'date-fns';
 import { makeChatRoom } from '@/lib/deviceConnector';
-import { getAllUserWithGroup, getAllUserWithGroupList } from '@/lib/room';
+import { getAllUserWithGroupList } from '@/lib/room';
 import { openChatRoomView } from '@/lib/roomUtil';
 import { getDictionary, getSysMsgFormatStr } from '@/lib/common';
 import { isBlockCheck } from '@/lib/orgchart';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall } from '@/lib/orgchart';
-import { isMainWindow } from '@/lib/deviceConnector';
-import { getConfig } from '@/lib/util/configUtil';
 
 const InviteMember = ({
   headerName,
@@ -32,42 +28,10 @@ const InviteMember = ({
     }),
   );
   const chineseWall = useSelector(({ login }) => login.chineseWall);
-  const [chineseWallState, setChineseWallState] = useState([]);
   const [members, setMembers] = useState([]);
   const [selectTab, setSelectTab] = useState('C');
   const [oldMembers, setOldMembers] = useState([]);
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: myInfo?.id,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, []);
 
   useEffect(() => {
     if (oldMemberList) {

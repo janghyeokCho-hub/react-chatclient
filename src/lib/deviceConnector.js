@@ -848,7 +848,8 @@ export const syncAppData = ({ data, chineseWall }) => {
     accessid: data.result.id,
     createDate: data.createDate,
     userInfo: data.result,
-    chineseWall,
+    chineseWall: chineseWall?.result || [],
+    blockList: chineseWall?.blockList || [],
   });
 
   // 채팅방 마지막 메시지 동기화 (async)

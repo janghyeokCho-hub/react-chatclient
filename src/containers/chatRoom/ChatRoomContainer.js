@@ -4,25 +4,18 @@ import { getRooms, openRoom, updateRooms } from '@/modules/room';
 import SearchBar from '@COMMON/SearchBar';
 import RoomItems from '@C/chat/RoomItems';
 import useTyping from '@/hooks/useTyping';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall } from '@/lib/orgchart';
-import { isMainWindow } from '@/lib/deviceConnector';
-import { getConfig } from '@/lib/util/configUtil';
 
 const ChatRoomContainer = () => {
   const { id } = useSelector(({ login }) => ({
     id: login.id,
   }));
-  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [searchText, setSearchText] = useState('');
   const [listMode, setListMode] = useState('N'); //Normal, Search
   const [searchList, setSearchList] = useState([]);
-  const [chineseWallState, setChineseWallState] = useState([]);
 
   const roomList = useSelector(({ room }) => room.rooms);
   const viewType = useSelector(({ room }) => room.viewType);
   const loading = useSelector(({ loading }) => loading['room/GET_ROOMS']);
-  const userId = useSelector(({ login }) => login.id);
   const { confirm } = useTyping();
 
   const dispatch = useDispatch();
@@ -33,37 +26,6 @@ const ChatRoomContainer = () => {
     },
     [dispatch],
   );
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: id,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, [chineseWall]);
 
   useEffect(() => {
     if (listMode === 'S') {
@@ -90,7 +52,7 @@ const ChatRoomContainer = () => {
             if (item.members) {
               item.members.forEach(member => {
                 if (
-                  member.id != userId &&
+                  member.id != id &&
                   member.name.toLowerCase().indexOf(changeVal.toLowerCase()) >
                     -1
                 ) {
@@ -146,7 +108,6 @@ const ChatRoomContainer = () => {
               loading={loading}
               onRoomChange={handleRoomChange}
               isDoubleClick={viewType === 'S' && SCREEN_OPTION !== 'G'}
-              chineseWall={chineseWallState}
             />
           )}
           {roomList?.length == 0 && (
@@ -167,7 +128,6 @@ const ChatRoomContainer = () => {
           loading={false}
           onRoomChange={handleRoomChange}
           isDoubleClick={viewType === 'S' && SCREEN_OPTION !== 'G'}
-          chineseWall={chineseWallState}
         />
       )}
     </>

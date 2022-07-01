@@ -15,17 +15,11 @@ import ChatSettingBox from '@/components/chat/chatroom/layer/ChatSettingBox';
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { modifyRoomName, setBackground } from '@/modules/room';
 import { downloadMessageData } from '@/lib/fileUpload/coviFile';
-import {
-  evalConnector,
-  bindLeaveChatRoom,
-  isMainWindow,
-} from '@/lib/deviceConnector';
+import { evalConnector, bindLeaveChatRoom } from '@/lib/deviceConnector';
 import ColorBox from '@COMMON/buttons/ColorBox';
 import { insert, remove } from '@/lib/util/storageUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import useOffset from '@/hooks/useOffset';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall } from '@/lib/orgchart';
 
 const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
 
@@ -40,7 +34,6 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
 
   const [isNoti, setIsNoti] = useState(true);
   const [isFix, setIsFix] = useState(false);
-  const [chineseWallState, setChineseWallState] = useState([]);
   const RENDER_INIT = 10;
   const RENDER_UNIT = 8;
   const { isDone, nextStep, list, handleScrollUpdate } = useOffset(
@@ -53,37 +46,6 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
 
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: id,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, []);
 
   useEffect(() => {
     if (DEVICE_TYPE == 'd' && !isMakeRoom) {
@@ -242,12 +204,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
   const handlePhotoSummary = () => {
     appendLayer(
       {
-        component: (
-          <PhotoSummary
-            roomId={roomInfo.roomID}
-            chineseWall={chineseWallState}
-          />
-        ),
+        component: <PhotoSummary roomId={roomInfo.roomID} />,
       },
       dispatch,
     );
@@ -256,12 +213,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
   const handleFileSummary = () => {
     appendLayer(
       {
-        component: (
-          <FileSummary
-            roomId={roomInfo.roomID}
-            chineseWall={chineseWallState}
-          />
-        ),
+        component: <FileSummary roomId={roomInfo.roomID} />,
       },
       dispatch,
     );
