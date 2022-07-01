@@ -13,19 +13,11 @@ import {
 import { sendMessage, clearFiles, updateTempMessage } from '@/modules/message';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import { addTargetUserList, delTargetUserList } from '@/modules/presence';
-import {
-  newChatRoom,
-  evalConnector,
-  focusWin,
-  isMainWindow,
-} from '@/lib/deviceConnector';
+import { newChatRoom, evalConnector, focusWin } from '@/lib/deviceConnector';
 import { clearLayer } from '@/lib/common';
 import MessageView from '@C/chat/chatroom/normal/MessageView';
 import ChatBackground from './layer/ChatBackground';
 import { useChatFontType } from '../../../hooks/useChat';
-import { getConfig } from '@/lib/util/configUtil';
-import { setChineseWall, setBlockList } from '@/modules/login';
-import { getChineseWall } from '@/lib/orgchart';
 
 const SearchView = loadable(() => import('@C/common/search/SearchView'));
 const MoveView = loadable(() => import('@C/chat/chatroom/move/MoveView'));
@@ -47,11 +39,7 @@ const ChatRoom = ({ match, roomInfo }) => {
 
   const room = useSelector(({ room }) => room.currentRoom);
   const userId = useSelector(({ login }) => login.id);
-  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const blockUser = useSelector(({ login }) => login.blockList);
-
-  const [chineseWallState, setChineseWallState] = useState([]);
-  const [blockUserState, setBlockUserState] = useState([]);
   const moveVisible = useSelector(({ message }) => message.moveVisible);
   const loading = useSelector(({ loading }) => loading['room/GET_ROOM_INFO']);
 
@@ -76,45 +64,6 @@ const ChatRoom = ({ match, roomInfo }) => {
 
     dispatch(newWinRoom({ id: roomID, obj: roomObj, name: winName }));
   }, [dispatch, roomID]);
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status, blockList } = await getChineseWall({
-        userId,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        setBlockUserState(blockList);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-          dispatch(setBlockList(blockList));
-        }
-      } else {
-        setChineseWallState([]);
-        setBlockUserState(blockList);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-      if (blockUser?.length) {
-        setBlockUserState(blockUser);
-      }
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-        setBlockUserState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-      setBlockUserState([]);
-    };
-  }, []);
 
   useEffect(() => {
     if (isNewWin) {
@@ -203,10 +152,10 @@ const ChatRoom = ({ match, roomInfo }) => {
 
   const handleMessage = useCallback(
     async (message, filesObj, linkObj, messageType) => {
-      const members = room?.members?.map(item => item.id);
+      const members = room?.members?.map(item => item.id !== userId && item.id);
       let blockList = [];
-      if (members?.length && blockUserState) {
-        blockList = blockUserState.filter(
+      if (members?.length && blockUser) {
+        blockList = blockUser.filter(
           item => item !== userId && members.includes(item),
         );
       }
@@ -243,7 +192,7 @@ const ChatRoom = ({ match, roomInfo }) => {
         window.covi.listBottomBtn.click();
       }
     },
-    [dispatch, room, chineseWallState, blockUserState],
+    [dispatch, room, blockUser],
   );
 
   const handleSearchBox = useCallback(visible => {

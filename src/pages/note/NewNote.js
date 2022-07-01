@@ -38,9 +38,6 @@ import NoteHeader from '@/pages/note/NoteHeader';
 import ConditionalWrapper from '@/components/ConditionalWrapper';
 import { getNote } from '@/lib/note';
 import { sendMain, isMainWindow } from '@/lib/deviceConnector';
-import { getConfig } from '@/lib/util/configUtil';
-import { setChineseWall, setBlockList } from '@/modules/login';
-import { getChineseWall } from '@/lib/orgchart';
 // WYSIWYG Editor
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor } from '@toast-ui/react-editor';
@@ -61,11 +58,7 @@ export default function NewNote({ match, location }) {
     window.opener !== null || (match && match.url.indexOf('/nw/') > -1);
   const dispatch = useDispatch();
   const { myInfo } = useSelector(({ login }) => ({ myInfo: login.userInfo }));
-  const userId = useSelector(({ login }) => login.id);
-  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const blockUser = useSelector(({ login }) => login.blockList);
-  const [chineseWallState, setChineseWallState] = useState([]);
-  const [blockUserState, setBlockUserState] = useState([]);
   const title = createRef();
   // const context = createRef();
   const editorRef = createRef();
@@ -101,45 +94,6 @@ export default function NewNote({ match, location }) {
   const [files, setFiles] = useState([]);
   const [isSending, setIsSending] = useState(false);
   const [isEmergency, setIsEmergency] = useState(false);
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status, blockList } = await getChineseWall({
-        userId,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        setBlockUserState(blockList);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-          dispatch(setBlockList(blockList));
-        }
-      } else {
-        setChineseWallState([]);
-        setBlockUserState(blockList);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-      if (blockUser?.length) {
-        setBlockUserState(blockUser);
-      }
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-        setBlockUserState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-      setBlockUserState([]);
-    };
-  }, []);
 
   const headerTitle = useMemo(() => {
     const { type } = viewState;
@@ -374,7 +328,7 @@ export default function NewNote({ match, location }) {
         files: fileCtrl.getFiles(),
         fileInfos: fileCtrl.getFileInfos(),
         isEmergency: isEmergency ? 'Y' : 'N',
-        blockList: blockUserState || [],
+        blockList: blockUser || [],
       };
       const { data } = await sendNote(sendData);
 
