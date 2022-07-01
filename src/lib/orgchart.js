@@ -47,7 +47,7 @@ export const getChineseWall = async ({ userId }) => {
     return { result: chineseWall, status, blockList };
   } catch (e) {
     console.error(e);
-    return { result: [], status: 'ERROR' };
+    return { result: [], status: 'ERROR', blockList: [] };
   }
 };
 
@@ -59,9 +59,8 @@ export const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
   if (!chineseWall.length) {
     return result;
   }
-
   for (const data of chineseWall) {
-    const target = data.target;
+    const { target, targetType } = data;
     if (target.includes(targetInfo.companyCode)) {
       result.blockChat = result.blockChat
         ? result.blockChat
@@ -70,21 +69,30 @@ export const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
         ? result.blockFile
         : data.blockFile === 'Y';
     }
-    if (target.includes(targetInfo.deptCode)) {
-      result.blockChat = result.blockChat
-        ? result.blockChat
-        : data.blockChat === 'Y';
-      result.blockFile = result.blockFile
-        ? result.blockFile
-        : data.blockFile === 'Y';
-    }
-    if (target.includes(targetInfo.id)) {
-      result.blockChat = result.blockChat
-        ? result.blockChat
-        : data.blockChat === 'Y';
-      result.blockFile = result.blockFile
-        ? result.blockFile
-        : data.blockFile === 'Y';
+
+    if (targetType === 'G') {
+      const targetDeptCode = targetInfo?.deptCode?.split(',');
+      if (!targetDeptCode) {
+        continue;
+      }
+      const deptBlocks = target.filter(item => targetDeptCode.includes(item));
+      if (deptBlocks?.length) {
+        result.blockChat = result.blockChat
+          ? result.blockChat
+          : data.blockChat === 'Y';
+        result.blockFile = result.blockFile
+          ? result.blockFile
+          : data.blockFile === 'Y';
+      }
+    } else if (targetType === 'U') {
+      if (target.includes(targetInfo.id)) {
+        result.blockChat = result.blockChat
+          ? result.blockChat
+          : data.blockChat === 'Y';
+        result.blockFile = result.blockFile
+          ? result.blockFile
+          : data.blockFile === 'Y';
+      }
     }
 
     if (result.blockChat && result.blockFile) {
@@ -92,31 +100,4 @@ export const isBlockCheck = ({ targetInfo, chineseWall = [] }) => {
     }
   }
   return result;
-};
-
-/**
- *
- * @param {Array} chineseWall
- * @returns 부서에 속한 유저ID를 합한 유저ID 목록
- */
-export const blockUsers = async (chineseWall = []) => {
-  let groupList = [];
-  let userList = [];
-  for (const item of chineseWall) {
-    if (item.targetType === 'G') {
-      groupList = groupList.concat(item.target);
-    } else if (item.targetType === 'U') {
-      userList = userList.concat(item.target);
-    }
-  }
-
-  for (const group of groupList) {
-    await getAllUserWithGroup(group).then(({ data }) => {
-      if (data.status === 'SUCCESS') {
-        const { result } = data;
-        userList = userList.concat(result.map(item => item.id));
-      }
-    });
-  }
-  return [...new Set(userList)];
 };

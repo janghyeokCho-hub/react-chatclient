@@ -15,9 +15,7 @@ import {
 } from '@/lib/common';
 import useTyping from '@/hooks/useTyping';
 import { useSyncFavorite } from '@/hooks/useSyncFavorite';
-import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
-import { setChineseWall } from '@/modules/login';
-import { isMainWindow } from '@/lib/deviceConnector';
+import { isBlockCheck } from '@/lib/orgchart';
 
 const ProfilePopup = ({ userInfo }) => {
   const chineseWall = useSelector(({ login }) => login.chineseWall);
@@ -31,7 +29,6 @@ const ProfilePopup = ({ userInfo }) => {
   );
 
   const [isFavorite, setIsFavorite] = useState(userInfo.isFavorite);
-  const [chineseWallState, setChineseWallState] = useState([]);
   const [isBlockChat, setIsBlockChat] = useState(false);
   const [isBlockFile, setIsBlockFile] = useState(false);
   const { confirm } = useTyping();
@@ -41,41 +38,10 @@ const ProfilePopup = ({ userInfo }) => {
   const { syncFavorite } = useSyncFavorite();
 
   useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: userInfo?.id,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, [userInfo, chineseWall]);
-
-  useEffect(() => {
-    if (userInfo && chineseWallState?.length) {
+    if (userInfo && chineseWall?.length) {
       const { blockChat, blockFile } = isBlockCheck({
         targetInfo: userInfo,
-        chineseWall: chineseWallState,
+        chineseWall: chineseWall,
       });
       setIsBlockChat(blockChat);
       setIsBlockFile(blockFile);
@@ -84,7 +50,7 @@ const ProfilePopup = ({ userInfo }) => {
       setIsBlockChat(false);
       setIsBlockFile(false);
     };
-  }, [userInfo, chineseWallState]);
+  }, [userInfo, chineseWall]);
 
   const getAbsenceInfo = useMemo(() => {
     try {

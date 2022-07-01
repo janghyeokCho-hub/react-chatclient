@@ -26,10 +26,6 @@ import {
   isJSONStr,
 } from '@/lib/common';
 import { makeMessage } from './share';
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall } from '@/lib/orgchart';
-import { getConfig } from '@/lib/util/configUtil';
-import { blockUsers } from '@/lib/orgchart';
 
 const ShareContainer = ({
   headerName = covi.getDic('Msg_Note_Forward', '전달하기'),
@@ -51,47 +47,6 @@ const ShareContainer = ({
   const [rooms, setRooms] = useState([]);
   const [channels, setChannels] = useState([]);
   const [selectTab, setSelectTab] = useState('orgchart');
-  const [chineseWallState, setChineseWallState] = useState([]);
-  const [blockUserState, setBlockUserState] = useState([]);
-
-  useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status, blockList } = await getChineseWall({
-        userId: userInfo.id,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        setBlockUserState(blockList);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-          dispatch(setBlockList(blockList));
-        }
-      } else {
-        setChineseWallState([]);
-        setBlockUserState(blockList);
-      }
-    };
-
-    if (chineseWall?.length) {
-      setChineseWallState(chineseWall);
-      if (blockUser?.length) {
-        setBlockUserState(blockUser);
-      }
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-        setBlockUserState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-      setBlockUserState([]);
-    };
-  }, []);
 
   useLayoutEffect(() => {
     if (DEVICE_TYPE === 'd' && !isMainWindow()) {
@@ -361,7 +316,7 @@ const ShareContainer = ({
       return;
     }
 
-    params.blockList = blockUserState || [];
+    params.blockList = blockUser || [];
 
     if (
       params.targetType === 'CHAT' &&
@@ -377,7 +332,7 @@ const ShareContainer = ({
     } else {
       handleShareFile(params);
     }
-  }, [blockUserState, selectTab, members, rooms, channels]);
+  }, [blockUser, selectTab, members, rooms, channels]);
 
   const handleShareFile = useCallback(
     async params => {
@@ -411,16 +366,10 @@ const ShareContainer = ({
       // 파일 전송의 경우 서버에서 채팅방 생성 후 파일 업로드까지 진행
       params.targetType =
         params.targetType === 'NEWROOM' ? 'CHAT' : params.targetType;
-
-      let blockList = [];
-      if (chineseWall?.length) {
-        // Mobile push block
-        blockList = await blockUsers(chineseWall);
-      }
-      params.blockList = blockList || [];
+      params.blockList = blockUser || [];
       handleMessage(params);
     },
-    [chineseWall],
+    [blockUser],
   );
 
   const makeParams = useCallback(async () => {
@@ -803,7 +752,7 @@ const ShareContainer = ({
             <ChatList
               roomList={roomList}
               checkObj={roomCheckObj}
-              chineseWall={chineseWallState}
+              chineseWall={chineseWall}
               myInfo={userInfo}
             />
           </div>
@@ -818,7 +767,7 @@ const ShareContainer = ({
             <ChannelList
               channels={channelList}
               checkObj={channelCheckObj}
-              chineseWall={chineseWallState}
+              chineseWall={chineseWall}
             />
           </div>
         </div>

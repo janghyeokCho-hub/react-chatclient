@@ -20,13 +20,7 @@ const getRoomSettings = (room = {}) => {
   );
 };
 
-const RoomItems = ({
-  rooms,
-  loading,
-  onRoomChange,
-  isDoubleClick,
-  chineseWall = [],
-}) => {
+const RoomItems = ({ rooms, loading, onRoomChange, isDoubleClick }) => {
   const selectId = useSelector(({ room }) => room.selectId);
 
   const RENDER_UNIT = 5;
@@ -98,7 +92,6 @@ const RoomItems = ({
                 isEmptyObj={isEmptyObj}
                 pinnedRooms={pinnedRooms}
                 pinToTopLimit={pinToTopLimit}
-                chineseWall={chineseWall}
               />
             );
           })}

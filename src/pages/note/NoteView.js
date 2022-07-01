@@ -46,10 +46,7 @@ import Progress from '@C/common/buttons/Progress';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Viewer } from '@toast-ui/react-editor';
 
-import { setChineseWall } from '@/modules/login';
-import { getChineseWall, isBlockCheck } from '@/lib/orgchart';
-import { isMainWindow } from '@/lib/deviceConnector';
-import { getConfig } from '@/lib/util/configUtil';
+import { isBlockCheck } from '@/lib/orgchart';
 
 function _popupResult(dispatch, message, cb) {
   openPopup(
@@ -450,8 +447,7 @@ export default function NoteView({ match }) {
   const loginId = useSelector(({ login }) => login.id);
 
   const [progressData, setProgressData] = useState(null);
-  const userChineseWall = useSelector(({ login }) => login.chineseWall);
-  const [chineseWallState, setChineseWallState] = useState([]);
+  const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [isBlockChat, setIsBlockChat] = useState(false);
   const [isBlockFile, setIsBlockFile] = useState(false);
 
@@ -587,38 +583,7 @@ export default function NoteView({ match }) {
   }, [noteInfo, error, isValidating]);
 
   useEffect(() => {
-    const getChineseWallList = async () => {
-      const { result, status } = await getChineseWall({
-        userId: loginId,
-      });
-      if (status === 'SUCCESS') {
-        setChineseWallState(result);
-        if (DEVICE_TYPE === 'd' && !isMainWindow()) {
-          dispatch(setChineseWall(result));
-        }
-      } else {
-        setChineseWallState([]);
-      }
-    };
-
-    if (userChineseWall?.length) {
-      setChineseWallState(userChineseWall);
-    } else {
-      const useChineseWall = getConfig('UseChineseWall', false);
-      if (useChineseWall) {
-        getChineseWallList();
-      } else {
-        setChineseWallState([]);
-      }
-    }
-
-    return () => {
-      setChineseWallState([]);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (noteInfo && chineseWallState?.length) {
+    if (noteInfo && chineseWall?.length) {
       const senderInfo = isJSONStr(noteInfo.senderInfo)
         ? JSON.parse(noteInfo.senderInfo)
         : noteInfo.senderInfo;
@@ -629,12 +594,12 @@ export default function NoteView({ match }) {
 
       const { blockChat, blockFile } = isBlockCheck({
         targetInfo,
-        chineseWall: chineseWallState,
+        chineseWall: chineseWall,
       });
       setIsBlockChat(blockChat);
       setIsBlockFile(blockFile);
     }
-  }, [noteInfo, chineseWallState]);
+  }, [noteInfo, chineseWall]);
 
   // 로딩중
   if (!noteInfo && !error) {
