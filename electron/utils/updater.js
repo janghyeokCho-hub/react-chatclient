@@ -112,13 +112,12 @@ class Updater {
           browserWindows.forEach(browserWindow => {
             browserWindow.removeAllListeners('close');
           });
-          app.once('before-quit', () => {
-            logger.info('before quit');
-            app.quit();
-            app.exit();
-          });
         }
-
+        app.once('before-quit', () => {
+          logger.info('before quit');
+          app.quit();
+          app.exit();
+        });
         autoUpdater.quitAndInstall(false, false);
       }, 3000);
     });
