@@ -16,6 +16,7 @@ export const reqSocketConnect = (event, args) => {
     onChatRoomExit: socketAction.onChatRoomExit,
     onForceToLogout: socketAction.onForceToLogout,
     onReadCountChanged: socketAction.onReadCountChanged,
+    onReadChannel: () => {},
     onNewNotice: socketAction.onNewNotice,
     onNewChannelMessage: socketAction.onNewChannelMessage,
     onNewChannelNotice: socketAction.onNewChannelMessage,
