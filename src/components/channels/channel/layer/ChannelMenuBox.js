@@ -7,9 +7,10 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import InviteMember from '@/components/channels/channel/layer/InviteMember';
 import PhotoSummary from '@/components/chat/chatroom/layer/PhotoSummary'; // 그대로 사용
 import FileSummary from '@/components/chat/chatroom/layer/FileSummary'; // 그대로 사용
+import BookmarkSummary from '@/components/chat/chatroom/layer/BookmarkSummary';
 import ChatSettingBox from '@/components/chat/chatroom/layer/ChatSettingBox';
 import { modifyChannelMemberAuth, setBackground } from '@/modules/channel';
-
+import BookmarkIcon from '@/icons/svg/BookmarkIcon';
 import {
   leaveChannelUtil,
   leaveChannelByAdminUtil,
@@ -27,6 +28,7 @@ import useOffset from '@/hooks/useOffset';
 const enabledExtUser = getConfig('EnabledExtUser', 'Y');
 const SMTPConfig = getConfig('SMTPConfig', 'Y');
 const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
+const useBookmark = getConfig('UseBookmark', 'N') === 'Y';
 
 const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   const { id } = useSelector(({ login }) => ({
@@ -176,6 +178,17 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
       {
         component: (
           <FileSummary roomId={channelInfo.roomId} chineseWall={chineseWall} />
+        ),
+      },
+      dispatch,
+    );
+  };
+
+  const handleBookmarkSummary = () => {
+    appendLayer(
+      {
+        component: (
+          <BookmarkSummary roomId={channelInfo.roomId} roomInfo={channelInfo} />
         ),
       },
       dispatch,
@@ -458,12 +471,22 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                 {covi.getDic('PhotoSummary', '사진 모아보기')}
               </a>
             </li>
-            <li className="divideline">
+            <li className={useBookmark === false ? 'divideline' :  undefined}>
               <a onClick={handleFileSummary}>
                 <span className="c_menu_ico c_menu_ico_03"></span>
                 {covi.getDic('FileSummary', '파일 모아보기')}
               </a>
             </li>
+            {useBookmark === true && (
+              <li className="divideline">
+                <a onClick={handleBookmarkSummary}>
+                  <span className="c_menu_ico">
+                    <BookmarkIcon />
+                  </span>
+                  {covi.getDic('BookmarkSummary', '책갈피 모아보기')}
+                </a>
+              </li>
+            )}
           </ul>
         </div>
         {channelInfo && channelInfo.members && (

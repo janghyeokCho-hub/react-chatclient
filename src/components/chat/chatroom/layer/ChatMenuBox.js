@@ -11,6 +11,7 @@ import {
 import { Scrollbars } from 'react-custom-scrollbars';
 import PhotoSummary from '@/components/chat/chatroom/layer/PhotoSummary';
 import FileSummary from '@/components/chat/chatroom/layer/FileSummary';
+import BookmarkSummary from '@/components/chat/chatroom/layer/BookmarkSummary';
 import ChatSettingBox from '@/components/chat/chatroom/layer/ChatSettingBox';
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { modifyRoomName, setBackground } from '@/modules/room';
@@ -20,6 +21,7 @@ import ColorBox from '@COMMON/buttons/ColorBox';
 import { insert, remove } from '@/lib/util/storageUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import useOffset from '@/hooks/useOffset';
+import BookmarkIcon from '@/icons/svg/BookmarkIcon';
 
 const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
 
@@ -44,7 +46,7 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     threshold: 0.9,
   });
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
-
+  const useBookmark = getConfig('UseBookmark', 'N') === 'Y';
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -219,6 +221,17 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     );
   };
 
+  const handleBookmarkSummary = () => {
+    appendLayer(
+      {
+        component: (
+          <BookmarkSummary roomId={roomInfo.roomID} roomInfo={roomInfo} />
+        ),
+      },
+      dispatch,
+    );
+  };
+
   const handleSaveChat = () => {
     openPopup(
       {
@@ -387,12 +400,21 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                         {covi.getDic('PhotoSummary', '사진 모아보기')}
                       </a>
                     </li>
-                    <li className="divideline">
-                      <a onClick={handleFileSummary}>
+                    <li className={useBookmark === false ? 'divideline' :  undefined}>                      <a onClick={handleFileSummary}>
                         <span className="c_menu_ico c_menu_ico_03"></span>
-                        {covi.getDic('FileSummary', '사진 모아보기')}
+                        {covi.getDic('FileSummary', '파일 모아보기')}
                       </a>
                     </li>
+                    {useBookmark === true && (
+                      <li className="divideline">
+                        <a onClick={handleBookmarkSummary}>
+                          <span className="c_menu_ico">
+                            <BookmarkIcon />
+                          </span>
+                          {covi.getDic('BookmarkSummary', '책갈피 모아보기')}
+                        </a>
+                      </li>
+                    )}
                     {DEVICE_TYPE === 'd' && getConfig('UseMsgExport', false) && (
                       <li>
                         <a onClick={handleSaveChat}>
