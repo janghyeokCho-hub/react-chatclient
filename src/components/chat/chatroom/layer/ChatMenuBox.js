@@ -400,7 +400,13 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                         {covi.getDic('PhotoSummary', '사진 모아보기')}
                       </a>
                     </li>
-                    <li className={useBookmark === false ? 'divideline' :  undefined}>                      <a onClick={handleFileSummary}>
+                    <li
+                      className={
+                        useBookmark === false ? 'divideline' : undefined
+                      }
+                    >
+                      {' '}
+                      <a onClick={handleFileSummary}>
                         <span className="c_menu_ico c_menu_ico_03"></span>
                         {covi.getDic('FileSummary', '파일 모아보기')}
                       </a>

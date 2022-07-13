@@ -78,7 +78,7 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
   try {
     const senderInfo = JSON.parse(payload.senderInfo);
     const useChineseWall =
-      SERVER_SECURITY_SETTING.get('config.DefaultClientLang') || false;
+      SERVER_SECURITY_SETTING.get('config.UseChineseWall') === 'Y' || false;
     if (useChineseWall) {
       const { blockChat, blockFile } = isBlockCheck({
         targetInfo: {
@@ -121,10 +121,8 @@ export const notifyMessage = (payload, focusWin, loginInfo) => {
           ? SERVER_SECURITY_SETTING.getDic('BlockChat', '차단된 메시지 입니다.')
           : payload.context;
         if (/eumtalk:\/\//.test(message)) {
-          console.log('message::::::::::::::', message);
           const arrMsgData = message.replace(/eumtalk:\/\//, '').split('.');
           if (arrMsgData) {
-            console.log('arrMsgData::::::::::::::', arrMsgData);
             if (arrMsgData[0] == 'emoticon') {
               // emoticon 처리
               message = SERVER_SECURITY_SETTING.getDic('Emoticon', '이모티콘');
@@ -276,7 +274,7 @@ const openFocusRoom = (roomID, isChannel) => {
       focusWin.restore();
     }
 
-    if(!focusWin.isVisible()){
+    if (!focusWin.isVisible()) {
       focusWin.show();
       MainWindow.blur();
     }
@@ -287,7 +285,6 @@ const openFocusRoom = (roomID, isChannel) => {
     setTimeout(() => {
       focusWin.setAlwaysOnTop(false);
     }, 300);
-    
   } else {
     if (focusWin.isMinimized()) {
       focusWin.restore();

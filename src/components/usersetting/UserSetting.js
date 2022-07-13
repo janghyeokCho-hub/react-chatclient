@@ -88,7 +88,7 @@ const UserSetting = ({ history }) => {
     defaultPath: '',
     useDefaultValue: false,
   });
-  const useLockApp = getConfig('UseLockApp') || false;
+  const useLockApp = getConfig('UseLockApp', 'N') === 'Y' || false;
   // 색상 선택
   const [useEmoji, setUseEmoji] = useState(false);
   // 직무표시
