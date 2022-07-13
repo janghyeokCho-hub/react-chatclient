@@ -30,8 +30,7 @@ const MessageView = ({
   const zoomMeet = getConfig('ZoomMeet');
   const useMessageCopy = getConfig('UseMessageCopy', true);
   const remoteAssistance = getConfig('UseRemoteView', 'N');
-  const useMessageDelete =
-    getConfig('UseChatroomDeleteMessage', false) === true;
+  const useMessageDelete = getConfig('UseChatroomDeleteMessage', 'N') === 'Y';
 
   const id = useSelector(({ login }) => login.id);
   const chatBox = useRef(null);
@@ -178,30 +177,29 @@ const MessageView = ({
   }, []);
 
   const callLiveMeet = useCallback(() => {
-      const msgObj = {
-        title: covi.getDic('VideoConferencing', '화상회의'),
-        context: covi.getDic(
-          'Msg_JoinVideoConference',
-          '화상회의에 참석해주세요.',
-        ),
-        func: {
-          name: covi.getDic('GoToPage', '페이지로 이동'),
-          type: 'link',
-          data: {
-            baseURL: `${Config.ServerURL.HOST}/manager/liveMeetGate.do?type=${liveMeet.type}&rKey=${roomInfo.roomID}&cu=${id}`,
-            params: {
-              tk: { param: 'toToken#', plain: false, enc: false },
-              dir: {
-                param: `${liveMeet.domain}`,
-                plain: true,
-                enc: false,
-              },
+    const msgObj = {
+      title: covi.getDic('VideoConferencing', '화상회의'),
+      context: covi.getDic(
+        'Msg_JoinVideoConference',
+        '화상회의에 참석해주세요.',
+      ),
+      func: {
+        name: covi.getDic('GoToPage', '페이지로 이동'),
+        type: 'link',
+        data: {
+          baseURL: `${Config.ServerURL.HOST}/manager/liveMeetGate.do?type=${liveMeet.type}&rKey=${roomInfo.roomID}&cu=${id}`,
+          params: {
+            tk: { param: 'toToken#', plain: false, enc: false },
+            dir: {
+              param: `${liveMeet.domain}`,
+              plain: true,
+              enc: false,
             },
           },
         },
-      };
-      postAction(JSON.stringify(msgObj), null, null, 'A');
-    
+      },
+    };
+    postAction(JSON.stringify(msgObj), null, null, 'A');
   }, [roomInfo]);
 
   const remoteHost = useCallback(
