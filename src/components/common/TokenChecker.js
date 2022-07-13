@@ -35,7 +35,7 @@ const TokenChecker = ({ history, returnURL }) => {
           // 차이니즈월 default value
           data.chineseWall = [];
           data.blockList = [];
-          const useChineseWall = getConfig('UseChineseWall', false);
+          const useChineseWall = getConfig('UseChineseWall', 'N') === 'Y';
           if (useChineseWall) {
             const { result, status, blockList } = await getChineseWall({
               userId: data.userInfo.id,

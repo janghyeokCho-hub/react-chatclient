@@ -162,7 +162,7 @@ function createLoginRequestSaga(loginType, syncType) {
 
             // 차이니즈 월
             let chineseWall = [];
-            const useChineseWall = getConfig('UseChineseWall', false);
+            const useChineseWall = getConfig('UseChineseWall', 'N') === 'Y';
             if (useChineseWall) {
               chineseWall = yield call(getChineseWall, {
                 userId: response.data.result.id,
@@ -345,7 +345,7 @@ function createExtLoginRequestSaga(loginType, syncType) {
 
             // 차이니즈 월
             let chineseWall = [];
-            const useChineseWall = getConfig('UseChineseWall', false);
+            const useChineseWall = getConfig('UseChineseWall', 'N') === 'Y';
             if (useChineseWall) {
               chineseWall = yield call(getChineseWall, {
                 userId: response.data.result.id,
@@ -565,18 +565,6 @@ function createSyncTokenRequestSaga(type) {
             if (channels.data.status == 'SUCCESS') {
               yield put(setChannels(channels.data));
             }
-
-            // 차이니즈 월
-            /*
-            let chineseWall = [];
-            const useChineseWall = getConfig('UseChineseWall', false);
-            if (useChineseWall) {
-              chineseWall = yield call(getChineseWall, {
-                userId: authData.id,
-              });
-            }
-            yield put(setChineseWall(chineseWall));
-            */
 
             // Store 세팅 끝
             yield put(finishLoading(type));

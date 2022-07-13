@@ -246,8 +246,8 @@ const Room = ({
       },
       name: covi.getDic('UnpinToTop', '상단고정 해제'),
     };
+
     const menus = [
-      pinToTopLimit >= 0 && (pinnedTop ? unpinToTop : pinToTop),
       {
         code: 'openRoom',
         isline: false,
@@ -260,22 +260,28 @@ const Room = ({
         },
         name: covi.getDic('OpenChat', '채팅방 열기'),
       },
-      room?.roomType !== 'A' &&
-        room?.roomType !== 'B' && {
-          code: 'outRoom',
-          isline: false,
-          onClick: () => {
-            leaveRoomUtil(dispatch, room, id);
-          },
-          name: covi.getDic('LeaveChat', '채팅방 나가기'),
-        },
     ];
 
-    if (DEVICE_TYPE != 'b' && forceDisableNoti === false) {
+    // 상단 고정/해제
+    if (pinToTopLimit >= 0) {
+      menus.unshift(pinnedTop ? unpinToTop : pinToTop);
+    }
+
+    if (room?.roomType !== 'A' && room?.roomType !== 'B') {
+      menus.push({
+        code: 'outRoom',
+        isline: false,
+        onClick: () => {
+          leaveRoomUtil(dispatch, room, id);
+        },
+        name: covi.getDic('LeaveChat', '채팅방 나가기'),
+      });
+    }
+
+    if (DEVICE_TYPE !== 'b' && forceDisableNoti === false) {
       menus.push({
         code: 'line',
         isline: true,
-        onClick: () => {},
         name: '',
       });
 
@@ -283,7 +289,7 @@ const Room = ({
         code: 'notiOff',
         isline: false,
         onClick: () => {
-          const result = evalConnector({
+          evalConnector({
             method: 'sendSync',
             channel: 'room-noti-setting',
             message: { type: 'noti', roomID: room.roomID, noti: !isNoti },

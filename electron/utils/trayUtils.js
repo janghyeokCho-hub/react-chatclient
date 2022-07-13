@@ -42,7 +42,8 @@ export const getTray = parentWin => {
 };
 
 export const setContextMenu = parentWin => {
-  const useLockApp = SERVER_SECURITY_SETTING?.config?.config?.UseLockApp || false;
+  const useLockApp =
+    SERVER_SECURITY_SETTING?.config?.config?.UseLockApp === 'Y' || false;
   // tray 생성
   const contextMenu = Menu.buildFromTemplate([
     {
