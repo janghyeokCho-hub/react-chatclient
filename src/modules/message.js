@@ -364,8 +364,7 @@ const message = handleActions(
         const sendData = action.payload;
         sendData.status = 'send';
         sendData.tempId = action.payload.roomID * 10000 + tempId++;
-        const isLegacyChannelAPI =
-          (getConfig('Legacy_ChannelTemp') || false) === true;
+        const isLegacyChannelAPI = getConfig('Legacy_ChannelTemp', 'N') === 'Y';
         if (!isLegacyChannelAPI) {
           draft.tempChannelMessage.push(sendData);
         }
