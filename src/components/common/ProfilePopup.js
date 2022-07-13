@@ -27,7 +27,6 @@ const ProfilePopup = ({ userInfo }) => {
       myInfo: login.userInfo,
     }),
   );
-
   const [isFavorite, setIsFavorite] = useState(userInfo.isFavorite);
   const [isBlockChat, setIsBlockChat] = useState(false);
   const [isBlockFile, setIsBlockFile] = useState(false);
@@ -106,7 +105,7 @@ const ProfilePopup = ({ userInfo }) => {
       className="cover_profile type2"
       style={{
         width: '100%',
-        userSelect: 'text',
+        userSelect: 'text'
       }}
     >
       <div className="innerbox">
@@ -193,7 +192,9 @@ const ProfilePopup = ({ userInfo }) => {
 
           <div className="pro-infobox">
             <dl>
-              <dt>{covi.getDic('Mobile', '휴대폰')}</dt>
+              <dt style={{ userSelect: 'none' }}>
+                {covi.getDic('Mobile', '휴대폰')}
+              </dt>
               <dd>
                 {userInfo.phoneNumber}
                 {'  '}
@@ -246,7 +247,9 @@ const ProfilePopup = ({ userInfo }) => {
               </dd>
             </dl>
             <dl>
-              <dt>{covi.getDic('Phone', '내선번호')}</dt>
+              <dt style={{ userSelect: 'none' }}>
+                {covi.getDic('Phone', '내선번호')}
+              </dt>
               <dd>
                 {userInfo.companyNumber}
                 {'  '}
@@ -298,20 +301,25 @@ const ProfilePopup = ({ userInfo }) => {
               </dd>
             </dl>
             <dl>
-              <dt>{covi.getDic('Email', '이메일')}</dt>
-              <dd>
+              <dt style={{ userSelect: 'none' }}>
+                {covi.getDic('Email', '이메일')}
+              </dt>
+              <dd style={{ wordBreak: 'break-word' }}>
                 {userInfo.mailAddress == null ? '' : userInfo.mailAddress}
               </dd>
             </dl>
             <dl>
-              <dt>{covi.getDic('Work', '담당업무')}</dt>
-              <dd>
-                <a>{userInfo.work == null ? '' : userInfo.work}</a>
+              <dt style={{ userSelect: 'none' }}>
+                {covi.getDic('Work', '담당업무')}
+              </dt>
+              <dd style={{ wordBreak: 'break-word' }}>
+                {userInfo.work == null ? '' : userInfo.work}
               </dd>
             </dl>
           </div>
         </div>
-        <div className="profile-link-btn">
+      </div>
+      <div className="profile-link-btn">
           {userInfo.id != myInfo.id && (
             <ul>
               <li className="link-btn-chat">
@@ -348,7 +356,6 @@ const ProfilePopup = ({ userInfo }) => {
             </ul>
           )}
         </div>
-      </div>
     </div>
   );
 };
