@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import querystring from 'query-string';
 import ChannelHeader from '@C/channels/channel/normal/ChannelHeader';
 import MessagePostBox from '@C/channels/channel/normal/MessagePostBox';
 import MessageList from '@C/channels/channel/normal/MessageList';
 import FileUploadBox from '@C/chat/chatroom/normal/FileUploadBox'; // 그대로 사용
 import { getConfig } from '@/lib/util/configUtil';
 import Config from '@/config/config';
-import axios from 'axios';
 
 const liveMeet = getConfig('LiveMeet');
 
@@ -75,6 +75,21 @@ const MessageView = ({
   }, []);
 
   const callLiveMeet = useCallback(() => {
+    /**
+     * 2022.07.01
+     * (모바일에서 URL 열람시 /manager 접근제어 문제)
+     * IP 접근제어가 설정된 사이트에서 화상회의 사용시
+     * liveMeet 시스템설정에 gate: `${이음톡주소}/manager/na/nf/liveMeetGate.do` 값 추가하기
+     */
+    const gateURL =
+      liveMeet?.gate || `${Config.ServerURL.HOST}/manager/liveMeetGate.do`;
+    const invitationURL = querystring.stringifyUrl({
+      url: gateURL,
+      query: {
+        type: liveMeet.type,
+        rKey: channelInfo.roomId,
+      },
+    });
     const msgObj = {
       title: covi.getDic('VideoConferencing', '화상회의'),
       context: covi.getDic(
@@ -85,7 +100,7 @@ const MessageView = ({
         name: covi.getDic('GoToPage', '페이지로 이동'),
         type: 'link',
         data: {
-          baseURL: `${Config.ServerURL.HOST}/manager/liveMeetGate.do?type=${liveMeet.type}&rKey=${channelInfo.roomId}`,
+          baseURL: invitationURL,
           params: {
             tk: { param: 'toToken#', plain: false, enc: false },
             dir: {
