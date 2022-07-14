@@ -26,7 +26,7 @@ export const chatbotsvr = (method, url, params, headers, userid = true) => {
       'Covi-User-Access-Token': localStorage.getItem('covi_user_access_token'),
       'Covi-User-Access-Version': APP_VERSION,
       'Covi-User-Device-Type':
-        DEVICE_TYPE == 'd' ? 'covision.desktop.app' : 'covision.web.app',
+        DEVICE_TYPE === 'd' ? 'covision.desktop.app' : 'covision.web.app',
       ...headers,
     },
   };
@@ -63,7 +63,7 @@ export const chatsvr = (method, url, params, headers, userid = true) => {
       'Covi-User-Access-Token': localStorage.getItem('covi_user_access_token'),
       'Covi-User-Access-Version': APP_VERSION,
       'Covi-User-Device-Type':
-        DEVICE_TYPE == 'd' ? 'covision.desktop.app' : 'covision.web.app',
+        DEVICE_TYPE === 'd' ? 'covision.desktop.app' : 'covision.web.app',
       ...headers,
     },
   };
@@ -112,7 +112,7 @@ export const managesvr = (
           'Content-Type': 'application/json; charset=utf-8',
           'Covi-User-Access-Version': APP_VERSION,
           'Covi-User-Device-Type':
-            DEVICE_TYPE == 'd' ? 'covision.desktop.app' : 'covision.web.app',
+            DEVICE_TYPE === 'd' ? 'covision.desktop.app' : 'covision.web.app',
           ...headers,
         },
         cancelToken: cancelTokenSource.token,
@@ -131,7 +131,7 @@ export const managesvr = (
         'Content-Type': 'application/json; charset=utf-8',
         'Covi-User-Access-Version': APP_VERSION,
         'Covi-User-Device-Type':
-          DEVICE_TYPE == 'd' ? 'covision.desktop.app' : 'covision.web.app',
+          DEVICE_TYPE === 'd' ? 'covision.desktop.app' : 'covision.web.app',
         ...headers,
       },
     };
@@ -167,7 +167,7 @@ export const filesvr = (
       'Content-Type': 'application/json; charset=utf-8',
       'Covi-User-Access-Version': APP_VERSION,
       'Covi-User-Device-Type':
-        DEVICE_TYPE == 'd' ? 'covision.desktop.app' : 'covision.web.app',
+        DEVICE_TYPE === 'd' ? 'covision.desktop.app' : 'covision.web.app',
       ...headers,
     },
     onDownloadProgress: downloadHandler,
@@ -196,7 +196,7 @@ export const imgsvr = (method, url, params, headers) => {
       'Content-Type': 'application/json; charset=utf-8',
       'Covi-User-Access-Version': APP_VERSION,
       'Covi-User-Device-Type':
-        DEVICE_TYPE == 'd' ? 'covision.desktop.app' : 'covision.web.app',
+        DEVICE_TYPE === 'd' ? 'covision.desktop.app' : 'covision.web.app',
       ...headers,
     },
   };

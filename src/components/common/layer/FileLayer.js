@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getSubPopData, moveContentView } from '@/lib/deviceConnector';
 import * as messageApi from '@/lib/message';
 import {
@@ -7,62 +7,17 @@ import {
   downloadByToken,
   convertFileSize,
   getOrientation,
-  // getOrientationFixedStyles,
 } from '@/lib/fileUpload/coviFile';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import Config from '@/config/config';
 import { openPopup } from '@/lib/common';
 import { format } from 'date-fns';
 import LoadingWrap from '@COMMON/LoadingWrap';
-import { getConfig } from '@/lib/util/configUtil';
-
-const fileAttachViewMode = getConfig('FileAttachViewMode');
 
 let isDown = false;
 const FileLayer = () => {
   const fileData = getSubPopData('preview');
-
-  /*
-  const fileData = {
-    file: {
-      ext: 'png',
-      fileName: 'more-options.png',
-      isImage: 'Y',
-      size: 4858,
-      thumbnail: true,
-      token: '20200529172232358_6a0a0203apys161rg31p7d',
-    },
-    files: [
-      {
-        ext: 'jpg',
-        fileName: '20191212_092710_270.jpg',
-        isImage: 'Y',
-        size: 5826,
-        thumbnail: true,
-        token: '20200529172232190_aaagp5755688014s00f03n',
-      },
-      {
-        ext: 'jpg',
-        fileName: 'profileIcon.jpg',
-        isImage: 'Y',
-        size: 20223,
-        thumbnail: true,
-        token: '20200529172232307_pu0a61gl844rlgj9wj5ulr',
-      },
-      {
-        ext: 'png',
-        fileName: 'more-options.png',
-        isImage: 'Y',
-        size: 4858,
-        thumbnail: true,
-        token: '20200529172232358_6a0a0203apys161rg31p7d',
-      },
-    ],
-    params: null,
-    type: 'L',
-  };
-  */
-
+  const filePermission = useSelector(({ login }) => login.filePermission);
   const [viewSize, setViewSize] = useState(0);
   const [previewFile, setPreviewFile] = useState(fileData.file);
   const [totalFile, setTotalFile] = useState(fileData.files);
@@ -80,69 +35,75 @@ const FileLayer = () => {
 
   const imageBox = useRef();
   const mainBox = useRef();
+
   document.onkeydown = e => {
     if (e.ctrlKey && e.code === 'KeyC' && !copyLoading) {
-      setCopyLoading(true);
-      handleCopy();
+      if (filePermission.download === 'Y') {
+        handleCopy();
+      } else {
+        openPopup(
+          {
+            type: 'Alert',
+            message: covi.getDic(
+              'Block_FileDownload',
+              '파일 다운로드가 금지되어 있습니다.',
+            ),
+          },
+          dispatch,
+        );
+      }
     }
   };
+
   const handleCopy = async () => {
-    try {
-      const response = await fetch(imageData.src);
-      const blob = await response.blob();
-      const data = new ClipboardItem({
-        ['image/png']: blob,
-      });
-      await navigator.clipboard
-        .write([data])
-        .then(() => {
-          openPopup(
-            {
-              type: 'Alert',
-              message: covi.getDic('Msg_Copy', '복사되었습니다.'),
-              callback: () => {
-                setCopyLoading(false);
-              },
-            },
-            dispatch,
-          );
-        })
-        .catch(error => {
-          openPopup(
-            {
-              type: 'Alert',
-              message: covi.getDic(
-                'Msg_Error',
-                '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
-              ),
-              callback: () => {
-                setCopyLoading(false);
-              },
-            },
-            dispatch,
-          );
+    setCopyLoading(true);
+    let message = '';
+    if (filePermission.download === 'Y') {
+      try {
+        const response = await fetch(imageData.src);
+        const blob = await response.blob();
+        const data = new ClipboardItem({
+          ['image/png']: blob,
         });
-    } catch (err) {
-      openPopup(
-        {
-          type: 'Alert',
-          message: covi.getDic(
-            'Msg_Error',
-            '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
-          ),
-          callback: () => {
-            setCopyLoading(false);
-          },
-        },
-        dispatch,
+        await navigator.clipboard
+          .write([data])
+          .then(() => {
+            message = covi.getDic('Msg_Copy', '복사되었습니다.');
+          })
+          .catch(() => {
+            message = covi.getDic(
+              'Msg_Error',
+              '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+            );
+          });
+      } catch (err) {
+        message = covi.getDic(
+          'Msg_Error',
+          '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+        );
+      }
+    } else {
+      message = covi.getDic(
+        'Block_FileDownload',
+        '파일 다운로드가 금지되어 있습니다.',
       );
     }
+    openPopup(
+      {
+        type: 'Alert',
+        message,
+        callback: () => {
+          setCopyLoading(false);
+        },
+      },
+      dispatch,
+    );
   };
 
   const handleBefore = () => {
     if (currIndex - 1 >= 0) {
       const moveIdx = currIndex - 1;
-      if (fileData.type == 'A' && totalFile[moveIdx] == null) {
+      if (fileData.type === 'A' && totalFile[moveIdx] == null) {
         setLoading(true);
         messageApi
           .getRoomImages({
@@ -191,7 +152,7 @@ const FileLayer = () => {
   const handleNext = () => {
     if (currIndex + 1 < maxIndex) {
       const moveIdx = currIndex + 1;
-      if (fileData.type == 'A' && totalFile[moveIdx] == null) {
+      if (fileData.type === 'A' && totalFile[moveIdx] == null) {
         setLoading(true);
         messageApi
           .getRoomImages({
@@ -235,29 +196,32 @@ const FileLayer = () => {
   };
 
   const handleSave = () => {
-    const download = downloadByToken(
-      previewFile.token,
-      previewFile.fileName,
-      data => {
-        if (data.result != 'SUCCESS') {
-          openPopup(
-            {
-              type: 'Alert',
-              message: data.message,
-            },
-            dispatch,
-          );
-        } else {
-          openPopup(
-            {
-              type: 'Alert',
-              message: covi.getDic('Msg_Save', '저장되었습니다.'),
-            },
-            dispatch,
-          );
+    if (filePermission.download === 'Y') {
+      downloadByToken(previewFile.token, previewFile.fileName, data => {
+        let message = covi.getDic('Msg_Save', '저장되었습니다.');
+        if (data.result !== 'SUCCESS') {
+          message = data.message;
         }
-      },
-    );
+        openPopup(
+          {
+            type: 'Alert',
+            message,
+          },
+          dispatch,
+        );
+      });
+    } else {
+      openPopup(
+        {
+          type: 'Alert',
+          message: covi.getDic(
+            'Block_FileDownload',
+            '파일 다운로드가 금지되어 있습니다.',
+          ),
+        },
+        dispatch,
+      );
+    }
   };
 
   const handleInfo = () => {
@@ -288,11 +252,11 @@ const FileLayer = () => {
 
   const handleMoveContent = () => {
     messageApi.getFileInfo({ fileId: previewFile.token }).then(({ data }) => {
-      if (data.status == 'SUCCESS') {
+      if (data.status === 'SUCCESS') {
         moveContentView(data.result.roomID, {
           moveId: data.result.messageID,
           roomId: data.result.roomID,
-          isChannel: data.result.roomType == 'C',
+          isChannel: data.result.roomType === 'C',
         });
       }
     });
@@ -300,7 +264,7 @@ const FileLayer = () => {
 
   useEffect(() => {
     const firstLoad = async () => {
-      if (fileData.type == 'L' && fileData.files) {
+      if (fileData.type === 'L' && fileData.files) {
         let findIndex = -1;
         totalFile.forEach((item, index) => {
           if (item.token == previewFile.token) {
@@ -314,7 +278,7 @@ const FileLayer = () => {
         }
 
         setMaxIndex(totalFile.length);
-      } else if (fileData.type == 'A') {
+      } else if (fileData.type === 'A') {
         // 파일 관련 정보 load 및 state 세팅
 
         const response = await messageApi.getRoomImages({
@@ -382,8 +346,6 @@ const FileLayer = () => {
 */
     firstLoad();
 
-    console.log('monted');
-
     window.onmousewheel = event => {
       if (event.ctrlKey == true) {
         event.preventDefault();
@@ -396,7 +358,7 @@ const FileLayer = () => {
       }
     };
 
-    window.onresize = event => {
+    window.onresize = () => {
       handleViewCenter();
     };
 
@@ -404,7 +366,7 @@ const FileLayer = () => {
       event.preventDefault();
     };
 
-    imageBox.current.onmousedown = event => {
+    imageBox.current.onmousedown = () => {
       isDown = true;
     };
 
@@ -434,7 +396,7 @@ const FileLayer = () => {
       }
     };
 
-    imageBox.current.onmouseup = event => {
+    imageBox.current.onmouseup = () => {
       isDown = false;
     };
 
@@ -602,7 +564,7 @@ const FileLayer = () => {
             height={200}
           ></img>
         </div>
-        {(fileData.type == 'L' || fileData.type == 'A') && (
+        {(fileData.type === 'L' || fileData.type === 'A') && (
           <>
             <span className="image-view-number">{`(${
               currIndex + 1
@@ -627,28 +589,27 @@ const FileLayer = () => {
             <button
               type="button"
               className="zoomin"
-              onClick={e => handleViewSize(1)}
+              onClick={() => handleViewSize(1)}
               disabled={loading}
               title={covi.getDic('ZoomIn', '확대')}
             ></button>
             <button
               type="button"
               className="zoomout"
-              onClick={e => handleViewSize(-1)}
+              onClick={() => handleViewSize(-1)}
               disabled={loading}
               title={covi.getDic('ZoomOut', '축소')}
             ></button>
-            {fileAttachViewMode &&
-              fileAttachViewMode[0].type === 'PC' &&
-              fileAttachViewMode[0].Download === true && (
-                <button
-                  type="button"
-                  className="download"
-                  onClick={handleSave}
-                  disabled={loading}
-                  title={covi.getDic('Save', '저장')}
-                ></button>
-              )}
+            <button
+              type="button"
+              className="download"
+              onClick={handleSave}
+              disabled={loading}
+              title={covi.getDic('Save', '저장')}
+            ></button>
+            {/**
+             * 일체형 SVG라서 permission 정책에 따라 없애지 않음.
+             */}
             <button
               type="button"
               className="clipboard"

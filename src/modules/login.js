@@ -45,6 +45,9 @@ import { getChineseWall } from '@/lib/orgchart';
 
 import { getConfig } from '@/lib/util/configUtil';
 
+const MobileDetect = require('mobile-detect'),
+  agentDetect = new MobileDetect(window.navigator.userAgent);
+
 const [LOGIN_REQUEST, LOGIN_REQUEST_SUCCESS, LOGIN_REQUEST_FAILURE] =
   createRequestActionTypes('login/REQUEST');
 
@@ -81,6 +84,7 @@ const RESYNC = 'login/RESYNC';
 
 const SET_CHINESEWALL = 'login/SET_CHINESEWALL';
 const PRE_LOGIN_SUCCESS = 'login/PRE_LOGIN_SUCCESS';
+const SET_FILE_PERMISSION = 'login/SET_FILE_PERMISSION';
 
 export const loginRequest = createAction(LOGIN_REQUEST);
 export const extLoginRequest = createAction(EXT_LOGIN_REQUEST);
@@ -102,6 +106,8 @@ export const reSync = createAction(RESYNC);
 export const setChineseWall = createAction(SET_CHINESEWALL);
 
 export const preLoginSuccess = createAction(PRE_LOGIN_SUCCESS);
+
+export const setFilePermission = createAction(SET_FILE_PERMISSION);
 
 function createLoginRequestSaga(loginType, syncType) {
   const SUCCESS = `${loginType}_SUCCESS`;
@@ -169,6 +175,17 @@ function createLoginRequestSaga(loginType, syncType) {
               });
             }
             yield put(setChineseWall(chineseWall));
+
+            // 파일 다운로드 권한
+            const useFilePermission =
+              getConfig('UseFilePermission', 'N') === 'Y';
+            let filePermission = {};
+            if (useFilePermission) {
+              filePermission = yield call(loginApi.getFilePermission, {
+                userId: response.data.result.id,
+              }) || {};
+            }
+            yield put(setFilePermission(filePermission));
 
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
@@ -353,6 +370,17 @@ function createExtLoginRequestSaga(loginType, syncType) {
             }
             yield put(setChineseWall(chineseWall));
 
+            // 파일 다운로드 권한
+            const useFilePermission =
+              getConfig('UseFilePermission', 'N') === 'Y';
+            let filePermission = {};
+            if (useFilePermission) {
+              filePermission = yield call(loginApi.getFilePermission, {
+                userId: response.data.result.id,
+              }) || {};
+            }
+            yield put(setFilePermission(filePermission));
+
             // 2. 동기화 정보 세팅
             // TODO: AppData 저장 여부값 조건 추가 필요
             if (DEVICE_TYPE === 'd') {
@@ -499,8 +527,17 @@ function createSyncTokenRequestSaga(type) {
           const { chineseWall, blockList } = result;
           yield put(setChineseWall({ chineseWall, blockList }));
 
-          // login 후처리 시작
+          // 파일 다운로드 권한
+          const useFilePermission = getConfig('UseFilePermission', 'N') === 'Y';
+          let filePermission = {};
+          if (useFilePermission) {
+            filePermission = yield call(loginApi.getFilePermission, {
+              userId: authData.id,
+            }) || {};
+          }
+          yield put(setFilePermission(filePermission));
 
+          // login 후처리 시작
           if (action.payload.sync) {
             // Store 세팅
             yield put(startLoading(type));
@@ -657,6 +694,11 @@ const initialState = {
   socketConnect: 'NC',
   chineseWall: null,
   blockList: null,
+  filePermission: {
+    viewer: 'Y',
+    download: 'Y',
+    network: 'external',
+  },
 };
 
 const login = handleActions(
@@ -741,6 +783,7 @@ const login = handleActions(
           draft.registDate = action.payload.createDate;
           draft.chineseWall = action.payload.chineseWall;
           draft.blockList = action.payload.blockList;
+          draft.filePermission = action.payload.filePermission;
         } else {
           draft.authFail = true;
           draft.token = '';
@@ -817,6 +860,35 @@ const login = handleActions(
         } else {
           draft.chineseWall = [];
           draft.blockList = [];
+        }
+      });
+    },
+    [SET_FILE_PERMISSION]: (state, action) => {
+      return produce(state, draft => {
+        /**
+         * filePermission 값이 없으면 기존에 사용하던
+         * FileAttachViewMode config 값으로 filePermission 사용.
+         */
+        // 기존 Synap viewer 설정 값
+        const fileAttachViewMode = getConfig('FileAttachViewMode');
+        const fileAttachViewModeConfig = !agentDetect.mobile()
+          ? fileAttachViewMode[0]
+          : fileAttachViewMode[1];
+
+        if (fileAttachViewModeConfig) {
+          draft.filePermission = {
+            download: fileAttachViewModeConfig?.Download ? 'Y' : 'N',
+            viewer: fileAttachViewModeConfig?.Viewer ? 'Y' : 'N',
+          };
+        } else {
+          draft.filePermission = {
+            download: 'Y',
+            viewer: 'Y',
+          };
+        }
+        const { data } = action.payload;
+        if (data?.result) {
+          draft.filePermission = data.result;
         }
       });
     },

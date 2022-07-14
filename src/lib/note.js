@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import LRU from 'lru-cache';
+import { getConfig } from './util/configUtil';
 import useSWR from 'swr';
 import qs from 'qs';
 import produce from 'immer';
@@ -323,10 +323,15 @@ export function downloadFile({
     return null;
   }
 
+  const useFilePermission = getConfig('UseFilePermission', 'N') === 'Y';
+  const url = useFilePermission
+    ? `/na/download/permission/${module}/${userId}/${accessKey}/${serviceType}`
+    : `/na/download/${module}/${userId}/${accessKey}/${serviceType}`;
+
   //GET module userId accesskey serviceType
   return filesvr(
     'get',
-    `/na/download/${module}/${userId}/${accessKey}/${serviceType}`,
+    url,
     // `/download/${accessKey}`,
     {},
     {},
@@ -339,6 +344,7 @@ export async function makeZipFile(userId = null, files, handleProgress = null) {
   const serviceType = 'NOTE';
   const module = 'CR';
   const JSZip = require('jszip')();
+  const useFilePermission = getConfig('UseFilePermission', 'N') === 'Y';
 
   // 모든 파일 size 합
   const totalSize = files.reduce((acc, cur) => {
@@ -348,23 +354,20 @@ export async function makeZipFile(userId = null, files, handleProgress = null) {
   const results = await files.reduce(
     (prevPrms, currElem, i) =>
       prevPrms.then(async prevRes => {
-        const currRes = await filesvr(
-          'get',
-          `/na/download/${module}/${userId}/${currElem.fileID}/${serviceType}`,
-          {},
-          {},
-          e => {
-            let { loaded } = e;
-            if (typeof handleProgress === 'function') {
-              // 현재 진행파일 이전 파일들의 size 합
-              const completeSize = files.reduce((acc, cur, j) => {
-                return i > j ? (acc += cur.fileSize) : acc;
-              }, 0);
+        const url = useFilePermission
+          ? `/na/download/permission/${module}/${userId}/${currElem.fileID}/${serviceType}`
+          : `/na/download/${module}/${userId}/${currElem.fileID}/${serviceType}`;
+        const currRes = await filesvr('get', url, {}, {}, e => {
+          let { loaded } = e;
+          if (typeof handleProgress === 'function') {
+            // 현재 진행파일 이전 파일들의 size 합
+            const completeSize = files.reduce((acc, cur, j) => {
+              return i > j ? (acc += cur.fileSize) : acc;
+            }, 0);
 
-              handleProgress(loaded + completeSize, totalSize);
-            }
-          },
-        );
+            handleProgress(loaded + completeSize, totalSize);
+          }
+        });
         currRes.fileName = currElem.fileName;
         return [...prevRes, currRes];
       }),

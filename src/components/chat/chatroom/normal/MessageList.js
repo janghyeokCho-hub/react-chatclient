@@ -479,34 +479,20 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                   files = Array(files);
                 }
                 files = files.map(item => item.token);
-                const result = await checkFileTokenValidation({
+                const { status } = await checkFileTokenValidation({
                   token: files,
                   serviceType: 'CHAT',
                 });
-                if (result.status === 204) {
-                  openPopup(
-                    {
-                      type: 'Alert',
-                      message: covi.getDic('Msg_FileExpired'),
-                    },
-                    dispatch,
-                  );
-                  return;
-                } else if (result.status === 403) {
-                  openPopup(
-                    {
-                      type: 'Alert',
-                      message: covi.getDic('Msg_FilePermission'),
-                    },
-                    dispatch,
-                  );
-                  return;
-                } else {
+
+                if (status === 200) {
                   openLayer(
                     {
                       component: (
                         <ShareContainer
-                          headerName={covi.getDic('Msg_Note_Forward')}
+                          headerName={covi.getDic(
+                            'Msg_Note_Forward',
+                            '전달하기',
+                          )}
                           message={message}
                           context={message.context}
                           messageType={messageType}
@@ -515,9 +501,34 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                     },
                     dispatch,
                   );
+                } else {
+                  let popupMsg = '';
+                  if (status === 204) {
+                    popupMsg = covi.getDic(
+                      'Msg_FileExpired',
+                      '만료된 파일입니다.',
+                    );
+                  } else if (status === 403) {
+                    popupMsg = covi.getDic(
+                      'Block_FileDownload',
+                      '파일 다운로드가 금지되어 있습니다.',
+                    );
+                  } else {
+                    popupMsg = covi.getDic(
+                      'Msg_Error',
+                      '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+                    );
+                  }
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: popupMsg,
+                    },
+                    dispatch,
+                  );
                 }
               },
-              name: covi.getDic('Forward'),
+              name: covi.getDic('Forward', '전달'),
             });
             if (useBookmark === true) {
               menus.push({

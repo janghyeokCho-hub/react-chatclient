@@ -1,4 +1,5 @@
 import { chatsvr, chatbotsvr, managesvr, filesvr, imgsvr } from '@/lib/api';
+import { getConfig } from './util/configUtil';
 
 export const sendMessage = params => {
   if (params.roomType === 'B') {
@@ -96,7 +97,11 @@ export const getOriginalImage = params => {
 };
 
 export const getFileByToken = (params, downloadHandler) => {
-  return filesvr('get', `/download/${params.token}`, {}, {}, downloadHandler);
+  const useFilePermission = getConfig('UseFilePermission', 'N') === 'Y';
+  const url = useFilePermission
+    ? `/download/permission/${params.token}`
+    : `/download/${params.token}`;
+  return filesvr('get', url, {}, {}, downloadHandler);
 };
 
 export const getURLThumbnail = params => {
@@ -222,25 +227,17 @@ export const getChannelMentionList = params => {
 
 //책갈피
 //책갈피 리스트 조회
-export const getBookmarkList= params => {
-  return managesvr(
-    'get',
-    `/bookmark/${params}`,
-  );
+export const getBookmarkList = params => {
+  return managesvr('get', `/bookmark/${params}`);
 };
 
 //책갈피 삭제
-export const deleteBookmark= params => {
-  return managesvr(
-    'delete',
-    `/bookmark/${params.roomId}/${params.bookmarkId}`,
-  );
+export const deleteBookmark = params => {
+  return managesvr('delete', `/bookmark/${params.roomId}/${params.bookmarkId}`);
 };
-
 
 //책갈피 등록
 
-export const createBookmark= params => {
-    return managesvr('post', `/bookmark`, params);
+export const createBookmark = params => {
+  return managesvr('post', `/bookmark`, params);
 };
-
