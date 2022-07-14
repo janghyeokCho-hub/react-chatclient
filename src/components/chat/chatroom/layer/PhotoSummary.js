@@ -23,10 +23,13 @@ import { format } from 'date-fns';
 import Progress from '@C/common/buttons/Progress';
 import { isBlockCheck } from '@/lib/orgchart';
 
-// [0] PC [1] MOBILE
-const downloadOption = getConfig('FileAttachViewMode') || [];
-
-const PhotoList = ({ photos, onSelect, selectMode, handleProgress }) => {
+const PhotoList = ({
+  photos,
+  onSelect,
+  selectMode,
+  handleProgress,
+  filePermission,
+}) => {
   return (
     <ul className="photo-list">
       {photos &&
@@ -37,6 +40,7 @@ const PhotoList = ({ photos, onSelect, selectMode, handleProgress }) => {
             onSelect={onSelect}
             selectMode={selectMode}
             handleProgress={handleProgress}
+            filePermission={filePermission}
           ></Photo>
         ))}
     </ul>
@@ -68,7 +72,13 @@ const drawThumbnail = photo => {
   );
 };
 
-const Photo = ({ photo, onSelect, selectMode, handleProgress }) => {
+const Photo = ({
+  photo,
+  onSelect,
+  selectMode,
+  handleProgress,
+  filePermission,
+}) => {
   const [check, setCheck] = useState(false);
   const dispatch = useDispatch();
 
@@ -143,7 +153,7 @@ const Photo = ({ photo, onSelect, selectMode, handleProgress }) => {
         },
       ];
       // 파일 다운로드 허용일 경우에만 다운로드 옵션 노출
-      if (!downloadOption.length || downloadOption[0].Download === true) {
+      if (filePermission.download === 'Y') {
         buttonArrs.push({
           name: covi.getDic('Download', '다운로드'),
           callback: () => {
@@ -241,6 +251,7 @@ const PhotoSummary = ({ roomId }) => {
   const dispatch = useDispatch();
   const loadCnt = 30;
 
+  const filePermission = useSelector(({ login }) => login.filePermission);
   const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [select, setSelect] = useState(false);
   const [selectItems, setSelectItems] = useState([]);
@@ -260,16 +271,11 @@ const PhotoSummary = ({ roomId }) => {
 
       if (selectItems.length) {
         // 다운로드가 금지되어 있는 경우
-        if (downloadOption.length && downloadOption[0].Download === false) {
-          openPopup(
-            {
-              type: 'Alert',
-              message: covi.getDic(
-                'Block_FileDownload',
-                '파일 다운로드가 금지되어 있습니다.',
-              ),
-            },
-            dispatch,
+        let message = covi.getDic('Msg_Save', '저장되었습니다.');
+        if (filePermission.download === 'N') {
+          message = covi.getDic(
+            'Block_FileDownload',
+            '파일 다운로드가 금지되어 있습니다.',
           );
         }
         // TODO: 차후 멀티다운로드로 수정 필요
@@ -282,40 +288,27 @@ const PhotoSummary = ({ roomId }) => {
             selectItems.length > 1,
             handleProgress,
           );
-          if (resp?.result) {
-            openPopup(
-              {
-                type: 'Alert',
-                message: covi.getDic('Msg_Save', '저장되었습니다.'),
-              },
-              dispatch,
-            );
-          } else {
-            openPopup(
-              {
-                type: 'Alert',
-                message: resp.data.message,
-              },
-              dispatch,
-            );
+          if (!resp?.result) {
+            message = resp.data.message;
           }
           // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
           setProgressData(null);
         } else {
-          openPopup(
-            {
-              type: 'Alert',
-              message: getSysMsgFormatStr(
-                covi.getDic(
-                  'Tmp_saveLimitCnt',
-                  '%s개 이상 다운로드할 수 없습니다.',
-                ),
-                [{ type: 'Plain', data: '15' }],
-              ),
-            },
-            dispatch,
+          message = getSysMsgFormatStr(
+            covi.getDic(
+              'Tmp_saveLimitCnt',
+              '%s개 이상 다운로드할 수 없습니다.',
+            ),
+            [{ type: 'Plain', data: '15' }],
           );
         }
+        openPopup(
+          {
+            type: 'Alert',
+            message,
+          },
+          dispatch,
+        );
       }
       setSelectItems([]);
     }
@@ -465,6 +458,7 @@ const PhotoSummary = ({ roomId }) => {
                 selectMode={select}
                 onSelect={handleSelectItem}
                 handleProgress={handleProgress}
+                filePermission={filePermission}
               ></PhotoList>,
             );
           }
@@ -488,6 +482,7 @@ const PhotoSummary = ({ roomId }) => {
               photos={sameDateArr}
               selectMode={select}
               onSelect={handleSelectItem}
+              filePermission={filePermission}
             ></PhotoList>,
           );
         }
@@ -504,27 +499,29 @@ const PhotoSummary = ({ roomId }) => {
           <div className="modaltit">
             <p>{covi.getDic('PhotoSummary', '사진 모아보기')}</p>
           </div>
-          {(!select && (
-            <a className="checkbtn" onClick={handleSelect}>
-              <div
-                style={{
-                  position: 'absolute',
-                  left: '-50px',
-                  fontWeight: 'bold',
-                }}
-              >
-                {covi.getDic('choosePhoto', '사진 선택')}
-              </div>
-            </a>
-          )) || (
-            <a className="Okbtn" onClick={progressData ? null : handleSelect}>
-              <span className="colortxt-point mr5">{selectItems.length}</span>
-              {selectItems.length > 1
-                ? covi.getDic('AllSave', '일괄저장')
-                : covi.getDic('Save', '저장')}
-            </a>
-          )}
+          {filePermission.download === 'Y' &&
+            ((!select && (
+              <a className="checkbtn" onClick={handleSelect}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '-50px',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {covi.getDic('choosePhoto', '사진 선택')}
+                </div>
+              </a>
+            )) || (
+              <a className="Okbtn" onClick={progressData ? null : handleSelect}>
+                <span className="colortxt-point mr5">{selectItems.length}</span>
+                {selectItems.length > 1
+                  ? covi.getDic('AllSave', '일괄저장')
+                  : covi.getDic('Save', '저장')}
+              </a>
+            ))}
         </div>
+
         {(files?.length && (
           <Scrollbars
             className="container"

@@ -3,9 +3,9 @@ import { chatsvr, managesvr } from '@/lib/api';
 import { getConfig } from './util/configUtil';
 import { getAesUtil } from '@/lib/aesUtil';
 
-/** 
+/**
  * Login wrapper for processing MAC address in desktop
-*/
+ */
 async function _loginRequest(method, path, params) {
   const headers = {};
   if (DEVICE_TYPE === 'd') {
@@ -13,7 +13,7 @@ async function _loginRequest(method, path, params) {
     // Get MAC address from electron-main
     const addr = await evalConnector({
       method: 'invoke',
-      channel: 'req-mac-address'
+      channel: 'req-mac-address',
     });
     if (addr) {
       headers['Covi-User-Device-MAC'] = AESUtil.encrypt(addr);
@@ -62,6 +62,14 @@ export const loginValidationRequest = params => {
   return _loginRequest('post', '/na/m/loginVali', params);
 };
 
-export const getSystemConfigSaaS = (params) => {
+export const getSystemConfigSaaS = params => {
   return managesvr('post', '/na/saas/config', params);
-}
+};
+
+export const getFilePermission = async ({ userId }) => {
+  try {
+    return await managesvr('get', `/file/permission/${userId}`);
+  } catch (e) {
+    return {};
+  }
+};

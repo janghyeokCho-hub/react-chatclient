@@ -451,7 +451,9 @@ export const downloadByTokenAll = async (
    */
   const savePath = await getDownloadPath({ mode: 'open' });
   // 다운로드 경로지정 dialog을 닫은경우 다운로드 실행하지 않음
-  if (DEVICE_TYPE === 'd' && savePath?.canceled) return null;
+  if (DEVICE_TYPE === 'd' && savePath?.canceled) {
+    return null;
+  }
   if (savePath?.filePath && !savePath?.filePaths) {
     /**
      * 2021.10.19
@@ -465,51 +467,63 @@ export const downloadByTokenAll = async (
 
   let check = true;
   let message = '';
-  const results = await checkByTokens(fileItems, handleProgress);
 
-  // 모두 만료된 파일인가 확인
-  const expiredCheck = results.every(result => {
-    return result.status === 204;
-  });
-  // 모두 권한이 없는 파일인가 확인
-  const permissionCheck = results.every(result => {
-    return result.status === 403;
-  });
+  try {
+    const results = await checkByTokens(fileItems, handleProgress);
+    // 모두 만료된 파일인가 확인
+    const expiredCheck = results.every(result => {
+      return result.status === 204;
+    });
 
-  if (expiredCheck) {
-    check = false;
-    message = covi.getDic('Msg_FileExpired', '만료된 파일입니다.');
-  } else if (permissionCheck) {
-    check = false;
-    message = covi.getDic('Msg_FilePermission', '권한이 없는 파일입니다.');
-  } else {
-    // 압축 여부
-    if (isZip) {
-      const JSZip = await makeZipFile(results);
-      if (Object.keys(JSZip?.files).length) {
-        const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
-        JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
-          if (DEVICE_TYPE == 'b') {
-            fileDownload(data, fileName);
+    if (expiredCheck) {
+      check = false;
+      message = covi.getDic('Msg_FileExpired', '만료된 파일입니다.');
+    } else {
+      // 압축 여부
+      if (isZip) {
+        const JSZip = await makeZipFile(results);
+        if (Object.keys(JSZip?.files).length) {
+          const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
+          JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
+            if (DEVICE_TYPE === 'b') {
+              fileDownload(data, fileName);
+            } else {
+              saveFile(savePath?.filePaths, fileName, data, { isZip: true });
+            }
+          });
+        }
+      } else {
+        // 한 개만 있지만 배열 형태임
+        results.map(resilt => {
+          if (DEVICE_TYPE === 'b') {
+            fileDownload(resilt.data, resilt.fileName);
           } else {
-            saveFile(savePath?.filePaths, fileName, data, { isZip: true });
+            saveFile(savePath?.filePaths, resilt.fileName, resilt.data, {
+              isZip: false,
+            });
           }
         });
       }
-    } else {
-      // 한 개만 있지만 배열 형태임
-      results.map(resilt => {
-        if (DEVICE_TYPE == 'b') {
-          fileDownload(resilt.data, resilt.fileName);
-        } else {
-          saveFile(savePath?.filePaths, resilt.fileName, resilt.data, {
-            isZip: false,
-          });
-        }
-      });
+      check = true;
+      message = covi.getDic('Msg_Save', '저장되었습니다.');
     }
+  } catch (e) {
+    if (e.response.status === 403) {
+      check = false;
+      message = covi.getDic(
+        'Block_FileDownload',
+        '파일 다운로드가 금지되어 있습니다.',
+      );
+    } else {
+      check = false;
+      message = covi.getDic(
+        'Msg_Error',
+        '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+      );
+    }
+  } finally {
+    return { result: check, data: { message } };
   }
-  return { result: check, data: { message } };
 };
 
 const downloadFiles = (
@@ -523,31 +537,53 @@ const downloadFiles = (
   if (!typeof progress == 'function') {
     progress = null;
   }
-
-  messageApi.getFileByToken({ token }, progress).then(response => {
-    if (response.status == 204) {
-      callback({
-        result: 'EXPIRED',
-        message: covi.getDic('Msg_FileExpired', '만료된 파일입니다.'),
-      });
-    } else if (response.status == 403) {
-      callback({
-        result: 'FORBIDDEN',
-        message: covi.getDic('Msg_FilePermission', '권한이 없는 파일입니다.'),
-      });
-    } else {
-      if (DEVICE_TYPE == 'b') {
-        fileDownload(response.data, fileName);
+  const popupMsg = {
+    result: '',
+    message: '',
+  };
+  messageApi
+    .getFileByToken({ token }, progress)
+    .then(response => {
+      if (response.status == 204) {
+        popupMsg.result = 'EXPIRED';
+        popupMsg.message = covi.getDic('Msg_FileExpired', '만료된 파일입니다.');
+      } else if (response.status == 403) {
+        popupMsg.result = 'FORBIDDEN';
+        popupMsg.message = covi.getDic(
+          'Block_FileDownload',
+          '파일 다운로드가 금지되어 있습니다.',
+        );
       } else {
-        saveFile(savePath, fileName, response.data, {
-          execute: execute,
-          token: token,
-          isZip: false,
-        });
+        if (DEVICE_TYPE == 'b') {
+          fileDownload(response.data, fileName);
+        } else {
+          saveFile(savePath, fileName, response.data, {
+            execute: execute,
+            token: token,
+            isZip: false,
+          });
+        }
+        popupMsg.result = 'SUCCESS';
+        popupMsg.message = covi.getDic('Msg_Save', '저장되었습니다.');
       }
-      callback({ result: 'SUCCESS', message: '' });
-    }
-  });
+      callback(popupMsg);
+    })
+    .catch(e => {
+      if (e?.response?.status == 403) {
+        popupMsg.result = 'FORBIDDEN';
+        popupMsg.message = covi.getDic(
+          'Block_FileDownload',
+          '파일 다운로드가 금지되어 있습니다.',
+        );
+      } else {
+        popupMsg.result = 'ERROR';
+        popupMsg.message = covi.getDic(
+          'Msg_Error',
+          '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+        );
+      }
+      callback(popupMsg);
+    });
 };
 
 export const checkFileTokenValidation = async ({ token, serviceType }) => {
@@ -563,8 +599,9 @@ export const downloadByToken = async (
   execute,
 ) => {
   const savePath = await getDownloadPath({ defaultFileName: fileName });
-  if (DEVICE_TYPE === 'd' && savePath?.canceled) return null;
-  else
+  if (DEVICE_TYPE === 'd' && savePath?.canceled) {
+    return null;
+  } else {
     downloadFiles(
       token,
       savePath?.filePath,
@@ -573,6 +610,7 @@ export const downloadByToken = async (
       progress,
       execute,
     );
+  }
 };
 
 export const downloadMessageData = async ({
