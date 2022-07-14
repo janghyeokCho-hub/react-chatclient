@@ -316,32 +316,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                   serviceType: 'CHAT',
                 });
 
-                let popMessage = null;
-                switch (status) {
-                  case 204:
-                    popMessage = covi.getDic(
-                      'Msg_FileExpired',
-                      '만료된 파일입니다.',
-                    );
-                    break;
-                  case 403:
-                    popMessage = covi.getDic(
-                      'Msg_FilePermission',
-                      '권한이 없는 파일입니다.',
-                    );
-                    break;
-                }
-
-                if (popMessage) {
-                  openPopup(
-                    {
-                      type: 'Alert',
-                      message: popMessage,
-                    },
-                    dispatch,
-                  );
-                  return;
-                } else {
+                if (status === 200) {
                   openLayer(
                     {
                       component: (
@@ -355,6 +330,32 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                           messageType={messageType}
                         />
                       ),
+                    },
+                    dispatch,
+                  );
+                  return;
+                } else {
+                  let popupMsg = '';
+                  if (result.status === 204) {
+                    popupMsg = covi.getDic(
+                      'Msg_FileExpired',
+                      '만료된 파일입니다.',
+                    );
+                  } else if (result.status === 403) {
+                    popupMsg = covi.getDic(
+                      'Block_FileDownload',
+                      '파일 다운로드가 금지되어 있습니다.',
+                    );
+                  } else {
+                    popupMsg = covi.getDic(
+                      'Msg_Error',
+                      '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+                    );
+                  }
+                  openPopup(
+                    {
+                      type: 'Alert',
+                      message: popupMsg,
                     },
                     dispatch,
                   );

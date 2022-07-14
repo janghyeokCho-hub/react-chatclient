@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import File from '@C/chat/message/types/file';
 import Progress from '@C/common/buttons/Progress';
 import { convertFileSize } from '@/lib/fileUpload/coviFile';
@@ -9,6 +9,7 @@ import { isAllImage, downloadByTokenAll } from '@/lib/fileUpload/coviFile';
 import FileThumbList from '@C/chat/message/types/FileThumbList';
 
 const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
+  const filePermission = useSelector(({ login }) => login.filePermission);
   const [progressData, setProgressData] = useState(null);
   const dispatch = useDispatch();
   const handleFileList = fileObj => {
@@ -34,23 +35,25 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
                 />
               );
             })}
-            <li>
-              <span className="file-func-list">
-                <span
-                  className="file-func-txt"
-                  onClick={progressData ? null : handleAllDownLoad}
-                >
-                  {progressData
-                    ? `${covi.getDic(
-                        'Downloading',
-                        '다운로드중',
-                      )} ( ${convertFileSize(
-                        progressData.load,
-                      )} / ${convertFileSize(progressData.total)} )`
-                    : covi.getDic('AllSave', '일괄저장')}
+            {filePermission.download === 'Y' && (
+              <li>
+                <span className="file-func-list">
+                  <span
+                    className="file-func-txt"
+                    onClick={progressData ? null : handleAllDownLoad}
+                  >
+                    {progressData
+                      ? `${covi.getDic(
+                          'Downloading',
+                          '다운로드중',
+                        )} ( ${convertFileSize(
+                          progressData.load,
+                        )} / ${convertFileSize(progressData.total)} )`
+                      : covi.getDic('AllSave', '일괄저장')}
+                  </span>
                 </span>
-              </span>
-            </li>
+              </li>
+            )}
 
             {progressData && (
               <li>
@@ -90,23 +93,25 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
                 />
               );
             })}
-            <li>
-              <span className="file-func-list">
-                <span
-                  className="file-func-txt"
-                  onClick={progressData ? null : handleAllDownLoad}
-                >
-                  {progressData
-                    ? `${covi.getDic(
-                        'Downloading',
-                        '다운로드중',
-                      )} ( ${convertFileSize(
-                        progressData.load,
-                      )} / ${convertFileSize(progressData.total)} )`
-                    : covi.getDic('AllSave', '일괄저장')}
+            {filePermission.download === 'Y' && (
+              <li>
+                <span className="file-func-list">
+                  <span
+                    className="file-func-txt"
+                    onClick={progressData ? null : handleAllDownLoad}
+                  >
+                    {progressData
+                      ? `${covi.getDic(
+                          'Downloading',
+                          '다운로드중',
+                        )} ( ${convertFileSize(
+                          progressData.load,
+                        )} / ${convertFileSize(progressData.total)} )`
+                      : covi.getDic('AllSave', '일괄저장')}
+                  </span>
                 </span>
-              </span>
-            </li>
+              </li>
+            )}
 
             {progressData && (
               <li>
@@ -156,25 +161,14 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
 
   const handleAllDownLoad = async () => {
     const resp = await downloadByTokenAll(fileObj, true, handleProgress);
-    if (resp !== null) {
-      if (!resp.result) {
-        openPopup(
-          {
-            type: 'Alert',
-            message: resp.data.message,
-          },
-          dispatch,
-        );
-      } else {
-        openPopup(
-          {
-            type: 'Alert',
-            message: covi.getDic('Msg_Save', '저장되었습니다.'),
-          },
-          dispatch,
-        );
-      }
-    }
+    openPopup(
+      {
+        type: 'Alert',
+        message: resp.data?.message,
+      },
+      dispatch,
+    );
+
     // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
     setProgressData(null);
   };

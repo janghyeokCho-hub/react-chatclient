@@ -24,9 +24,14 @@ import Progress from '@C/common/buttons/Progress';
 import { isBlockCheck } from '@/lib/orgchart';
 
 const synapDocViewServer = getConfig('SynapDocViewServer');
-const fileAttachViewMode = getConfig('FileAttachViewMode');
 
-const FileList = ({ files, onSelect, selectMode, handleProgress }) => {
+const FileList = ({
+  files,
+  onSelect,
+  selectMode,
+  handleProgress,
+  filePermission,
+}) => {
   return (
     <ul className="file-list">
       {files &&
@@ -37,13 +42,20 @@ const FileList = ({ files, onSelect, selectMode, handleProgress }) => {
             onSelect={onSelect}
             selectMode={selectMode}
             handleProgress={handleProgress}
+            filePermission={filePermission}
           ></File>
         ))}
     </ul>
   );
 };
 
-const File = ({ file, onSelect, selectMode, handleProgress }) => {
+const File = ({
+  file,
+  onSelect,
+  selectMode,
+  handleProgress,
+  filePermission,
+}) => {
   const [check, setCheck] = useState(false);
   const dispatch = useDispatch();
   const currentRoom = useSelector(({ room }) => room.currentRoom);
@@ -69,397 +81,113 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
   };
 
   const handleMenu = item => {
-    //일렉트론 다운로드o 뷰어o
-    if (
-      DEVICE_TYPE === 'd' &&
-      synapDocViewServer &&
-      fileAttachViewMode &&
-      fileAttachViewMode[0].type === 'PC' &&
-      fileAttachViewMode[0].Viewer === true &&
-      fileAttachViewMode[0].Download === true
-    ) {
-      openPopup(
-        {
-          type: 'Select',
-          buttons: [
+    const buttons = [
+      {
+        name: covi.getDic('Detail', '상세정보'),
+        callback: () => {
+          openPopup(
             {
-              name: covi.getDic('Detail', '상세정보'),
-              callback: () => {
+              type: 'Alert',
+              message: `<ul className="menulist">
+              <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+              ${covi.getDic('FileName', '파일명')} : ${
+                item.FileName
+              }</li><li>${covi.getDic('FileSize', '용량')} : ${convertFileSize(
+                item.FileSize,
+              )}</li><li>${covi.getDic('ReceiveDate', '수신일시')} : ${format(
+                new Date(item.SendDate),
+                'yyyy.MM.dd HH:mm:ss',
+              )}</li>`,
+            },
+            dispatch,
+          );
+        },
+      },
+      {
+        name: covi.getDic('ShowChat', '대화보기'),
+        callback: () => {
+          dispatch(
+            setMoveView({
+              roomID: item.RoomID,
+              moveId: item.MessageID,
+              visible: true,
+            }),
+          );
+          clearLayer(dispatch);
+        },
+      },
+    ];
+
+    if (filePermission.download === 'Y') {
+      buttons.push({
+        name: covi.getDic('Download', '다운로드'),
+        callback: () => {
+          let message = covi.getDic(
+            'Msg_DownloadSuccess',
+            '다운로드가 완료되었습니다.',
+          );
+          if (filePermission.download !== 'Y') {
+            message = covi.getDic(
+              'Block_FileDownload',
+              '파일 다운로드가 금지되어 있습니다.',
+            );
+          } else {
+            downloadByToken(
+              item.FileID,
+              item.FileName,
+              data => {
+                if (data.result !== 'SUCCESS') {
+                  message = data.message;
+                }
                 openPopup(
                   {
                     type: 'Alert',
-                    message: `<ul className="menulist">
-                    <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                    ${covi.getDic('FileName', '파일명')} : ${
-                      item.FileName
-                    }</li><li>${covi.getDic(
-                      'FileSize',
-                      '용량',
-                    )} : ${convertFileSize(
-                      item.FileSize,
-                    )}</li><li>${covi.getDic(
-                      'ReceiveDate',
-                      '수신일시',
-                    )} : ${format(
-                      new Date(item.SendDate),
-                      'yyyy.MM.dd HH:mm:ss',
-                    )}</li>`,
+                    message,
                   },
                   dispatch,
                 );
               },
-            },
-            {
-              name: covi.getDic('ShowChat', '대화보기'),
-              callback: () => {
-                dispatch(
-                  setMoveView({
-                    roomID: item.RoomID,
-                    moveId: item.MessageID,
-                    visible: true,
-                  }),
-                );
-                clearLayer(dispatch);
+              e => {
+                handleProgress(e.loaded, e.total);
               },
-            },
-            {
-              name: covi.getDic('RunViewer', '뷰어로 열기'),
-              callback: async () => {
-                await viewerApi.requestSynapViewer(dispatch, {
-                  fileId: item.FileID,
-                  ext: item.Extension,
-                  roomID,
-                });
-              },
-            },
-            {
-              name: covi.getDic('Download', '다운로드'),
-              callback: () => {
-                downloadByToken(
-                  item.FileID,
-                  item.FileName,
-                  data => {
-                    if (data.result !== 'SUCCESS') {
-                      openPopup(
-                        {
-                          type: 'Alert',
-                          message: data.message,
-                        },
-                        dispatch,
-                      );
-                    } else {
-                      openPopup(
-                        {
-                          type: 'Alert',
-                          message: covi.getDic(
-                            'Msg_DownloadSuccess',
-                            '다운로드가 완료되었습니다.',
-                          ),
-                        },
-                        dispatch,
-                      );
-                    }
-                  },
-                  e => {
-                    handleProgress(e.loaded, e.total);
-                  },
-                );
-              },
-            },
-          ],
+            );
+          }
         },
-        dispatch,
-      );
+      });
     }
-    //일렉트론 다운로드o 뷰어x
-    else if (
-      synapDocViewServer &&
-      fileAttachViewMode &&
-      fileAttachViewMode[0].type === 'PC' &&
-      fileAttachViewMode[0].Download === true
-    ) {
-      openPopup(
-        {
-          type: 'Select',
-          buttons: [
-            {
-              name: covi.getDic('Detail', '상세정보'),
-              callback: () => {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: `<ul className="menulist">
-                    <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                    ${covi.getDic('FileName', '파일명')} : ${
-                      item.FileName
-                    }</li><li>${covi.getDic(
-                      'FileSize',
-                      '용량',
-                    )} : ${convertFileSize(
-                      item.FileSize,
-                    )}</li><li>${covi.getDic(
-                      'ReceiveDate',
-                      '수신일시',
-                    )} : ${format(
-                      new Date(item.SendDate),
-                      'yyyy.MM.dd HH:mm:ss',
-                    )}</li>`,
-                  },
-                  dispatch,
-                );
+    if (DEVICE_TYPE === 'd' && filePermission.viewer === 'Y') {
+      buttons.push({
+        name: covi.getDic('RunViewer', '뷰어로 열기'),
+        callback: async () => {
+          if (filePermission.viewer !== 'Y') {
+            openPopup(
+              {
+                type: 'Alert',
+                message: covi.getDic(
+                  'Msg_FilePermission',
+                  '권한이 없는 파일입니다.',
+                ),
               },
-            },
-            {
-              name: covi.getDic('ShowChat', '대화보기'),
-              callback: () => {
-                dispatch(
-                  setMoveView({
-                    roomID: item.RoomID,
-                    moveId: item.MessageID,
-                    visible: true,
-                  }),
-                );
-                clearLayer(dispatch);
-              },
-            },
-            {
-              name: covi.getDic('Download', '다운로드'),
-              callback: () => {
-                downloadByToken(
-                  item.FileID,
-                  item.FileName,
-                  data => {
-                    if (data.result != 'SUCCESS') {
-                      openPopup(
-                        {
-                          type: 'Alert',
-                          message: data.message,
-                        },
-                        dispatch,
-                      );
-                    } else {
-                      openPopup(
-                        {
-                          type: 'Alert',
-                          message: covi.getDic(
-                            'Msg_DownloadSuccess',
-                            '다운로드가 완료되었습니다.',
-                          ),
-                        },
-                        dispatch,
-                      );
-                    }
-                  },
-                  e => {
-                    handleProgress(e.loaded, e.total);
-                  },
-                );
-              },
-            },
-          ],
+              dispatch,
+            );
+          } else {
+            await viewerApi.requestSynapViewer(dispatch, {
+              fileId: item.FileID,
+              ext: item.Extension,
+              roomID,
+            });
+          }
         },
-        dispatch,
-      );
+      });
     }
-    //일렉트론 다운로드x 뷰어o
-    else if (
-      DEVICE_TYPE === 'd' &&
-      synapDocViewServer &&
-      fileAttachViewMode &&
-      fileAttachViewMode[0].type === 'PC' &&
-      fileAttachViewMode[0].Viewer === true
-    ) {
-      openPopup(
-        {
-          type: 'Select',
-          buttons: [
-            {
-              name: covi.getDic('Detail', '상세정보'),
-              callback: () => {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: `<ul className="menulist">
-                    <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                    ${covi.getDic('FileName', '파일명')} : ${
-                      item.FileName
-                    }</li><li>${covi.getDic(
-                      'FileSize',
-                      '용량',
-                    )} : ${convertFileSize(
-                      item.FileSize,
-                    )}</li><li>${covi.getDic(
-                      'ReceiveDate',
-                      '수신일시',
-                    )} : ${format(
-                      new Date(item.SendDate),
-                      'yyyy.MM.dd HH:mm:ss',
-                    )}</li>`,
-                  },
-                  dispatch,
-                );
-              },
-            },
-            {
-              name: covi.getDic('ShowChat', '대화보기'),
-              callback: () => {
-                dispatch(
-                  setMoveView({
-                    roomID: item.RoomID,
-                    moveId: item.MessageID,
-                    visible: true,
-                  }),
-                );
-                clearLayer(dispatch);
-              },
-            },
-            {
-              name: covi.getDic('RunViewer', '뷰어로 열기'),
-              callback: async () => {
-                await viewerApi.requestSynapViewer(dispatch, {
-                  fileId: item.FileID,
-                  ext: item.Extension,
-                  roomID,
-                });
-              },
-            },
-          ],
-        },
-        dispatch,
-      );
-    }
-    //브라우저(브라우저에서는 뷰어 안되니) 다운로드x
-    else if (
-      synapDocViewServer &&
-      fileAttachViewMode &&
-      fileAttachViewMode[0].type === 'PC' &&
-      fileAttachViewMode[0].Viewer === true
-    ) {
-      openPopup(
-        {
-          type: 'Select',
-          buttons: [
-            {
-              name: covi.getDic('Detail', '상세정보'),
-              callback: () => {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: `<ul className="menulist">
-                  <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                  ${covi.getDic('FileName')} : ${
-                      item.FileName
-                    }</li><li>${covi.getDic('FileSize')} : ${convertFileSize(
-                      item.FileSize,
-                    )}</li><li>${covi.getDic('ReceiveDate')} : ${format(
-                      new Date(item.SendDate),
-                      'yyyy.MM.dd HH:mm:ss',
-                    )}</li>`,
-                  },
-                  dispatch,
-                );
-              },
-            },
-            {
-              name: covi.getDic('ShowChat'),
-              callback: () => {
-                dispatch(
-                  setMoveView({
-                    roomID: item.RoomID,
-                    moveId: item.MessageID,
-                    visible: true,
-                  }),
-                );
-                clearLayer(dispatch);
-              },
-            },
-          ],
-        },
-        dispatch,
-      );
-    }
-    // 브라우저 다운로드o
-    else if (
-      synapDocViewServer &&
-      fileAttachViewMode &&
-      fileAttachViewMode[0].type === 'PC'
-    ) {
-      openPopup(
-        {
-          type: 'Select',
-          buttons: [
-            {
-              name: covi.getDic('Detail', '상세정보'),
-              callback: () => {
-                openPopup(
-                  {
-                    type: 'Alert',
-                    message: `<ul className="menulist">
-                    <li style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-                    ${covi.getDic('FileName', '파일명')} : ${
-                      item.FileName
-                    }</li><li>${covi.getDic(
-                      'FileSize',
-                      '용량',
-                    )} : ${convertFileSize(
-                      item.FileSize,
-                    )}</li><li>${covi.getDic(
-                      'ReceiveDate',
-                      '수신일시',
-                    )} : ${format(
-                      new Date(item.SendDate),
-                      'yyyy.MM.dd HH:mm:ss',
-                    )}</li>`,
-                  },
-                  dispatch,
-                );
-              },
-            },
-            {
-              name: covi.getDic('ShowChat', '대화보기'),
-              callback: () => {
-                dispatch(
-                  setMoveView({
-                    roomID: item.RoomID,
-                    moveId: item.MessageID,
-                    visible: true,
-                  }),
-                );
-                clearLayer(dispatch);
-              },
-            },
-            {
-              name: covi.getDic('Download', '다운로드'),
-              callback: () => {
-                downloadByToken(item.FileID, item.FileName, data => {
-                  if (data.result != 'SUCCESS') {
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: data.message,
-                      },
-                      dispatch,
-                    );
-                  } else {
-                    openPopup(
-                      {
-                        type: 'Alert',
-                        message: covi.getDic(
-                          'Msg_DownloadSuccess',
-                          '다운로드가 완료되었습니다.',
-                        ),
-                      },
-                      dispatch,
-                    );
-                  }
-                });
-              },
-            },
-          ],
-        },
-        dispatch,
-      );
-    }
+
+    openPopup(
+      {
+        type: 'Select',
+        buttons: buttons,
+      },
+      dispatch,
+    );
   };
 
   return (
@@ -514,6 +242,7 @@ const File = ({ file, onSelect, selectMode, handleProgress }) => {
 const FileSummary = ({ roomId }) => {
   const dispatch = useDispatch();
   const loadCnt = 30;
+  const filePermission = useSelector(({ login }) => login.filePermission);
   const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [select, setSelect] = useState(false);
   const [selectItems, setSelectItems] = useState([]);
@@ -531,50 +260,46 @@ const FileSummary = ({ roomId }) => {
     if (select) {
       // 이전 상태가 선택모드였다면 변경시 cnt도 0으로 초기화
       if (selectItems.length > 0) {
+        let message = covi.getDic('Msg_Save', '저장되었습니다.');
         if (selectItems.length <= 5) {
           // 2개 이상은 압축
           const isZip = selectItems.length > 1;
-          const resp = await downloadByTokenAll(
-            selectItems,
-            isZip,
-            handleProgress,
-          );
-          if (resp !== null) {
-            if (!resp.result) {
-              openPopup(
-                {
-                  type: 'Alert',
-                  message: resp.data.message,
-                },
-                dispatch,
-              );
-            } else {
-              openPopup(
-                {
-                  type: 'Alert',
-                  message: covi.getDic('Msg_Save', '저장되었습니다.'),
-                },
-                dispatch,
-              );
+          if (filePermission.download !== 'Y') {
+            message = covi.getDic(
+              'Block_FileDownload',
+              '파일 다운로드가 금지되어 있습니다.',
+            );
+          } else {
+            const resp = await downloadByTokenAll(
+              selectItems,
+              isZip,
+              handleProgress,
+            );
+            if (resp !== null) {
+              if (!resp.result) {
+                message = resp.data.message;
+              }
             }
           }
+
           // 만료된 파일과 정상 파일 섞어서 다운로드시 Total size에 도달하지 못함
           setProgressData(null);
         } else {
-          openPopup(
-            {
-              type: 'Alert',
-              message: getSysMsgFormatStr(
-                covi.getDic(
-                  'Tmp_saveLimitCnt',
-                  '%s개 이상 다운로드할 수 없습니다.',
-                ),
-                [{ type: 'Plain', data: '5' }],
-              ),
-            },
-            dispatch,
+          message = getSysMsgFormatStr(
+            covi.getDic(
+              'Tmp_saveLimitCnt',
+              '%s개 이상 다운로드할 수 없습니다.',
+            ),
+            [{ type: 'Plain', data: '5' }],
           );
         }
+        openPopup(
+          {
+            type: 'Alert',
+            message,
+          },
+          dispatch,
+        );
       }
       setSelectItems([]);
     }
@@ -723,6 +448,7 @@ const FileSummary = ({ roomId }) => {
                 selectMode={select}
                 onSelect={handleSelectItem}
                 handleProgress={handleProgress}
+                filePermission={filePermission}
               ></FileList>,
             );
           }
@@ -747,6 +473,7 @@ const FileSummary = ({ roomId }) => {
               selectMode={select}
               onSelect={handleSelectItem}
               handleProgress={handleProgress}
+              filePermission={filePermission}
             ></FileList>,
           );
         }
@@ -763,11 +490,8 @@ const FileSummary = ({ roomId }) => {
           <div className="modaltit">
             <p>{covi.getDic('FileSummary', '파일 모아보기')}</p>
           </div>
-          {(!select &&
-            synapDocViewServer &&
-            fileAttachViewMode &&
-            fileAttachViewMode[0].type === 'PC' &&
-            fileAttachViewMode[0].Download === true && (
+          {(filePermission.download === 'Y' &&
+            ((!select && synapDocViewServer && (
               <a className="checkbtn" onClick={handleSelect}>
                 <div
                   style={{
@@ -780,20 +504,23 @@ const FileSummary = ({ roomId }) => {
                 </div>
               </a>
             )) ||
-            (select && (
-              <a className="Okbtn" onClick={progressData ? null : handleSelect}>
-                {
-                  <>
-                    <span className="colortxt-point mr5">
-                      {selectItems.length}
-                    </span>
-                    {selectItems.length > 1
-                      ? covi.getDic('AllSave', '일괄저장')
-                      : covi.getDic('Save', '저장')}
-                  </>
-                }
-              </a>
-            )) || <></>}
+              (select && (
+                <a
+                  className="Okbtn"
+                  onClick={progressData ? null : handleSelect}
+                >
+                  {
+                    <>
+                      <span className="colortxt-point mr5">
+                        {selectItems.length}
+                      </span>
+                      {selectItems.length > 1
+                        ? covi.getDic('AllSave', '일괄저장')
+                        : covi.getDic('Save', '저장')}
+                    </>
+                  }
+                </a>
+              )))) || <></>}
         </div>
         {(files && files.length > 0 && (
           <Scrollbars
