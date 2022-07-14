@@ -1,13 +1,16 @@
 import React, { useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { loginTokenAuth, loginInit, syncTokenRequest } from '@/modules/login';
+import { loginInit, syncTokenRequest } from '@/modules/login';
 import SyncWrap from '@C/login/SyncWrap';
 import * as api from '@/lib/login';
 import { evalConnector } from '@/lib/deviceConnector';
 import { clearUserData } from '@/lib/util/localStorageUtil';
 import { getChineseWall } from '@/lib/orgchart';
 import { getConfig } from '@/lib/util/configUtil';
+
+const MobileDetect = require('mobile-detect'),
+  agentDetect = new MobileDetect(window.navigator.userAgent);
 
 const TokenChecker = ({ history, returnURL }) => {
   // localStorage에 존재하는 token을 검증하고 검증성공시 login처리 수행
@@ -32,6 +35,13 @@ const TokenChecker = ({ history, returnURL }) => {
            * 토큰인증 성공시 response로부터 id를 얻어 localStorage에 저장
            */
           localStorage.setItem('covi_user_access_id', data.userInfo.id);
+
+          /**
+           * 2022.07.05
+           * 차이니즈월, 파일 다운로드 권한
+           * 둘 다 서버에서 tokencheckRequest 의 response data 로
+           * 받아올 수 있도록 변경해야함.
+           */
           // 차이니즈월 default value
           data.chineseWall = [];
           data.blockList = [];
@@ -44,6 +54,36 @@ const TokenChecker = ({ history, returnURL }) => {
             if (status === 'SUCCESS') {
               data.chineseWall = result || [];
               data.blockList = blockList || [];
+            }
+          }
+
+          // 기존 Synap viewer 설정 값
+          const fileAttachViewMode = getConfig('FileAttachViewMode');
+          const fileAttachViewModeConfig = !agentDetect.mobile()
+            ? fileAttachViewMode[0]
+            : fileAttachViewMode[1];
+
+          if (fileAttachViewModeConfig) {
+            data.filePermission = {
+              download: fileAttachViewModeConfig?.Download ? 'Y' : 'N',
+              viewer: fileAttachViewModeConfig?.Viewer ? 'Y' : 'N',
+            };
+          } else {
+            data.filePermission = {
+              download: 'Y',
+              viewer: 'Y',
+            };
+          }
+
+          // 파일 다운로드 권한
+          const useFilePermission = getConfig('UseFilePermission', 'N') === 'Y';
+          if (useFilePermission) {
+            const filePermission = await api.getFilePermission({
+              userId: data.userInfo.id,
+            });
+
+            if (filePermission?.data?.result) {
+              data.filePermission = filePermission?.data?.result;
             }
           }
         }

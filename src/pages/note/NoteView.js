@@ -87,6 +87,7 @@ function _DrawFile({
   setProgressData,
   handleProgress,
   isBlockFile,
+  filePermission,
 }) {
   const dispatch = useDispatch();
   const [isSaving, setIsSaving] = useState(false);
@@ -102,120 +103,138 @@ function _DrawFile({
       }
 
       let savePath = '';
-
       if (DEVICE_TYPE === 'd') {
         savePath = await getDownloadPath({
           defaultFileName: opts?.fileName,
         });
       }
-      // 지정된 파일 경로가 없을경우 다운로드 중단
-      if (savePath?.canceled) return;
-
-      setIsSaving(true);
-      try {
-        const { fileName, accessKey: fileID } = opts;
-        const response = await downloadFile({
-          ...opts,
-          downloadHandler(...args) {
-            console.log('Download   ', args);
-          },
-        });
-        if (response.status === 200) {
-          if (DEVICE_TYPE === 'b') {
-            fileDownload(response.data, fileName);
-          } else if (DEVICE_TYPE === 'd') {
-            saveFile(savePath.filePath, fileName, response.data, {
-              token: fileID,
-              execute: true,
-              isZip: false,
-            });
-            _popupResult(dispatch, covi.getDic('Msg_Save', '저장되었습니다.'));
-          }
-        } else if (response.status === 204) {
-          _popupResult(
-            dispatch,
-            covi.getDic('Msg_FileExpired', '만료된 파일입니다.'),
-          );
-        } else if (response.status === 403) {
-          _popupResult(
-            dispatch,
-            covi.getDic('Msg_FilePermission', '권한이 없는 파일입니다.'),
-          );
-        }
-      } catch (err) {
-        console.log('FileSave Error   ', err);
-        _popupResult(
-          dispatch,
-          covi.getDic(
-            'Msg_Error',
-            '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
-          ),
-        );
-      } finally {
-        setIsSaving(false);
+      if (savePath?.canceled) {
+        // 지정된 파일 경로가 없을경우 다운로드 중단
+        return;
       }
+
+      let message = covi.getDic('Msg_Save', '저장되었습니다.');
+      if (filePermission.download !== 'Y') {
+        message = covi.getDic(
+          'Block_FileDownload',
+          '파일 다운로드가 금지되어 있습니다.',
+        );
+      } else {
+        setIsSaving(true);
+        try {
+          const { fileName, accessKey: fileID } = opts;
+          const response = await downloadFile({
+            ...opts,
+            downloadHandler(...args) {
+              console.log('Download   ', args);
+            },
+          });
+          if (response.status === 200) {
+            if (DEVICE_TYPE === 'b') {
+              fileDownload(response.data, fileName);
+            } else if (DEVICE_TYPE === 'd') {
+              saveFile(savePath.filePath, fileName, response.data, {
+                token: fileID,
+                execute: true,
+                isZip: false,
+              });
+            }
+          } else if (response.status === 204) {
+            message = covi.getDic('Msg_FileExpired', '만료된 파일입니다.');
+          } else if (response.status === 403) {
+            message = covi.getDic(
+              'Block_FileDownload',
+              '파일 다운로드가 금지되어 있습니다.',
+            );
+          }
+        } catch (err) {
+          if (err?.response?.status === 403) {
+            message = covi.getDic(
+              'Block_FileDownload',
+              '파일 다운로드가 금지되어 있습니다.',
+            );
+          } else {
+            message = covi.getDic(
+              'Msg_Error',
+              '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+            );
+          }
+        } finally {
+          setIsSaving(false);
+        }
+      }
+      _popupResult(dispatch, message);
     },
     [files, loginId, isSaving],
   );
 
   const handleAllDownLoad = async () => {
     const savePath = await getDownloadPath({ mode: 'open' });
-    if (DEVICE_TYPE === 'd' && savePath?.canceled) return null;
+    if (DEVICE_TYPE === 'd' && savePath?.canceled) {
+      return null;
+    }
     if (savePath?.filePath && !savePath?.filePaths) {
       savePath.filePaths = [savePath.filePath];
     }
 
-    try {
-      const { results, JSZip } = await makeZipFile(
-        loginId,
-        files,
-        handleProgress,
+    let message = covi.getDic('Msg_Save', '저장되었습니다.');
+    if (filePermission.download !== 'Y') {
+      message = covi.getDic(
+        'Block_FileDownload',
+        '파일 다운로드가 금지되어 있습니다.',
       );
-      let check = true;
-      let message = '';
+    } else {
+      try {
+        const { results, JSZip } = await makeZipFile(
+          loginId,
+          files,
+          handleProgress,
+        );
+        // 모두 만료된 파일인가 확인
+        const expiredCheck = results.every(result => {
+          return result.status === 204;
+        });
+        // 모두 권한이 없는 파일인가 확인
+        const permissionCheck = results.every(result => {
+          return result.status === 403;
+        });
 
-      // 모두 만료된 파일인가 확인
-      const expiredCheck = results.every(result => {
-        return result.status === 204;
-      });
-      // 모두 권한이 없는 파일인가 확인
-      const permissionCheck = results.every(result => {
-        return result.status === 403;
-      });
-
-      if (expiredCheck) {
-        check = false;
-        message = covi.getDic('Msg_FileExpired', '만료된 파일입니다.');
-      } else if (permissionCheck) {
-        check = false;
-        message = covi.getDic('Msg_FilePermission', '권한이 없는 파일입니다.');
-      } else {
-        if (Object.keys(JSZip?.files).length) {
-          const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
-          JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
-            if (DEVICE_TYPE === 'b') {
-              fileDownload(data, fileName);
-            } else {
-              saveFile(savePath?.filePaths, fileName, data, { isZip: true });
-            }
-          });
+        if (expiredCheck) {
+          message = covi.getDic('Msg_FileExpired', '만료된 파일입니다.');
+        } else if (permissionCheck) {
+          message = covi.getDic(
+            'Block_FileDownload',
+            '파일 다운로드가 금지되어 있습니다.',
+          );
+        } else {
+          if (Object.keys(JSZip?.files).length) {
+            const fileName = `${results[0]?.fileName?.split('.')[0]}.zip`;
+            JSZip.generateAsync({ type: 'arraybuffer' }).then(data => {
+              if (DEVICE_TYPE === 'b') {
+                fileDownload(data, fileName);
+              } else {
+                saveFile(savePath?.filePaths, fileName, data, { isZip: true });
+              }
+            });
+          }
         }
+      } catch (err) {
+        if (err?.response?.status === 403) {
+          message = covi.getDic(
+            'Block_FileDownload',
+            '파일 다운로드가 금지되어 있습니다.',
+          );
+        } else {
+          message = covi.getDic(
+            'Msg_Error',
+            '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
+          );
+        }
+      } finally {
+        setProgressData(null);
       }
-      _popupResult(
-        dispatch,
-        check ? covi.getDic('Msg_Save', '저장되었습니다.') : message,
-      );
-    } catch (err) {
-      _popupResult(
-        dispatch,
-        covi.getDic(
-          'Msg_Error',
-          '오류가 발생했습니다.<br/>관리자에게 문의해주세요.',
-        ),
-      );
-    } finally {
-      setProgressData(null);
     }
+    _popupResult(dispatch, message);
   };
 
   // < div style={{}}/>
@@ -229,7 +248,7 @@ function _DrawFile({
           style={{ cursor: 'inherit' }}
         >
           {covi.getDic('AttachFile', '첨부파일')}
-          {files.length > 1 && (
+          {filePermission.download === 'Y' && files.length > 1 && (
             <a
               className="Okbtn"
               onClick={progressData ? null : handleAllDownLoad}
@@ -245,14 +264,14 @@ function _DrawFile({
             return (
               <li
                 key={`File_${idx}`}
-                onClick={() =>
+                onClick={() => {
                   _downloadFile({
                     userId: loginId,
                     accessKey: file.fileID,
                     serviceType: file.serviceType,
                     fileName: file.fileName,
-                  })
-                }
+                  });
+                }}
               >
                 <div
                   className={clsx('file-message', getFileClass(file.extension))}
@@ -264,9 +283,11 @@ function _DrawFile({
                       {_convertFileSize(file.fileSize)}
                     </p>
                   </div>
-                  <a className="btn_download">
-                    {covi.getDic('Download', '다운로드')}
-                  </a>
+                  {filePermission.download === 'Y' && (
+                    <a className="btn_download">
+                      {covi.getDic('Download', '다운로드')}
+                    </a>
+                  )}
                 </div>
               </li>
             );
@@ -286,6 +307,7 @@ function _DrawNote({
   handleProgress,
   isBlockChat,
   isBlockFile,
+  filePermission,
 }) {
   if (!noteInfo) {
     return null;
@@ -420,6 +442,7 @@ function _DrawNote({
             setProgressData={setProgressData}
             handleProgress={handleProgress}
             isBlockFile={isBlockFile}
+            filePermission={filePermission}
           />
         </div>
       </div>
@@ -450,6 +473,8 @@ export default function NoteView({ match }) {
   const chineseWall = useSelector(({ login }) => login.chineseWall);
   const [isBlockChat, setIsBlockChat] = useState(false);
   const [isBlockFile, setIsBlockFile] = useState(false);
+
+  const filePermission = useSelector(({ login }) => login.filePermission);
 
   /**
    * @param {*} load
@@ -627,6 +652,7 @@ export default function NoteView({ match }) {
             handleProgress={handleProgress}
             isBlockChat={isBlockChat}
             isBlockFile={isBlockFile}
+            filePermission={filePermission}
           />
         </Scrollbars>
         {progressData && (
