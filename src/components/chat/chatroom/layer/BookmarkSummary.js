@@ -28,8 +28,8 @@ const BookmarkSummary = ({ roomId }) => {
   };
 
   const substrTxt = str => {
-    if (str.length >= 15) {
-      return str.substr(0, 12) + '......';
+    if (str.length >= 30) {
+      return str.substr(0, 27) + '...';
     } else {
       return str;
     }
@@ -98,7 +98,7 @@ const BookmarkSummary = ({ roomId }) => {
     let returnText = '';
     if (bookmark.fileCnt > 1) {
       returnText = getSysMsgFormatStr(covi.getDic('Tmp_andCnt', '외 %s건'), [
-        { type: 'Plain', data: bookmark.fileCnt },
+        { type: 'Plain', data: bookmark.fileCnt - 1 },
       ]);
     }
     return returnText;
@@ -162,10 +162,15 @@ const BookmarkSummary = ({ roomId }) => {
                     {getJobInfo(bookmark.senderInfo)}
                   </p>
                   <div className="bookmark-context">
-                    {substrTxt(bookmark.context)}
-                    {`${substrTxt(bookmark.fileName)} ${getOtherCases(
-                      bookmark,
-                    )}`}
+                    {bookmark.fileCnt ? (
+                      <>
+                        {`${substrTxt(bookmark.fileName)} ${getOtherCases(
+                          bookmark,
+                        )}`}
+                      </>
+                    ) : (
+                      substrTxt(bookmark.context)
+                    )}
                   </div>
                 </div>
                 <div
