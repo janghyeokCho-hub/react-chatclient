@@ -1,31 +1,29 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { deleteLayer } from '@/lib/common';
-import useSWR from 'swr';
-import { managesvr } from '@/lib/api';
+import { getChannel } from '@/lib/noticetalk';
 
-export default function NotificationPopup({ onChange }) {
+const NotificationPopup = ({ onChange }) => {
   const dispatch = useDispatch();
+  const [channelList, setChannelList] = useState([]);
   const handleClose = useCallback(() => {
     deleteLayer(dispatch);
   }, []);
 
-  const { data: channelList } = useSWR(
-    '/noticetalk/list',
-    async () => {
-      const response = await managesvr('get', '/notice/subject');
-      if (response.data.status === 'SUCCESS') {
-        return response.data.result;
-      } else {
-        return;
-      }
-    },
-    { revalidateOnFocus: false },
-  );
+  const getChannelList = async () => {
+    const response = await getChannel();
+    if (response.data.status === 'SUCCESS') {
+      setChannelList(response.data.result);
+    }
+  };
 
   const handleClick = useCallback(subject => {
     onChange?.(subject);
     handleClose();
+  }, []);
+
+  useEffect(() => {
+    getChannelList();
   }, []);
 
   return (
@@ -41,23 +39,24 @@ export default function NotificationPopup({ onChange }) {
         </div>
       </div>
       <div className="NotificationChannelList">
-        {channelList &&
-          channelList.map((channel, idx) => {
-            return (
-              <div
-                className="NotificationChannel"
-                key={idx}
-                onClick={() => handleClick(channel)}
-              >
-                <div className="imgBox">
-                  <img src={channel.subjectPhoto} />
-                </div>
-                <p>{channel.subjectName}</p>
-                <span className="del"></span>
+        {channelList?.map((channel, idx) => {
+          return (
+            <div
+              className="NotificationChannel"
+              key={idx}
+              onClick={() => handleClick(channel)}
+            >
+              <div className="imgBox">
+                <img src={channel.subjectPhoto} />
               </div>
-            );
-          })}
+              <p>{channel.subjectName}</p>
+              <span className="del"></span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
-}
+};
+
+export default NotificationPopup;

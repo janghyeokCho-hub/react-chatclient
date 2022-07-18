@@ -12,7 +12,6 @@ const ContextBox = props => {
       e.target.setSelectionRange(cursorPosition, cursorPosition);
     }
   }, []);
-  console.log(validURL);
 
   return (
     <div className="Layer-Note-Con" style={{ marginBottom: '60px' }}>
@@ -38,17 +37,17 @@ const ContextBox = props => {
                 id="chkStyle04"
                 className="chkStyle04"
                 type="checkbox"
-                onClick={() => setCheckLink(!checkLink)}
+                onChange={() => setCheckLink(!checkLink)}
                 checked={checkLink}
               />
-              <label for="chkStyle04" className="Style04" />
+              <label htmlFor="chkStyle04" className="Style04" />
               <p> {covi.getDic('AddLink', '바로가기 추가')}</p>
             </div>
           </div>
           {checkLink && (
             <div className="add_link_container">
               <div className="addLink">
-                <label for="inputUrl"> {covi.getDic('URL', 'URL: ')}</label>
+                <label htmlFor="inputUrl"> {covi.getDic('URL', 'URL: ')}</label>
                 <input
                   value={url}
                   onChange={e => {
