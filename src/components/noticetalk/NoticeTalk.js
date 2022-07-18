@@ -12,10 +12,9 @@ import useTargetState from '@/pages/note/TargetState';
 import ConditionalWrapper from '@/components/ConditionalWrapper';
 import { isMainWindow } from '@/lib/deviceConnector';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
-import { chatsvr } from '@/lib/api';
 import { bound } from '@/modules/menu';
 import { checkURL } from '@/lib/common';
-
+import { sendNoticeTalk } from '@/lib/noticetalk';
 
 function _popupResult(dispatch, message, cb) {
   openPopup(
@@ -45,16 +44,15 @@ export default function NoticeTalk({ match, location, history }) {
   const [checkAll, setCheckAll] = useState(false);
   const [url, setUrl] = useState('');
   const [checkLink, setCheckLink] = useState(false);
-  const [validURL, setValidURL] = useState(false)
+  const [validURL, setValidURL] = useState(false);
 
-
-  useEffect(()=>{
-    if(checkURL(url).isURL){
-      setValidURL(true)
-    }else{
-      setValidURL(false)
+  useEffect(() => {
+    if (checkURL(url).isURL) {
+      setValidURL(true);
+    } else {
+      setValidURL(false);
     }
-  },[url])
+  }, [url]);
 
   useEffect(() => {
     dispatch(bound({ name: '', type: '' }));
@@ -65,7 +63,7 @@ export default function NoticeTalk({ match, location, history }) {
     };
   }, []);
 
-  async function handleSend() {
+  const handleSend = () => {
     if (isSending === true) {
       return;
     }
@@ -78,10 +76,10 @@ export default function NoticeTalk({ match, location, history }) {
     });
 
     const objLink = {
-      title: '시스템 알림',
+      title: covi.getDic('SystemAlarm', '시스템 알림'),
       context: context.trim(),
       func: {
-        name: '페이지로 이동',
+        name: covi.getDic('MovePage', '페이지로 이동'),
         type: 'link',
         data: {
           baseURL: checkURL(url).url,
@@ -100,6 +98,7 @@ export default function NoticeTalk({ match, location, history }) {
       );
       return;
     }
+
     if (selectTargets.length === 0 && !checkAll) {
       _popupResult(
         dispatch,
@@ -107,6 +106,7 @@ export default function NoticeTalk({ match, location, history }) {
       );
       return;
     }
+    
     if (context.trim().length === 0) {
       _popupResult(
         dispatch,
@@ -116,50 +116,51 @@ export default function NoticeTalk({ match, location, history }) {
     }
 
     if ((checkLink && !url) || (checkLink && !validURL)) {
-      _popupResult(dispatch, covi.getDic('CheckURL', '올바른 URL형식을 사용하고 있는지 확인하세요.'));
+      _popupResult(
+        dispatch,
+        covi.getDic('CheckURL', '올바른 URL형식을 사용하고 있는지 확인하세요.'),
+      );
       return;
     }
 
-    try {
-      setIsSending(true);
-      const sendData = {
-        subjectId: subjectId.toString(),
-        targets: checkAll ? selectAll : selectTargets,
-        message: checkLink ? JSON.stringify(objLink) : context.trim(),
-        companyCode: myInfo.CompanyCode,
-        push: 'Y',
-      };
+    setIsSending(true);
+    const sendData = {
+      subjectId: subjectId.toString(),
+      targets: checkAll ? selectAll : selectTargets,
+      message: checkLink ? JSON.stringify(objLink) : context.trim(),
+      companyCode: myInfo.CompanyCode,
+      push: 'Y',
+    };
 
-      const { data } = await chatsvr('post', '/notice/talk', sendData);
-
-      if (data.status == "SUCCESS") {
-        _popupResult(
-          dispatch,
-          covi.getDic('Msg_Noti_SendSuccess', '알림톡 전송에 성공했습니다.'),
-          () => {
-            if (DEVICE_TYPE === 'b') {
-              window.location.reload();
-            } else if (DEVICE_TYPE === 'd') {
-              if (isMainWindow() === true) {
-                return;
+    sendNoticeTalk(sendData)
+      .then(({ data }) => {
+        console.log('data', data);
+        if (data.status == 'SUCCESS') {
+          _popupResult(
+            dispatch,
+            covi.getDic('Msg_Noti_SendSuccess', '알림톡 전송에 성공했습니다.'),
+            () => {
+              if (DEVICE_TYPE === 'b') {
+                window.location.reload();
+              } else if (DEVICE_TYPE === 'd') {
+                if (isMainWindow() === true) {
+                  return;
+                }
+                window.close();
               }
-              window.close();
-            }
-          },
-        );
-      } else {
-        _popupResult(
-          dispatch,
-          covi.getDic('Msg_Note_SendFail', '알림톡 전송에 실패했습니다.'),
-        );
-      }
-    } catch (err) {
-      console.log('Send Error   ', err);
-    } finally {
-      setIsSending(false);
-    }
+            },
+          );
+        } else {
+          _popupResult(
+            dispatch,
+            covi.getDic('Msg_Note_SendFail', '알림톡 전송에 실패했습니다.'),
+          );
+        }
+      })
+      .catch(err => console.log(err))
+      .finally(setIsSending(false));
     return;
-  }
+  };
 
   return (
     <ConditionalWrapper

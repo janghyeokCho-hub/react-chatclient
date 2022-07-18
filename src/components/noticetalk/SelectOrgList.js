@@ -42,10 +42,10 @@ const SelectOrgList = props => {
             id="chkStyle03"
             className="chkStyle03"
             type="checkbox"
-            onClick={() => setCheckAll(!checkAll)}
+            onChange={() => setCheckAll(!checkAll)}
             checked={checkAll}
           />
-          <label for="chkStyle03" className="Style03" />
+          <label htmlFor="chkStyle03" className="Style03" />
           <p> {covi.getDic('All_Recipient', '전체공지')}</p>
         </div>
       </div>
