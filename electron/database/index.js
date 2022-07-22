@@ -44,32 +44,26 @@ export async function makeConnection(dbPath, fileName) {
     await initializeDatabase(connection);
   }
   await migrateDatabase(connection, isDatabaseExisting);
+  logger.info(`[DB] Create connection(${fileName}) success`);
   return connection;
 }
 
 export const open = async (dbPath, dbName) => {
   const fileName = getDatabaseFileName(dbName);
   if (!dbCon) {
-    const connection = makeConnection(dbPath, fileName);
+    const connection = await makeConnection(dbPath, fileName);
     dbCon = connection;
   }
-  logger.info(`[DB] Create connection(${dbName}) success`);
   return dbCon;
 };
 
-export const getConnection = async (dbPath, openName) => {
-  if (dbCon == null) {
-    dbCon = await open(dbPath, openName);
-  }
-  return dbCon;
+export const getConnection = (dbPath, openName) => {
+  return open(dbPath, openName);
 };
 
 export const getTransactionProvider = async (dbPath, openName) => {
-  if (dbCon == null) {
-    dbCon = await open(dbPath, openName);
-  }
+  const dbCon = await open(dbPath, openName);
   const txProvider = dbCon.transactionProvider();
-
   return txProvider;
 };
 
@@ -80,7 +74,7 @@ export const closeConnection = async () => {
       dbCon = null;
     }
   } catch (e) {
-    logger.info('database close exception');
+    logger.info('database close exception: ' + JSON.stringify(e));
     dbCon = null;
   }
 };
