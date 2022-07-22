@@ -1,14 +1,13 @@
-import fs from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
-import mkdirp from 'mkdirp';
 import { app } from 'electron';
 import logger from './logger';
-import * as db from './dbUtils';
+import * as db from '../database';
 import exportProps from '../config/exportProps';
 
 export const makeLocalDatabaseFile = (dbPath, dbName) => {
   if (!fs.existsSync(dbPath)) {
-    mkdirp.sync(dbPath);
+    fs.mkdirpSync(dbPath);
   }
 
   if (!fs.existsSync(path.join(dbPath, `${dbName}.sqlite`))) {
