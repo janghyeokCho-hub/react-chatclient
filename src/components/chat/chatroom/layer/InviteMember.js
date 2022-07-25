@@ -28,6 +28,7 @@ const InviteMember = ({
     }),
   );
   const chineseWall = useSelector(({ login }) => login.chineseWall);
+  const userInfo = useSelector(({ login }) => login.userInfo);
   const [members, setMembers] = useState([]);
   const [selectTab, setSelectTab] = useState('C');
   const [oldMembers, setOldMembers] = useState([]);
@@ -349,15 +350,17 @@ const InviteMember = ({
               {covi.getDic('Contact', '내 대화상대')}
             </a>
           </li>
-          <li className={selectTab == 'O' ? 'active' : ''} data-tab="tab2">
-            <a
-              onClick={() => {
-                setSelectTab('O');
-              }}
-            >
-              {covi.getDic('OrgChart', '조직도')}
-            </a>
-          </li>
+          {userInfo?.isExtUser !== 'Y' && (
+            <li className={selectTab == 'O' ? 'active' : ''} data-tab="tab2">
+              <a
+                onClick={() => {
+                  setSelectTab('O');
+                }}
+              >
+                {covi.getDic('OrgChart', '조직도')}
+              </a>
+            </li>
+          )}
         </ul>
         <div
           className={['tabcontent', selectTab == 'C' ? 'active' : ''].join(' ')}
