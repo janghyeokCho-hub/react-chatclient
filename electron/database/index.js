@@ -42,13 +42,12 @@ export async function makeConnection(dbPath, fileName) {
     logger.info(`[DB] Initialize ${fileName}`);
     await initializeDatabase(connection);
   }
-
   await migrateDatabase(connection, isDatabaseExisting);
   logger.info(`[DB] Create connection(${fileName}) success`);
   return connection;
 }
 
-export const open = async (dbPath, dbName) => {
+export const getConnection = async (dbPath, dbName) => {
   const fileName = getDatabaseFileName(dbName);
   if (!dbCon) {
     const connection = await makeConnection(dbPath, fileName);
@@ -57,12 +56,8 @@ export const open = async (dbPath, dbName) => {
   return dbCon;
 };
 
-export const getConnection = (dbPath, openName) => {
-  return open(dbPath, openName);
-};
-
 export const getTransactionProvider = async (dbPath, openName) => {
-  const dbCon = await open(dbPath, openName);
+  const dbCon = await getConnection(dbPath, openName);
   const txProvider = dbCon.transactionProvider();
   return txProvider;
 };

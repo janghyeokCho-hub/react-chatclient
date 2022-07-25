@@ -1,4 +1,8 @@
 export const migrateChatbot = {
+    /**
+     * @param {Knex} knex 
+     * @returns 
+     */
   async up(knex) {
     const isBotInfoExists = await knex.schema.hasColumn('message', 'botInfo');
     if (isBotInfoExists) {
