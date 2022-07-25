@@ -12,6 +12,7 @@ import {
   resetUnreadCount,
   checkRoomMove,
   modifyRoomNameList,
+  getRoomInfoSuccess
 } from '@/modules/room';
 import { changeMyPhotoPath, changeMyInfo, reSync } from '@/modules/login';
 import {
@@ -29,7 +30,8 @@ import {
   focusWin,
   closeAllChildWindow,
 } from '@/lib/deviceConnector';
-import { leaveRoomUtilAfter } from '@/lib/roomUtil';
+import { leaveRoomUtilAfter, openChatRoomViewCallback } from '@/lib/roomUtil';
+import { getRoomInfo } from '@/lib/room';
 import {
   leaveChannelUtilAfter,
   leaveChannelByAdminUtilAfter,
@@ -39,6 +41,7 @@ import { SyncFavoriteIPC } from '../hooks/useSyncFavorite';
 
 const AppTemplate = () => {
   const viewType = useSelector(({ room }) => room.viewType);
+  const rooms = useSelector(({ room }) => room.rooms);
   const dispatch = useDispatch();
   const [fontType] = useChatFontType();
 
@@ -54,6 +57,56 @@ const AppTemplate = () => {
   }, [viewType, dispatch]);
 
   const menu = useSelector(({ menu }) => menu.menu);
+
+  useEffect(() => {
+    evalConnector({
+      method: 'on',
+      channel: 'onCreateChatRoom',
+      callback: async (_, data) => {
+        if (location.hash.includes('/chatlist')) {
+          // 채팅방 목록에서는 roomInfo가 없는 item이 있을 경우 roomList를 fetch하고 있음
+          return;
+        }
+        // 채팅방 목록 외의 메뉴가 열린 상태일 때에만 roomInfo 요청
+        const { data: getRoomResponse } = await getRoomInfo(data);
+        if (getRoomResponse.status === 'SUCCESS') {
+          dispatch(getRoomInfoSuccess(getRoomResponse));
+        }
+      }
+    });
+    return () => {
+      evalConnector({
+        method: 'removeListener',
+        channel: 'onCreateChatRoom',
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    evalConnector({
+      method: 'on',
+      channel: 'onOpenChatRoomView',
+      callback: (_, data) => {
+        openChatRoomViewCallback.apply(null, [
+          dispatch,
+          data.userId,
+          viewType,
+          rooms,
+          data.selectId,
+          data.targetId,
+          data.targetType,
+          data.members,
+          true, //isDoubleClick
+        ]);
+      }
+    });
+    return () => {
+      evalConnector({
+        method: 'removeListener',
+        channel: 'onOpenChatRoomView',
+      });
+    }
+  }, [rooms, viewType]);
 
   useEffect(() => {
     // static 함수 등록
