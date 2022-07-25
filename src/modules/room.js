@@ -110,6 +110,7 @@ const RECEIVE_ROOMSETTING = 'room/RECEIVE_ROOMSETTING';
 export const getRooms = createAction(GET_ROOMS);
 export const updateRooms = createAction(UPDATE_ROOMS);
 export const getRoomInfo = createAction(GET_ROOM_INFO);
+export const getRoomInfoSuccess = createAction(GET_ROOM_INFO_SUCCESS);
 export const roomMessageAdd = createAction(ROOM_MESSAGE_ADD);
 export const roomMessageDelete = createAction(ROOM_MESSAGE_DELETE);
 export const changeOpenRoom = createAction(CHANGE_OPEN_ROOM);
