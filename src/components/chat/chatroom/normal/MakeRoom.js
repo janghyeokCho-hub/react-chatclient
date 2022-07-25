@@ -17,7 +17,11 @@ import {
 import { getInstance } from '@/lib/fileUpload/coviFile';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
 
-import { getMakeData, mappingChatRoomEvent } from '@/lib/deviceConnector';
+import {
+  getMakeData,
+  mappingChatRoomEvent,
+  sendMain,
+} from '@/lib/deviceConnector';
 import { sendMessage, uploadFile, getURLThumbnail } from '@/lib/message';
 
 const MakeRoom = ({ history }) => {
@@ -201,83 +205,78 @@ const MakeRoom = ({ history }) => {
     }
 
     if (messageType === 'A') {
-      createRoom(data).then(({ data }) => {
-        if (data.status === 'SUCCESS') {
-          const roomID = data.result.room.roomID;
-          if (data.result.room.updateDate === null) {
-            dispatch(updateRooms({ updateList: [roomID] }));
-          }
-          handleNewRoom(roomID);
+      const { data: response } = await createRoom(data);
+      if (response.status === 'SUCCESS') {
+        const roomID = response.result.room.roomID;
+        if (response.result.room.updateDate === null) {
+          dispatch(updateRooms({ updateList: [roomID] }));
         }
-      });
+        sendMain('onCreateChatRoom', { roomID });
+        handleNewRoom(roomID);
+      }
       return;
     }
 
     if (filesObj) {
-      uploadFile(data).then(({ data }) => {
-        if (data.state === 'SUCCESS') {
-          const messageParams = {
-            context: message,
-            roomID: data.roomID,
-            sender: sender,
-            roomType: makeInfo.roomType,
-            fileInfos: JSON.stringify(data.result),
-            blockList: blockList || [],
-          };
-
-          sendMessage(messageParams).then(({ data }) => {
-            if (data.status === 'SUCCESS') {
-              if (linkObj) {
-                getURLThumbnail({
-                  roomId: data.result.roomID,
-                  messageId: data.result.messageID,
-                  url: linkObj.url,
-                });
-              }
-
-              if (emoticon) {
-                sendMessage({
-                  context: emoticon,
-                  roomID: data.result.roomID,
-                  sender,
-                  roomType: makeInfo.roomType,
-                  blockList: blockList || [],
-                });
-              }
-
-              handleNewRoom(data.result.roomID);
-            }
-          });
-        }
-      });
-    } else {
-      createRoom(data).then(({ data }) => {
-        if (data.status === 'SUCCESS') {
-          const roomID = data.result.room.roomID;
-          if (data.result.room.updateDate === null) {
-            dispatch(updateRooms({ updateList: [roomID] }));
-          }
+      const { data: response } = await uploadFile(data);
+      if (response.state === 'SUCCESS') {
+        const messageParams = {
+          context: message,
+          roomID: response.roomID,
+          sender: sender,
+          roomType: makeInfo.roomType,
+          fileInfos: JSON.stringify(response.result),
+          blockList: blockList || [],
+        };
+        const { data: sendMessageResponse } = await sendMessage(messageParams);
+        if (sendMessageResponse.status === 'SUCCESS') {
+          const roomId = sendMessageResponse.result.roomID;
           if (linkObj) {
             getURLThumbnail({
-              roomId: roomID,
-              messageId: data.result.messageID,
+              roomId,
+              messageId: sendMessageResponse.result.messageID,
               url: linkObj.url,
             });
           }
-
           if (emoticon) {
             sendMessage({
               context: emoticon,
-              roomID,
+              roomID: roomId,
               sender,
               roomType: makeInfo.roomType,
               blockList: blockList || [],
             });
           }
-
-          handleNewRoom(roomID);
+          sendMain('onCreateChatRoom', { roomID: roomId });
+          handleNewRoom(roomId);
         }
-      });
+      }
+    } else {
+      const { data: createRoomResponse } = await createRoom(data);
+      if (createRoomResponse.status === 'SUCCESS') {
+        const roomID = createRoomResponse.result.room.roomID;
+        if (createRoomResponse.result.room.updateDate === null) {
+          dispatch(updateRooms({ updateList: [roomID] }));
+        }
+        if (linkObj) {
+          getURLThumbnail({
+            roomId: roomID,
+            messageId: createRoomResponse.result.messageID,
+            url: linkObj.url,
+          });
+        }
+        if (emoticon) {
+          sendMessage({
+            context: emoticon,
+            roomID,
+            sender,
+            roomType: makeInfo.roomType,
+            blockList: blockList || [],
+          });
+        }
+        sendMain('onCreateChatRoom', { roomID });
+        handleNewRoom(roomID);
+      }
     }
   };
 
