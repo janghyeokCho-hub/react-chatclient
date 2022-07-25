@@ -425,7 +425,7 @@ const PhotoSummary = ({ roomId }) => {
               }
               return !isBlock && item;
             });
-            setFiles([...files, result]);
+            setFiles(files.concat(result));
 
             if (data.result.length < loadCnt) {
               setPageEnd(true);
@@ -447,6 +447,7 @@ const PhotoSummary = ({ roomId }) => {
     if (data) {
       let firstDate = 0;
       let sameDateArr = [];
+
       data.forEach((item, index) => {
         const compareDate = Math.floor(item.SendDate / 86400000);
         if (firstDate !== compareDate) {
@@ -462,7 +463,6 @@ const PhotoSummary = ({ roomId }) => {
               ></PhotoList>,
             );
           }
-
           returnJSX.push(
             <div className="datetxt" key={`plist_date_${item.SendDate}`}>
               <p>{format(new Date(item.SendDate), 'yyyy.MM.dd')}</p>

@@ -396,8 +396,8 @@ const FileSummary = ({ roomId }) => {
         loadCnt: loadCnt,
         isImage: 'N',
       }).then(({ data }) => {
-        if (data.status == 'SUCCESS') {
-          if (data.result.length > 0) {
+        if (data?.status === 'SUCCESS') {
+          if (data?.result?.length) {
             const result = data.result.filter(item => {
               let isBlock = false;
               if (item?.FileID && chineseWall?.length) {
@@ -415,7 +415,7 @@ const FileSummary = ({ roomId }) => {
               }
               return !isBlock && item;
             });
-            setFiles([...files, result]);
+            setFiles(files.concat(result));
             if (data.result.length < loadCnt) {
               setPageEnd(true);
             }
