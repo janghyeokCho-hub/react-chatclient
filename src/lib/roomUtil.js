@@ -6,7 +6,7 @@ import {
 } from '@/modules/room';
 import { openPopup } from '@/lib/common';
 import { mappingUserChatRoom } from '@/modules/contact';
-import { newChatRoom, makeChatRoom } from '@/lib/deviceConnector';
+import { newChatRoom, makeChatRoom, isMainWindow, sendMain } from '@/lib/deviceConnector';
 import { getAllUserWithGroup, getAllUserWithCustomGroup } from '@/lib/room';
 
 export const openChatRoomView = (
@@ -141,7 +141,7 @@ export const openChatRoomView = (
   }
 };
 
-const openChatRoomViewCallback = (
+export const openChatRoomViewCallback = (
   dispatch,
   userId,
   viewType,
@@ -152,7 +152,15 @@ const openChatRoomViewCallback = (
   members,
   isDoubleClick,
 ) => {
-  console.log('openChatRoomViewCallback');
+  const _isMainWindow = isMainWindow();
+  /**
+   * 2022.07.12
+   * Electron에서 대화창 생성을 메인창에게 위임
+   */
+  if (DEVICE_TYPE === 'd' && _isMainWindow === false) {
+    sendMain('onOpenChatRoomView', {userId, viewType, rooms, selectId, targetId, targetType, members, isDoubleClick});
+    return;
+  }
   let roomId;
   if (userId != targetId) {
     const room = rooms.find(
