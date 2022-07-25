@@ -1,24 +1,8 @@
-import logger from "../../utils/logger";
+import logger from '../../utils/logger';
+import migrateChatbot from './migrations/1_chatbot';
 
 export const migrationPlans = {
-  '1-customGroup': {
-    async up(knex) {
-        logger.info('[DB-migration] 1-customGroup');
-        return true;
-    },
-    down() {
-      return true;
-    },
-  },
-  '2-chatbot': {
-    async up(knex) {
-        logger.info('[DB-migration] 2-chatbot');
-        return true;
-    },
-    down() {
-      return true;
-    },
-  },
+  '1-chatbot': migrateChatbot,
 };
 
 export class MigrationSource {

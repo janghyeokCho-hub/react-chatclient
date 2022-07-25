@@ -19,7 +19,6 @@ export function getDatabaseFileName(dbName) {
 
 export async function makeConnection(dbPath, fileName) {
   const isDatabaseExisting = await checkDatabaseExists(dbPath, fileName)
-  logger.info('Test@#@#   ' + isDatabaseExisting);
   const myDBConfig = {
     client: 'sqlite3',
     connection: {
@@ -43,6 +42,7 @@ export async function makeConnection(dbPath, fileName) {
     logger.info(`[DB] Initialize ${fileName}`);
     await initializeDatabase(connection);
   }
+
   await migrateDatabase(connection, isDatabaseExisting);
   logger.info(`[DB] Create connection(${fileName}) success`);
   return connection;
