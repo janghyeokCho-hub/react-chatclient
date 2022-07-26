@@ -19,6 +19,17 @@ const Header = () => {
 
   const dispatch = useDispatch();
 
+  const getPresenseColor = code => {
+    let mStyle = {};
+
+    if (typeof code == 'string') {
+      mStyle = JSON.parse(code);
+    } else {
+      mStyle = code;
+    }
+    return mStyle.backgroundColor;
+  };
+
   const setMenus = useCallback(() => {
     return getConfig('Presence', []).map(item => {
       return {
@@ -29,7 +40,10 @@ const Header = () => {
         },
         name: (
           <>
-            <span className={`status ${item.class}`}></span>
+            <span
+              style={{ backgroundColor: getPresenseColor(item.mobileStyle) }}
+              className="status"
+            ></span>
             {getDictionary(item.name)}
           </>
         ),
