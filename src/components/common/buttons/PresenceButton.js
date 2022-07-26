@@ -21,11 +21,17 @@ const presenceText = code => {
 
 const presenceClass = code => {
   const findPr = getConfig('Presence', []).find(item => item.code == code);
+  let mStyle = {};
 
   if (findPr) {
-    return findPr.class;
+    if (typeof findPr.mobileStyle == 'string') {
+      mStyle = JSON.parse(findPr.mobileStyle);
+    } else {
+      mStyle = findPr.mobileStyle;
+    }
+    return mStyle;
   } else {
-    return 'offline';
+    return (mStyle = { backgroundColor: '#cacaca' });
   }
 };
 
@@ -64,11 +70,13 @@ const PresenceButton = ({ userId, state, isInherit }) => {
   const drawPresence = useMemo(() => {
     if ((isInherit == true && presence) || (state != null && state != '')) {
       const value = presence ? presence : state;
+      let preColor = presenceClass(value).backgroundColor;
 
       return (
         <div
           title={presenceText(value)}
-          className={['status', presenceClass(value)].join(' ')}
+          style={{ backgroundColor: preColor }}
+          className="status"
         ></div>
       );
     }
