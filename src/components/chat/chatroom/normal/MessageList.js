@@ -31,7 +31,7 @@ import {
 import { hasClass, messageCopy, getMsgElement } from '@/lib/util/domUtil';
 import { evalConnector } from '@/lib/deviceConnector';
 import { getMessage } from '@/lib/messageUtil';
-import { deleteChatroomMessage, createBookmark } from '@/lib/message';
+import { deleteChatroomMessage } from '@/lib/message';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import ShareContainer from '@C/share/ShareContainer';
 import { checkFileTokenValidation } from '@/lib/fileUpload/coviFile';
@@ -56,11 +56,9 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const [messageLoading, setMessageLoading] = useState(false);
   const [topEnd, setTopEnd] = useState(false);
   const [reload, setReload] = useState(false);
-
   const [startSelectMessage, setStartSelectMessage] = useState(-1);
   const [endSelectMessage, setEndSelectMessage] = useState(-1);
   const cbRef = useRef(null);
-  const useBookmark = getConfig('UseBookmark', 'N') === 'Y';
   const dispatch = useDispatch();
 
   const disableCopy = async e => {
@@ -368,42 +366,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     dispatch(initMessages());
   }, [dispatch]);
 
-  const handleAddBookmark = message => {
-    const sendData = {
-      roomId: currentRoom.roomID.toString(),
-      messageId: message.messageID.toString(),
-    };
-
-    let popupMsg = '';
-
-    createBookmark(sendData)
-      .then(({ data }) => {
-        if (data?.status == 'SUCCESS') {
-          popupMsg = covi.getDic(
-            'Msg_Bookmark_Registeration',
-            '책갈피가 등록되었습니다.',
-          );
-        } else if (data?.status === 'DUPLICATE') {
-          popupMsg = covi.getDic(
-            'Msg_Bookmark_Registeration_duplicate',
-            '이미 등록된 책갈피 입니다',
-          );
-        } else {
-          popupMsg = covi.getDic(
-            'Msg_Bookmark_Registeration_fail',
-            '책갈피가 등록에 실패했습니다.',
-          );
-        }
-        openPopup(
-          {
-            type: 'Alert',
-            message: popupMsg,
-          },
-          dispatch,
-        );
-      })
-      .catch(error => console.log('Send Error   ', error));
-  };
   const getMenuData = useCallback(
     message => {
       const menus = [];
@@ -456,14 +418,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
             },
             name: covi.getDic('Forward', '전달'),
           });
-          if (useBookmark === true) {
-            menus.push({
-              code: 'addBookmark',
-              isline: false,
-              onClick: () => handleAddBookmark(message),
-              name: covi.getDic('AddBookmark', '책갈피등록'),
-            });
-          }
         } else if (messageType === 'files') {
           const useForwardFile = getConfig('UseForwardFile', false);
           // 파일을 전달할 경우 파일 토큰의 유효성을 먼저 검증
@@ -530,14 +484,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               },
               name: covi.getDic('Forward', '전달'),
             });
-            if (useBookmark === true) {
-              menus.push({
-                code: 'addBookmark',
-                isline: false,
-                onClick: () => handleAddBookmark(message),
-                name: covi.getDic('AddBookmark', '책갈피등록'),
-              });
-            }
           }
         }
         if (useMessageDelete && message?.isMine === 'Y') {

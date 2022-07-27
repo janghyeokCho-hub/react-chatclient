@@ -9,11 +9,7 @@ import NoticeBox from '@C/channels/channel/normal/NoticeBox';
 import { format } from 'date-fns';
 import { setMessages, initMessages } from '@/modules/channel';
 import { setChannelNotice } from '@/lib/channel';
-import {
-  getChannelMessages,
-  deleteChannelMessage,
-  createBookmark,
-} from '@/lib/message';
+import { getChannelMessages, deleteChannelMessage } from '@/lib/message';
 import {
   isJSONStr,
   openPopup,
@@ -66,7 +62,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
   const [clickNewMessageSeperator, setClickNewMessageSeperator] =
     useState(false);
   const [noticeIsBlock, setNoticeIsBlock] = useState(false);
-  const useBookmark = getConfig('UseBookmark', 'N') === 'Y';
 
   const dispatch = useDispatch();
 
@@ -168,43 +163,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     dispatch(initMessages());
   }, [dispatch]);
 
-  const handleAddBookmark = message => {
-    const sendData = {
-      roomId: currentChannel.roomId.toString(),
-      messageId: message.messageID.toString(),
-    };
-
-    createBookmark(sendData)
-      .then(({ data }) => {
-        let popupMsg = '';
-
-        if (data?.status == 'SUCCESS') {
-          popupMsg = covi.getDic(
-            'Msg_Bookmark_Registeration',
-            '책갈피가 등록되었습니다.',
-          );
-        } else if (data?.status === 'DUPLICATE') {
-          popupMsg = covi.getDic(
-            'Msg_Bookmark_Registeration_duplicate',
-            '이미 등록된 책갈피 입니다',
-          );
-        } else {
-          popupMsg = covi.getDic(
-            'Msg_Bookmark_Registeration_fail',
-            '책갈피가 등록에 실패했습니다.',
-          );
-        }
-        openPopup(
-          {
-            type: 'Alert',
-            message: popupMsg,
-          },
-          dispatch,
-        );
-      })
-      .catch(error => console.log('Send Error   ', error));
-  };
-
   const getMenuData = useCallback(
     message => {
       const menus = [];
@@ -287,14 +245,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                 name: covi.getDic('Notice', 'Notice'),
               },
             );
-            if (useBookmark === true) {
-              menus.push({
-                code: 'addBookmark',
-                isline: false,
-                onClick: () => handleAddBookmark(message),
-                name: covi.getDic('AddBookmark', '책갈피등록'),
-              });
-            }
           }
         } else if (messageType === 'files') {
           const useForwardFile = getConfig('UseForwardFile', false);
@@ -363,14 +313,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
               },
               name: covi.getDic('Forward', '전달'),
             });
-            if (useBookmark === true) {
-              menus.push({
-                code: 'addBookmark',
-                isline: false,
-                onClick: () => handleAddBookmark(message),
-                name: covi.getDic('AddBookmark', '책갈피등록'),
-              });
-            }
           }
         }
 
