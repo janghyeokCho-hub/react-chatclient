@@ -13,14 +13,15 @@ import {
   eumTalkRegularExp,
   tagPattern,
   isJSONStr,
+  openPopup,
 } from '@/lib/common';
 import LinkMessageBox from '@C/chat/message/LinkMessageBox'; // 그대로 사용
 import FileMessageBox from '@C/chat/message/FileMessageBox'; // 그대로 사용
 import { useChatFontSize } from '@/hooks/useChat';
-
 import { setMessageLinkInfo } from '@/modules/channel';
-
 import { evalConnector } from '@/lib/deviceConnector';
+import { getConfig } from '@/lib/util/configUtil';
+import { createBookmark, getBookmarkList, deleteBookmark } from '@/lib/message';
 
 const MessageBox = ({
   message,
@@ -33,6 +34,9 @@ const MessageBox = ({
   isBlock,
 }) => {
   const [fontSize] = useChatFontSize();
+  const currentChannel = useSelector(({ channel }) => channel.currentChannel);
+  const useBookmark = getConfig('UseBookmark', 'N') === 'Y';
+
   const loginId = useSelector(({ login }) => login.id);
   const currMember = useSelector(
     ({ room, channel }) =>
@@ -58,6 +62,133 @@ const MessageBox = ({
     [dispatch],
   );
 
+  //bookmarkList 불러오기
+  const { data: bookmarkList, mutate: setBookmarkList } = useSWR(
+    `bookmark/${currentChannel.roomId}`,
+    async () => {
+      const response = await getBookmarkList(currentChannel.roomId.toString());
+      if (response.data.status === 'SUCCESS') {
+        return response.data.list;
+      }
+      return [];
+    },
+  );
+
+  const handleAddBookmark = message => {
+    const sendData = {
+      roomId: currentChannel.roomId.toString(),
+      messageId: message.messageID.toString(),
+    };
+
+    createBookmark(sendData)
+      .then(async ({ data }) => {
+        let popupMsg = '';
+
+        if (data?.status == 'SUCCESS') {
+          const response = await getBookmarkList(
+            currentChannel.roomId.toString(),
+          );
+          let list = [];
+
+          if (response.data.status === 'SUCCESS') {
+            list = response.data.list;
+          }
+          setBookmarkList(list);
+
+          popupMsg = covi.getDic(
+            'Msg_Bookmark_Registeration',
+            '책갈피가 등록되었습니다.',
+          );
+        } else {
+          popupMsg = covi.getDic(
+            'Msg_Bookmark_Registeration_fail',
+            '책갈피가 등록에 실패했습니다.',
+          );
+        }
+        openPopup(
+          {
+            type: 'Alert',
+            message: popupMsg,
+          },
+          dispatch,
+        );
+      })
+      .catch(error => console.log('Send Error   ', error));
+  };
+
+  //책갈피 삭제
+
+  const handleDeleteBookmark = bookmark => {
+    const param = {
+      roomId: bookmark.roomId.toString(),
+      bookmarkId: bookmark.bookmarkId,
+    };
+    deleteBookmark(param)
+      .then(({ data }) => {
+        let popupMsg = '';
+
+        if (data?.status == 'SUCCESS') {
+          setBookmarkList(
+            bookmarkList?.filter(
+              bookmarkOrigin =>
+                bookmarkOrigin.bookmarkId !== bookmark.bookmarkId,
+            ),
+          );
+          popupMsg = covi.getDic(
+            'Msg_Bookmark_Delete',
+            '책갈피가 삭제되었습니다.',
+          );
+        } else {
+          popupMsg = covi.getDic(
+            'Msg_Bookmark_Delete_fail',
+            '책갈피 삭제에 실패했습니다.',
+          );
+        }
+        openPopup(
+          {
+            type: 'Alert',
+            message: popupMsg,
+          },
+          dispatch,
+        );
+      })
+      .catch(error => console.log('Send Error   ', error));
+  };
+
+  const menus = useMemo(() => {
+    let _menus = getMenuData(message);
+
+    const isExistOnBookmark =
+      bookmarkList?.filter(bookmark => bookmark.messageId === message.messageID)
+        .length > 0;
+    const bookmark = bookmarkList?.find((bookmark = {}) => {
+      if (bookmark.messageId === message.messageID) return bookmark;
+    });
+
+    if (useBookmark === true) {
+      if (isExistOnBookmark === true) {
+        _menus.push({
+          code: 'deleteBookmark',
+          isline: false,
+          onClick: () => handleDeleteBookmark(bookmark),
+          name: covi.getDic('DeleteBookmark', '책갈피삭제'),
+        });
+      } else {
+        _menus.push({
+          code: 'addBookmark',
+          isline: false,
+          onClick: () => handleAddBookmark(message),
+          name: covi.getDic('AddBookmark', '책갈피등록'),
+        });
+      }
+    }
+
+    if (isBlock) {
+      _menus = [];
+    }
+    return _menus;
+  }, [bookmarkList]);
+
   const drawMessage = useMemo(() => {
     let drawText = isBlock
       ? covi.getDic('BlockChat', '차단된 메시지 입니다.')
@@ -72,11 +203,9 @@ const MessageBox = ({
     let messageType = 'message';
     let mentionInfo = [];
 
-    let menus = [];
     let menuId = '';
     let fileMenuId = '';
     if (!isBlock && getMenuData) {
-      menus = getMenuData(message);
       menuId = `channelmessage_${message.messageID}`;
       fileMenuId = `channelfilemessage_${message.messageID}`;
     }
@@ -458,6 +587,7 @@ const MessageBox = ({
     timeBox,
     isBlock,
     searchOptionState,
+    menus,
   ]);
 
   return drawMessage;
