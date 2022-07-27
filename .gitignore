@@ -6,6 +6,8 @@ build/
 dev-build/
 prod
 
+*-error.log
+
 # MacOS finder env file
 .DS_Store
 
