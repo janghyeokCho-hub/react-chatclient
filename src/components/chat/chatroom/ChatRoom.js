@@ -11,6 +11,7 @@ import {
   checkRoomMove,
 } from '@/modules/room';
 import { sendMessage, clearFiles, updateTempMessage } from '@/modules/message';
+import { changeRemoteStatus } from '@/modules/remote';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import { addTargetUserList, delTargetUserList } from '@/modules/presence';
 import { newChatRoom, evalConnector, focusWin } from '@/lib/deviceConnector';
@@ -42,6 +43,7 @@ const ChatRoom = ({ match, roomInfo }) => {
   const blockUser = useSelector(({ login }) => login.blockList);
   const moveVisible = useSelector(({ message }) => message.moveVisible);
   const loading = useSelector(({ loading }) => loading['room/GET_ROOM_INFO']);
+  const onRemote = useSelector(({ remote }) => remote.onRemote);
 
   const [searchVisible, setSearchVisible] = useState(false);
   const [viewFileUpload, setViewFileUpload] = useState(false);
@@ -85,6 +87,14 @@ const ChatRoom = ({ match, roomInfo }) => {
             focusWin();
             clearLayer(dispatch);
             if (!data.isChannel) dispatch(checkRoomMove(data));
+          },
+        });
+        evalConnector({
+          method: 'on',
+          channel: 'onChangeRemote',
+          callback: (_, data) => {
+            console.log('change remote >', data);
+            dispatch(changeRemoteStatus(data));
           },
         });
       }
@@ -233,6 +243,7 @@ const ChatRoom = ({ match, roomInfo }) => {
 
   return (
     <>
+      {onRemote && <LoadingWrap />}
       {loading && <LoadingWrap />}
       {!loading && roomID && (
         <>
