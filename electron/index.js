@@ -1224,11 +1224,11 @@ ipcMain.on('req-get-remote-info', async (event, args) => {
 });
 
 ipcMain.on('onVNCRemote', (event, args) => {
-  createRemoteVNC(args.roomId);
+  createRemoteVNC(win, args.roomId);
 });
 
 ipcMain.on('onVNCRemoteHost', (event, args) => {
-  createRemoteVNCHost(args.roomId);
+  createRemoteVNCHost(win, args.roomId);
 });
 
 ipcMain.on('req-del-chatroom-message', (_, args) => {

@@ -1,6 +1,8 @@
 import { app } from 'electron';
+
 import { spawn } from 'child_process';
 import { resolve, dirname } from 'path';
+
 import logger from './logger';
 
 export const connectRemoteViewer = sessionKey => {
@@ -72,39 +74,44 @@ export const connectRemoteHost = sessionKey => {
   });
 };
 
-
 function matchDigit8(str) {
   const leng = String(str).length;
   let result = String(str);
   if (leng < 8) {
-      for (let i = 0; i < 7 - leng; i++) {
-          result = '0' + result;
-      }
+    for (let i = 0; i < 7 - leng; i++) {
+      result = '0' + result;
+    }
   }
-  return  "1" + result;
+  return '1' + result;
 }
 
-export const createRemoteVNCHost = vncArgs => {
+export const createRemoteVNCHost = (parentWin, roomId) => {
   const appPath = dirname(app.getAppPath());
   const filePath = resolve(appPath, 'vncremote', 'winvnc.exe');
 
-  let vncHostProcess = spawn(`${filePath}`, ['-sc_prompt','-sc_exit',`-id:${matchDigit8(vncArgs)}`,'-connect', 'eum.covision.co.kr:5500','-run' ], { shell: true });
-  
+  const vncHostProcess = spawn(
+    `${filePath}`,
+    [
+      '-sc_prompt',
+      '-sc_exit',
+      `-id:${matchDigit8(roomId)}`,
+      '-connect',
+      'eum.covision.co.kr:5500',
+      '-run',
+    ],
+    { shell: true },
+  );
+
+  parentWin.webContents.send('onChangeRemote', true);
+
   vncHostProcess.stderr.on('data', data => {
-    console.log('winvnc.exe call stderr =>');
+    console.log('winvnc.exe call stdout =>');
     console.log(data);
-
-    const msg = new TextDecoder('euc-kr').decode(data);
-
-    console.log(msg);
   });
 
   vncHostProcess.stdout.on('data', data => {
     console.log('winvnc.exe call stdout =>');
     console.log(data);
-    const msg = new TextDecoder('euc-kr').decode(data);
-
-    console.log(msg);
   });
 
   vncHostProcess.on('error', err => {
@@ -113,29 +120,38 @@ export const createRemoteVNCHost = vncArgs => {
 
   vncHostProcess.once('exit', code => {
     console.log('winvnc.exe has terminated with code: ' + code);
+    parentWin.webContents.send('onChangeRemote', false);
   });
 };
 
-
-
-export const createRemoteVNC = roomId => {
+export const createRemoteVNC = (parentWin, roomId) => {
   const appPath = dirname(app.getAppPath());
   const filePath = resolve(appPath, 'vncremote', 'vncviewer.exe');
 
   const vncProcess = spawn(
     `${filePath}`,
-    ['-proxy', 'eum.covision.co.kr:5901', `ID:${matchDigit8(roomId)}`],
+    [
+      '-autoacceptincoming',
+      '-disablesponsor',
+      '-nostatus',
+      '-quickoption 7',
+      '-proxy',
+      'eum.covision.co.kr:5901',
+      `ID:${matchDigit8(roomId)}`,
+    ],
     { shell: true },
   );
 
+  parentWin.webContents.send('onChangeRemote', true);
+
   vncProcess.stderr.on('data', data => {
-    const msg = new TextDecoder('euc-kr').decode(data);
-    console.log(msg);
+    console.log('winvnc.exe call stdout =>');
+    console.log(data);
   });
 
   vncProcess.stdout.on('data', data => {
-    const msg = new TextDecoder('euc-kr').decode(data);
-    console.log(msg);
+    console.log('winvnc.exe call stdout =>');
+    console.log(data);
   });
 
   vncProcess.on('error', err => {
@@ -144,8 +160,6 @@ export const createRemoteVNC = roomId => {
 
   vncProcess.once('exit', code => {
     console.log('vncviewer.exe has terminated with code: ' + code);
-    // if (code == 0) {
-    //   if (alert) alert();
-    // }
+    parentWin.webContents.send('onChangeRemote', false);
   });
 };

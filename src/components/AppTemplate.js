@@ -5,7 +5,11 @@ import LeftMenu from '@C/LeftMenu';
 import Content from '@C/Content';
 import MultiView from '@C/MultiView';
 import GadgetView from '@C/GadgetView';
+
+import LoadingWrap from '@COMMON/LoadingWrap';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
+
+import { changeRemoteStatus } from '@/modules/remote';
 import {
   closeWinRoom,
   changeViewType,
@@ -26,8 +30,8 @@ import { clearLayer, openPopup } from '@/lib/common';
 import Header from '@C/Header';
 import {
   evalConnector,
-  newChatRoom,
   focusWin,
+  broadcastEvent,
   closeAllChildWindow,
 } from '@/lib/deviceConnector';
 import { leaveRoomUtilAfter, openChatRoomViewCallback } from '@/lib/roomUtil';
@@ -196,6 +200,15 @@ const AppTemplate = () => {
         channel: 'onReSync',
         callback: (event, data) => {
           dispatch(reSync());
+        },
+      });
+
+      evalConnector({
+        method: 'on',
+        channel: 'onChangeRemote',
+        callback: (event, data) => {
+          console.log('change remote >', data);
+          broadcastEvent('onChangeRemote', data);
         },
       });
 
