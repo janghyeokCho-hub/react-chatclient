@@ -1,5 +1,5 @@
 import { app, BrowserWindow } from 'electron';
-import * as db from '../utils/dbUtils';
+import * as db from '../database';
 import url from 'url';
 import path from 'path';
 import logger from '../utils/logger';
