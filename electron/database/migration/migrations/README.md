@@ -48,6 +48,32 @@ export const migrationPlans = {
 };
 ```
 
+4. `electron/database/models` 디렉토리에 db스키마 변경내역 반영
+```javascript
+// Example: database/models/message.js
+export function createMessageTable(table) {
+  table.integer('messageId').primary();
+  table.integer('roomId').index();
+  table.text('context');
+  table.string('sender', 50);
+  table.bigInteger('sendDate');
+  table.string('roomType', 1);
+  table.string('receiver', 255)
+  table.string('messageType', 1);
+  table.integer('unreadCnt');
+  table.string('isSyncUnread', 1);
+  table.string('readYN', 1);
+  table.string('isMine', 1);
+  table.integer('tempId');
+  table.string('fileInfos', 255);
+  table.string('linkInfo', 255);
+  table.string('tagInfo', 255);
+  table.json('senderInfo');
+  table.json('reserved');
+  table.json('botInfo'); // new
+}
+```
+
 ## ❗️주의사항❗️
 - 한 번 운영에 배포했던 migration은 수정하면 안 됨
   - migration의 이름(`migrationPlans`의 1-chatbot 등)을 변경하거나 새로 추가한 migration과의 순서가 꼬이면, 해당 migration을 이미 완료한 버전의 db파일에서는 다음 실행시 오류 발생 위험 > 로컬데이터 초기화 필요
