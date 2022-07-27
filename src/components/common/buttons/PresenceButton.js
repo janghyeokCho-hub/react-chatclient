@@ -19,19 +19,21 @@ const presenceText = code => {
   }
 };
 
-const presenceClass = code => {
-  const findPr = getConfig('Presence', []).find(item => item.code == code);
-  let mStyle = {};
-
-  if (findPr) {
-    if (typeof findPr.mobileStyle == 'string') {
-      mStyle = JSON.parse(findPr.mobileStyle);
+const getPresenceStyle = code => {
+  const presence = getConfig('Presence', []).find(item => item.code == code);
+  if (presence) {
+    let style = {};
+    if (typeof presence.mobileStyle == 'string') {
+      style = JSON.parse(presence.mobileStyle);
     } else {
-      mStyle = findPr.mobileStyle;
+      style = presence.mobileStyle;
     }
-    return mStyle;
+    if (style?.borderColor) {
+      style['border'] = `1px solid ${style.borderColor}`;
+    }
+    return style;
   } else {
-    return (mStyle = { backgroundColor: '#cacaca' });
+    return { backgroundColor: '#cacaca' };
   }
 };
 
@@ -70,12 +72,12 @@ const PresenceButton = ({ userId, state, isInherit }) => {
   const drawPresence = useMemo(() => {
     if ((isInherit == true && presence) || (state != null && state != '')) {
       const value = presence ? presence : state;
-      let preColor = presenceClass(value).backgroundColor;
+      const presenceStyle = getPresenceStyle(value);
 
       return (
         <div
           title={presenceText(value)}
-          style={{ backgroundColor: preColor }}
+          style={presenceStyle}
           className="status"
         ></div>
       );
