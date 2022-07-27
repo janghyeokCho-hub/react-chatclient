@@ -39,10 +39,20 @@ export async function makeConnection(dbPath, fileName) {
 
   const connection = Knex(myDBConfig);
   if (isDatabaseExisting === false) {
-    logger.info(`[DB] Initialize ${fileName}`);
-    await initializeDatabase(connection);
+    try {
+      await initializeDatabase(connection);
+    } catch (err) {
+      logger.info(
+        '[DB-migration] An error occured when initializing databse: ' +
+          JSON.stringify(err),
+      );
+    }
   }
-  await migrateDatabase(connection, isDatabaseExisting);
+  try {
+    await migrateDatabase(connection, isDatabaseExisting);
+  } catch(err) {
+    logger.info(`[DB-migration] An error occured when migrating database: ${JSON.stringify(err)}`);
+  }
   logger.info(`[DB] Create connection(${fileName}) success`);
   return connection;
 }

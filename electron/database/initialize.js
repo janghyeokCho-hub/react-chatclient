@@ -23,19 +23,13 @@ export async function checkDatabaseExists(dbPath, fileName) {
 }
 
 export async function initializeDatabase(conn) {
-  try {
-    const res = await Promise.allSettled([
-      conn.schema.createTable('access', createAccessTable),
-      conn.schema.createTable('message', createMessageTable),
-      conn.schema.createTable('room', createRoomTable),
-      conn.schema.createTable('room_member', createRoomMemberTable),
-      conn.schema.createTable('users', createUserTable),
-    ]);
-    return res;
-  } catch (err) {
-    logger.info(
-      'An error occured when initializing databse: ' + JSON.stringify(err),
-    );
-    return null;
-  }
+  logger.info(`[DB] Initialize ${fileName}`);
+  const res = await Promise.allSettled([
+    conn.schema.createTable('access', createAccessTable),
+    conn.schema.createTable('message', createMessageTable),
+    conn.schema.createTable('room', createRoomTable),
+    conn.schema.createTable('room_member', createRoomMemberTable),
+    conn.schema.createTable('users', createUserTable),
+  ]);
+  return res;
 }
