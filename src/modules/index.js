@@ -15,6 +15,7 @@ import { noteSaga } from '@/modules/note';
 import mainlayer from '@/modules/mainlayer';
 import error from '@/modules/error';
 import util from '@/modules/util';
+import remote from '@/modules/remote';
 
 import { clearUserData } from '@/lib/util/localStorageUtil';
 
@@ -32,6 +33,7 @@ const appReducer = combineReducers({
   mainlayer,
   error,
   util,
+  remote,
 });
 
 const rootReducer = (state, action) => {
