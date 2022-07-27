@@ -1,6 +1,5 @@
 import { app } from 'electron';
-import fs from 'fs';
-import mkdirp from 'mkdirp';
+import fs from 'fs-extra';
 import path from 'path';
 import * as configSecure from './secureConfigUtils';
 import { getAesUtilForLocalSetting } from '../utils/aesUtil';
@@ -153,7 +152,7 @@ class SecureConfigLoader {
 export const getSecureConfig = (file, configPath) => {
   const makePath = !configPath ? rootPath : path.join(rootPath, configPath);
   if (!fs.existsSync(makePath)) {
-    mkdirp.sync(makePath);
+    fs.mkdirpSync(makePath);
   }
 
   const config = new SecureConfigLoader(makePath, file);
@@ -162,7 +161,7 @@ export const getSecureConfig = (file, configPath) => {
 
 export const getSecureConfigUsingExsistFile = async (file, configData) => {
   if (!fs.existsSync(rootPath)) {
-    mkdirp.sync(rootPath);
+    fs.mkdirpSync(rootPath);
   }
 
   const config = new SecureConfigLoader(rootPath, file, configData);

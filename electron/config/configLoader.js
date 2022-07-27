@@ -1,6 +1,5 @@
 import { app } from 'electron';
-import fs from 'fs';
-import mkdirp from 'mkdirp';
+import fs from 'fs-extra';
 import path from 'path';
 import * as u from './configUtils';
 
@@ -111,7 +110,7 @@ export const getConfig = (file, configPath) => {
   // root config folder 미생성시 생성
   const makePath = !configPath ? rootPath : path.join(rootPath, configPath);
   if (!fs.existsSync(makePath)) {
-    mkdirp.sync(makePath);
+    fs.mkdirSync(makePath);
   }
 
   const config = new ConfigLoader(makePath, file);
