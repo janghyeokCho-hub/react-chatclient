@@ -3,9 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import { updateMyPresence } from '@/lib/presenceUtil';
 import IconConxtMenu from './common/popup/IconConxtMenu';
-import Config from '@/config/config';
-import { openLayer, getDictionary } from '@/lib/common';
-import InviteMember from './chat/chatroom/layer/InviteMember';
+import { getDictionary } from '@/lib/common';
 import { evalConnector } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
 
@@ -19,19 +17,22 @@ const Header = () => {
 
   const dispatch = useDispatch();
 
-  const getPresenseColor = code => {
-    let mStyle = {};
-
+  const getPresenceStyle = code => {
+    let style = {};
     if (typeof code == 'string') {
-      mStyle = JSON.parse(code);
+      style = JSON.parse(code);
     } else {
-      mStyle = code;
+      style = code;
     }
-    return mStyle.backgroundColor;
+    if (style?.borderColor) {
+      style['border'] = `1px solid ${style.borderColor}`;
+    }
+    return style;
   };
 
   const setMenus = useCallback(() => {
     return getConfig('Presence', []).map(item => {
+      const presenceStyle = getPresenceStyle(item?.mobileStyle)
       return {
         code: item.code,
         isline: false,
@@ -41,7 +42,7 @@ const Header = () => {
         name: (
           <>
             <span
-              style={{ backgroundColor: getPresenseColor(item.mobileStyle) }}
+              style={presenceStyle}
               className="status"
             ></span>
             {getDictionary(item.name)}
