@@ -18,7 +18,7 @@ export function getDatabaseFileName(dbName) {
 }
 
 export async function makeConnection(dbPath, fileName) {
-  const isDatabaseExisting = await checkDatabaseExists(dbPath, fileName)
+  const isDatabaseExisting = await checkDatabaseExists(dbPath, fileName);
   const myDBConfig = {
     client: 'sqlite3',
     connection: {
@@ -40,6 +40,7 @@ export async function makeConnection(dbPath, fileName) {
   const connection = Knex(myDBConfig);
   if (isDatabaseExisting === false) {
     try {
+      logger.info(`[DB] Initialize ${fileName}`);
       await initializeDatabase(connection);
     } catch (err) {
       logger.info(
