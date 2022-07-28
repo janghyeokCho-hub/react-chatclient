@@ -23,7 +23,6 @@ export async function checkDatabaseExists(dbPath, fileName) {
 }
 
 export async function initializeDatabase(conn) {
-  logger.info(`[DB] Initialize ${fileName}`);
   const res = await Promise.allSettled([
     conn.schema.createTable('access', createAccessTable),
     conn.schema.createTable('message', createMessageTable),
