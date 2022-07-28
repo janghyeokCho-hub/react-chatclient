@@ -6,27 +6,11 @@ export const migrationPlans = {
 };
 
 export class MigrationSource {
-  constructor(initialized) {
-    this.initialized = Boolean(initialized);
-  }
   getMigrationName(migration) {
     return migration;
   }
   getMigration(migration) {
-    // DB 최초 생성시점에 migration 호출시 모든 migration 스킵
-    if (this.initialized === true) {
-      return {
-        async up(knex) {
-          logger.info(`[DB-migration] Skip migration-upgrade ${migration}`);
-          return knex;
-        },
-        async down(knex) {
-          logger.info(`[DB-migration] Skip migration-downgrade ${migration}`);
-          return knex;
-        },
-      };
-    }
-    return migrationPlans[migration];
+    return migrationPlans?.[migration];
   }
   async getMigrations() {
     return Object.keys(migrationPlans);

@@ -50,9 +50,13 @@ export async function makeConnection(dbPath, fileName) {
     }
   }
   try {
-    await migrateDatabase(connection, isDatabaseExisting);
-  } catch(err) {
-    logger.info(`[DB-migration] An error occured when migrating database: ${JSON.stringify(err)}`);
+    await migrateDatabase(connection);
+  } catch (err) {
+    logger.info(
+      `[DB-migration] An error occured when migrating database: ${JSON.stringify(
+        err,
+      )}`,
+    );
   }
   logger.info(`[DB] Create connection(${fileName}) success`);
   return connection;
