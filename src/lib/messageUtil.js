@@ -89,11 +89,6 @@ export const convertChildren = ({
   mentionInfo = {},
 }) => {
   const returnJSX = [];
-  const collectURL = text => {
-    const rUrlRegex =
-      /(?:(?:(https?|ftp|telnet):\/\/|[\s\t\r\n\[\]\`\<\>\"\'])((?:[\w$\-_\.+!*\'\(\),]|%[0-9a-f][0-9a-f])*\:(?:[\w$\-_\.+!*\'\(\),;\?&=]|%[0-9a-f][0-9a-f])+\@)?(?:((?:(?:[a-z0-9\-가-힣]+\.)+[a-z0-9\-]{2,})|(?:[\d]{1,3}\.){3}[\d]{1,3})|localhost)(?:\:([0-9]+))?((?:\/(?:[\w$\-_\.+!*\'\(\),;:@&=ㄱ-ㅎㅏ-ㅣ가-힣]|%[0-9a-f][0-9a-f])+)*)(?:\/([^\s\/\?\.:<>|#]*(?:\.[^\s\/\?:<>|#]+)*))?(\/?[\?;](?:[a-z0-9\-]+(?:=[^\s:&<>]*)?\&)*[a-z0-9\-]+(?:=[^\s:&<>]*)?)?(#[\w\-]+)?)/gim;
-    return text ? text.match(rUrlRegex)?.[0] : '';
-  };
   let txt = '';
   let onTag = false;
   for (let i = 0; i < children.length; i++) {
@@ -131,13 +126,13 @@ export const convertChildren = ({
       const attrs = getAttribute(match?.[0]);
       switch (matchedTag) {
         case 'LINK':
-          if (attrs.link && collectURL(attrs.link)) {
+          if (attrs.link) {
             returnTag = (
               <Link
                 key={returnJSX.length}
                 marking={marking}
                 {...attrs}
-                link={collectURL(attrs.link)}
+                link={attrs.link}
               ></Link>
             );
           }
