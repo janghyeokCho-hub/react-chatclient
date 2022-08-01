@@ -191,6 +191,7 @@ const MoveList = ({ moveData, roomID, chineseWall }) => {
                 timeBox={timeBox}
                 id={`msg_${message.messageID}`}
                 isBlock={isBlock}
+                getMenuData={() =>{}}
               ></MessageBox>,
             );
           } else {
@@ -202,6 +203,7 @@ const MoveList = ({ moveData, roomID, chineseWall }) => {
                 nameBox={nameBox}
                 timeBox={timeBox}
                 isBlock={isBlock}
+                getMenuData={() =>{}}
               ></MessageBox>,
             );
           }

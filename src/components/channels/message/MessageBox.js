@@ -34,7 +34,11 @@ const MessageBox = ({
   isBlock,
 }) => {
   const [fontSize] = useChatFontSize();
-  const currentChannel = useSelector(({ channel }) => channel.currentChannel);
+  const roomId = useSelector(
+    ({ room, channel }) =>
+      room.currentRoom?.roomID || channel.currentChannel?.roomId,
+  );
+
   const useBookmark = getConfig('UseBookmark', 'N') === 'Y';
 
   const loginId = useSelector(({ login }) => login.id);
@@ -51,7 +55,7 @@ const MessageBox = ({
 
   const isOldMember = useMemo(() => {
     return !loading && typeof currMember != 'undefined'
-      ? currMember.find(item => item.id == message.sender) == undefined
+      ? currMember?.find(item => item.id == message.sender) == undefined
       : loading;
   }, [currMember, loading]);
 
@@ -64,9 +68,9 @@ const MessageBox = ({
 
   //bookmarkList 불러오기
   const { data: bookmarkList, mutate: setBookmarkList } = useSWR(
-    `bookmark/${currentChannel.roomId}`,
+    `bookmark/${roomId}`,
     async () => {
-      const response = await getBookmarkList(currentChannel.roomId.toString());
+      const response = await getBookmarkList(roomId.toString());
       if (response.data.status === 'SUCCESS') {
         return response.data.list;
       }
@@ -76,7 +80,7 @@ const MessageBox = ({
 
   const handleAddBookmark = message => {
     const sendData = {
-      roomId: currentChannel.roomId.toString(),
+      roomId: roomId.toString(),
       messageId: message.messageID.toString(),
     };
 
@@ -86,7 +90,7 @@ const MessageBox = ({
 
         if (data?.status == 'SUCCESS') {
           const response = await getBookmarkList(
-            currentChannel.roomId.toString(),
+            roomId.toString(),
           );
           let list = [];
 
@@ -156,7 +160,7 @@ const MessageBox = ({
   };
 
   const menus = useMemo(() => {
-    let _menus = getMenuData(message);
+    let _menus = getMenuData(message) || [];
 
     const isExistOnBookmark =
       bookmarkList?.filter(bookmark => bookmark.messageId === message.messageID)
@@ -433,7 +437,7 @@ const MessageBox = ({
       // Mention 처리
       if (mentionInfo?.length) {
         mentionInfo.map((m, idx) => {
-          const member = currMember.find(item => item.id == m.id);
+          const member = currMember?.find(item => item.id == m.id);
           if (member) {
             mentionInfo[idx] = { isMine: member.id == loginId, ...member };
           }
