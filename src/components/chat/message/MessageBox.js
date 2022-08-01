@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ProfileBox from '@COMMON/ProfileBox';
 import Message from '@C/chat/message/Message';
@@ -16,7 +16,7 @@ import {
 import LinkMessageBox from '@C/chat/message/LinkMessageBox';
 import FileMessageBox from '@C/chat/message/FileMessageBox';
 import { useChatFontSize } from '@/hooks/useChat';
-import { setMessageLinkInfo } from '@/modules/room';
+import room, { setMessageLinkInfo } from '@/modules/room';
 import { evalConnector } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
 import useSWR from 'swr';
@@ -37,16 +37,16 @@ const MessageBox = ({
   isBlock,
 }) => {
   const currMember = useSelector(({ room }) => room.currentRoom.members);
-  const currentRoom = useSelector(({ room }) => room.currentRoom);
+  const roomId = useSelector(({ room }) => room.currentRoom.roomID);
   const [fontSize] = useChatFontSize();
   const dispatch = useDispatch();
   const useBookmark = getConfig('UseBookmark', 'N') === 'Y';
 
   //bookmarkList 불러오기
   const { data: bookmarkList, mutate: setBookmarkList } = useSWR(
-    `bookmark/${currentRoom.roomID}`,
+    `bookmark/${roomId}`,
     async () => {
-      const response = await getBookmarkList(currentRoom.roomID.toString());
+      const response = await getBookmarkList(roomId.toString());
       if (response.data.status === 'SUCCESS') {
         return response.data.list;
       }
@@ -58,14 +58,14 @@ const MessageBox = ({
 
   const handleAddBookmark = message => {
     const sendData = {
-      roomId: currentRoom.roomID.toString(),
+      roomId: roomId.toString(),
       messageId: message.messageID.toString(),
     };
     createBookmark(sendData)
       .then(async ({ data }) => {
         let popupMsg = '';
         if (data?.status == 'SUCCESS') {
-          const response = await getBookmarkList(currentRoom.roomID.toString());
+          const response = await getBookmarkList(roomId.toString());
           let list = [];
           if (response.data.status === 'SUCCESS') {
             list = response.data.list;
@@ -132,7 +132,7 @@ const MessageBox = ({
   };
 
   const menus = useMemo(() => {
-    let _menus = getMenuData(message);
+    let _menus = getMenuData(message) || [];
 
     const isExistOnBookmark =
       bookmarkList?.filter(bookmark => bookmark.messageId === message.messageID)
@@ -158,7 +158,7 @@ const MessageBox = ({
         });
       }
     }
-    if (isBlock) {
+    if (isBlock && !getMenuData) {
       _menus = [];
     }
 
