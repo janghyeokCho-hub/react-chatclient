@@ -46,12 +46,19 @@ const MessageBox = ({
   const { data: bookmarkList, mutate: setBookmarkList } = useSWR(
     `bookmark/${roomId}`,
     async () => {
+      if (!useBookmark) {
+        return;
+      }
       const response = await getBookmarkList(roomId.toString());
       if (response.data.status === 'SUCCESS') {
         return response.data.list;
       }
       return [];
     },
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false
+    }
   );
 
   //책갈피 추가
