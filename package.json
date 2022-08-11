@@ -113,6 +113,7 @@
     "query-string": "^7.1.1",
     "react-color": "2.19.3",
     "react-helmet": "^6.1.0",
+    "react-tooltip": "^4.2.21",
     "spectre.css": "^0.5.3",
     "style-loader": "^2.0.0",
     "styled-components": "^5.3.3",
