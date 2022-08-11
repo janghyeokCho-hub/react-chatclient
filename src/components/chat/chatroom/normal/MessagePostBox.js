@@ -772,30 +772,6 @@ const MessagePostBox = forwardRef(
                     </button>
                   )}
 
-                  <button
-                    type="button"
-                    alt="ShareNote"
-                    title="ShareNote"
-                    onClick={e => {
-                      console.log(1);
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="13.5"
-                      height="13.519"
-                      viewBox="0 0 13.5 13.519"
-                    >
-                      <g transform="translate(0 0)">
-                        <path
-                          d="M8.795.155.524,8.426a.571.571,0,0,0-.16.365L.3,13a.5.5,0,0,0,.16.374.532.532,0,0,0,.374.142H.844l4.087-.036a.517.517,0,0,0,.374-.142L13.647,5a.543.543,0,0,0,0-.757l-4.1-4.1A.552.552,0,0,0,8.795.155ZM4.7,12.433l-3.321.045.053-3.455L6.952,3.5l3.339,3.339Zm6.339-6.339L7.709,2.755,9.178,1.286l3.33,3.339Z"
-                          transform="translate(-0.301 0)"
-                          fill="#222"
-                        />
-                      </g>
-                    </svg>
-                  </button>
-
                   {DEVICE_TYPE == 'd' &&
                     remoteAssistance &&
                     remoteAssistance.use && (
