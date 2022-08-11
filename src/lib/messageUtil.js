@@ -29,6 +29,46 @@ export const getMessage = (roomID, startId, dist) => {
   return resultObj;
 };
 
+/**
+ *
+ * @param {*} roomID 대화방 OR 채널 ID
+ * @param {*} startId replyID
+ * @param {*} endId 해당방 마지막 ID
+ * @param {*} cnt 위로 더 불러올 갯수
+ * @param {*} roomType CHAT / CHANNEL
+ * @returns
+ */
+export const getMessageBetween = async (
+  roomID,
+  startId,
+  endId,
+  cnt = 10,
+  roomType = 'CHAT',
+) => {
+  let resultObj;
+  const param = {
+    roomID,
+    startId,
+    endId,
+    cnt,
+  };
+
+  if (roomType === 'CHAT' && DEVICE_TYPE === 'd') {
+    resultObj = new Promise((resolve, _) => {
+      const returnVal = evalConnector({
+        method: 'sendSync',
+        channel: 'req-get-messages-between',
+        message: param,
+      });
+      resolve(returnVal);
+    });
+  } else {
+    resultObj = await messageApi.getMessageBetween(param);
+  }
+
+  return resultObj;
+};
+
 export const getNotice = (roomID, startId, dist) => {
   let resultObj;
   const param = {
@@ -151,7 +191,14 @@ export const convertChildren = ({
           break;
         case 'STICKER':
           if (attrs.emoticonId) {
-            returnTag = <Sticker key={returnJSX.length} {...attrs}></Sticker>;
+            returnTag = (
+              <Sticker
+                key={returnJSX.length}
+                {...attrs}
+                width={style?.width}
+                height={style?.height}
+              ></Sticker>
+            );
           }
           break;
         case 'MENTION':

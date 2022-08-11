@@ -33,6 +33,13 @@ export const getMessagePages = params => {
   );
 };
 
+export const getMessageBetween = params => {
+  return managesvr(
+    'get',
+    `/messages/reply?roomID=${params.roomID}&startId=${params.startId}&cnt=${params.cnt}`,
+  );
+};
+
 export const uploadFile = params => {
   let url = '';
   const formData = new FormData();

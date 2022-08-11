@@ -31,10 +31,10 @@ const MessageBox = ({
   endMessage,
   nameBox,
   timeBox,
-  id,
   marking,
   getMenuData,
   isBlock,
+  goToOriginMsg,
 }) => {
   const currMember = useSelector(({ room }) => room.currentRoom.members);
   const roomId = useSelector(({ room }) => room.currentRoom.roomID);
@@ -358,9 +358,16 @@ const MessageBox = ({
               )}
               <RightConxtMenu menuId={fileMenuId} menus={menus}>
                 <FileMessageBox
+                  key={`file_msg_box_${message.messageID}`}
                   messageId={message.messageID}
                   fileObj={fileInfoJSON}
-                  id={!drawText && id}
+                  id={message.messageID}
+                  isMine={message.isMine}
+                  context={message.context}
+                  replyID={message.replyID}
+                  replyInfo={message.replyInfo}
+                  goToOriginMsg={goToOriginMsg}
+                  roomType={'CHAT'}
                 />
               </RightConxtMenu>
               <div
@@ -400,9 +407,16 @@ const MessageBox = ({
               </div>
               <RightConxtMenu menuId={fileMenuId} menus={menus}>
                 <FileMessageBox
+                  key={`file_msg_box_${message.messageID}`}
                   messageId={message.messageID}
                   fileObj={fileInfoJSON}
-                  id={!drawText && id}
+                  id={message.messageID}
+                  isMine={message.isMine}
+                  context={message.context}
+                  replyID={message.replyID}
+                  replyInfo={message.replyInfo}
+                  goToOriginMsg={goToOriginMsg}
+                  roomType={'CHAT'}
                 />
               </RightConxtMenu>
             </li>
@@ -497,10 +511,13 @@ const MessageBox = ({
                         : `msgtxt ${messageType}`
                     }
                     style={isCopy ? { userSelect: 'none' } : {}}
-                    eleId={id}
+                    eleId={message.messageID}
                     marking={marking}
                     messageID={message.messageID}
                     isMine={isMine}
+                    replyID={message.replyID}
+                    replyInfo={message.replyInfo}
+                    goToOriginMsg={goToOriginMsg}
                   >
                     {drawText}
                   </Message>
@@ -569,10 +586,13 @@ const MessageBox = ({
                         : `msgtxt ${messageType}`
                     }
                     style={isCopy ? { userSelect: 'none' } : {}}
-                    eleId={id}
+                    eleId={message.messageID}
                     marking={marking}
                     messageID={message.messageID}
                     isMine={isMine}
+                    replyID={message.replyID}
+                    replyInfo={message.replyInfo}
+                    goToOriginMsg={goToOriginMsg}
                   >
                     {drawText}
                   </Message>

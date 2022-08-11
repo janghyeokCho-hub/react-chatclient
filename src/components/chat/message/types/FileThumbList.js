@@ -142,10 +142,10 @@ const File = ({ type, item, preview, id, isTemp, index, len }) => {
           try {
             // hieght에 따른 width 비율계산 필요
             const resize = resizeImage(
-              isLastIndex(index, len) && isOdd(len) ? 300 : 150,
-              150,
-              isLastIndex(index, len) && isOdd(len) ? 300 : 150,
-              150,
+              isLastIndex(index, len) && isOdd(len) ? 216 : 108,
+              108,
+              isLastIndex(index, len) && isOdd(len) ? 216 : 108,
+              108,
             );
 
             imgBox.width = resize.resizeWidth;
@@ -161,8 +161,8 @@ const File = ({ type, item, preview, id, isTemp, index, len }) => {
       <img
         id={item.token}
         src={`${Config.ServerURL.HOST}/storage/no_image.jpg`}
-        width={isLastIndex(index, len) && isOdd(len) ? 300 : 150}
-        height={150}
+        width={isLastIndex(index, len) && isOdd(len) ? 216 : 108}
+        height={216}
         style={{ border: '1px solid rgba(0,0,0,0)', borderRadius: 10 }}
         onClick={handlePreview}
       ></img>
@@ -181,7 +181,7 @@ const File = ({ type, item, preview, id, isTemp, index, len }) => {
             const imgBox = document.getElementById(item.token);
             try {
               // hieght에 따른 width 비율계산 필요
-              const resize = resizeImage(image.width, image.height, 200, 200);
+              const resize = resizeImage(image.width, image.height, 216, 216);
 
               imgBox.width = resize.resizeWidth;
               imgBox.height = resize.resizeHeight;
@@ -198,8 +198,8 @@ const File = ({ type, item, preview, id, isTemp, index, len }) => {
           <img
             id={item.token}
             src={`${Config.ServerURL.HOST}/storage/no_image.jpg`}
-            width={200}
-            height={200}
+            width={220}
+            height={220}
             onClick={handlePreview}
           ></img>
 

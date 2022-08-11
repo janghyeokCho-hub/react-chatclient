@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
 import querystring from 'query-string';
 import ChannelHeader from '@C/channels/channel/normal/ChannelHeader';
 import MessagePostBox from '@C/channels/channel/normal/MessagePostBox';
@@ -24,6 +30,9 @@ const MessageView = ({
   const channelBox = useRef(null);
   const contentEditable = useRef(null);
   const useMessageDelete = getConfig('UseChatroomDeleteMessage', 'N') === 'Y';
+
+  const [replyMode, setReplyMode] = useState(false);
+  const [replyMessage, setReplyMessage] = useState(null);
 
   const readMessageEvt = useCallback(
     e => {
@@ -135,6 +144,10 @@ const MessageView = ({
         onExtension={onExtension}
         viewExtension={viewExtension}
         useMessageDelete={useMessageDelete}
+        replyMessage={replyMessage}
+        replyMode={replyMode}
+        setReplyMode={setReplyMode}
+        setReplyMessage={setReplyMessage}
       />
       <MessagePostBox
         postAction={postAction}
@@ -148,6 +161,9 @@ const MessageView = ({
           (channelInfo.setting && channelInfo.setting.lockInput === 'Y') ||
           false
         }
+        replyMessage={replyMessage}
+        setReplyMode={setReplyMode}
+        setReplyMessage={setReplyMessage}
       />
       <FileUploadBox onView={handleUploadBox} view={view}></FileUploadBox>
     </div>

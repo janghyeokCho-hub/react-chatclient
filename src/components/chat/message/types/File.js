@@ -15,8 +15,24 @@ import { openPopup } from '@/lib/common';
 import { get, remove } from '@/lib/util/storageUtil';
 import { openFile, openPath } from '@/lib/deviceConnector';
 import { useChatFontSize } from '../../../../hooks/useChat';
+import styled from 'styled-components';
 
-const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
+const OneImageDiv = styled.div`
+  padding-top: 10px;
+  opacity: ${props => (props.progressData ? 0.5 : 1)};
+  color: '#fff';
+`;
+
+const File = ({
+  type,
+  item,
+  preview,
+  id,
+  isTemp,
+  inprogress,
+  total,
+  replyView,
+}) => {
   const extension = getFileExtension(item.ext);
   const [progressData, setProgressData] = useState(null);
   const [downloaded, setDownloaded] = useState(false);
@@ -24,7 +40,10 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
   const dispatch = useDispatch();
   const currentRoom = useSelector(({ room }) => room.currentRoom);
   const currentChannel = useSelector(({ channel }) => channel.currentChannel);
-  const roomID = useMemo(() => currentRoom?.roomID || currentChannel?.roomId, [currentRoom, currentChannel]);
+  const roomID = useMemo(
+    () => currentRoom?.roomID || currentChannel?.roomId,
+    [currentRoom, currentChannel],
+  );
 
   useEffect(() => {
     if (DEVICE_TYPE === 'd') {
@@ -152,19 +171,19 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
         >
           <div>
             <span className="s-file-ico"></span>
-            <span className="file-name">
+            <p className="file-name" style={{ fontSize, color: '#000' }}>
               {isTemp ? item.fullName : item.fileName}
-            </span>
+            </p>
             <span className="file-size">({convertFileSize(item.size)})</span>
           </div>
 
           {!isTemp && extension == 'img' && DEVICE_TYPE == 'd' && (
             <FileMenuBox
               onPreview={handlePreview}
-              onDownload={e => {
+              onDownload={() => {
                 handleDownloadWithProgress(false);
               }}
-              onDownloadWithOpen={e => {
+              onDownloadWithOpen={() => {
                 handleDownloadWithProgress(true);
               }}
               onViewer={handleViewer}
@@ -175,10 +194,10 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
 
           {!isTemp && extension != 'img' && DEVICE_TYPE == 'd' && (
             <FileMenuBox
-              onDownload={e => {
+              onDownload={() => {
                 handleDownloadWithProgress(false);
               }}
-              onDownloadWithOpen={e => {
+              onDownloadWithOpen={() => {
                 handleDownloadWithProgress(true);
               }}
               onViewer={handleViewer}
@@ -189,7 +208,7 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
 
           {!isTemp && DEVICE_TYPE == 'b' && (
             <FileMenuBox
-              onDownload={e => {
+              onDownload={() => {
                 handleDownloadWithProgress(false);
               }}
               onViewer={handleViewer}
@@ -226,10 +245,10 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
         });
 
       return (
-        <div
-          className="msgtxt"
+        <OneImageDiv
+          className={replyView ? undefined : 'msgtxt'}
           id={id || ''}
-          style={{ opacity: progressData ? 0.5 : 1 }}
+          progressData={progressData}
         >
           <img
             id={item.token}
@@ -269,7 +288,7 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
               downloaded={false}
             ></FileMenuBox>
           )}
-        </div>
+        </OneImageDiv>
       );
     } else {
       return (
@@ -284,7 +303,7 @@ const File = ({ type, item, preview, id, isTemp, inprogress, total }) => {
           >
             <div className="file-type-ico"></div>
             <div className="file-info-txt">
-              <p className="file-name" style={{ fontSize }}>
+              <p className="file-name" style={{ fontSize, color: '#000' }}>
                 {isTemp ? item.fullName : item.fileName}
               </p>
               <p className="file-size">
