@@ -1,18 +1,17 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React from 'react';
 import { useDispatch } from 'react-redux';
 import { openPopup } from '@/lib/common';
 import { getSysMsgFormatStr } from '@/lib/common';
+import ReactTooltip from 'react-tooltip';
+import QuestionIcon from '@/icons/svg/QuestionIcon';
+import { DomianEnterImg } from '@/image/base64StringImg';
 
-var MobileDetect = require('mobile-detect'),
-  agentDetect = new MobileDetect(window.navigator.userAgent);
-
-const loginURL = '/client/login?type=external';
 let domainURL = window.covi.baseURL;
 if (domainURL == '') domainURL = window.location.origin;
 const downloadURL = domainURL + '/down';
-console.log(downloadURL);
-const isMobile = agentDetect.mobile();
+
 const JoinSuccess = ({ location, history }) => {
+
   let name, logonID;
   const dispatch = useDispatch();
   if (location.state) {
@@ -20,6 +19,7 @@ const JoinSuccess = ({ location, history }) => {
     name = location.state.name;
     logonID = location.state.logonID;
   }
+
   if (!name || !logonID) {
     openPopup(
       {
@@ -33,24 +33,19 @@ const JoinSuccess = ({ location, history }) => {
     );
     return null;
   }
-  const welcomeMsg = isMobile
-    ? covi.getDic(
-        'JoinSuccess_welcome_msg_mobile',
-        '앱에서 생성하신 계정으로 로그인시면 이음톡의 서비스를 이용하실수 있습니다.<br/>아래 버튼을 클릭하여 앱을 다운로드 받으세요',
-      )
-    : covi.getDic(
-        'JoinSuccess_welcome_msg_desktop',
-        '생성하신 계정으로 로그인하여 이음톡의 서비스를 이용하세요.<br/> 이음톡 앱을 다운로드 받으시면 보다 편리하게 사용하실 수 있습니다.',
-      );
+
+  const toolTipMsg = `<img src=${DomianEnterImg} width="300" />`;
+
   return (
     <div className="LoginWrap">
-      <div className="JoinBox successWelcome">
+      <div className="Join_Success_Box successWelcome">
+        <h1 className="logo-img"/>
         <p className="JoinBox_tit welcome_title">
           {covi.getDic('JoinSuccess_welcomeTitle', '환영합니다!')}
         </p>
-        <div className="JoinBox_info" style={{ userSelect: 'text' }}>
+        <div className="welcome_context" style={{ userSelect: 'text' }}>
           <p
-            className="JoinBox_info_p welcome_info_p1"
+            className="JoinBox_info_p welcome_info_p2"
             dangerouslySetInnerHTML={{
               __html: getSysMsgFormatStr(
                 covi.getDic(
@@ -60,14 +55,14 @@ const JoinSuccess = ({ location, history }) => {
                 [{ type: 'Plain', data: name }],
               ),
             }}
-          ></p>
+          />
           <p
             className="JoinBox_info_p welcome_info_p1"
             dangerouslySetInnerHTML={{
               __html: getSysMsgFormatStr(
                 covi.getDic(
-                  'JoinSuccess_welcome_notice_userMail',
-                  '%s님의 아이디는 <b style="font-size: 18px;">%s</b> 입니다.',
+                  'JoinSuccess_welcome_notice_userMil',
+                  '%s님의 아이디는 <b>%s</b> 입니다.',
                 ),
                 [
                   { type: 'Plain', data: name },
@@ -75,49 +70,43 @@ const JoinSuccess = ({ location, history }) => {
                 ],
               ),
             }}
-          ></p>
-          <p
-            className="JoinBox_info_p welcome_info_p2"
-            dangerouslySetInnerHTML={{
-              __html: welcomeMsg,
-            }}
           />
+          <p className="JoinBox_info_p welcome_info_p2">
+            {covi.getDic(
+              'JoinSuccess_welcome_msg',
+              '앱 다운로드를 통해 이음톡 서비스를 이용하실 수 있습니다.',
+            )}
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <p
+              className="JoinBox_info_p welcome_info_p2"
+              dangerouslySetInnerHTML={{
+                __html: getSysMsgFormatStr(
+                  covi.getDic(
+                    'JoinSuccess_domian_Info_Msg',
+                    '앱 실행 시 도메인 <b style="color: blue;">%s</b>을 입렵해 주세요.',
+                  ),
+                  [{ type: 'Plain', data: domainURL }],
+                ),
+              }}
+            />
+            <span data-tip={toolTipMsg} data-html={true}>
+              <QuestionIcon />
+            </span>
+          </div>
         </div>
         <div className="welcomeBtn_div">
-          {!isMobile ? (
-            <div>
-              <button
-                className="LoginBtn Type1"
-                type="button"
-                onClick={() => {
-                  history.push(loginURL);
-                }}
-              >
-                {covi.getDic('Login', '로그인')}
-              </button>
-              <button
-                className="LoginBtn Type2"
-                type="button"
-                style={{ border: '1px solid #999999' }}
-                onClick={() => {
-                  window.location.href = downloadURL;
-                }}
-              >
-                {covi.getDic('App_Down', 'APP 다운로드')}
-              </button>
-            </div>
-          ) : (
-            <button
-              className="LoginBtn Type1"
-              type="button"
-              onClick={() => {
-                window.location.href = downloadURL;
-              }}
-            >
-              {covi.getDic('App_Down', 'APP 다운로드')}
-            </button>
-          )}
+          <button
+            className="LoginBtn Type1"
+            type="button"
+            onClick={() => {
+              window.location.href = downloadURL;
+            }}
+          >
+            {covi.getDic('App_Down', 'APP 다운로드')}
+          </button>
         </div>
+        <ReactTooltip />
       </div>
     </div>
   );
