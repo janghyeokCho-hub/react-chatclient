@@ -156,6 +156,7 @@ const MakeRoom = ({ history }) => {
     messageType,
     emoticon,
   ) => {
+    console.log(message);
     // 방생성 api 호출
     // 호출 결과에 따라 ChatRoom으로 화면 전환
     // -- MultiView의 경우 dispatch

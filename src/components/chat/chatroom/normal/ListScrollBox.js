@@ -12,6 +12,7 @@ const ListScrollBox = ({
   onScrollTop,
   pageInit,
   children,
+  replyMode,
 }) => {
   const [mounted, setMounted] = useState(false);
   const [btnBottom, setBtnBottom] = useState(false);
@@ -121,7 +122,7 @@ const ListScrollBox = ({
         <div
           style={{
             position: 'fixed',
-            bottom: '144px',
+            bottom: replyMode ? '190px' : '144px',
             right: '21px',
             height: '40px',
             minWidth: '200px',

@@ -174,7 +174,15 @@ const Channel = ({ match, channelInfo }) => {
   }, [loading]);
 
   const handleMessage = useCallback(
-    async (message, filesObj, linkObj, tagArr, mentionArr, messageType) => {
+    async (
+      message,
+      filesObj,
+      linkObj,
+      tagArr,
+      mentionArr,
+      messageType,
+      reply,
+    ) => {
       const members = channel?.members?.map(
         item => item.id !== userId && item.id,
       );
@@ -195,6 +203,7 @@ const Channel = ({ match, channelInfo }) => {
         mentionInfo: mentionArr,
         messageType: !!messageType ? messageType : 'N',
         blockList: blockList || [],
+        ...reply,
         onUploadHandler: (data, cancelHandler) => {
           if (filesObj.fileInfos.length) {
             filesObj.fileInfos[0].tempId;

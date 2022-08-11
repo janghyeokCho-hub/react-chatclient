@@ -28,10 +28,10 @@ const MessageBox = ({
   isMine,
   nameBox,
   timeBox,
-  id,
   marking,
   getMenuData,
   isBlock,
+  goToOriginMsg,
 }) => {
   const [fontSize] = useChatFontSize();
   const roomId = useSelector(
@@ -81,8 +81,8 @@ const MessageBox = ({
     },
     {
       revalidateOnFocus: false,
-      shouldRetryOnError: false
-    }
+      shouldRetryOnError: false,
+    },
   );
 
   const handleAddBookmark = message => {
@@ -96,9 +96,7 @@ const MessageBox = ({
         let popupMsg = '';
 
         if (data?.status == 'SUCCESS') {
-          const response = await getBookmarkList(
-            roomId.toString(),
-          );
+          const response = await getBookmarkList(roomId.toString());
           let list = [];
 
           if (response.data.status === 'SUCCESS') {
@@ -384,9 +382,17 @@ const MessageBox = ({
               )}
               <RightConxtMenu menuId={fileMenuId} menus={menus}>
                 <FileMessageBox
+                  key={`file_msg_box_${message.messageID}`}
+                  eleId={message.messageID}
                   messageId={message.messageID}
                   fileObj={fileInfoJSON}
-                  id={!drawText && id}
+                  id={message.messageID}
+                  isMine={message.isMine}
+                  context={message.context}
+                  replyID={message.replyID}
+                  replyInfo={message.replyInfo}
+                  goToOriginMsg={goToOriginMsg}
+                  roomType={'CHANNEL'}
                 />
               </RightConxtMenu>
               <div className="chatinfo">
@@ -428,9 +434,17 @@ const MessageBox = ({
               </div>
               <RightConxtMenu menuId={fileMenuId} menus={menus}>
                 <FileMessageBox
+                  key={`file_msg_box_${message.messageID}`}
+                  eleId={message.messageID}
                   messageId={message.messageID}
                   fileObj={fileInfoJSON}
-                  id={!drawText && id}
+                  id={message.messageID}
+                  context={message.context}
+                  isMine={message.isMine}
+                  replyID={message.replyID}
+                  replyInfo={message.replyInfo}
+                  goToOriginMsg={goToOriginMsg}
+                  roomType={'CHANNEL'}
                 />
               </RightConxtMenu>
             </li>
@@ -514,10 +528,14 @@ const MessageBox = ({
                         ? 'msgtxt'
                         : `msgtxt ${messageType}`
                     }
-                    eleId={id}
+                    eleId={message.messageID}
                     marking={_marking}
                     mentionInfo={mentionInfo}
                     isMine={isMine}
+                    messageID={message.messageID}
+                    replyID={message.replyID}
+                    replyInfo={message.replyInfo}
+                    goToOriginMsg={goToOriginMsg}
                   >
                     {drawText}
                   </Message>
@@ -566,25 +584,28 @@ const MessageBox = ({
               </div>
             )}
             <RightConxtMenu menuId={menuId} menus={menus}>
-              {drawText ? (
+              {drawText && (
                 <Message
                   className={
                     messageType === 'message'
                       ? 'msgtxt'
                       : `msgtxt ${messageType}`
                   }
-                  eleId={id}
+                  eleId={message.messageID}
                   marking={_marking}
                   mentionInfo={mentionInfo}
                   isMine={isMine}
+                  messageID={message.messageID}
+                  replyID={message.replyID}
+                  replyInfo={message.replyInfo}
+                  goToOriginMsg={goToOriginMsg}
                 >
                   {drawText}
                 </Message>
-              ) : (
-                fileInfoJSX
               )}
             </RightConxtMenu>
           </li>
+          {fileInfoJSX && fileInfoJSX}
           {urlInfoJSX && urlInfoJSX}
           {message.context && fileInfoJSX && fileInfoJSX}
         </>

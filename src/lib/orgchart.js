@@ -30,7 +30,7 @@ const stringArrToArray = str => {
 
 export const getChineseWall = async ({ userId }) => {
   try {
-    const { data } = await managesvr('get', `/org/block/${userId}`);
+    const { data } = await managesvr('get', `/na/org/block/${userId}`);
     const { result, status, blockList } = data;
     let chineseWall = [];
     if (status === 'SUCCESS' && result?.length) {

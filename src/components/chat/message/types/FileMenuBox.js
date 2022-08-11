@@ -27,21 +27,39 @@ const FileMenuBox = ({
       {!downloaded && (
         <>
           {onPreview && typeof onPreview === 'function' && (
-            <span className="file-func-txt" onClick={onPreview}>
+            <span
+              className="file-func-txt"
+              onClick={onPreview}
+              style={{
+                gridColumn: 'auto',
+              }}
+            >
               {covi.getDic('Preview', '미리보기')}
             </span>
           )}
           {filePermission.download === 'Y' &&
             onDownload &&
             typeof onDownload === 'function' && (
-              <span className="file-func-txt" onClick={onDownload}>
+              <span
+                className="file-func-txt"
+                onClick={onDownload}
+                style={{
+                  gridColumn: 'auto',
+                }}
+              >
                 {covi.getDic('Save', '저장')}
               </span>
             )}
           {filePermission.download === 'Y' &&
             onDownloadWithOpen &&
             typeof onDownloadWithOpen === 'function' && (
-              <span className="file-func-txt" onClick={onDownloadWithOpen}>
+              <span
+                className="file-func-txt"
+                onClick={onDownloadWithOpen}
+                style={{
+                  gridColumn: 'auto',
+                }}
+              >
                 {covi.getDic('SaveAndOpen', '저장 후 열기')}
               </span>
             )}
@@ -51,7 +69,14 @@ const FileMenuBox = ({
         DEVICE_TYPE === 'd' &&
         filePermission.viewer === 'Y' &&
         synapDocViewServer && (
-          <span className="file-func-txt" onClick={onViewer}>
+          <span
+            className="file-func-txt"
+            onClick={onViewer}
+            style={{
+              gridColumnStart: 3,
+              gridColumnEnd: 4,
+            }}
+          >
             {covi.getDic('RunViewer', '뷰어로 열기')}
           </span>
         )}
@@ -61,14 +86,33 @@ const FileMenuBox = ({
           {filePermission.viewer === 'Y' &&
             onPreview &&
             typeof onPreview === 'function' && (
-              <span className="file-func-txt" onClick={onPreview}>
+              <span
+                className="file-func-txt"
+                onClick={onPreview}
+                style={{
+                  gridColumn: 'auto',
+                }}
+              >
                 {covi.getDic('Preview', '미리보기')}
               </span>
             )}
-          <span className="file-func-txt" onClick={handleOpenFile}>
+          <span
+            className="file-func-txt"
+            onClick={handleOpenFile}
+            style={{
+              gridColumn: 'auto',
+            }}
+          >
             {covi.getDic('Open', '열기')}
           </span>
-          <span className="file-func-txt" onClick={handleOpenPath}>
+          <span
+            className="file-func-txt"
+            onClick={handleOpenPath}
+            style={{
+              gridColumnStart: 3,
+              gridColumnEnd: 4,
+            }}
+          >
             {covi.getDic('OpenFolder', '폴더 열기')}
           </span>
         </>

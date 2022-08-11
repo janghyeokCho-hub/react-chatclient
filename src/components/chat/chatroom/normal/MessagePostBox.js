@@ -13,11 +13,11 @@ import { changeFiles, clearFiles, deleteFile } from '@/modules/message';
 import { messageCurrentTyping } from '@/modules/room';
 import * as coviFile from '@/lib/fileUpload/coviFile';
 import * as commonApi from '@/lib/common';
-import * as common from '@/lib/common';
 import { Scrollbars } from 'react-custom-scrollbars';
 import { evalConnector, openSubPop, getEmitter } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
 import { clearEmoticon } from '@/modules/channel';
+import MessagePostReplyBox from '@/components/reply/MessagePostReplyBox';
 
 const EmojiLayer = loadable(() =>
   import('@C/chat/chatroom/controls/emoji/EmojiLayer'),
@@ -42,16 +42,45 @@ const MessagePostBox = forwardRef(
       remoteHost,
       placeholder,
       isLock,
+      replyMessage = null,
+      setReplyMode = null,
+      setReplyMessage = null,
     },
     ref,
   ) => {
+    const [replySenderInfo, setReplySenderInfo] = useState(null);
+    const [replyID, setReplyID] = useState(null);
+    const [replyInfo, setReplyInfo] = useState(null);
+
+    useEffect(() => {
+      if (replyMessage) {
+        const senderInfo = commonApi.isJSONStr(replyMessage.senderInfo)
+          ? JSON.parse(replyMessage.senderInfo)
+          : replyMessage.senderInfo;
+        setReplySenderInfo(senderInfo);
+        setReplyID(replyMessage.messageID);
+
+        const replyData = {
+          sender: replyMessage.sender,
+          senderName: senderInfo?.name,
+          deptCode: senderInfo?.deptCode,
+          companyCode: senderInfo?.companyCode,
+          context: replyMessage.context,
+          fileInfos: replyMessage.fileInfos,
+          isMine: replyMessage.isMine,
+        };
+        setReplyInfo(JSON.stringify(replyData));
+      }
+      return () => {
+        setReplySenderInfo(null);
+        setReplyID(null);
+        setReplyInfo(null);
+      };
+    }, [replyMessage]);
+
     const tempFiles = useSelector(({ message }) => message.tempFiles);
     const selectEmoticon = useSelector(({ channel }) => channel.selectEmoticon);
-    const roomID = useSelector(
-      ({ room }) =>
-        room.currentRoom?.roomID 
-    );
-    
+    const roomID = useSelector(({ room }) => room.currentRoom?.roomID);
 
     const useRemoteVNC = getConfig('useRemoteVNC', {
       isUse: false,
@@ -66,6 +95,8 @@ const MessagePostBox = forwardRef(
     const [useEmoji, setUseEmoji] = useState(false);
     const [history, setHistory] = useState([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
+    // emoticon
+    const [selectItem, setSelectItem] = useState(null);
 
     const { myInfo } = useSelector(({ login }) => ({
       myInfo: login.userInfo,
@@ -103,18 +134,23 @@ const MessagePostBox = forwardRef(
         let checkURLResult = null;
 
         checkURLResult = commonApi.checkURL(inputContext);
-
         postAction(
           inputContext,
           files.length > 0 ? { files, fileInfos } : null,
           checkURLResult && checkURLResult.isURL ? checkURLResult : null,
           null,
-          currentEmoticon,
+          { replyID, replyInfo },
         );
 
         const historyArr = [context, ...history];
         historyArr.splice(5, historyArr.length - 5); // max 5
         setContext('');
+        if (setReplyMode !== null) {
+          setReplyMode(false);
+        }
+        if (setReplyMessage !== null) {
+          setReplyMessage(null);
+        }
         setHistory(historyArr);
         setHistoryIndex(-1);
         fileCtrl.clear();
@@ -128,7 +164,7 @@ const MessagePostBox = forwardRef(
       if (currentEmoticon) {
         dispatch(clearEmoticon());
       }
-    }, [dispatch, context, postAction, currentEmoticon]);
+    }, [dispatch, context, postAction, currentEmoticon, replyID, replyInfo]);
 
     const handleEmojiControl = useCallback(() => {
       if (viewExtension == 'E') {
@@ -286,13 +322,10 @@ const MessagePostBox = forwardRef(
               // 한개의 파일에 대해서만 처리
               // 이미지만 붙혀넣을 수 있음
               const pasteData = clipboardData.files[0];
-              console.log(pasteData);
               const fileCtrl = coviFile.getInstance();
               const appendFileInfo = fileCtrl.makeFileInfo(pasteData, true);
               if (appendFileInfo.image) {
                 const pasteResult = fileCtrl.pasteFiles(pasteData);
-                console.log('pasteResult', pasteResult);
-
                 if (pasteResult.result == 'SUCCESS') {
                   dispatch(changeFiles({ files: fileCtrl.getFileInfos() }));
                 } else {
@@ -424,83 +457,69 @@ const MessagePostBox = forwardRef(
     };
 
     const callRemoteVNC = useCallback(async () => {
-        try {
-            const handleRemoteBtn = () => {
-                const msgObj = {
-                  title: covi.getDic('RemoteSupport', 'RemoteSupport'),
-                  context: `${covi.getDic(
-                    'Msg_RemoteRequest',
-                    'Msg_RequestRemoteSupport',
-                  )} : ${commonApi.getJobInfo(myInfo)}`,
-                  func: {
-                    name: covi.getDic('StartRemoteSupport', '원격 지원 시작'),
-                    type: 'remotevnc',
-                    data: {
-                      hostId: myInfo,
-                      roomId : roomID,
-                      
-                    },
-                  },
-                };
-                postAction(JSON.stringify(msgObj), null, null, 'A');
-
-                evalConnector({
-                  method: 'removeListener',
-                  channel: 'onVNCRemoteHost',
-                });
-
-                evalConnector({
-                  method: 'send',
-                  channel: 'onVNCRemoteHost',
-                  message: {
-                    roomId : roomID
-                  },
-                });
-            };
-            common.openPopup(
-              {
-                type: 'Confirm',
-                message: covi.getDic(
-                  'Msg_RemoteNotice',
-                  '원격 데스크톱을 연결하시겠습니까?',
-                ),
-                callback: result => {
-                  if (result) {
-                      handleRemoteBtn()
-                  }
-                },
+      try {
+        const handleRemoteBtn = () => {
+          const msgObj = {
+            title: covi.getDic('RemoteSupport', 'RemoteSupport'),
+            context: `${covi.getDic(
+              'Msg_RemoteRequest',
+              'Msg_RequestRemoteSupport',
+            )} : ${commonApi.getJobInfo(myInfo)}`,
+            func: {
+              name: covi.getDic('StartRemoteSupport', '원격 지원 시작'),
+              type: 'remotevnc',
+              data: {
+                hostId: myInfo,
+                roomId: roomID,
               },
-              dispatch,
-            );
-        } catch (ex) {
-          commonApi.openPopup(
-            {
-              type: 'Alert',
-              message: covi.getDic(
-                'Msg_RemoteSupportEnd',
-                '원격 지원이 종료 되었습니다.',
-              ),
             },
-            dispatch,
-          );
-          console.log(ex);
-        }
+          };
+          postAction(JSON.stringify(msgObj), null, null, 'A');
+
+          evalConnector({
+            method: 'removeListener',
+            channel: 'onVNCRemoteHost',
+          });
+
+          evalConnector({
+            method: 'send',
+            channel: 'onVNCRemoteHost',
+            message: {
+              roomId: roomID,
+            },
+          });
+        };
+        commonApi.openPopup(
+          {
+            type: 'Confirm',
+            message: covi.getDic(
+              'Msg_RemoteNotice',
+              '원격 데스크톱을 연결하시겠습니까?',
+            ),
+            callback: result => {
+              if (result) {
+                handleRemoteBtn();
+              }
+            },
+          },
+          dispatch,
+        );
+      } catch (ex) {
+        commonApi.openPopup(
+          {
+            type: 'Alert',
+            message: covi.getDic(
+              'Msg_RemoteSupportEnd',
+              '원격 지원이 종료 되었습니다.',
+            ),
+          },
+          dispatch,
+        );
+      }
     }, [remoteHost]);
 
     const callRemoteHost = useCallback(
       sessionKey => {
-        // commonApi.openPopup({
-        //   type: 'Confirm',
-        //   message: '원격지원요청 메세지가 발송됩니다. 발송하시겠습니까?',
-        //   callback: result => {
-        //     console.log('callback!!')
-        //     if (result) {
-        //       remoteHost(sessionKey)
-        //     }
-        //   }
-        // },
-        //   dispatch,
-        // )
         remoteHost(sessionKey);
       },
       [dispatch, remoteAssistance, remoteHost],
@@ -547,7 +566,7 @@ const MessagePostBox = forwardRef(
       <>
         <div
           className="message-input-wrap"
-          onClick={e => {
+          onClick={() => {
             ref.current.focus();
           }}
         >
@@ -698,7 +717,7 @@ const MessagePostBox = forwardRef(
                       />
                     </button>
                   )}
-                  
+
                   {DEVICE_TYPE === 'd' && useRemoteVNC.isUse && (
                     <button
                       type="button"
@@ -752,6 +771,30 @@ const MessagePostBox = forwardRef(
                       />
                     </button>
                   )}
+
+                  <button
+                    type="button"
+                    alt="ShareNote"
+                    title="ShareNote"
+                    onClick={e => {
+                      console.log(1);
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="13.5"
+                      height="13.519"
+                      viewBox="0 0 13.5 13.519"
+                    >
+                      <g transform="translate(0 0)">
+                        <path
+                          d="M8.795.155.524,8.426a.571.571,0,0,0-.16.365L.3,13a.5.5,0,0,0,.16.374.532.532,0,0,0,.374.142H.844l4.087-.036a.517.517,0,0,0,.374-.142L13.647,5a.543.543,0,0,0,0-.757l-4.1-4.1A.552.552,0,0,0,8.795.155ZM4.7,12.433l-3.321.045.053-3.455L6.952,3.5l3.339,3.339Zm6.339-6.339L7.709,2.755,9.178,1.286l3.33,3.339Z"
+                          transform="translate(-0.301 0)"
+                          fill="#222"
+                        />
+                      </g>
+                    </svg>
+                  </button>
 
                   {DEVICE_TYPE == 'd' &&
                     remoteAssistance &&
@@ -862,11 +905,27 @@ const MessagePostBox = forwardRef(
           </div>
         </div>
 
+        {replyMessage && (
+          <MessagePostReplyBox
+            replyMessage={replyMessage}
+            setReplyMode={setReplyMode}
+            setReplyMessage={setReplyMessage}
+            viewExtension={viewExtension}
+            isTempEmoticon={!!selectItem}
+            isTempFiles={tempFiles?.length > 0}
+          />
+        )}
+
         {viewExtension == 'E' && (
           <EmojiLayer onAppend={handleAppend}></EmojiLayer>
         )}
         {viewExtension == 'S' && (
-          <EmoticonLayer onClick={handleEmoticon}></EmoticonLayer>
+          <EmoticonLayer
+            onClick={handleEmoticon}
+            selectItem={selectItem}
+            setSelectItem={setSelectItem}
+            isTempFiles={tempFiles?.length > 0}
+          ></EmoticonLayer>
         )}
 
         {tempFiles && tempFiles.length > 0 && (

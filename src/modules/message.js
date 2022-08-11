@@ -70,6 +70,8 @@ function createSendMessageSaga(request, fileRequest, linkRequest) {
         tempId: action.payload.tempId,
         messageType: action.payload.messageType,
         blockList: action.payload.blockList,
+        replyID: action.payload.replyID,
+        replyInfo: action.payload.replyInfo,
       };
 
       if (action.payload.sendFileInfo) {
@@ -138,6 +140,8 @@ function createSendChannelMessageSaga(request, fileRequest, linkRequest) {
         tempId: action.payload.tempId,
         messageType: action.payload.messageType,
         blockList: action.payload.blockList,
+        replyID: action.payload.replyID,
+        replyInfo: action.payload.replyInfo,
       };
       if (action.payload.sendFileInfo) {
         const responseFile = yield call(fileRequest, action.payload);

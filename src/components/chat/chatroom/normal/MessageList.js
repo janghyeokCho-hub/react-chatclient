@@ -28,21 +28,34 @@ import {
   readMessage,
   getRoomInfo,
 } from '@/modules/room';
-import { hasClass, messageCopy, getMsgElement } from '@/lib/util/domUtil';
+import {
+  hasClass,
+  messageCopy,
+  getMsgElement,
+  scrollIntoView,
+} from '@/lib/util/domUtil';
 import { evalConnector } from '@/lib/deviceConnector';
-import { getMessage } from '@/lib/messageUtil';
+import { getMessage, getMessageBetween } from '@/lib/messageUtil';
 import { deleteChatroomMessage } from '@/lib/message';
 import LoadingWrap from '@COMMON/LoadingWrap';
 import ShareContainer from '@C/share/ShareContainer';
 import { checkFileTokenValidation } from '@/lib/fileUpload/coviFile';
 import { getConfig } from '@/lib/util/configUtil';
 import { isBlockCheck } from '@/lib/orgchart';
+import { makeMessage } from '@/components/share/share';
 
 const ListScrollBox = loadable(() =>
   import('@/components/chat/chatroom/normal/ListScrollBox'),
 );
 
-const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
+const MessageList = ({
+  onExtension,
+  viewExtension,
+  useMessageDelete,
+  setReplyMessage,
+  replyMode,
+  setReplyMode,
+}) => {
   const chineseWall = useSelector(({ login }) => login.chineseWall);
   const tempMessage = useSelector(({ message }) => message.tempMessage);
   const tempFiles = useSelector(({ message }) => message.tempFiles);
@@ -353,6 +366,55 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
     [loading, messages, topEnd],
   );
 
+  /**
+   * 댓글 메시지에서 본문 메시지 클릭시 이동하는 함수
+   * @param {number} replyID
+   * @returns
+   */
+  const goToOriginMsg = async (currentRoomID, replyID) => {
+    const msgEle = document.getElementById(replyID);
+    if (!msgEle) {
+      try {
+        const { data } = await getMessageBetween(
+          currentRoomID,
+          replyID,
+          messages.at(-1).messageID,
+          10,
+          'CHAT',
+        );
+        const { status, result } = data;
+        if (status === 'SUCCESS' && result?.length) {
+          dispatch(setMessagesForSync(result));
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    setTimeout(() => {
+      const replyMsgEle = document.getElementById(replyID);
+      if (replyMsgEle?.offsetParent) {
+        scrollIntoView('center', replyMsgEle.offsetParent);
+        replyMsgEle.classList.add('shake');
+        // 다시 흔들림 효과를 주기 위해 event class 삭제
+        setTimeout(() => {
+          replyMsgEle.classList.remove('shake');
+        }, 500);
+      } else {
+        openPopup(
+          {
+            type: 'Alert',
+            message: covi.getDic(
+              'Msg_NotMoveMessage',
+              '원본 메시지로 이동할 수 없습니다.',
+            ),
+          },
+          dispatch,
+        );
+      }
+    }, 500);
+  };
+
   const handleScrollTop = useCallback(() => {
     if (!topEnd && !loading && nextPage?.length) {
       dispatch(setMessages({ messages: nextPage, dist: 'NEXT' }));
@@ -380,18 +442,30 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
           messageType = 'files';
         }
 
+        const useReply = getConfig('UseReply', 'N') === 'Y';
+        if (useReply) {
+          menus.push({
+            code: 'replyMessage',
+            isline: false,
+            onClick: () => {
+              setReplyMessage(message);
+              setReplyMode(true);
+            },
+            name: covi.getDic('reply', '답장'),
+          });
+        }
+
         if (messageType === 'message') {
           menus.push({
             code: 'copyClipboardMessage',
             isline: false,
-            onClick: () => {
+            onClick: async () => {
+              const context = await makeMessage(message.context);
+              navigator.clipboard.writeText(context);
               openPopup(
                 {
                   type: 'Alert',
                   message: covi.getDic('Msg_Copy', '복사되었습니다.'),
-                  callback: () => {
-                    navigator.clipboard.writeText(message.context);
-                  },
                 },
                 dispatch,
               );
@@ -559,7 +633,6 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
 
       messages.forEach((message, index) => {
         let isBlock = false;
-
         if (message?.isMine === 'N' && chineseWall?.length) {
           const senderInfo = isJSONStr(message?.senderInfo)
             ? JSON.parse(message?.senderInfo)
@@ -625,7 +698,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
         if (message.botInfo) {
           returnJSX.push(
             <ChatBotMessageBox
-              key={message.messageID}
+              key={`chatbot_${message.messageID}`}
               message={message}
               isMine={message.isMine === 'Y'}
               startMessage={startSelectMessage}
@@ -639,7 +712,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
           if (message.messageType === 'N') {
             returnJSX.push(
               <MessageBox
-                key={message.messageID}
+                key={`messagebox_${message.messageID}`}
                 message={message}
                 isMine={message.isMine === 'Y'}
                 startMessage={startSelectMessage}
@@ -648,6 +721,8 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
                 timeBox={timeBox}
                 getMenuData={getMenuData}
                 isBlock={isBlock}
+                selectionChange={handleSelectionChange}
+                goToOriginMsg={goToOriginMsg}
               ></MessageBox>,
             );
           } else if (
@@ -656,7 +731,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
           ) {
             returnJSX.push(
               <NoticeMessageBox
-                key={message.messageID}
+                key={`noticebox_${message.messageID}`}
                 message={message}
                 isMine={message.isMine === 'Y'}
                 nameBox={nameBox}
@@ -668,7 +743,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
             // System Message
             returnJSX.push(
               <SystemMessageBox
-                key={message.messageID}
+                key={`systembox_${message.messageID}`}
                 message={message}
               ></SystemMessageBox>,
             );
@@ -685,7 +760,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
       if (message.roomID == currentRoom.roomID)
         return (
           <TempMessageBox
-            key={message.tempId}
+            key={`tempbox_${message.tempId}`}
             message={message}
           ></TempMessageBox>
         );
@@ -736,6 +811,7 @@ const MessageList = ({ onExtension, viewExtension, useMessageDelete }) => {
           onClick={handleClick}
           onScrollTop={handleScrollTop}
           pageInit={handlePageInit}
+          replyMode={replyMode}
         >
           <ul className="messages-chat-list">
             {messages && drawMessage}

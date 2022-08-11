@@ -277,7 +277,7 @@ export function defaultJobInfo() {
 export const getJobInfo = (userInfo, isEmptySpace) => {
   const jobInfo = defaultJobInfo();
 
-  const userName = userInfo.name;
+  const userName = userInfo?.name;
   const jobInfoLabel = userInfo[jobInfo];
 
   const multiJobInfoLabel =
@@ -310,10 +310,10 @@ export const getDictionary = (multiDic, lang) => {
       defaultIdx = getLanguageIndex(defaultLang);
     }
 
-    returnDic = arrDics[findIdx];
+    returnDic = arrDics[findIdx] || '';
     // returnDic == '' || returnDic == undefined || returnDic == null
     if (!returnDic) {
-      returnDic = arrDics[defaultIdx];
+      returnDic = arrDics[defaultIdx] || '';
 
       if (!returnDic) {
         returnDic = arrDics[0];

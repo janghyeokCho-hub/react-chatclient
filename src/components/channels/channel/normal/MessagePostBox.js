@@ -16,6 +16,8 @@ import { evalConnector } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
 
 import { Scrollbars } from 'react-custom-scrollbars';
+import MessagePostReplyBox from '@/components/reply/MessagePostReplyBox';
+
 const EmojiLayer = loadable(() =>
   import('@C/chat/chatroom/controls/emoji/EmojiLayer'),
 );
@@ -37,9 +39,42 @@ const MessagePostBox = forwardRef(
       liveMeet,
       placeholder,
       isLock,
+      replyMessage,
+      setReplyMode,
+      setReplyMessage,
     },
     ref,
   ) => {
+    const [replySenderInfo, setReplySenderInfo] = useState(null);
+    const [replyID, setReplyID] = useState(null);
+    const [replyInfo, setReplyInfo] = useState(null);
+
+    useEffect(() => {
+      if (replyMessage) {
+        const senderInfo = commonApi.isJSONStr(replyMessage.senderInfo)
+          ? JSON.parse(replyMessage.senderInfo)
+          : replyMessage.senderInfo;
+        setReplySenderInfo(senderInfo);
+        setReplyID(replyMessage.messageID);
+
+        const replyData = {
+          sender: replyMessage.sender,
+          senderName: senderInfo?.name,
+          deptCode: senderInfo?.deptCode,
+          companyCode: senderInfo?.companyCode,
+          context: replyMessage.context,
+          fileInfos: replyMessage.fileInfos,
+          isMine: replyMessage.isMine,
+        };
+        setReplyInfo(JSON.stringify(replyData));
+      }
+      return () => {
+        setReplySenderInfo(null);
+        setReplyID(null);
+        setReplyInfo(null);
+      };
+    }, [replyMessage]);
+
     const tempFiles = useSelector(({ message }) => message.tempFiles);
     const currentChannel = useSelector(({ channel }) => channel.currentChannel);
     const selectEmoticon = useSelector(({ channel }) => channel.selectEmoticon);
@@ -54,6 +89,8 @@ const MessagePostBox = forwardRef(
 
     const [context, setContext] = useState('');
     const [suggestionMembers, setSuggestionMembers] = useState([]);
+    // emoticon
+    const [selectItem, setSelectItem] = useState(null);
 
     const fileUploadControl = useRef(null);
     const sendBtn = useRef(null);
@@ -119,16 +156,24 @@ const MessagePostBox = forwardRef(
           checkURLResult && checkURLResult.isURL ? checkURLResult : null,
           hashtags ? hashtags : null,
           mentionArr.length > 0 ? mentionArr : null,
+          null,
+          { replyID, replyInfo },
         );
         const historyArr = [context, ...history];
         historyArr.splice(5, historyArr.length - 5); // max 5
         setContext('');
+        if (setReplyMode !== null) {
+          setReplyMode(false);
+        }
+        if (setReplyMessage !== null) {
+          setReplyMessage(null);
+        }
         setHistory(historyArr);
         setHistoryIndex(-1);
         fileCtrl.clear();
         dispatch(clearFiles());
       }
-    }, [dispatch, context, selectEmoticon]);
+    }, [dispatch, context, selectEmoticon, replyID, replyInfo]);
 
     const handleEmojiControl = useCallback(() => {
       if (viewExtension == 'E') {
@@ -406,12 +451,17 @@ const MessagePostBox = forwardRef(
         dispatch,
       );
     }, [dispatch, liveMeet]);
-
+    let fileBottomSize = 135;
+    if (viewExtension === 'M') {
+      fileBottomSize += 238;
+    } else if (viewExtension === 'S') {
+      fileBottomSize += 220;
+    }
     return (
       <>
         <div
           className="message-input-wrap"
-          onClick={e => {
+          onClick={() => {
             ref.current.focus();
           }}
         >
@@ -643,11 +693,27 @@ const MessagePostBox = forwardRef(
           </div>
         </div>
 
+        {replyMessage && (
+          <MessagePostReplyBox
+            replyMessage={replyMessage}
+            setReplyMode={setReplyMode}
+            setReplyMessage={setReplyMessage}
+            viewExtension={viewExtension}
+            isTempEmoticon={!!selectItem}
+            isTempFiles={tempFiles?.length > 0}
+          />
+        )}
+
         {viewExtension == 'E' && (
           <EmojiLayer onAppend={handleAppend}></EmojiLayer>
         )}
         {viewExtension == 'S' && (
-          <EmoticonLayer onClick={handleEmoticon}></EmoticonLayer>
+          <EmoticonLayer
+            onClick={handleEmoticon} // emoticon
+            selectItem={selectItem}
+            setSelectItem={setSelectItem}
+            isTempFiles={tempFiles?.length > 0}
+          ></EmoticonLayer>
         )}
         {viewExtension == 'M' && currentChannel && (
           <SuggestionLayer
@@ -663,7 +729,7 @@ const MessagePostBox = forwardRef(
           <div
             className="Before-file-transfer"
             style={{
-              bottom: viewExtension == '' ? '135px' : '355px',
+              bottom: `${fileBottomSize}px`,
               height: '110px',
               position: 'absolute',
             }}

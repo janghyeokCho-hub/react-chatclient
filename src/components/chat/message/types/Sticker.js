@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import Config from '@/config/config';
 import { getConfig } from '@/lib/util/configUtil';
 
-const Sticker = ({ companyCode, groupId, emoticonId, type }) => {
+const Sticker = ({
+  companyCode,
+  groupId,
+  emoticonId,
+  type,
+  width = 150,
+  height = 150,
+}) => {
   const timer = useRef(null);
 
   const storagePrefix = getConfig('storePrefix', '/storage/');
@@ -63,8 +70,8 @@ const Sticker = ({ companyCode, groupId, emoticonId, type }) => {
       onClick={e => {
         if (type === 'A' && !isAnimation) setIsAnimation(true);
       }}
-      width="150"
-      height="150"
+      width={width}
+      height={height}
     />
   );
 };
