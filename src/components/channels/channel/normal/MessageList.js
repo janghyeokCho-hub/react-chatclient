@@ -319,7 +319,7 @@ const MessageList = ({
             );
           }
         } else if (messageType === 'files') {
-          const useForwardFile = getConfig('UseForwardFile', false);
+          const useForwardFile = getConfig('UseForwardFile', 'N') === 'Y';
           // 파일을 전달할 경우 파일 토큰의 유효성을 먼저 검증
           if (useForwardFile) {
             menus.push({
