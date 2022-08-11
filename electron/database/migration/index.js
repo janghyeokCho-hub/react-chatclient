@@ -1,8 +1,10 @@
 import logger from '../../utils/logger';
 import migrateChatbot from './migrations/1_chatbot';
+import migrateReplyChat from './migrations/2_replyChat';
 
 export const migrationPlans = {
   '1-chatbot': migrateChatbot,
+  '2-replyChat': migrateReplyChat,
 };
 
 export class MigrationSource {

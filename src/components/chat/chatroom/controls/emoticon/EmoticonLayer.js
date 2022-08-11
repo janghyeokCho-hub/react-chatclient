@@ -6,7 +6,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { getConfig } from '@/lib/util/configUtil';
 import { selectEmoticon, clearEmoticon } from '@/modules/channel';
 
-const EmoticonLayer = ({ onClick }) => {
+const EmoticonLayer = ({ onClick, selectItem, setSelectItem, isTempFiles }) => {
   const { userInfo, selectedEmot } = useSelector(({ login, channel }) => ({
     userInfo: login.userInfo,
     selectedEmot: channel.selectEmoticon,
@@ -19,7 +19,6 @@ const EmoticonLayer = ({ onClick }) => {
   const [groupId, setGroupId] = useState('');
   const [groups, setGroups] = useState(null);
   const [emoticons, setEmoticons] = useState(null);
-  const [selectItem, setSelectItem] = useState(null);
 
   const dispatch = useDispatch();
 
@@ -104,8 +103,6 @@ const EmoticonLayer = ({ onClick }) => {
   };
 
   const handleKeyDown = (e, item) => {
-    console.log(e);
-    console.log(item);
     if (!e.shiftKey && e.keyCode == 13) {
       if (item !== null) {
         handleSend(item);
@@ -115,6 +112,12 @@ const EmoticonLayer = ({ onClick }) => {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      setSelectItem(null);
+    };
+  }, []);
+
   return (
     <div className="chat_sticker" style={{ overflow: 'visible' }}>
       {selectItem && (
@@ -122,7 +125,7 @@ const EmoticonLayer = ({ onClick }) => {
           style={{
             width: '100%',
             height: '150px',
-            marginTop: '-150px',
+            marginTop: isTempFiles ? '-260px' : '-150px',
             backgroundColor: 'rgba(0,0,0,0.2)',
             position: 'relative',
           }}

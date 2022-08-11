@@ -1341,6 +1341,13 @@ const channel = handleActions(
         if (action.payload.dist == 'BEFORE') {
           draft.messages = [...draft.messages, ...action.payload.messages];
         } else {
+          if (
+            draft.messages?.at(0)?.messageID ===
+            action.payload?.messages?.at(0)?.messageID
+          ) {
+            return;
+          }
+
           draft.messages = [...action.payload.messages, ...draft.messages];
         }
       });

@@ -103,7 +103,11 @@ const Room = ({
         // M의 경우 남은 값이 1개
         const target = filterMember[0];
 
-        return <>{getJobInfo(target)}</>;
+        if (target) {
+          return <>{getJobInfo(target)}</>;
+        } else {
+          return <></>;
+        }
       } else {
         if (!!room?.roomName) {
           return (
@@ -333,19 +337,19 @@ const Room = ({
             {((room.roomType === 'M' || filterMember.length == 1) &&
               ((room.roomType === 'A' && (
                 <ProfileBox
-                  userId={filterMember[0].id}
-                  userName={filterMember[0].name}
+                  userId={filterMember[0]?.id}
+                  userName={filterMember[0]?.name}
                   presence={null}
                   isInherit={false}
-                  img={filterMember[0].photoPath}
+                  img={filterMember[0]?.photoPath}
                   handleClick={false}
                 />
               )) || (
                 <ProfileBox
-                  userId={filterMember[0].id}
-                  userName={filterMember[0].name}
+                  userId={filterMember[0]?.id}
+                  userName={filterMember[0]?.name}
                   isInherit={true}
-                  img={filterMember[0].photoPath}
+                  img={filterMember[0]?.photoPath}
                 />
               ))) ||
               (room.roomType != 'B' && (

@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import querystring from 'query-string';
 import ChatRoomHeader from '@C/chat/chatroom/normal/ChatRoomHeader';
@@ -36,6 +42,9 @@ const MessageView = ({
   const chatBox = useRef(null);
   const contentEditable = useRef(null);
   const dispatch = useDispatch();
+
+  const [replyMode, setReplyMode] = useState(false);
+  const [replyMessage, setReplyMessage] = useState(null);
 
   // ZoomMeet용 임시
   const userInfo = useSelector(({ login }) => login.userInfo);
@@ -293,6 +302,7 @@ const MessageView = ({
       return `${getGroupName(groupNames, 4)} ${refWord}`;
     }
   }, [roomInfo, id]);
+
   const useZoom = useMemo(() => {
     // ZoomMeet 설정값 체크
     const zoomFlag = zoomMeet && zoomMeet.use;
@@ -321,6 +331,10 @@ const MessageView = ({
         onExtension={onExtension}
         viewExtension={viewExtension}
         useMessageDelete={useMessageDelete}
+        replyMessage={replyMessage}
+        replyMode={replyMode}
+        setReplyMode={setReplyMode}
+        setReplyMessage={setReplyMessage}
       />
       <MessagePostBox
         postAction={postAction}
@@ -337,6 +351,9 @@ const MessageView = ({
         isLock={
           (roomInfo.setting && roomInfo.setting.lockInput === 'Y') || false
         }
+        replyMessage={replyMessage}
+        setReplyMode={setReplyMode}
+        setReplyMessage={setReplyMessage}
       />
       <FileUploadBox onView={handleUploadBox} view={view}></FileUploadBox>
     </div>
