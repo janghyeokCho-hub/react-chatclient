@@ -257,7 +257,6 @@ const appReady = async () => {
               });
               logger.info('[1] Exit program. update presence offline ');
               APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
-              console.log(response.data);
             }
           } catch (err) {
             logger.info('Error when updating presnce offline', err);
@@ -303,7 +302,6 @@ const appReady = async () => {
 
                   logger.info('[2] Exit program. update presence offline ');
                   APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
-                  console.log(response.data);
                 }
               } catch (err) {
                 logger.info('Error when updating presnce offline', err);
@@ -494,8 +492,6 @@ const createWindow = async (isLoading, domainInfo) => {
   //NOTE: electron-window-state 대체 검토 필요
   const bounds = getInitialBounds('latestAppBounds', defaultSize);
 
-  console.log(bounds);
-
   // Create the browser window.
   win = new BrowserWindow({
     width: defaultSize.width,
@@ -676,7 +672,6 @@ app.on('window-all-closed', async () => {
         });
         logger.info('[3] Exit program. update presence offline ');
         APP_SECURITY_SETTING.set('latestAppBounds', win.getBounds());
-        console.log(response.data);
       }
     } catch (err) {
       logger.info('Error when updating presnce offline', err);
@@ -958,12 +953,11 @@ ipcMain.on('req-get-messages', async (event, args) => {
   }
 });
 ipcMain.on('req-get-all-messages', async (event, args) => {
-  console.log('ipcMain args : ', args);
   const returnValue = await appDataEvt.reqGetAllMessages(event, args);
   event.returnValue = returnValue;
 });
 ipcMain.on('req-get-messages-between', async (event, args) => {
-  const returnValue = await appDataEvt.selectBetweenMessagesByIDs(event, args);
+  const returnValue = await appDataEvt.reqGetBetweenMessagesByIDs(event, args);
   event.returnValue = returnValue;
 });
 ipcMain.handle('req-get-search-messages', async (event, args) => {
@@ -1036,8 +1030,6 @@ ipcMain.on('room-noti-setting', (event, data) => {
   } else if (data.type == 'fix') {
     USER_SETTING.set(`notiFixRooms.${data.roomID}`, data.fix);
   }
-
-  console.log('USER_SETTING : ', USER_SETTING);
 
   event.returnValue = true;
 });
@@ -1208,7 +1200,6 @@ ipcMain.on('onRemoteAssistance', (event, args) => {
   if (args.isViewer == 'Y') {
     connectRemoteViewer(args.sessionKey);
   } else {
-    console.log(args.isViewer);
     connectRemoteHost(args.sessionKey);
   }
 });
@@ -1281,7 +1272,6 @@ function createImg(cropBuffer, fileName, folderName) {
   setTimeout(() => {
     fs.writeFile(`${folderName}/${fileName}c.png`, cropBuffer, err => {
       if (err) throw err;
-      console.log('cropBuffer Saved');
     });
   }, 400);
 }
@@ -1290,7 +1280,6 @@ function combineCaptureImage(folderName, combineFolderName) {
   let imageNameList = [];
   const files = fs.readdirSync(`./${folderName}`, { withFileTypes: true });
   imageNameList = files.map(file => `./${folderName}/${file.name}`);
-  console.log('imageNameLlist', imageNameList);
 
   const combineImage = require('combine-image');
 
@@ -1299,7 +1288,6 @@ function combineCaptureImage(folderName, combineFolderName) {
       fs.mkdirSync(`./${combineFolderName}`, { recursive: true });
       setTimeout(() => {
         img.write(`./${combineFolderName}/out.png`, () => {
-          console.log('out.png created');
           fs.readFile(`./${combineFolderName}/out.png`, function (err, buff) {
             if (err) throw err;
 

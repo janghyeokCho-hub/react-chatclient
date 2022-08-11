@@ -161,7 +161,7 @@ const ChatRoom = ({ match, roomInfo }) => {
   }, [room]);
 
   const handleMessage = useCallback(
-    async (message, filesObj, linkObj, messageType) => {
+    async (message, filesObj, linkObj, messageType, reply) => {
       const members = room?.members?.map(item => item.id !== userId && item.id);
       let blockList = [];
       if (members?.length && blockUser) {
@@ -177,6 +177,7 @@ const ChatRoom = ({ match, roomInfo }) => {
         linkInfo: linkObj,
         messageType: !!messageType ? messageType : 'N',
         blockList: blockList || [],
+        ...reply,
         onUploadHandler: (data, cancelHandler) => {
           if (filesObj.fileInfos.length) {
             filesObj.fileInfos[0].tempId;

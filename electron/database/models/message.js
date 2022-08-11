@@ -18,5 +18,9 @@ export function createMessageTable(table) {
   table.string('tagInfo', 255);
   table.json('senderInfo');
   table.json('reserved');
+  // 챗봇
   table.json('botInfo');
+  // 답장
+  table.json('replyInfo');
+  table.integer('replyID');
 }

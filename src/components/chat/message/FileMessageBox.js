@@ -7,8 +7,49 @@ import { openPopup } from '@/lib/common';
 import { getFileExtension, openFilePreview } from '@/lib/fileUpload/coviFile';
 import { isAllImage, downloadByTokenAll } from '@/lib/fileUpload/coviFile';
 import FileThumbList from '@C/chat/message/types/FileThumbList';
+import MessageReplyBox from '@/components/reply/MessageReplyBox';
+import styled from 'styled-components';
 
-const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
+const FileMessageDiv = styled.div`
+  margin-top: 5px;
+`;
+
+const FileMessageListDiv = styled.div`
+  margin-top: 5px;
+  color: #999;
+  width: 220px;
+  display: inline-block;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  box-sizing: border-box;
+  text-align: left;
+  position: relative;
+  padding: 10px;
+  cursor: pointer;
+`;
+
+const UploadProgressP = styled.p`
+  margin-left: 15;
+  padding: 10;
+  color: '#999';
+`;
+
+const FileMessageBox = ({
+  _,
+  fileObj,
+  isTemp,
+  inprogress,
+  total,
+  id,
+  isMine,
+  context,
+  replyID,
+  replyInfo,
+  goToOriginMsg,
+  roomType = 'CHAT',
+}) => {
+  const replyView = replyID > 0 && !context;
   const filePermission = useSelector(({ login }) => login.filePermission);
   const [progressData, setProgressData] = useState(null);
   const dispatch = useDispatch();
@@ -16,21 +57,25 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
     let isAllImg = isAllImage(fileObj);
     if (isAllImg) {
       return (
-        <div className="file-thumb-message-list" id={id || ''}>
+        <div
+          key={`file_img_list_${id}`}
+          className="file-thumb-message-list"
+          id={id ? id : undefined}
+          style={{ paddingTop: replyView ? '10px' : undefined }}
+        >
           <ul
             className="file-list"
-            style={{ maxWidth: '306px', minWidth: '306px' }}
+            style={{ maxWidth: '220px', minWidth: '220px' }}
           >
             {fileObj.map((item, index) => {
               return (
                 <FileThumbList
-                  key={index}
+                  key={`img_thumb_${id}_${index}`}
                   index={index}
                   len={fileObj.length}
                   type="list"
                   item={item}
                   preview={handlePreview}
-                  id={id}
                   isTemp={isTemp}
                 />
               );
@@ -39,8 +84,14 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
               <li>
                 <span className="file-func-list">
                   <span
-                    className="file-func-txt"
                     onClick={progressData ? null : handleAllDownLoad}
+                    style={{
+                      color: !replyView
+                        ? '#999'
+                        : isMine === 'Y'
+                        ? '#fff'
+                        : '#999',
+                    }}
                   >
                     {progressData
                       ? `${covi.getDic(
@@ -79,27 +130,24 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
       );
     } else {
       return (
-        <div className="file-message-list" id={id || ''}>
+        <FileMessageListDiv key={`file_list_${id}`} id={id ? id : undefined}>
           <ul className="file-list">
             {fileObj.map((item, index) => {
               return (
                 <File
-                  key={index}
+                  key={`file_${id}_${index}`}
                   type="list"
                   item={item}
                   preview={handlePreview}
-                  id={id}
                   isTemp={isTemp}
+                  replyView={replyView}
                 />
               );
             })}
             {filePermission.download === 'Y' && (
               <li>
                 <span className="file-func-list">
-                  <span
-                    className="file-func-txt"
-                    onClick={progressData ? null : handleAllDownLoad}
-                  >
+                  <span onClick={progressData ? null : handleAllDownLoad}>
                     {progressData
                       ? `${covi.getDic(
                           'Downloading',
@@ -133,7 +181,7 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
               </li>
             )}
           </ul>
-          <p style={{ marginLeft: 15, padding: 10, color: '#999' }}>
+          <UploadProgressP>
             {inprogress &&
               total &&
               covi.getDic('Upload', '업로드 중') +
@@ -142,8 +190,8 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
                 ' / ' +
                 convertFileSize(total) +
                 ')'}
-          </p>
-        </div>
+          </UploadProgressP>
+        </FileMessageListDiv>
       );
     }
   };
@@ -196,20 +244,47 @@ const FileMessageBox = ({ _, fileObj, id, isTemp, inprogress, total }) => {
     [fileObj],
   );
 
+  let returnJSX = [];
+
   if (Array.isArray(fileObj)) {
-    return handleFileList(fileObj);
+    returnJSX.push(handleFileList(fileObj));
   } else {
-    return (
+    returnJSX.push(
       <File
+        key={`file_unit_${id}`}
+        id={id ? id : undefined}
         type="unit"
         item={fileObj}
         preview={handlePreview}
-        id={id}
         isTemp={isTemp}
         inprogress={inprogress}
         total={total}
-      />
+        replyView={replyView}
+      />,
     );
+  }
+
+  if (replyView) {
+    returnJSX.unshift(
+      <MessageReplyBox
+        key={`message_reply_box_${id}`}
+        replyID={replyID}
+        replyInfo={replyInfo}
+        goToOriginMsg={goToOriginMsg}
+        roomType={roomType}
+      />,
+    );
+    return (
+      <FileMessageDiv
+        key={`file_message_div_${id}`}
+        id={id ? id : undefined}
+        className="msgtxt"
+      >
+        {returnJSX}
+      </FileMessageDiv>
+    );
+  } else {
+    return returnJSX;
   }
 };
 

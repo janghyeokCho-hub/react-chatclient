@@ -1242,6 +1242,8 @@ export const reqGetRoomInfo = async (event, args) => {
             room.roomType == 'A' ? selectSenderInfo : 'm.senderInfo',
             'm.linkInfo',
             'm.botInfo',
+            'm.replyID',
+            'm.replyInfo',
           )
           .where({ roomId: roomId })
           .from('message as m')
@@ -1273,6 +1275,7 @@ export const reqGetRoomInfo = async (event, args) => {
 
 export const reqSaveMessage = async params => {
   logger.info('reqSaveMessage');
+  logger.info('reqSaveMessage params :::: ', params);
 
   if (loginInfo.getData()) {
     const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
@@ -1296,6 +1299,8 @@ export const reqSaveMessage = async params => {
           fileInfos: params.fileInfos,
           linkInfo: params.linkInfo,
           botInfo: params.botInfo,
+          replyID: params.replyID,
+          replyInfo: params.replyInfo,
         })
         .then(() => {
           if (params.senderInfo) {
@@ -1780,6 +1785,26 @@ export const reqGetMessages = async (event, args) => {
   } else return { data: {} };
 };
 
+export const reqGetBetweenMessagesByIDs = async (_, args) => {
+  logger.info('selectBetweenMessagesByIDs' + JSON.stringify(args));
+  let messages = [];
+  const returnObj = {};
+
+  if (loginInfo.getData()) {
+    try {
+      messages = await selectBetweenMessagesByIDs(args);
+
+      returnObj.status = 'SUCCESS';
+      returnObj.result = messages;
+    } catch (e) {
+      returnObj.status = 'FAIL';
+      logger.info(e);
+    }
+
+    return { data: returnObj };
+  } else return { data: {} };
+};
+
 export const reqGetAllMessages = async (_, args) => {
   logger.info('reqGetAllMessages' + JSON.stringify(args));
   let messages = [];
@@ -1835,6 +1860,8 @@ const selectMessages = async params => {
       params.isNotice ? selectSenderInfo : 'senderInfo',
       'linkInfo',
       'botInfo',
+      'replyID',
+      'replyInfo',
     )
     .from('message as m')
     .where('roomId', params.roomID)
@@ -1880,6 +1907,8 @@ const selectAllMessages = async params => {
       'senderInfo',
       'linkInfo',
       'botInfo',
+      'replyID',
+      'replyInfo',
     )
     .from('message as m')
     .where('roomId', params.roomID)
@@ -1894,24 +1923,40 @@ const selectAllMessages = async params => {
   return messages;
 };
 
-export const selectBetweenMessagesByIDs = async params => {
+const selectBetweenMessagesByIDs = async params => {
+  logger.info('selectBetweenMessagesByIDs');
   const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
 
-  const selectMessage = dbCon
+  const subQuery = dbCon
     .select(
       'messageId AS messageID',
       'context',
       'sender',
       'sendDate',
+      'roomId AS roomID',
+      'roomType',
+      'receiver',
+      'messageType',
+      'unreadCnt',
+      'readYN',
+      'isMine',
+      'tempId',
       'fileInfos',
       'senderInfo',
       'linkInfo',
       'botInfo',
+      'replyID',
+      'replyInfo',
     )
-    .from('message')
-    .whereBetween('messageId', [params.startId, params.endId]);
+    .from('message as m')
+    .where('roomId', params.roomID)
+    .andWhere('messageId', '>=', params.startId - params.cnt);
 
-  const messages = await selectMessage;
+  const messages = await dbCon
+    .select('*')
+    .from(subQuery.as('a'))
+    .orderBy('a.messageId');
+
   return messages;
 };
 
@@ -1938,6 +1983,8 @@ const selectBetweenMessages = async params => {
       'senderInfo',
       'linkInfo',
       'botInfo',
+      'replyID',
+      'replyInfo',
     )
     .from('message as m')
     .where('roomId', params.roomID);
