@@ -34,7 +34,7 @@ const MessageView = ({
   const chatBot = getConfig('ChatBot');
   const liveMeet = getConfig('LiveMeet');
   const zoomMeet = getConfig('ZoomMeet');
-  const useMessageCopy = getConfig('UseMessageCopy', true);
+  const useMessageCopy = getConfig('UseMessageCopy', 'N') === 'Y';
   const remoteAssistance = getConfig('UseRemoteView', 'N');
   const useMessageDelete = getConfig('UseChatroomDeleteMessage', 'N') === 'Y';
 
