@@ -58,13 +58,11 @@ const ContentDiv = styled.div`
   grid-column-start: auto;
   grid-column-end: 3;
   text-align: start;
-  span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-  }
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
 `;
 
 /**
