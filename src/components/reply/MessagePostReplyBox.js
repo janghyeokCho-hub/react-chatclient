@@ -52,7 +52,7 @@ const ContentDiv = styled.div`
   grid-column-end: 3;
   text-align: start;
   font-family: ${props => props.fontType};
-  font-size: ${props => props.fontSize};
+  font-size: ${props => props.fontSize}px;
   span {
     color: #fff;
     height: 100%;
