@@ -5,8 +5,10 @@ import styled from 'styled-components';
 import MessageReplyBox from '@/components/reply/MessageReplyBox';
 
 const MessageDiv = styled.div`
-  font-size: ${props => props.fontSize};
-  color: ${props => props.fontColor};
+  font-size: ${props => props.fontSize}px;
+  span {
+    color: ${props => props.fontColor};
+  }
 `;
 
 const Message = ({
