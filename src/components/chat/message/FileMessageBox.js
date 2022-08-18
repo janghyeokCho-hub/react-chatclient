@@ -17,7 +17,8 @@ const FileMessageDiv = styled.div`
 const FileMessageListDiv = styled.div`
   margin-top: 5px;
   color: #999;
-  width: 220px;
+  min-width: 220px;
+  max-width: 270px;
   display: inline-block;
   background: #fff;
   border: 1px solid #eee;
