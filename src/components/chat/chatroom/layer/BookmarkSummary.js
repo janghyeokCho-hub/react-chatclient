@@ -15,6 +15,7 @@ import TrashCanIcon from '@/icons/svg/TrashCanIcon';
 import { getConfig } from '@/lib/util/configUtil';
 import ProfileBox from '@C/common/ProfileBox';
 import { getBookmarkList, deleteBookmark } from '@/lib/message';
+import useSWR from 'swr';
 
 const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
 
@@ -22,6 +23,19 @@ const BookmarkSummary = ({ roomId }) => {
   const dispatch = useDispatch();
   const [bookmarkList, setBookmarkList] = useState([]);
   const chineseWall = useSelector(({ login }) => login.chineseWall);
+
+    //bookmarkList 불러오기
+    const { data: globalBookmarkList, mutate: setGlobalBookmarkList } = useSWR(
+      `bookmark/${roomId}`,
+      async () => {
+        const response = await getBookmarkList(roomId.toString());
+        if (response.data.status === 'SUCCESS') {
+          return filterList(response.data.list);
+        }
+        return [];
+      },
+    );
+  
 
   const handleClose = () => {
     deleteLayer(dispatch);
@@ -71,6 +85,7 @@ const BookmarkSummary = ({ roomId }) => {
         });
         list.sort((a, b) => b.sendDate - a.sendDate);
         setBookmarkList(list);
+        setGlobalBookmarkList(list);
       } else {
         return;
       }
@@ -88,6 +103,12 @@ const BookmarkSummary = ({ roomId }) => {
       .then(({ data }) => {
         if (data.status === 'SUCCESS') {
           setBookmarkList([]);
+          setGlobalBookmarkList(
+            globalBookmarkList?.filter(
+              bookmarkOrigin =>
+                bookmarkOrigin.bookmarkId !== bookmark.bookmarkId,
+            ),
+          );
           getList();
         }
       })
