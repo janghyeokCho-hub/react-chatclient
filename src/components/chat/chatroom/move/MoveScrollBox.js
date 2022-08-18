@@ -28,7 +28,7 @@ const MoveScrollBox = ({
   useEffect(() => {
     if (moveId) {
       // 특정 객체를 가운데로 이동
-      const moveObj = document.querySelector(`#${moveId}`);
+      const moveObj = document.querySelector(`[data-messageid='${moveId}']`);
       if (moveObj) {
         scrollIntoView('center', moveObj.offsetParent);
         moveObj.classList.add('shake');

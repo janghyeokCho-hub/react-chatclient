@@ -290,7 +290,7 @@ const SearchList = ({ moveData, markingText, roomID }) => {
         loadingPage={loading}
         isTopEnd={topEnd}
         isBottomEnd={bottomEnd}
-        moveId={moveId != '' ? `msg_${moveId}` : ''}
+        moveId={moveId != '' ? moveId : ''}
       >
         {(messages && messages.length > 0 && (
           <ul className="messages-chat-list">{drawMessage()}</ul>
