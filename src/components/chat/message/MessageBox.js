@@ -13,6 +13,7 @@ import {
   isJSONStr,
   openPopup,
 } from '@/lib/common';
+;
 import LinkMessageBox from '@C/chat/message/LinkMessageBox';
 import FileMessageBox from '@C/chat/message/FileMessageBox';
 import { useChatFontSize } from '@/hooks/useChat';
@@ -148,7 +149,13 @@ const MessageBox = ({
       if (bookmark.messageId === message.messageID) return bookmark;
     });
 
-    if (useBookmark === true) {
+    let messageType =  'message';
+    if (eumTalkRegularExp.test(message.context)) {
+      const processMsg = convertEumTalkProtocol(message.context);
+      messageType = processMsg.type;
+    }
+
+    if (useBookmark === true && messageType !== 'emoticon' ) {
       if (isExistOnBookmark === true) {
         _menus.push({
           code: 'deleteBookmark',
