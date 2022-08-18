@@ -225,6 +225,7 @@ const File = ({ type, item, preview, id, isTemp, index, len }) => {
         <div
           className={`file-message ${extension}`}
           id={id || ''}
+          data-messageid={id}
           style={{ cursor: 'pointer' }}
         >
           <div
