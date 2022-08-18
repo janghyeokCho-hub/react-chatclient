@@ -60,7 +60,8 @@ const FileMessageBox = ({
         <div
           key={`file_img_list_${id}`}
           className="file-thumb-message-list"
-          id={id ? id : undefined}
+          id={id}
+          data-messageid={id}
           style={{ paddingTop: replyView ? '10px' : undefined }}
         >
           <ul
@@ -130,7 +131,7 @@ const FileMessageBox = ({
       );
     } else {
       return (
-        <FileMessageListDiv key={`file_list_${id}`} id={id ? id : undefined}>
+        <FileMessageListDiv key={`file_list_${id}`} id={id} data-messageid={id}>
           <ul className="file-list">
             {fileObj.map((item, index) => {
               return (
@@ -252,7 +253,8 @@ const FileMessageBox = ({
     returnJSX.push(
       <File
         key={`file_unit_${id}`}
-        id={id ? id : undefined}
+        id={id}
+        data-messageid={id}
         type="unit"
         item={fileObj}
         preview={handlePreview}
@@ -277,7 +279,8 @@ const FileMessageBox = ({
     return (
       <FileMessageDiv
         key={`file_message_div_${id}`}
-        id={id ? id : undefined}
+        id={id}
+        data-messageid={id}
         className="msgtxt"
       >
         {returnJSX}

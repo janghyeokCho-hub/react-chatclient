@@ -243,7 +243,7 @@ const MoveList = ({ moveData, roomID, chineseWall = [] }) => {
         loadingPage={loading}
         isTopEnd={topEnd}
         isBottomEnd={bottomEnd}
-        moveId={moveId != '' ? `msg_${moveId}` : ''}
+        moveId={moveId != '' ? moveId : ''}
       >
         {(messages && (
           <ul className="messages-chat-list">{drawMessage()}</ul>
