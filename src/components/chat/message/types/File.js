@@ -248,6 +248,7 @@ const File = ({
         <OneImageDiv
           className={replyView ? undefined : 'msgtxt'}
           id={id || ''}
+          data-messageid={id}
           progressData={progressData}
         >
           <img
@@ -295,6 +296,7 @@ const File = ({
         <div
           className={`file-message ${extension}`}
           id={id || ''}
+          data-messageid={id}
           style={{ cursor: 'pointer' }}
         >
           <div
