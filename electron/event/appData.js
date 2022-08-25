@@ -2130,6 +2130,10 @@ export const deleteChatroomMessage = async ({ roomID, deletedMessageIds }) => {
   const tx = await txProvider();
   try {
     await tx('message')
+      .where('roomId', roomID)
+      .whereIn('replyID', deletedMessageIds)
+      .update({ replyInfo: null });
+    await tx('message')
       .del()
       .where('roomId', roomID)
       .whereIn('messageId', deletedMessageIds);
