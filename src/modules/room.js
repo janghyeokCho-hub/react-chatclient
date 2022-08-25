@@ -967,8 +967,16 @@ const room = handleActions(
         /* Redux store에서 삭제된 message 제거 */
         if (Array.isArray(payload?.deletedMessageIds) === true) {
           payload.deletedMessageIds.forEach(mid => {
+            // 삭제된 메시지가 답글이 달려있다면, 해당 답글의 본문 메시지 내용 지우기
+            const originMsg = draft.messages.filter(msg => msg.replyID === mid);
+
+            if (originMsg?.length) {
+              for (const msg of originMsg) {
+                msg.replyInfo = null;
+              }
+            }
+
             const idx = draft.messages.findIndex(msg => msg.messageID === mid);
-            // console.log('Delete Message  ', idx, messageLen, draft.messages[idx]);
             if (idx !== -1) {
               // message 목록에서 메시지 삭제처리
               draft.messages.splice(idx, 1);
