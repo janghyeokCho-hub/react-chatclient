@@ -1139,6 +1139,19 @@ export const reqGetRoomInfo = async (event, args) => {
         offset = messageCnt - maxCnt;
         offset = offset < 0 ? 0 : offset;
 
+        const selectSenderInfo = dbCon.raw(
+          `(select 
+            '{"name":"' || name || '"
+            ,"PN":"' || PN || '"
+            ,"LN":"' || LN || '"
+            ,"TN":"' || TN || '"
+            ,"photoPath":"' || ifnull(photoPath, '') || '"
+            ,"presence":"' || ifnull(presence, '') || '"
+            ,"isMobile":"' || isMobile || '" }' 
+            from users 
+            where id = m.sender) as senderInfo`,
+        );
+
         const members = await dbCon
         .select('a.*')
         .from(function () {
