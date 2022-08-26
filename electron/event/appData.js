@@ -1128,78 +1128,6 @@ export const reqGetRoomInfo = async (event, args) => {
       } else {
         room = selectRoom[0];
 
-        const selectMember = dbCon
-          .select('a.*')
-          .from(function () {
-            this.select(
-              'u.id',
-              'u.name',
-              'u.PN',
-              'u.LN',
-              'u.TN',
-              'u.dept',
-              'u.presence',
-              'u.isMobile',
-              'u.photoPath',
-              'rm.registDate',
-            )
-              .from('room_member as rm')
-              .join('room as r', 'r.roomId', 'rm.roomId')
-              .join('users as u', 'u.id', 'rm.userId')
-              .where('rm.roomId', roomId)
-              .andWhere('r.roomType', '!=', 'M')
-              .unionAll([
-                dbCon
-                  .select(
-                    'u.id',
-                    'u.name',
-                    'u.PN',
-                    'u.LN',
-                    'u.TN',
-                    'u.dept',
-                    'u.presence',
-                    'u.isMobile',
-                    'u.photoPath',
-                    'rm.registDate',
-                  )
-                  .from('room as r')
-                  .join('users as u', 'r.targetCode', 'u.id')
-                  .leftJoin('room_member as rm', function () {
-                    this.on('r.targetCode', 'rm.userId').andOn(
-                      'r.roomId',
-                      'rm.roomId',
-                    );
-                  })
-                  .where('r.roomId', roomId)
-                  .andWhere('r.roomType', 'M'),
-                dbCon
-                  .select(
-                    'u.id',
-                    'u.name',
-                    'u.PN',
-                    'u.LN',
-                    'u.TN',
-                    'u.dept',
-                    'u.presence',
-                    'u.isMobile',
-                    'u.photoPath',
-                    'rm.registDate',
-                  )
-                  .from('room as r')
-                  .join('users as u', 'r.ownerCode', 'u.id')
-                  .leftJoin('room_member as rm', function () {
-                    this.on('r.ownerCode', 'rm.userId').andOn(
-                      'r.roomId',
-                      'rm.roomId',
-                    );
-                  })
-                  .where('r.roomId', roomId)
-                  .andWhere('r.roomType', 'M'),
-              ])
-              .as('a');
-          })
-          .orderBy('registDate');
-
         const maxCnt = 50;
         let offset = 0;
 
@@ -1211,48 +1139,104 @@ export const reqGetRoomInfo = async (event, args) => {
         offset = messageCnt - maxCnt;
         offset = offset < 0 ? 0 : offset;
 
-        const selectSenderInfo = dbCon.raw(
-          `(select 
-            '{"name":"' || name || '"
-            ,"PN":"' || PN || '"
-            ,"LN":"' || LN || '"
-            ,"TN":"' || TN || '"
-            ,"photoPath":"' || ifnull(photoPath, '') || '"
-            ,"presence":"' || ifnull(presence, '') || '"
-            ,"isMobile":"' || isMobile || '" }' 
-            from users 
-            where id = m.sender) as senderInfo`,
-        );
-
-        const selectMessage = dbCon
-          .select(
-            'm.messageId AS messageID',
-            'm.context',
-            'm.sender',
-            'm.sendDate',
-            'm.roomId AS roomID',
-            'm.roomType',
-            'm.receiver',
-            'm.messageType',
-            'm.unreadCnt',
-            'm.readYN',
-            'm.isMine',
-            'm.tempId',
-            'm.fileInfos',
-            room.roomType == 'A' ? selectSenderInfo : 'm.senderInfo',
-            'm.linkInfo',
-            'm.botInfo',
-            'm.replyID',
-            'm.replyInfo',
+        const members = await dbCon
+        .select('a.*')
+        .from(function () {
+          this.select(
+            'u.id',
+            'u.name',
+            'u.PN',
+            'u.LN',
+            'u.TN',
+            'u.dept',
+            'u.presence',
+            'u.isMobile',
+            'u.photoPath',
+            'rm.registDate',
           )
-          .where({ roomId: roomId })
-          .from('message as m')
-          .limit(maxCnt)
-          .offset(offset)
-          .orderBy('m.messageId');
+            .from('room_member as rm')
+            .join('room as r', 'r.roomId', 'rm.roomId')
+            .join('users as u', 'u.id', 'rm.userId')
+            .where('rm.roomId', roomId)
+            .andWhere('r.roomType', '!=', 'M')
+            .unionAll([
+              dbCon
+                .select(
+                  'u.id',
+                  'u.name',
+                  'u.PN',
+                  'u.LN',
+                  'u.TN',
+                  'u.dept',
+                  'u.presence',
+                  'u.isMobile',
+                  'u.photoPath',
+                  'rm.registDate',
+                )
+                .from('room as r')
+                .join('users as u', 'r.targetCode', 'u.id')
+                .leftJoin('room_member as rm', function () {
+                  this.on('r.targetCode', 'rm.userId').andOn(
+                    'r.roomId',
+                    'rm.roomId',
+                  );
+                })
+                .where('r.roomId', roomId)
+                .andWhere('r.roomType', 'M'),
+              dbCon
+                .select(
+                  'u.id',
+                  'u.name',
+                  'u.PN',
+                  'u.LN',
+                  'u.TN',
+                  'u.dept',
+                  'u.presence',
+                  'u.isMobile',
+                  'u.photoPath',
+                  'rm.registDate',
+                )
+                .from('room as r')
+                .join('users as u', 'r.ownerCode', 'u.id')
+                .leftJoin('room_member as rm', function () {
+                  this.on('r.ownerCode', 'rm.userId').andOn(
+                    'r.roomId',
+                    'rm.roomId',
+                  );
+                })
+                .where('r.roomId', roomId)
+                .andWhere('r.roomType', 'M'),
+            ])
+            .as('a');
+        })
+        .orderBy('registDate');
 
-        const members = await selectMember;
-        messages = await selectMessage;
+        messages = await dbCon
+        .select(
+          'm.messageId AS messageID',
+          'm.context',
+          'm.sender',
+          'm.sendDate',
+          'm.roomId AS roomID',
+          'm.roomType',
+          'm.receiver',
+          'm.messageType',
+          'm.unreadCnt',
+          'm.readYN',
+          'm.isMine',
+          'm.tempId',
+          'm.fileInfos',
+          room.roomType == 'A' ? selectSenderInfo : 'm.senderInfo',
+          'm.linkInfo',
+          'm.botInfo',
+          'm.replyID',
+          'm.replyInfo',
+        )
+        .where({ roomId: roomId })
+        .from('message as m')
+        .limit(maxCnt)
+        .offset(offset)
+        .orderBy('m.messageId');;
 
         if (messages.length == 0) {
           console.log('room ' + roomId + ' messages nothing..');
@@ -1267,7 +1251,7 @@ export const reqGetRoomInfo = async (event, args) => {
       logger.info(e.stack);
     }
 
-    logger.info(JSON.stringify(messages));
+    logger.info(`Load ${messages?.length} messages from room ${roomId}`);
 
     return { room: room, messages: messages };
   } else return { room: {}, messages: [] };
