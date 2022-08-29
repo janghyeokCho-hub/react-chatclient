@@ -44,7 +44,11 @@ const ErrorPage = () => {
     if (DEVICE_TYPE == 'b') {
       window.close();
     } else {
-      quit(id);
+      if (isMainWindow()) {
+        quit(id);
+      } else {
+        window.close();
+      }
     }
   };
 

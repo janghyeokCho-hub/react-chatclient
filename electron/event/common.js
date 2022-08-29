@@ -62,7 +62,7 @@ export const RoomWinClosed = (event, args) => {
   event.returnValue = true;
 };
 
-export const reqMakeRoom = (event, args) => {
+export const reqMakeRoom = (_, args) => {
   // 새창 생성
   // 새창 id를 key값으로 makedata 세팅
   // makedata 세팅 후 화면 show

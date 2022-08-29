@@ -1,0 +1,41 @@
+<html>
+
+<head>
+    <title>[Test]Eumtalk Custom Protocol </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <section class="d-flex flex-column container gap-3 mb-5">
+        <p>Development (eumtalkdev://)</p>
+        <a class="btn btn-primary" href="eumtalkdev://open/chat?targetId=jhlee">Open chartoom by userId(jhlee)</a>
+        <a class="btn btn-primary" href="eumtalkdev://open/chat?targetId=dgkim">Open chartoom by
+            userId(dgkim)</a>
+        <a class="btn btn-primary" href="eumtalkdev://open/chat?targetId=nouserXXXX">Open chartoom by
+            userId(nouserXXXX)</a>
+        <a class="btn btn-primary" href="eumtalkdev://open/channel?roomId=23">Open channel by id(23)</a>
+        <a class="btn btn-primary" href="eumtalkdev://domainRegist?domain=http://192.168.11.232">Regist domain
+            http://192.168.11.232</a>
+        <a class="btn btn-primary" href="eumtalkdev://domainRegist?domain=https%3A%2F%2Feum.covision.co.kr">Regist
+            domain
+            https://eum.covision.co.kr</a>
+        <a class="btn btn-primary" href="eumtalkdev://domainRegist?domain=https%3A%2F%2Finvalid.covision.co.kr">Regist
+            domain
+            https://invalid.covision.co.kr</a>
+    </section>
+
+    <section class="d-flex flex-column container gap-3">
+        <p>Production (eumtalk://)</p>
+        <a class="btn btn-info" href="eumtalk://open/chat?targetId=gbhwang">Open chartoom by userId(gbhwang)</a>
+        <a class="btn btn-info" href="eumtalk://open/chat?targetId=nouserXXXX">Open chartoom by userId(nouserXXXX)</a>
+        <a class="btn btn-info" href="eumtalk://open/channel?roomId=1">Open channel by id(1)</a>
+        <a class="btn btn-info" href="eumtalk://domainRegist?domain=https://eum.covision.co.kr">Regist domain
+            https://eum.covision.co.kr</a>
+    </section>
+</body>
+
+</html>
