@@ -3,7 +3,7 @@ import LRU from 'lru-cache';
 
 const cache = new LRU({
   max: 20,
-  maxAge: 1000 * 60 * 60 // 60m (1h)
+  ttl: 1000 * 60 * 60 // 60m (1h)
 });
 
 const defaultOpts = {

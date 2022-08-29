@@ -1,7 +1,7 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import url from 'url';
-import exportProps from '../config/exportProps';
+import exportProps from '../../config/exportProps';
 
 export const showModalDialog = (parent, option) => {
   let modalDialog = new BrowserWindow({

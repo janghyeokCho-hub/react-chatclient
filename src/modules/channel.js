@@ -20,6 +20,7 @@ import {
 } from '@/lib/deviceConnector';
 import { startLoading, finishLoading } from '@/modules/loading';
 import { changeOpenRoom } from '@/modules/room';
+import { set } from '@/modules/error';
 import { get } from '@/lib/util/storageUtil';
 import { isJSONStr } from '@/lib/common';
 
@@ -421,6 +422,9 @@ function createGetChannelInfoSaga() {
       data = response.data;
 
       if (DEVICE_TYPE == 'd') {
+        if (data?.status !== 'SUCCESS') {
+          throw data;
+        }
         if (data.room) {
           let background = yield call(roomID => {
             return new Promise((resolve, reject) => {
@@ -456,6 +460,7 @@ function createGetChannelInfoSaga() {
         error: true,
       });
       yield put(finishLoading('channel/GET_CHANNEL_INFO'));
+      yield put(set({ error: true, object: e }));
     }
   };
 }
