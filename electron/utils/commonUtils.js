@@ -3,7 +3,7 @@ import AutoLaunch from 'auto-launch';
 import path from 'path';
 import logger from './logger';
 import exportProps from '../config/exportProps';
-import * as window from './window';
+import * as window from './window/modal';
 import { managesvr } from '../utils/api';
 import { removeLocalDatabaseDir } from '../utils/fileUtils';
 import * as netUtils from 'node-macaddress';

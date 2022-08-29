@@ -6,8 +6,7 @@ import { searchOrgChart } from '@/lib/orgchart';
 export function useMemberCache(opts = {}) {
     const default_options = {
         max: 30,
-        length: (n, key) => n*2 + key.length,
-        maxAge: 5000
+        ttl: 5000
     };
     const cache = new LRU({
         ...default_options,

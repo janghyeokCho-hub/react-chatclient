@@ -5,12 +5,10 @@ import {
   Menu,
   ipcMain,
   powerMonitor,
-  protocol,
   desktopCapturer,
   nativeImage,
   screen,
   clipboard,
-  globalShortcut,
 } from 'electron';
 import address from 'macaddress';
 import path from 'path';
@@ -48,7 +46,7 @@ import {
 import { getInitialBounds } from '../src/lib/d/bound';
 
 import AutoLaunch from 'auto-launch';
-import * as window from './utils/window';
+import * as window from './utils/window/modal';
 import {
   connectRemoteHost,
   connectRemoteViewer,
@@ -59,6 +57,7 @@ import {
 import { openNoteWindow } from './utils/note';
 import axios from 'axios';
 import Jimp from 'jimp';
+import { registerEumtalkProtocol } from './utils/protocol/register';
 
 /********** GLOBAL VARIABLE **********/
 // dirName
@@ -510,10 +509,8 @@ const createWindow = async (isLoading, domainInfo) => {
     ...bounds,
   });
 
-  protocol.registerHttpProtocol('eumtalk', (req, cb) => {
-    const fullURL = 'eumtalk://' + req.url;
-    console.log('open to ' + fullURL);
-  });
+  // Register protocol for main window
+  registerEumtalkProtocol();
 
   if (isLoading) {
     win.loadFile(path.join(DIR_NAME, 'templates', 'appLoading.html'));
@@ -627,6 +624,9 @@ const createDomainRegistWindow = () => {
     frame: false,
     show: false,
   });
+
+  // Register protocol for domainRegist
+  registerEumtalkProtocol();
 
   win.once('ready-to-show', () => {
     ipcMain.once('req-regist-domain', (event, args) => {
