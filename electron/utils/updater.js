@@ -3,7 +3,7 @@ import { autoUpdater } from 'electron-updater';
 import exportProps from '../config/exportProps';
 import logger from './logger';
 import { managesvr } from './api';
-import * as window from './window';
+import * as window from './window/modal';
 
 let updater = null;
 
