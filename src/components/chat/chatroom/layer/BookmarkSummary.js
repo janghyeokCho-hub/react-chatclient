@@ -217,17 +217,25 @@ const BookmarkSummary = ({ roomId }) => {
             <p>{covi.getDic('BookmarkSummary', '책갈피 모아보기')}</p>
           </div>
         </div>
+        {(bookmarkList && bookmarkList.length > 0 && (
         <Scrollbars
-          style={{
-            height: 'calc(100% - 46px)',
-            boxSizing: 'border-box',
-          }}
-          autoHide={autoHide}
-        >
-          <div className="bookmark-List">
-            <ListView />
+        style={{
+          height: 'calc(100% - 46px)',
+          boxSizing: 'border-box',
+        }}
+        autoHide={autoHide}
+      >
+        <div className="bookmark-List">
+          <ListView />
+        </div>
+      </Scrollbars>
+        )) || (
+          <div
+            style={{ width: '100%', textAlign: 'center', marginTop: '30px' }}
+          >
+            {covi.getDic('Msg_NoContent', '조회할 내용이 없습니다.')}
           </div>
-        </Scrollbars>
+        )}
       </div>
     </>
   );
