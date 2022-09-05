@@ -613,7 +613,7 @@ const MessageBox = ({
           </li>
           {fileInfoJSX && fileInfoJSX}
           {urlInfoJSX && urlInfoJSX}
-          {message.context && fileInfoJSX && fileInfoJSX}
+          {/* {message.context && fileInfoJSX && fileInfoJSX} */}
         </>
       );
     }
