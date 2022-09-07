@@ -1543,8 +1543,9 @@ const channel = handleActions(
 
           if (!channel) {
             const data = {
-              roomId,
+              ...action.payload,
               updateDate: null,
+              lastMessageDate: Date.now(),
             };
             if (iconPath) {
               data.iconPath = iconPath;
