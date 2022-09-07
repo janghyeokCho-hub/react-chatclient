@@ -300,7 +300,9 @@ const CreateChannel = ({ headerName }) => {
             dispatch(openChannel(params));
           });
         } else {
-          dispatch(openChannel({ roomId }));
+          if (data?.result?.room && roomId) {
+            dispatch(openChannel(data.result.room));
+          }
         }
       }
     });
