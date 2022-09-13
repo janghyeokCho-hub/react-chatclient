@@ -91,10 +91,7 @@ const Titlebar = () => {
     evalConnector({
       method: 'on',
       channel: 'onAlarmClick',
-      callback: (event, args) => {
-        (!args.isChannel && dispatch(openRoom({ roomID: args.roomID }))) ||
-          dispatch(openChannel({ roomId: args.roomID }));
-
+      callback: (_, args) => {
         if (window.innerWidth <= 1000) {
           const winName = `wrf${args.roomID}`;
           const openURL = `${DEVICE_TYPE == 'd' ? '#' : ''}/client/nw/${
@@ -116,6 +113,12 @@ const Titlebar = () => {
                 name: winName,
               }),
             );
+        } else {
+          if (args.isChannel) {
+            dispatch(openChannel({ roomId: args.roomID }));
+          } else {
+            dispatch(openRoom({ roomID: args.roomID }));
+          }
         }
       },
     });
