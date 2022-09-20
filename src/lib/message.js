@@ -112,7 +112,7 @@ export const getFileByToken = (params, downloadHandler) => {
 };
 
 export const getURLThumbnail = params => {
-  return managesvr('post', `/message/link/thumbnail`, params);
+  return managesvr('post', `/message/link/thumbnail`, params).then(res => console.log(res.data)).catch(err => console.log('err', err));
 };
 
 export const getRoomFiles = params => {

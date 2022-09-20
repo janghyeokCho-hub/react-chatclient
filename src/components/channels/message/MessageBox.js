@@ -260,6 +260,31 @@ const MessageBox = ({
         index = 1;
       }
       // 링크 썸네일 처리
+      if (!message?.linkInfo?.thumbNailInfo && DEVICE_TYPE !== 'b') {
+        const checkURLResult = checkURL(drawText);
+
+        if (checkURLResult.isURL) {
+          evalConnector({
+            method: 'once',
+            channel: `onLinkThumbnailInfo_${message.messageID}`,
+            callback: (_, args) => {
+              handleMessageLinkInfo(args);
+            },
+          });
+
+          evalConnector({
+            method: 'send',
+            channel: 'get-url-graph-data',
+            message: {
+              messageId: message.messageID,
+              roomId: message.roomID,
+              url: checkURLResult.url,
+              returnChannel: `onLinkThumbnailInfo_${message.messageID}`,
+            },
+          });
+        }
+      }
+
       if (message.linkInfo) {
         let linkInfoObj = isJSONStr(message.linkInfo)
           ? JSON.parse(message.linkInfo)
@@ -303,31 +328,7 @@ const MessageBox = ({
             </li>
           );
         }
-      } else if (!message?.linkInfo && DEVICE_TYPE !== 'b') {
-        const checkURLResult = checkURL(drawText);
-
-        if (checkURLResult.isURL) {
-          evalConnector({
-            method: 'once',
-            channel: `onLinkThumbnailInfo_${message.messageID}`,
-            callback: (_, args) => {
-              handleMessageLinkInfo(args);
-            },
-          });
-
-          evalConnector({
-            method: 'send',
-            channel: 'get-url-graph-data',
-            message: {
-              messageId: message.messageID,
-              roomId: message.roomID,
-              url: checkURLResult.url,
-              returnChannel: `onLinkThumbnailInfo_${message.messageID}`,
-            },
-          });
-        }
-      }
-
+      } 
       if (message.fileInfos) {
         const fileInfoJSON = isJSONStr(message.fileInfos)
           ? JSON.parse(message.fileInfos)
