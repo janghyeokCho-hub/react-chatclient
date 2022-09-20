@@ -355,6 +355,11 @@ export const getUrlGraphData = (event, args) => {
               // link data local db 저장
 
               saveLinkInfo(args.messageId, returnObj);
+              event.sender.send(args.returnChannel, {
+                messageId: args.messageId,
+                roomId: args.roomId,
+                linkInfo: returnObj,
+              });
             } else {
               // 아무 처리 없음
               event.sender.send(args.returnChannel, {
