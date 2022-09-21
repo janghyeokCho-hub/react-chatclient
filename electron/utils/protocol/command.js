@@ -49,7 +49,8 @@ const dialogUserNotFound = userId => {
 };
 
 export const openChatroom = async (loginId, targetId) => {
-  const targetRoom = await getRoomInfoByTargetUserId({ userId: targetId });
+  const isSelfRoom = loginId === targetId;
+  const targetRoom = await getRoomInfoByTargetUserId({ isSelfRoom, userId: targetId });
   const roomID = targetRoom?.roomId;
 
   if (roomID) {
@@ -74,6 +75,9 @@ export const openChatroom = async (loginId, targetId) => {
       dialogUserNotFound(targetId);
       return;
     }
+
+    const makeRoomType = isSelfRoom ? 'O' : 'M';
+    const makeRoomMembers = isSelfRoom ? [myInfo] : [myInfo, targetInfo];
     // Open makeroom window via existing IPC handler
     reqMakeRoom(null, {
       path: '#/client/nw/makeroom',
@@ -81,9 +85,9 @@ export const openChatroom = async (loginId, targetId) => {
         newRoom: true,
         makeInfo: {
           roomName: '',
-          roomType: 'M',
+          roomType: makeRoomType,
           memberType: 'U',
-          members: [myInfo, targetInfo],
+          members: makeRoomMembers,
         },
         winName: `wmr_U_${targetInfo.id}`,
       },
