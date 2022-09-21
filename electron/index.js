@@ -57,7 +57,7 @@ import {
 import { openNoteWindow } from './utils/note';
 import axios from 'axios';
 import Jimp from 'jimp';
-import { registerEumtalkProtocol } from './utils/protocol/register';
+import { handleOpenURL, protocolName, registerEumtalkProtocol } from './utils/protocol/register';
 
 /********** GLOBAL VARIABLE **********/
 // dirName
@@ -723,8 +723,24 @@ if (!gotTheLock) {
   app.quit();
   app.exit();
 } else {
+  if(process.platform === 'win32') {
+    const deeplinkingUrl = process.argv.slice(1);
+    logger.info('DeepLinkURL: ' + deeplinkingUrl);
+    // handle on startup...
+  } else {
+    /* Custom URL handler for macOS */
+    app.on('open-url', (_, url) => handleOpenURL(url));
+  }
+
   //두번째 앱실행시 이벤트 발생
   app.on('second-instance', (event, commandLine, workingDirectory) => {
+    /* Custom URL handler for Windows */
+    if (process.platform === 'win32') {
+      const customURL = commandLine.find(str => str.includes(`${protocolName}://`));
+      if (customURL) {
+        handleOpenURL(customURL);
+      }
+    }
     if (win) {
       if (win.isMinimized()) {
         win.restore();

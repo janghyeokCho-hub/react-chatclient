@@ -1,4 +1,5 @@
 import { app, dialog } from 'electron';
+import path from 'path';
 
 import exportProps from '../../config/exportProps';
 import logger from '../logger';
@@ -47,50 +48,64 @@ function requireDomainUnset({ alert = false }) {
   return !isDomainSet;
 }
 
-export function registerEumtalkProtocol() {
-  let protocolName = 'eumtalk';
-  if (exportProps.isDev) {
-    protocolName += 'dev';
+export async function handleOpenURL(url) {
+  logger.info('[Protocol] open-url ' + url);
+  const command = parseCommandFromURL(url);
+  const loginId = loginInfo.getData()?.id;
+
+  if (command.command === 'open') {
+    if (command.path === '/chat' && requireAuth(loginId, { alert: true })) {
+      /**
+       * Command: open chatroom by target user id
+       * protocol://open/chat?targetid={roomId}
+       */
+      await openChatroom(loginId, command.param.get('targetId'));
+    } else if (
+      /**
+       * Command: open channel by channel id
+       * protocol://open/channel?roomId={roomId}
+       */
+      command.path === '/channel' &&
+      requireAuth(loginId, { alert: true })
+    ) {
+      await openChannel(command.param.get('roomId'));
+    }
+  } else if (
+    command.command === 'domainRegist' &&
+    requireDomainUnset({ alert: true })
+  ) {
+    /**
+     * Command: register domain
+     * protocol://registDomain?domain={domain}
+     */
+    const domain = decodeURIComponent(command.param.get('domain'));
+    await registDomain(domain);
   }
-  const registerResult = app.setAsDefaultProtocolClient(protocolName);
+}
+
+export const protocolName = exportProps.isDev ? 'eumtalkdev' : 'eumtalk';
+
+export function registerEumtalkProtocol() {
+  let registerResult;
+  if (process.defaultApp) {
+    const argPath = path.resolve(process.argv[1]);
+    if (process.argv.length >= 2) {
+      app.removeAsDefaultProtocolClient(protocolName, process.execPath, [
+        argPath,
+      ]);
+      registerResult = app.setAsDefaultProtocolClient(
+        protocolName,
+        process.execPath,
+        [argPath],
+      );
+    }
+  } else {
+    app.removeAsDefaultProtocolClient(protocolName);
+    registerResult = app.setAsDefaultProtocolClient(protocolName);
+  }
   logger.info(
     `[Protocol] Register Application Protocol "${protocolName}" : ${
       registerResult ? 'Success' : 'Fail'
     }`,
   );
-
-  app.on('open-url', async (_, url) => {
-    logger.info('[Protocol] open-url ' + url);
-    const command = parseCommandFromURL(url);
-    const loginId = loginInfo.getData()?.id;
-
-    if (command.command === 'open') {
-      if (command.path === '/chat' && requireAuth(loginId, { alert: true })) {
-        /**
-         * Command: open chatroom by target user id
-         * protocol://open/chat?targetid={roomId}
-         */
-        await openChatroom(loginId, command.param.get('targetId'));
-      } else if (
-        /**
-         * Command: open channel by channel id
-         * protocol://open/channel?roomId={roomId}
-         */
-        command.path === '/channel' &&
-        requireAuth(loginId, { alert: true })
-      ) {
-        await openChannel(command.param.get('roomId'));
-      }
-    } else if (
-      command.command === 'domainRegist' &&
-      requireDomainUnset({ alert: true })
-    ) {
-      /**
-       * Command: register domain
-       * protocol://registDomain?domain={domain}
-       */
-      const domain = decodeURIComponent(command.param.get('domain'));
-      await registDomain(domain);
-    }
-  });
 }
