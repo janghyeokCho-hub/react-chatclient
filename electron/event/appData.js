@@ -2170,29 +2170,48 @@ export const syncChatroomDeletedMessages = async ({ roomID }) => {
   }
 };
 
-export const getRoomInfoByTargetUserId = async ({ userId }) => {
+export const getRoomInfoByTargetUserId = async ({ isSelfRoom, userId }) => {
   logger.info(`getRoomInfoByTargetUserId '${userId}'`);
   try {
     if (!userId) {
       return;
     }
-    // SELECT * FROM room WHERE roomType = 'M' AND targetCode = 'chkim' OR ownerCode = 'chkim'
     const currentUserId = loginInfo.getData().id;
     const dbCon = await db.getConnection(dbPath, currentUserId);
-    const result = await dbCon.select('roomId').from('room').where({ roomType: 'M' }).andWhere({ targetCode: userId }).orWhere({ ownerCode: userId }).first();
-    return result;
+    // if (currentUserId === userId) {
+    if (isSelfRoom) {
+      const result = await dbCon
+        .select('roomId')
+        .from('room')
+        .where({ roomType: 'O' })
+        .andWhere({ ownerCode: userId })
+        .first();
+      return result;
+    } else {
+      const result = await dbCon
+        .select('roomId')
+        .from('room')
+        .where({ roomType: 'M' })
+        .andWhere({ targetCode: userId })
+        .orWhere({ ownerCode: userId })
+        .first();
+      return result;
+    }
   } catch (err) {
     logger.error(`[getRoomInfoByTargetUserId] Error: ${err.toString()}`);
   }
 };
 
-export const getUserFromId = async (targetId) => {
+export const getUserFromId = async targetId => {
   try {
     const currentUserId = loginInfo.getData().id;
     const dbCon = await db.getConnection(dbPath, currentUserId);
-    const result = await dbCon.select('*').from('users').where({ id: targetId });
+    const result = await dbCon
+      .select('*')
+      .from('users')
+      .where({ id: targetId });
     return result?.[0];
-  } catch(err) {
+  } catch (err) {
     logger.error(`[getUserProfile] Error: ${err.toString()}`);
   }
-}
+};
