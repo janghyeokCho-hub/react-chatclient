@@ -151,6 +151,13 @@ const UserInfoBox = ({
             }
           }
         } else if (checkObj && userInfo.type !== 'G') {
+          /**
+           * 2022.09.22
+           * Checklist 모드로 동작시 더블클릭 생략 (onClick과 번갈아서 중복실행됨)
+           */
+          if (isDoubleClick) {
+            return;
+          }
           checkRef?.current?.click();
         }
       }
