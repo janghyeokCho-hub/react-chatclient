@@ -77,7 +77,6 @@ const InviteMember = ({
     () => ({
       name: 'invite_',
       onChange: (e, userInfo) => {
-        console.log('invite_', e);
         if (e.target.checked) {
           if (userInfo.pChat == 'Y') {
             addInviteMember({

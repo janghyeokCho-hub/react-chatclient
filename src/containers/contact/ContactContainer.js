@@ -11,7 +11,6 @@ const ContactContainer = ({ viewType, checkObj, chineseWall = [] }) => {
   const contactList = useSelector(({ contact }) => contact.contacts);
   const deptCode = useSelector(({ login }) => login.userInfo.DeptCode);
   const dispatch = useDispatch();
-  console.log(contactList);
 
   useEffect(() => {
     if (contactList == null || contactList.length == 0) {
