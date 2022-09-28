@@ -1,17 +1,22 @@
-import { screen, remote } from 'electron';
-
 /**
  * 2022.07.14
  */
 
 const defaultSize = { width: 500, height: 800 };
 
-export const adjustBounds = (key, bounds) => {
-  if (bounds) {
+export const adjustBounds = (key, bounds, remote) => {
+  if (bounds && remote.screen) {
+    const screen = remote.screen;
     const targetScreen = screen.getDisplayMatching(bounds);
     const resized = {
-      width: Math.min(bounds.width || defaultSize.width, targetScreen.workArea.width),
-      height: Math.min(bounds.height || defaultSize.height, targetScreen.workArea.height),
+      width: Math.min(
+        bounds.width || defaultSize.width,
+        targetScreen.workArea.width,
+      ),
+      height: Math.min(
+        bounds.height || defaultSize.height,
+        targetScreen.workArea.height,
+      ),
     };
     const { x, y, width, height } = bounds;
     let boundsOutOfDisplay = false;
@@ -19,13 +24,19 @@ export const adjustBounds = (key, bounds) => {
     if (targetScreen.workArea.x > x) {
       // console.log('OutOfDisplay CASE 1 :: ', targetScreen.workArea.x, x);
       boundsOutOfDisplay = true;
-    } else if (targetScreen.workArea.x + targetScreen.workArea.width < x + width) {
+    } else if (
+      targetScreen.workArea.x + targetScreen.workArea.width <
+      x + width
+    ) {
       // console.log('OutOfDisplay CASE 2 :: ', targetScreen.workArea.x + targetScreen.workArea.width, x + width);
       boundsOutOfDisplay = true;
     } else if (targetScreen.workArea.y > y) {
       // console.log('OutOfDisplay CASE 3 :: ', targetScreen.workArea.y, y);
       boundsOutOfDisplay = true;
-    } else if (targetScreen.workArea.y + targetScreen.workArea.height < y + height) {
+    } else if (
+      targetScreen.workArea.y + targetScreen.workArea.height <
+      y + height
+    ) {
       // console.log('OutOfDisplay CASE 4 :: ', targetScreen.workArea.y + targetScreen.workArea.height, y + height);
       boundsOutOfDisplay = true;
     }
@@ -41,15 +52,17 @@ export const adjustBounds = (key, bounds) => {
     };
   }
   return defaultSize;
-}
+};
 
-export const getInitialBounds = (boundKey) => {
+export const getInitialBounds = (boundKey, remote) => {
   try {
-    // electron main      =>  global.APP_SETTING    
-    // electron renderer  =>  remote.getGlobal 
-    const APP_SETTING = remote?.getGlobal ? remote.getGlobal('APP_SETTING') : global.APP_SETTING;
-    const initialBounds = APP_SETTING.get(boundKey);
-    return adjustBounds(boundKey, initialBounds);
+    // electron main      =>  global.APP_SETTING
+    // electron renderer  =>  remote.getGlobal
+    const APP_SECURITY_SETTING = remote?.getGlobal
+      ? remote.getGlobal('APP_SECURITY_SETTING')
+      : global.APP_SECURITY_SETTING;
+    const initialBounds = APP_SECURITY_SETTING.get(boundKey);
+    return adjustBounds(boundKey, initialBounds, remote);
   } catch (e) {
     console.log('Error  ', e);
     return defaultSize;
