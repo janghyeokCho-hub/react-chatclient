@@ -10,8 +10,8 @@ const {
   getRemote,
   existsSync,
   writeFile,
-  getInitialBounds,
 } = require(`@/lib/${DEVICE_TYPE}/connector`);
+const { getInitialBounds } = require(`@/lib/${DEVICE_TYPE}/bound`);
 
 // 2020.12.21
 // for '@C/chat/chatroom/normal/MessagePostBox' Component
@@ -22,7 +22,6 @@ export const evalConnector = options => {
   if (DEVICE_TYPE == 'd') {
     const emitter = getEmitter();
     const remote = getRemote();
-
     if (options.method == 'on') {
       emitter.on(options.channel, options.callback);
     } else if (options.method == 'once') {
@@ -236,7 +235,7 @@ export const newChatRoom = (winName, id, openURL) => {
       }
 
       if (roomInfo && roomInfo[0]) {
-        const bounds = getInitialBounds(roomInfo[0], defaultSize, remote);
+        const bounds = getInitialBounds(roomInfo[0], remote);
         // APP_SETTING에 저장된 bounds가 있는 경우
         if (!!bounds) {
           initial = {
@@ -372,28 +371,28 @@ const bindChatRoomDefaultEvent = (id, roomObj, isChannel) => {
   );
 
   /*
-  roomObj.on(
-    'focus',
-    (roomId => {
-      const rId = roomId;
-      return () => {
-        parentWin.send('onNewWinFocus', rId);
-      };
-    })(id),
-  );
-  */
+ roomObj.on(
+ 'focus',
+ (roomId => {
+ const rId = roomId;
+ return () => {
+ parentWin.send('onNewWinFocus', rId);
+ };
+ })(id),
+ );
+ */
 
   /*
-  roomObj.on(
-    'blur',
-    (roomId => {
-      const rId = roomId;
-      return () => {
-        parentWin.send('onNewWinBlur', rId);
-      };
-    })(id),
-  );
-  */
+ roomObj.on(
+ 'blur',
+ (roomId => {
+ const rId = roomId;
+ return () => {
+ parentWin.send('onNewWinBlur', rId);
+ };
+ })(id),
+ );
+ */
 };
 
 export const bindLeaveChatRoom = (room, userId) => {
