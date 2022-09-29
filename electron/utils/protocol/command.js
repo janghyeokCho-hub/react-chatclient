@@ -50,7 +50,10 @@ const dialogUserNotFound = userId => {
 
 export const openChatroom = async (loginId, targetId) => {
   const isSelfRoom = loginId === targetId;
-  const targetRoom = await getRoomInfoByTargetUserId({ isSelfRoom, userId: targetId });
+  const targetRoom = await getRoomInfoByTargetUserId({
+    isSelfRoom,
+    userId: targetId,
+  });
   const roomID = targetRoom?.roomId;
 
   if (roomID) {
@@ -95,8 +98,38 @@ export const openChatroom = async (loginId, targetId) => {
   }
 };
 
-export async function openChannel(roomID) {
+async function validateChannel(loginId, roomID) {
   if (!roomID) {
+    return false;
+  }
+  try {
+    const response = await managesvr('GET', `/channel/joinList/${loginId}`);
+    if (Array.isArray(response?.data?.result) === false) {
+      return false;
+    }
+    return response.data.result.some(room => room?.roomId && `${room.roomId}` === roomID);
+  } catch (err) {
+    logger.info(
+      `An error occured while requesting /restful/channel/${roomID}: ` +
+        err.toString(),
+    );
+  }
+  return false;
+}
+
+export async function openChannel(loginId, roomID) {
+  if (!roomID) {
+    return;
+  }
+
+  const isValidChannel = await validateChannel(loginId, roomID);
+
+  if (isValidChannel === false) {
+    logger.info(`[Protocol] Error: Cannot Open Channel "${roomID}"`);
+    dialog.showMessageBox({
+      type: 'info',
+      message: localDic.INVALID_CHANNEL + '\n' + roomID,
+    });
     return;
   }
   logger.info(`[Protocol] Open Channel "${roomID}"`);

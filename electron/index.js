@@ -739,6 +739,7 @@ if (!gotTheLock) {
       const customURL = commandLine.find(str => str.includes(`${protocolName}://`));
       if (customURL) {
         handleOpenURL(customURL);
+        return;
       }
     }
     if (win) {
