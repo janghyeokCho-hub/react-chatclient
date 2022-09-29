@@ -1,4 +1,4 @@
-import { app, dialog } from 'electron';
+import { app, dialog, BrowserWindow } from 'electron';
 import path from 'path';
 
 import exportProps from '../../config/exportProps';
@@ -48,6 +48,23 @@ function requireDomainUnset({ alert = false }) {
   return !isDomainSet;
 }
 
+function isMultiViewMode() {
+  const mainWinBounds = BrowserWindow.fromId(1)?.getBounds();
+  return mainWinBounds?.width <= 1001;
+}
+
+function focusMainWindow() {
+  const mainWindow = BrowserWindow.fromId(1);
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    } else if (!mainWindow.isVisible()) {
+      mainWindow.show();
+    }
+    mainWindow.focus();
+  }
+}
+
 export async function handleOpenURL(url) {
   logger.info('[Protocol] open-url ' + url);
   const command = parseCommandFromURL(url);
@@ -59,6 +76,9 @@ export async function handleOpenURL(url) {
        * Command: open chatroom by target user id
        * protocol://open/chat?targetid={roomId}
        */
+      if (isMultiViewMode()) {
+        focusMainWindow();
+      }
       await openChatroom(loginId, command.param.get('targetId'));
     } else if (
       /**
@@ -68,7 +88,10 @@ export async function handleOpenURL(url) {
       command.path === '/channel' &&
       requireAuth(loginId, { alert: true })
     ) {
-      await openChannel(command.param.get('roomId'));
+      if (isMultiViewMode()) {
+        focusMainWindow();
+      }
+      await openChannel(loginId, command.param.get('roomId'));
     }
   } else if (
     command.command === 'domainRegist' &&
@@ -78,6 +101,7 @@ export async function handleOpenURL(url) {
      * Command: register domain
      * protocol://registDomain?domain={domain}
      */
+    focusMainWindow();
     const domain = decodeURIComponent(command.param.get('domain'));
     await registDomain(domain);
   }

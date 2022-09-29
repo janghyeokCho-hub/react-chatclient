@@ -9,4 +9,6 @@ export const INVALID_DOMAIN =
 export const CONFIRM_DOMAIN =
   '아래 주소로 접속을 허용하시겠습니까?\nDo you want to allow connect to the domain below?';
 export const USER_NOTFOUND = 
-  `사용자 정보를 찾을 수 없습니다.\nCannot find user data.`;
+  `대화가 불가능한 대상입니다.\nCannot open chatroom with target user.`;
+export const INVALID_CHANNEL = 
+  `가입되어 있지 않은 채널입니다.\nCannot access requested channel`;
