@@ -13,11 +13,10 @@ import {
   isJSONStr,
   openPopup,
 } from '@/lib/common';
-;
 import LinkMessageBox from '@C/chat/message/LinkMessageBox';
 import FileMessageBox from '@C/chat/message/FileMessageBox';
 import { useChatFontSize } from '@/hooks/useChat';
-import room, { setMessageLinkInfo } from '@/modules/room';
+import { setMessageLinkInfo } from '@/modules/room';
 import { evalConnector } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
 import useSWR from 'swr';
@@ -58,8 +57,8 @@ const MessageBox = ({
     },
     {
       revalidateOnFocus: false,
-      shouldRetryOnError: false
-    }
+      shouldRetryOnError: false,
+    },
   );
 
   //책갈피 추가
@@ -149,13 +148,13 @@ const MessageBox = ({
       if (bookmark.messageId === message.messageID) return bookmark;
     });
 
-    let messageType =  'message';
+    let messageType = 'message';
     if (eumTalkRegularExp.test(message.context)) {
       const processMsg = convertEumTalkProtocol(message.context);
       messageType = processMsg.type;
     }
 
-    if (useBookmark === true && messageType !== 'emoticon' ) {
+    if (useBookmark === true && messageType !== 'emoticon') {
       if (isExistOnBookmark === true) {
         _menus.push({
           code: 'deleteBookmark',
@@ -232,12 +231,13 @@ const MessageBox = ({
       if (drawText) {
         index = 1;
       }
-
+      const linkInfoObj = isJSONStr(message.linkInfo)
+        ? JSON.parse(message.linkInfo)
+        : message.linkInfo;
       // 링크 썸네일 처리
-    if (!message?.linkInfo?.thumbNailInfo && DEVICE_TYPE !== 'b') {
+      if (!linkInfoObj?.thumbNailInfo && DEVICE_TYPE !== 'b') {
         const checkURLResult = checkURL(drawText);
-
-        if (checkURLResult.isURL) {
+        if (checkURLResult?.isURL && checkURLResult?.url) {
           evalConnector({
             method: 'once',
             channel: `onLinkThumbnailInfo_${message.messageID}`,
@@ -260,10 +260,6 @@ const MessageBox = ({
       }
 
       if (message.linkInfo) {
-        let linkInfoObj = isJSONStr(message.linkInfo)
-          ? JSON.parse(message.linkInfo)
-          : message.linkInfo;
-
         if (linkInfoObj?.thumbNailInfo) {
           const linkThumbnailObj = linkInfoObj.thumbNailInfo;
 
@@ -303,7 +299,7 @@ const MessageBox = ({
             </li>
           );
         }
-      } 
+      }
 
       drawText = convertURLMessage(drawText);
 
