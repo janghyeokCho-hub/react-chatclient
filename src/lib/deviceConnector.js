@@ -4,14 +4,13 @@ import { insert, filterRemoveByIndex } from '@/lib/util/storageUtil';
 import { createTakeLatestTimer } from '@/lib/util/asyncUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import { chatsvr } from '@/lib/api';
-
 const {
   getEmitter,
   getRemote,
   existsSync,
   writeFile,
+  getInitialBounds,
 } = require(`@/lib/${DEVICE_TYPE}/connector`);
-const { getInitialBounds } = require(`@/lib/${DEVICE_TYPE}/bound`);
 
 // 2020.12.21
 // for '@C/chat/chatroom/normal/MessagePostBox' Component
