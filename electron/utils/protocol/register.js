@@ -50,7 +50,7 @@ function requireDomainUnset({ alert = false }) {
 
 function isMultiViewMode() {
   const mainWinBounds = BrowserWindow.fromId(1)?.getBounds();
-  return mainWinBounds?.width <= 1001;
+  return mainWinBounds?.width > 1001;
 }
 
 function focusMainWindow() {
