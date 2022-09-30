@@ -914,7 +914,10 @@ const channel = handleActions(
               item.newWin = channel.newWin;
               item.winObj = channel.winObj;
               item.winName = channel.winName;
-              item.settingJSON = channel.settingJSON;
+              item.settingJSON = isJSONStr(channel.settingJSON)
+                ? JSON.parse(channel.settingJSON)
+                : channel.settingJSON;
+              console.log('item.settingJSON : ', typeof item.settingJSON);
 
               // 채널 아이콘
               if (channel.iconPath && !item.iconPath) {
