@@ -10,7 +10,7 @@ import {
   nativeImage,
   screen,
   clipboard,
-  globalShortcut,
+  remote,
 } from 'electron';
 import address from 'macaddress';
 import path from 'path';
@@ -172,12 +172,12 @@ const appReady = async () => {
       description: '메신저에서 그룹웨어를 사용해보세요',
       type: 'I',
       downloadURL: 'http://192.168.11.126:8080',
-      photoPath: 'http://192.168.11.80/storage/no_image.jpg',
+      photoPath: 'http://192.168.11.232/storage/no_image.jpg',
       createDate: new Date(),
       updateDate: new Date(),
       owner: 'ldh',
       version: '1.0.0',
-      iconPath: 'http://192.168.11.80/storage/extension/3.svg',
+      iconPath: 'http://192.168.11.232/storage/extension/3.svg',
     },
   ]);
 
@@ -480,7 +480,6 @@ const createWindow = async (isLoading, domainInfo) => {
 
     if (res?.data?.result?.config) {
       const config = res.data.result.config;
-
       if (config.clientDefaultSize) {
         defaultSize = {
           width: config.clientDefaultSize.width,
@@ -493,13 +492,22 @@ const createWindow = async (isLoading, domainInfo) => {
 
   //NOTE: electron-window-state 대체 검토 필요
   const bounds = getInitialBounds('latestAppBounds', defaultSize);
+  const windowState = require('electron-window-state');
+  let mainWindowState = windowState({
+    defaultWidth: defaultSize.width,
+    defaultHeight: defaultSize.height,
+  });
+  console.log(' @ @ @ @ : bounds : ', bounds);
+  console.log(' @ @ @ @ : windowState : ', mainWindowState);
 
   console.log(bounds);
 
   // Create the browser window.
   win = new BrowserWindow({
-    width: defaultSize.width,
-    height: defaultSize.height,
+    x: mainWindowState.x,
+    y: mainWindowState.y,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
     minWidth: defaultSize.width - defaultSize.offset.width.min,
     minHeight: defaultSize.height - defaultSize.offset.height.min,
     webPreferences: {
@@ -511,8 +519,10 @@ const createWindow = async (isLoading, domainInfo) => {
     },
     frame: false,
     show: false,
-    ...bounds,
+    ...mainWindowState,
   });
+  // electron-window-state가 윈도우 이벤트를 감지하도록 한다.
+  mainWindowState.manage(win);
 
   protocol.registerHttpProtocol('eumtalk', (req, cb) => {
     const fullURL = 'eumtalk://' + req.url;
