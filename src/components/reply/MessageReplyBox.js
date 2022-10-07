@@ -14,7 +14,6 @@ import { isBlockCheck } from '@/lib/orgchart';
  * 삭제된 메시지 Style
  */
 const DeleteDiv = styled.div`
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
   span {
     padding-bottom: 5px;
     overflow: hidden;
@@ -34,7 +33,6 @@ const GridDiv = styled.div`
   column-gap: 10px;
   grid-template-rows: repeat(2, 1fr);
   grid-template-columns: auto 2fr;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
   cursor: pointer;
 `;
 
@@ -80,6 +78,15 @@ const ReplySenderDiv = styled(ContentDiv)`
 const ReplyContextDiv = styled(ContentDiv)`
   grid-row-start: auto;
   grid-row-end: 3;
+  display: inline-block;
+  span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+  }
 `;
 
 /**

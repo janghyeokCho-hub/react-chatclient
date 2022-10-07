@@ -11,6 +11,15 @@ const MessageDiv = styled.div`
   }
 `;
 
+const LineDiv = styled.hr`
+  margin-top: 5px;
+  margin-bottom: 10px;
+  width: 100%;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 0;
+`;
+
 const Message = ({
   children,
   style,
@@ -36,12 +45,15 @@ const Message = ({
       data-messageid={messageID}
     >
       {replyView && (
-        <MessageReplyBox
-          replyID={replyID}
-          replyInfo={replyInfo}
-          goToOriginMsg={goToOriginMsg}
-          roomType="CHAT"
-        />
+        <>
+          <MessageReplyBox
+            replyID={replyID}
+            replyInfo={replyInfo}
+            goToOriginMsg={goToOriginMsg}
+            roomType="CHAT"
+          />
+          <LineDiv />
+        </>
       )}
       {convertChildren({ children, style, marking })}
     </MessageDiv>
