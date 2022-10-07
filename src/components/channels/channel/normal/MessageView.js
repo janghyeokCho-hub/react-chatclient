@@ -158,7 +158,8 @@ const MessageView = ({
         liveMeet={(liveMeet && liveMeet.use && callLiveMeet) || null}
         placeholder={roomName}
         isLock={
-          (channelInfo.setting && channelInfo.setting.lockInput === 'Y') ||
+          (channelInfo.settingJSON &&
+            channelInfo.settingJSON.lockInput === 'Y') ||
           false
         }
         replyMessage={replyMessage}
