@@ -85,22 +85,29 @@ function matchDigit8(str) {
   return '1' + result;
 }
 
-export const createRemoteVNCHost = (parentWin, roomId) => {
+export const createRemoteVNCHost = (parentWin, vncArgs) => {
+  const roomId = vncArgs?.roomId;
+  const options = vncArgs?.options;
+  const isRepeater = vncArgs?.isRepeater;
   const appPath = dirname(app.getAppPath());
   const filePath = resolve(appPath, 'vncremote', 'winvnc.exe');
-
-  const vncHostProcess = spawn(
-    `${filePath}`,
-    [
-      '-sc_prompt',
-      '-sc_exit',
-      `-id:${matchDigit8(roomId)}`,
-      '-connect',
-      'eum.covision.co.kr:5500',
-      '-run',
-    ],
-    { shell: true },
-  );
+  let vncHostProcess = null;
+  if (isRepeater) {
+    vncHostProcess = spawn(
+      `${filePath}`,
+      [
+        '-sc_prompt',
+        '-sc_exit',
+        `-id:${matchDigit8(roomId)}`,
+        '-connect',
+        'eum.covision.co.kr:5500',
+        '-run',
+      ],
+      { shell: true },
+    );
+  } else {
+    vncHostProcess = spawn(`${filePath} ${options}`, [], { shell: true });
+  }
 
   parentWin.webContents.send('onChangeRemote', true);
 
@@ -124,23 +131,35 @@ export const createRemoteVNCHost = (parentWin, roomId) => {
   });
 };
 
-export const createRemoteVNC = (parentWin, roomId) => {
+export const createRemoteVNC = (parentWin, vncArgs) => {
+  const roomId = vncArgs?.roomId;
+  const hostAddr = vncArgs?.hostAddr;
+  const isRepeater = vncArgs?.isRepeater;
   const appPath = dirname(app.getAppPath());
   const filePath = resolve(appPath, 'vncremote', 'vncviewer.exe');
 
-  const vncProcess = spawn(
-    `${filePath}`,
-    [
-      '-autoacceptincoming',
-      '-disablesponsor',
-      '-nostatus',
-      '-quickoption 7',
-      '-proxy',
-      'eum.covision.co.kr:5901',
-      `ID:${matchDigit8(roomId)}`,
-    ],
-    { shell: true },
-  );
+  let vncProcess = null;
+  if (isRepeater) {
+    vncProcess = spawn(
+      `${filePath}`,
+      [
+        '-autoacceptincoming',
+        '-disablesponsor',
+        '-nostatus',
+        '-quickoption 7',
+        '-proxy',
+        'eum.covision.co.kr:5901',
+        `ID:${matchDigit8(roomId)}`,
+      ],
+      { shell: true },
+    );
+  } else {
+    vncProcess = spawn(
+      `${filePath} /ip ${hostAddr} /password Covi@2020 /notoolbar /disablesponsor /nostatus /autoreconnect 0`,
+      [],
+      { shell: true },
+    );
+  }
 
   parentWin.webContents.send('onChangeRemote', true);
 
