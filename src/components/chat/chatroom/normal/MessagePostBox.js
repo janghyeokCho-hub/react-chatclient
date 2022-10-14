@@ -87,7 +87,9 @@ const MessagePostBox = forwardRef(
       remoteType: '',
       openTarget: [],
       hostOptions: '',
+      type: 'repeater',
     });
+    const useRepeater = useRemoteVNC.type === 'repeater';
     const useCapture = getConfig('UseCapture', 'N');
 
     const { PC } = getConfig('FileAttachMode') || {};
@@ -458,7 +460,7 @@ const MessagePostBox = forwardRef(
 
     const callRemoteVNC = useCallback(async () => {
       try {
-        const handleRemoteBtn = () => {
+        const handleRepeater = () => {
           const msgObj = {
             title: covi.getDic('RemoteSupport', 'RemoteSupport'),
             context: `${covi.getDic(
@@ -469,6 +471,7 @@ const MessagePostBox = forwardRef(
               name: covi.getDic('StartRemoteSupport', '원격 지원 시작'),
               type: 'remotevnc',
               data: {
+                isRepeater: useRepeater,
                 hostId: myInfo,
                 roomId: roomID,
               },
@@ -485,10 +488,76 @@ const MessagePostBox = forwardRef(
             method: 'send',
             channel: 'onVNCRemoteHost',
             message: {
+              options: useRemoteVNC.hostOptions,
               roomId: roomID,
+              isRepeater: useRepeater,
             },
           });
         };
+
+        const handleDirect = async () => {
+          const ip = await evalConnector({
+            method: 'sendSync',
+            channel: 'req-get-remote-info',
+            message: {},
+          });
+          if (ip !== null) {
+            let useableIPList = [];
+
+            ip.map(ipInfo => {
+              useableIPList.push({
+                name: ipInfo,
+                callback: () => {
+                  const msgObj = {
+                    title: covi.getDic('RemoteSupport', 'RemoteSupport'),
+                    context: `${covi.getDic(
+                      'Msg_RemoteRequest',
+                      'Msg_RequestRemoteSupport',
+                    )} : ${commonApi.getJobInfo(myInfo)}`,
+                    func: {
+                      name: covi.getDic('StartRemoteSupport', '원격 지원 시작'),
+                      type: 'remotevnc',
+                      data: {
+                        isRepeater: useRepeater,
+                        hostAddr: ipInfo,
+                        hostId: myInfo,
+                      },
+                    },
+                  };
+                  postAction(JSON.stringify(msgObj), null, null, 'A');
+
+                  evalConnector({
+                    method: 'removeListener',
+                    channel: 'onVNCRemoteHost',
+                  });
+
+                  evalConnector({
+                    method: 'send',
+                    channel: 'onVNCRemoteHost',
+                    message: {
+                      options: useRemoteVNC.hostOptions,
+                      roomId: roomID,
+                      isRepeater: useRepeater,
+                    },
+                  });
+                },
+              });
+            });
+
+            commonApi.openPopup(
+              {
+                type: 'Select',
+                title: covi.getDic(
+                  'RemoteIPBandwidthSelection',
+                  '원격 IP 대역 선택',
+                ),
+                buttons: useableIPList,
+              },
+              dispatch,
+            );
+          }
+        };
+
         commonApi.openPopup(
           {
             type: 'Confirm',
@@ -498,7 +567,12 @@ const MessagePostBox = forwardRef(
             ),
             callback: result => {
               if (result) {
-                handleRemoteBtn();
+                // useRepeater = useRemoteVNC.type === 'repeater'
+                if (useRepeater) {
+                  handleRepeater();
+                } else {
+                  handleDirect();
+                }
               }
             },
           },
@@ -516,7 +590,7 @@ const MessagePostBox = forwardRef(
           dispatch,
         );
       }
-    }, [remoteHost]);
+    }, [remoteHost, useRepeater]);
 
     const callRemoteHost = useCallback(
       sessionKey => {
