@@ -8,9 +8,11 @@ import InviteMember from '@/components/channels/channel/layer/InviteMember';
 import PhotoSummary from '@/components/chat/chatroom/layer/PhotoSummary'; // 그대로 사용
 import FileSummary from '@/components/chat/chatroom/layer/FileSummary'; // 그대로 사용
 import BookmarkSummary from '@/components/chat/chatroom/layer/BookmarkSummary';
+import DocSummary from '@/components/chat/chatroom/layer/DocSummary';
 import ChatSettingBox from '@/components/chat/chatroom/layer/ChatSettingBox';
 import { modifyChannelMemberAuth, setBackground } from '@/modules/channel';
 import BookmarkIcon from '@/icons/svg/BookmarkIcon';
+import DocumentIcon from '@/icons/svg/DocumentIcon';
 import {
   leaveChannelUtil,
   leaveChannelByAdminUtil,
@@ -29,6 +31,8 @@ const enabledExtUser = getConfig('EnabledExtUser', 'Y');
 const SMTPConfig = getConfig('SMTPConfig', 'Y');
 const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
 const useBookmark = getConfig('UseBookmark', 'N') === 'Y';
+const shareDocConfig = getConfig('ShareDoc');
+const useShareDoc = shareDocConfig?.use === 'Y';
 
 const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   const { id } = useSelector(({ login }) => ({
@@ -189,6 +193,17 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
       {
         component: (
           <BookmarkSummary roomId={channelInfo.roomId} roomInfo={channelInfo} />
+        ),
+      },
+      dispatch,
+    );
+  };
+
+  const handleDocSummary = () => {
+    appendLayer(
+      {
+        component: (
+          <DocSummary roomId={channelInfo.roomId} chineseWall={chineseWall} />
         ),
       },
       dispatch,
@@ -471,7 +486,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                 {covi.getDic('PhotoSummary', '사진 모아보기')}
               </a>
             </li>
-            <li className={useBookmark === false ? 'divideline' :  undefined}>
+            <li className={useBookmark === false ? 'divideline' : undefined}>
               <a onClick={handleFileSummary}>
                 <span className="c_menu_ico c_menu_ico_03"></span>
                 {covi.getDic('FileSummary', '파일 모아보기')}
@@ -484,6 +499,16 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                     <BookmarkIcon />
                   </span>
                   {covi.getDic('BookmarkSummary', '책갈피 모아보기')}
+                </a>
+              </li>
+            )}
+            {useShareDoc && (
+              <li className="divideline">
+                <a onClick={handleDocSummary}>
+                  <span className="c_menu_ico">
+                    <DocumentIcon width={20} height={20} color="#000" />
+                  </span>
+                  {covi.getDic('ShareDocSummary', '공동문서 모아보기')}
                 </a>
               </li>
             )}

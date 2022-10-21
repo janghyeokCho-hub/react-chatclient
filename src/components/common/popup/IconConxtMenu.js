@@ -21,12 +21,12 @@ const IconConxtMenu = ({ menuId, children, menus }) => {
         </ContextMenuTrigger>
         {menus && (
           <ContextMenu id={menuId}>
-            {menus.map(menu => {
+            {menus.map((menu, index) => {
               if (menu.isline) {
-                return <MenuItem key={menu.code} divider />;
+                return <MenuItem key={`menu_item_${index}`} divider />;
               } else {
                 return (
-                  <MenuItem key={menu.code} onClick={menu.onClick}>
+                  <MenuItem key={`menu_item_${index}`} onClick={menu.onClick}>
                     {menu.name}
                   </MenuItem>
                 );

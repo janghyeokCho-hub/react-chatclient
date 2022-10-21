@@ -28,6 +28,8 @@ import {
   receiveChannelSetting,
 } from '@/modules/channel';
 
+import { receiveDocument } from '@/modules/document';
+
 import { setUsersPresence, addFixedUsers } from '@/modules/presence';
 import { logout, changeSocketConnect } from '@/modules/login';
 
@@ -558,5 +560,19 @@ export const handleRoomSettingChanged = dispatch => {
     } else {
       dispatch(receiveRoomSetting(json_data));
     }
+  };
+};
+
+export const handleDocumentChanged = dispatch => {
+  return data => {
+    const json_data = JSON.parse(data);
+    dispatch(receiveDocument(json_data));
+  };
+};
+
+export const handleNewShareDoc = dispatch => {
+  return data => {
+    const json_data = JSON.parse(data);
+    dispatch(receiveDocument(json_data));
   };
 };

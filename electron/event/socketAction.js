@@ -16,13 +16,13 @@ export const onAppUpdateConfig = payload => {
   }
 };
 
-export const onChannelExit = (payload) => {
-  console.log('onChannelExit payload check >> ',payload);
+export const onChannelExit = payload => {
+  console.log('onChannelExit payload check >> ', payload);
 };
 
-export const onChannelInvitation = (payload) =>{
+export const onChannelInvitation = payload => {
   console.log('onChannelInvitation payload check >>', payload);
-}
+};
 
 export const onNewMessage = payload => {
   // 자기자신 메세지 확인

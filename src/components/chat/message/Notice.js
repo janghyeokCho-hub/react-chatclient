@@ -9,18 +9,34 @@ import {
   moveRoom,
   eumTalkRegularExp,
   convertEumTalkProtocol,
+  openLayer,
 } from '@/lib/common';
 import { openPopup } from '@/lib/common';
 import ParamUtil, { encryptText } from '@/lib/util/paramUtil';
 import { evalConnector } from '@/lib/deviceConnector';
 import { useChatFontSize } from '@/hooks/useChat';
 import { getAttribute } from '@/lib/messageUtil';
+import DocPropertyView from '@/components/chat/chatroom/layer/DocPropertyView';
+import ChatInviteMember from '@/components/chat/chatroom/layer/InviteMember';
+import ChannelInviteMember from '@/components/channels/channel/layer/InviteMember';
+import { setCurrentDocument } from '@/modules/document';
 
 const Notice = ({ type, value, title, func }) => {
   const dispatch = useDispatch();
   const userInfo = useSelector(({ login }) => login.userInfo);
   const loginId = useSelector(({ login }) => login.id);
   const [fontSize] = useChatFontSize();
+  const currentRoom = useSelector(({ room, channel }) => {
+    if (room.currentRoom) {
+      return room.currentRoom;
+    } else if (channel.currentChannel) {
+      return channel.currentChannel;
+    } else {
+      return {
+        members: [],
+      };
+    }
+  });
 
   const drawText = useMemo(() => {
     let procVal = value;
@@ -251,6 +267,41 @@ const Notice = ({ type, value, title, func }) => {
               );
             });
         };
+      } else if (type === 'openLayer') {
+        return async () => {
+          let component;
+          if (data.componentName === 'DocPropertyView') {
+            component = <DocPropertyView item={data.item} />;
+          } else if (data.componentName === 'InviteMember') {
+            if (data.roomType === 'C') {
+              component = (
+                <ChannelInviteMember
+                  headerName={data.headerName}
+                  roomId={data.roomId}
+                  isNewRoom={data.isNewRoom}
+                />
+              );
+            } else {
+              component = (
+                <ChatInviteMember
+                  headerName={data.headerName}
+                  roomId={data.roomId}
+                  roomType={data.roomType}
+                  isNewRoom={data.isNewRoom}
+                />
+              );
+            }
+          }
+
+          if (component) {
+            openLayer(
+              {
+                component: component,
+              },
+              dispatch,
+            );
+          }
+        };
       }
     },
     [dispatch, userInfo],
@@ -258,40 +309,69 @@ const Notice = ({ type, value, title, func }) => {
 
   const drawFunc = useMemo(() => {
     if (func) {
-      if (func.data?.hostId && func.data?.hostId.id == loginId) {
-        return;
-      }
-      const handlerFunc = actionHandler(func.type, func.data);
-
-      if (type == 'C') {
-        return (
-          <button
-            type="button"
-            className="system-btn"
-            onClick={e => handlerFunc()}
-          >
-            {covi.getDic(func.name)}
-          </button>
-        );
+      let funcArr = [];
+      if (Array.isArray(func)) {
+        funcArr = func;
       } else {
-        return (
-          <button
-            type="button"
-            className="system-btn"
-            onClick={e => handlerFunc()}
-          >
-            {func.name}
-          </button>
-        );
+        funcArr = new Array(func);
       }
+
+      let returnJSX = [];
+      funcArr.forEach((item, index) => {
+        if (item.data?.componentName === 'InviteMember') {
+          // 2022-10-19 편집자 초대 기능 보류
+          return;
+        }
+        if (
+          item.type === 'openLayer' &&
+          item.data?.componentName === 'InviteMember' &&
+          item.data?.roomType === 'C'
+        ) {
+          // 공동문서 채널일 경우 채널 생성자인지 확인 후 편집자 초대 기능 생성
+          const auths = currentRoom?.members.filter(
+            member => member.channelAuth === 'Y',
+          );
+          if (!auths) {
+            return;
+          }
+        }
+        if (item.data.hostId && item.data.hostId.id == loginId) {
+          return;
+        }
+        const handlerFunc = actionHandler(item.type, item.data);
+        if (type == 'C') {
+          returnJSX.push(
+            <button
+              key={`notice_button_${index}`}
+              type="button"
+              className="system-btn"
+              onClick={e => handlerFunc()}
+            >
+              {covi.getDic(item.name)}
+            </button>,
+          );
+        } else {
+          returnJSX.push(
+            <button
+              key={`notice_button_${index}`}
+              type="button"
+              className="system-btn"
+              onClick={e => handlerFunc()}
+            >
+              {item.name}
+            </button>,
+          );
+        }
+      });
+      return returnJSX;
     } else {
       return <></>;
     }
-  }, [func]);
+  }, [func, currentRoom.members]);
 
   return (
     <>
-      {(type == 'I' && (
+      {type == 'I' && (
         <div
           style={{
             color: '#000',
@@ -356,7 +436,8 @@ const Notice = ({ type, value, title, func }) => {
           </span>
           {drawText}
         </div>
-      )) || (
+      )}
+      {type === 'A' && (
         <div className="msgtxt" style={{ color: '#000', fontSize }}>
           <span className="sys-tit" style={{ fontSize: fontSize + 2 }}>
             {(title && getDictionary(title)) ||
