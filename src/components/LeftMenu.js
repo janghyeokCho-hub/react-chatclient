@@ -25,7 +25,7 @@ import ChatIcon from '@/icons/svg/ChatList';
 import ChannelIcon from '@/icons/svg/ChannelList';
 import OrgchartIcon from '@/icons/svg/Orgchart';
 import NoteIcon from '@/icons/svg/note/Note';
-
+import DocumentIcon from '@/icons/svg/DocumentIcon';
 import { extensionAdd, setCurrentExtension } from '@/modules/extension';
 import { convertFileSize } from '@/lib/fileUpload/coviFile';
 
@@ -59,6 +59,8 @@ const LeftMenu = ({ history }) => {
 
   const unreadNoteCnt = useNoteUnreadCount();
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
+  const shareDocConfig = getConfig('ShareDoc');
+  const useShareDoc = shareDocConfig?.use === 'Y';
 
   const active = useSelector(
     ({ menu }) => menu.activeType,
@@ -365,6 +367,26 @@ const LeftMenu = ({ history }) => {
               <NoteIcon className="menu-li-svg" />
             </li>
           )}
+
+        {covi?.config?.ShareDoc?.use === 'Y' && (
+          <li
+            className={[
+              'menu-li',
+              active == 'documentlist' ? 'active' : '',
+            ].join(' ')}
+            onClick={() => {
+              chageMainWinInfo({
+                width: 450,
+                height: 650,
+                resizable: true,
+              });
+              handleClickMenu('/client/main/documentlist');
+            }}
+            style={{ position: 'relative', cursor: 'pointer' }}
+          >
+            <DocumentIcon className="menu-li-svg" />
+          </li>
+        )}
 
         {(!isExtUser || isExtUser == 'N') && (
           <ExternalLeft paramObj={userInfo}></ExternalLeft>

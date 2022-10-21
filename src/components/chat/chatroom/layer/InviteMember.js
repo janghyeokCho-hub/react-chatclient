@@ -27,6 +27,8 @@ const InviteMember = ({
       myInfo: login.userInfo,
     }),
   );
+
+  const currentRoom = useSelector(({ room }) => room.currentRoom);
   const chineseWall = useSelector(({ login }) => login.chineseWall);
   const userInfo = useSelector(({ login }) => login.userInfo);
   const [members, setMembers] = useState([]);
@@ -46,8 +48,23 @@ const InviteMember = ({
           });
         });
     } else {
-      setOldMembers([
-        {
+      if (currentRoom?.members) {
+        setOldMembers(currentRoom.members);
+      } else {
+        setOldMembers([
+          {
+            id: myInfo.id,
+            name: myInfo.name,
+            presence: myInfo.presence,
+            photoPath: myInfo.photoPath,
+            PN: myInfo.PN,
+            LN: myInfo.LN,
+            TN: myInfo.TN,
+            dept: myInfo.dept,
+            type: 'U',
+          },
+        ]);
+        addInviteMember({
           id: myInfo.id,
           name: myInfo.name,
           presence: myInfo.presence,
@@ -57,19 +74,8 @@ const InviteMember = ({
           TN: myInfo.TN,
           dept: myInfo.dept,
           type: 'U',
-        },
-      ]);
-      addInviteMember({
-        id: myInfo.id,
-        name: myInfo.name,
-        presence: myInfo.presence,
-        photoPath: myInfo.photoPath,
-        PN: myInfo.PN,
-        LN: myInfo.LN,
-        TN: myInfo.TN,
-        dept: myInfo.dept,
-        type: 'U',
-      });
+        });
+      }
     }
   }, []);
 

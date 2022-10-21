@@ -18,6 +18,8 @@ import { evalConnector, openSubPop, getEmitter } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
 import { clearEmoticon } from '@/modules/channel';
 import MessagePostReplyBox from '@/components/reply/MessagePostReplyBox';
+import IconConxtMenu from '@COMMON/popup/IconConxtMenu';
+import CreateDocument from '@C/share/document/CreateDocument';
 
 const EmojiLayer = loadable(() =>
   import('@C/chat/chatroom/controls/emoji/EmojiLayer'),
@@ -25,6 +27,10 @@ const EmojiLayer = loadable(() =>
 
 const EmoticonLayer = loadable(() =>
   import('@C/chat/chatroom/controls/emoticon/EmoticonLayer'),
+);
+
+const ShareDocLayer = loadable(() =>
+  import('@C/chat/chatroom/controls/document/ShareDocLayer'),
 );
 
 const MessagePostBox = forwardRef(
@@ -93,6 +99,8 @@ const MessagePostBox = forwardRef(
     const useCapture = getConfig('UseCapture', 'N');
 
     const { PC } = getConfig('FileAttachMode') || {};
+    const ShareDoc = getConfig('ShareDoc') || {};
+    const useShareDoc = ShareDoc?.use === 'Y';
     const [inputLock, setInputLock] = useState(isLock);
     const [useEmoji, setUseEmoji] = useState(false);
     const [history, setHistory] = useState([]);
@@ -173,6 +181,17 @@ const MessagePostBox = forwardRef(
         onExtension(''); // 창 해제 ( 열려있는 경우 )
       } else {
         onExtension('E'); // 창 설정
+      }
+    }, [onExtension, viewExtension]);
+
+    /**
+     * 공동 문서 공유 Layer
+     */
+    const handleDocumentControl = useCallback(() => {
+      if (viewExtension == 'D') {
+        onExtension(''); // 창 해제 ( 열려있는 경우 )
+      } else {
+        onExtension('D'); // 창 설정
       }
     }, [onExtension, viewExtension]);
 
@@ -636,6 +655,43 @@ const MessagePostBox = forwardRef(
       }
     }, [dispatch, zoomMeet, zoomSignup]);
 
+    const setMenus = useCallback(() => {
+      const menus = [
+        {
+          code: 'file',
+          name: '내 PC에서 첨부',
+          isline: false,
+          onClick: () => {
+            fileUploadControl.current.click();
+          },
+        },
+      ];
+      if (useShareDoc && roomID) {
+        menus.push({
+          cose: 'create-document',
+          name: '공동 문서 생성',
+          isline: false,
+          onClick: () => {
+            commonApi.openLayer(
+              {
+                component: <CreateDocument postAction={postAction} />,
+              },
+              dispatch,
+            );
+          },
+        });
+        menus.push({
+          cose: 'share-document',
+          name: '공동 문서 공유',
+          isline: false,
+          onClick: () => {
+            handleDocumentControl();
+          },
+        });
+      }
+      return menus;
+    }, [fileUploadControl]);
+
     return (
       <>
         <div
@@ -735,27 +791,21 @@ const MessagePostBox = forwardRef(
                     </button>
                   )}
                   {(typeof PC === 'undefined' || PC.upload !== false) && (
-                    <button
-                      type="button"
-                      alt="File"
-                      title="File"
-                      onClick={e => {
-                        !inputLock && fileUploadControl.current.click();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16.882"
-                        height="18.798"
-                        viewBox="0 0 16.882 18.798"
-                      >
-                        <path
-                          d="M36.374,5.613a.67.67,0,0,0-.947-.947l-7.011,7.011a2.152,2.152,0,0,0,3.043,3.043L38.8,7.374A1.046,1.046,0,0,0,39,7.24c.981-.981,3.589-3.589,1.081-6.1A3.483,3.483,0,0,0,36.764.085a6.371,6.371,0,0,0-3.043,1.872L25.763,9.915a4.9,4.9,0,0,0-1.393,3.7,5.535,5.535,0,0,0,1.572,3.656A5.327,5.327,0,0,0,29.564,18.8h.111a4.943,4.943,0,0,0,3.533-1.438l7.847-7.847a.67.67,0,0,0-.947-.947l-7.847,7.847a3.673,3.673,0,0,1-2.675,1.048,3.962,3.962,0,0,1-2.876-6.6L34.668,2.9a5.178,5.178,0,0,1,2.374-1.5,2.149,2.149,0,0,1,2.1.7,1.738,1.738,0,0,1,.58,1.906A4.92,4.92,0,0,1,38.6,5.736a1.394,1.394,0,0,0-.134.1l-7.947,7.947a.812.812,0,0,1-1.148-1.148Z"
-                          transform="translate(-24.365 0)"
-                          fill="#999"
-                        ></path>
-                      </svg>
+                    <button type="button" alt="File" title="File">
+                      <IconConxtMenu menuId="fileUpload" menus={setMenus()}>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16.882"
+                          height="18.798"
+                          viewBox="0 0 16.882 18.798"
+                        >
+                          <path
+                            d="M36.374,5.613a.67.67,0,0,0-.947-.947l-7.011,7.011a2.152,2.152,0,0,0,3.043,3.043L38.8,7.374A1.046,1.046,0,0,0,39,7.24c.981-.981,3.589-3.589,1.081-6.1A3.483,3.483,0,0,0,36.764.085a6.371,6.371,0,0,0-3.043,1.872L25.763,9.915a4.9,4.9,0,0,0-1.393,3.7,5.535,5.535,0,0,0,1.572,3.656A5.327,5.327,0,0,0,29.564,18.8h.111a4.943,4.943,0,0,0,3.533-1.438l7.847-7.847a.67.67,0,0,0-.947-.947l-7.847,7.847a3.673,3.673,0,0,1-2.675,1.048,3.962,3.962,0,0,1-2.876-6.6L34.668,2.9a5.178,5.178,0,0,1,2.374-1.5,2.149,2.149,0,0,1,2.1.7,1.738,1.738,0,0,1,.58,1.906A4.92,4.92,0,0,1,38.6,5.736a1.394,1.394,0,0,0-.134.1l-7.947,7.947a.812.812,0,0,1-1.148-1.148Z"
+                            transform="translate(-24.365 0)"
+                            fill="#999"
+                          ></path>
+                        </svg>
+                      </IconConxtMenu>
                     </button>
                   )}
                   {liveMeet && (
@@ -976,6 +1026,13 @@ const MessagePostBox = forwardRef(
             setSelectItem={setSelectItem}
             isTempFiles={tempFiles?.length > 0}
           ></EmoticonLayer>
+        )}
+
+        {viewExtension === 'D' && (
+          <ShareDocLayer
+            handleDocumentControl={handleDocumentControl}
+            postAction={postAction}
+          ></ShareDocLayer>
         )}
 
         {tempFiles && tempFiles.length > 0 && (

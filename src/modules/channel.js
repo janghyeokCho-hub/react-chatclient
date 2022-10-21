@@ -917,7 +917,6 @@ const channel = handleActions(
               item.settingJSON = isJSONStr(channel.settingJSON)
                 ? JSON.parse(channel.settingJSON)
                 : channel.settingJSON;
-              console.log('item.settingJSON : ', typeof item.settingJSON);
 
               // 채널 아이콘
               if (channel.iconPath && !item.iconPath) {
