@@ -13,7 +13,7 @@ import ColorBox from '@COMMON/buttons/ColorBox';
 import ColorPicker from '@COMMON/buttons/ColorPicker';
 import { bound, setTopButton, changeTheme } from '@/modules/menu';
 import { changeMyPhotoPath, changeMyInfo, logout } from '@/modules/login';
-import { getConfig } from '@/lib/util/configUtil';
+import { getConfig, getDic } from '@/lib/util/configUtil';
 import {
   modifyUserPassword,
   modifyUserProfileImage,
@@ -41,6 +41,21 @@ import {
   useChatFontType,
   useMyChatFontColor,
 } from '@/hooks/useChat';
+
+const getJobInfoName = jobInfo => {
+  switch (jobInfo) {
+    case 'PN':
+      return getDic('JobPosition', '직위');
+    case 'TN':
+      return getDic('JobTitle', '직책');
+    case 'LN':
+      return getDic('JobLevel', '직급');
+    case 'NN':
+      return getDic('DoNotUse', '사용안함');
+    default:
+      return getDic(jobInfo);
+  }
+};
 
 const useStyles = makeStyles({
   slider: {
@@ -116,6 +131,44 @@ const UserSetting = ({ history }) => {
   // componentDidMount
   const dispatch = useDispatch();
   const styles = useStyles();
+  const awayTime = useMemo(() => {
+    const data = getConfig('awayTime');
+    if (!data?.length) {
+      return [];
+    }
+    return data.map((item) => {
+      if (!item.name || !item.value) {
+        return item; 
+      }
+      const min = Number(item.value / 60);
+      if (isNaN(min)) {
+        return item;
+      }
+      item.name = min + getDic('Minute');
+      return item;
+    });
+  }, []);
+  const jobCode = useMemo(
+    () => {
+      const jc = getConfig('jobCode');
+      if (!jc?.length) {
+        return [
+          { name: getJobInfoName('NN'), value: 'NN' },
+          { name: getJobInfoName('PN'), value: 'PN' },
+          { name: getJobInfoName('LN'), value: 'LN' },
+          { name: getJobInfoName('TN'), value: 'TN' },
+        ]
+      }
+      return jc.map(item => {
+        if (!item.value) {
+          return item;
+        }
+        item.name = getJobInfoName(item.value);
+        return item;
+      })
+    },
+    [],
+  );
 
   useEffect(() => {
     dispatch(bound({ name: '', type: '' }));
@@ -1064,11 +1117,10 @@ const UserSetting = ({ history }) => {
                       </li>
                       <li className="ChatConfig-list">
                         <SelectBox
-                          items={getConfig('awayTime')}
+                          items={awayTime}
                           order={4}
                           defaultValue={idleTime}
                           onChange={item => {
-                            console.log(item);
                             handleUserConfig({
                               idleTime: parseInt(item.value),
                             });
@@ -1134,7 +1186,7 @@ const UserSetting = ({ history }) => {
                   </li>
                   <li className="ChatConfig-list">
                     <SelectBox
-                      items={getConfig('jobCode')}
+                      items={jobCode}
                       order={2}
                       defaultValue={jobInfo}
                       onChange={item => {
