@@ -78,6 +78,8 @@ const SocketContainer = ({ history, location }) => {
             onAuthChanged: socketActions.handleAuthChanged(dispatch),
             onRoomSettingChanged:
               socketActions.handleRoomSettingChanged(dispatch),
+            onDocumentChanged: socketActions.handleDocumentChanged(dispatch),
+            onNewShareDoc: socketActions.handleNewShareDoc(dispatch),
           },
           socketActions.handleConnect(dispatch), // connect callback
           socketActions.handleDisconnect(dispatch), // disconnect callback
@@ -130,6 +132,8 @@ const SocketContainer = ({ history, location }) => {
             onAuthChanged: socketActions.handleAuthChanged(dispatch),
             onRoomSettingChanged:
               socketActions.handleRoomSettingChanged(dispatch),
+            onDocumentChanged: socketActions.handleDocumentChanged(dispatch),
+            onNewShareDoc: socketActions.handleNewShareDoc(dispatch),
           },
         );
       }

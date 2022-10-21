@@ -11,6 +11,7 @@ import message, { messageSaga } from '@/modules/message';
 import presence, { presenceSaga } from '@/modules/presence';
 import extension from '@/modules/extension';
 import { noteSaga } from '@/modules/note';
+import document, { documentSaga } from '@/modules/document';
 
 import mainlayer from '@/modules/mainlayer';
 import error from '@/modules/error';
@@ -34,6 +35,7 @@ const appReducer = combineReducers({
   error,
   util,
   remote,
+  document,
 });
 
 const rootReducer = (state, action) => {
@@ -55,6 +57,7 @@ export function* rootSaga() {
     messageSaga(),
     presenceSaga(),
     noteSaga(),
+    documentSaga(),
   ]);
 }
 

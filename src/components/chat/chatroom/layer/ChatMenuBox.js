@@ -12,6 +12,7 @@ import { Scrollbars } from 'react-custom-scrollbars';
 import PhotoSummary from '@/components/chat/chatroom/layer/PhotoSummary';
 import FileSummary from '@/components/chat/chatroom/layer/FileSummary';
 import BookmarkSummary from '@/components/chat/chatroom/layer/BookmarkSummary';
+import DocSummary from '@/components/chat/chatroom/layer/DocSummary';
 import ChatSettingBox from '@/components/chat/chatroom/layer/ChatSettingBox';
 import { leaveRoomUtil } from '@/lib/roomUtil';
 import { modifyRoomName, setBackground } from '@/modules/room';
@@ -22,6 +23,7 @@ import { insert, remove } from '@/lib/util/storageUtil';
 import { getConfig } from '@/lib/util/configUtil';
 import useOffset from '@/hooks/useOffset';
 import BookmarkIcon from '@/icons/svg/BookmarkIcon';
+import DocumentIcon from '@/icons/svg/DocumentIcon';
 
 const autoHide = getConfig('AutoHide_ChatMemberScroll', 'Y') === 'Y';
 
@@ -47,6 +49,8 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
   });
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
   const useBookmark = getConfig('UseBookmark', 'N') === 'Y';
+  const shareDocConfig = getConfig('ShareDoc');
+  const useShareDoc = shareDocConfig?.use === 'Y';
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -232,6 +236,15 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
     );
   };
 
+  const handleDocSummary = () => {
+    appendLayer(
+      {
+        component: <DocSummary roomId={roomInfo.roomID} />,
+      },
+      dispatch,
+    );
+  };
+
   const handleSaveChat = () => {
     openPopup(
       {
@@ -402,7 +415,11 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                     </li>
                     <li
                       className={
-                        useBookmark === false ? 'divideline' : undefined
+                        DEVICE_TYPE !== 'd' &&
+                        useBookmark === false &&
+                        useShareDoc === false
+                          ? 'divideline'
+                          : undefined
                       }
                     >
                       {' '}
@@ -412,7 +429,13 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                       </a>
                     </li>
                     {useBookmark === true && (
-                      <li className="divideline">
+                      <li
+                        className={
+                          DEVICE_TYPE !== 'd' && useShareDoc === false
+                            ? 'divideline'
+                            : undefined
+                        }
+                      >
                         <a onClick={handleBookmarkSummary}>
                           <span className="c_menu_ico">
                             <BookmarkIcon />
@@ -421,8 +444,23 @@ const ChatMenuBox = ({ roomInfo, isMakeRoom, isNewWin }) => {
                         </a>
                       </li>
                     )}
+                    {useShareDoc === true && (
+                      <li
+                        className={
+                          DEVICE_TYPE !== 'd' ? 'divideline' : undefined
+                        }
+                      >
+                        <a onClick={handleDocSummary}>
+                          <span className="c_menu_ico">
+                            <DocumentIcon width={20} height={20} color="#000" />
+                          </span>
+                          {covi.getDic('ShareDocSummary', '공동문서 모아보기')}
+                        </a>
+                      </li>
+                    )}
+
                     {DEVICE_TYPE === 'd' && getConfig('UseMsgExport', false) && (
-                      <li>
+                      <li className="divideline">
                         <a onClick={handleSaveChat}>
                           <span className="c_menu_ico c_menu_ico_04"></span>
                           {covi.getDic('SaveChat', '대화내용 저장하기')}

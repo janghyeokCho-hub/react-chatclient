@@ -26,6 +26,8 @@ const InviteMember = ({
     myInfo: login.userInfo,
   }));
   const [members, setMembers] = useState([]);
+
+  const currentRoom = useSelector(({ channel }) => channel.currentChannel);
   const [selectTab, setSelectTab] = useState('C');
   const [oldMembers, setOldMembers] = useState([]);
   const dispatch = useDispatch();
@@ -34,8 +36,23 @@ const InviteMember = ({
     if (oldMemberList) {
       setOldMembers(oldMemberList);
     } else {
-      setOldMembers([
-        {
+      if (currentRoom?.members) {
+        setOldMembers(currentRoom.members);
+      } else {
+        setOldMembers([
+          {
+            id: myInfo.id,
+            name: myInfo.name,
+            presence: myInfo.presence,
+            photoPath: myInfo.photoPath,
+            PN: myInfo.PN,
+            LN: myInfo.LN,
+            TN: myInfo.TN,
+            dept: myInfo.dept,
+            type: 'U',
+          },
+        ]);
+        addInviteMember({
           id: myInfo.id,
           name: myInfo.name,
           presence: myInfo.presence,
@@ -45,21 +62,10 @@ const InviteMember = ({
           TN: myInfo.TN,
           dept: myInfo.dept,
           type: 'U',
-        },
-      ]);
-      addInviteMember({
-        id: myInfo.id,
-        name: myInfo.name,
-        presence: myInfo.presence,
-        photoPath: myInfo.photoPath,
-        PN: myInfo.PN,
-        LN: myInfo.LN,
-        TN: myInfo.TN,
-        dept: myInfo.dept,
-        type: 'U',
-      });
+        });
+      }
     }
-  }, []);
+  }, [currentRoom]);
 
   const checkObj = useMemo(
     () => ({

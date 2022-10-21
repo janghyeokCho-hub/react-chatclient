@@ -4,6 +4,7 @@ export { default as ContactList } from '@C/contact/ContactList';
 export { default as ChatList } from '@C/chat/ChatList';
 export { default as OrgChart } from '@C/orgchart/OrgChart';
 export { default as NoteList } from '@/pages/note';
+export { default as DocumentList } from '@C/share/document/DocumentList';
 export { default as ZoomOAuthSuccess } from '@/pages/oauth2/zoom/ZoomOAuthSuccess';
 
 export { default as ExtensionLayer } from '@/containers/extension/ExtensionLayer';
@@ -16,6 +17,4 @@ export const UserSetting = asyncRoute(() =>
   import('@C/usersetting/UserSetting'),
 );
 
-export const NoticeTalk = asyncRoute(() =>
-  import('@C/noticetalk/NoticeTalk'),
-);
+export const NoticeTalk = asyncRoute(() => import('@C/noticetalk/NoticeTalk'));
