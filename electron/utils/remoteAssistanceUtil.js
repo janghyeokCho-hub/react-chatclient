@@ -86,13 +86,14 @@ function matchDigit8(str) {
 }
 
 export const createRemoteVNCHost = (parentWin, vncArgs) => {
-  const roomId = vncArgs?.roomId;
   const options = vncArgs?.options;
   const isRepeater = vncArgs?.isRepeater;
   const appPath = dirname(app.getAppPath());
   const filePath = resolve(appPath, 'vncremote', 'winvnc.exe');
   let vncHostProcess = null;
   if (isRepeater) {
+    const roomId = vncArgs?.roomId;
+
     vncHostProcess = spawn(
       `${filePath}`,
       [
@@ -132,14 +133,16 @@ export const createRemoteVNCHost = (parentWin, vncArgs) => {
 };
 
 export const createRemoteVNC = (parentWin, vncArgs) => {
-  const roomId = vncArgs?.roomId;
-  const hostAddr = vncArgs?.hostAddr;
   const isRepeater = vncArgs?.isRepeater;
   const appPath = dirname(app.getAppPath());
   const filePath = resolve(appPath, 'vncremote', 'vncviewer.exe');
 
   let vncProcess = null;
   if (isRepeater) {
+    const roomId = vncArgs?.roomId;
+
+    // 기본 값 eum.covision.co.kr:5901 지정
+    const viewerOptions = vncArgs?.viewerOptions || 'eum.covision.co.kr:5901';
     vncProcess = spawn(
       `${filePath}`,
       [
@@ -148,12 +151,14 @@ export const createRemoteVNC = (parentWin, vncArgs) => {
         '-nostatus',
         '-quickoption 7',
         '-proxy',
-        'eum.covision.co.kr:5901',
+        viewerOptions,
         `ID:${matchDigit8(roomId)}`,
       ],
       { shell: true },
     );
   } else {
+    const hostAddr = vncArgs?.hostAddr;
+
     vncProcess = spawn(
       `${filePath} /ip ${hostAddr} /password Covi@2020 /notoolbar /disablesponsor /nostatus /autoreconnect 0`,
       [],
