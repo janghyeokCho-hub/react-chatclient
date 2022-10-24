@@ -93,6 +93,7 @@ const MessagePostBox = forwardRef(
       remoteType: '',
       openTarget: [],
       hostOptions: '',
+      viewerOptions: '',
       type: 'repeater',
     });
     const useRepeater = useRemoteVNC.type === 'repeater';
@@ -491,6 +492,7 @@ const MessagePostBox = forwardRef(
               type: 'remotevnc',
               data: {
                 isRepeater: useRepeater,
+                viewerOptions: useRemoteVNC?.viewerOptions,
                 hostId: myInfo,
                 roomId: roomID,
               },
@@ -507,13 +509,15 @@ const MessagePostBox = forwardRef(
             method: 'send',
             channel: 'onVNCRemoteHost',
             message: {
-              options: useRemoteVNC.hostOptions,
+              options: useRemoteVNC?.hostOptions,
+              viewerOptions: useRemoteVNC?.viewerOptions,
               roomId: roomID,
               isRepeater: useRepeater,
             },
           });
         };
 
+        // Direct mode 에서는 useRemoteVNC.viewerOptions 사용 X
         const handleDirect = async () => {
           const ip = await evalConnector({
             method: 'sendSync',
