@@ -1245,7 +1245,7 @@ ipcMain.on('req-get-remote-info', async (event, args) => {
 });
 
 ipcMain.on('onVNCRemote', (event, args) => {
-  createRemoteVNC(win, args.roomId);
+  createRemoteVNC(win, args);
 });
 
 ipcMain.on('onVNCRemoteHost', (event, args) => {
