@@ -210,6 +210,7 @@ const Notice = ({ type, value, title, func }) => {
               isRepeater: data?.isRepeater,
               hostAddr: data?.hostAddr,
               roomId: data?.roomId,
+              viewerOptions: data?.viewerOptions,
             },
           });
         };
