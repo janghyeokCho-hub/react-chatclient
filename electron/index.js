@@ -1249,7 +1249,7 @@ ipcMain.on('onVNCRemote', (event, args) => {
 });
 
 ipcMain.on('onVNCRemoteHost', (event, args) => {
-  createRemoteVNCHost(win, args.roomId);
+  createRemoteVNCHost(win, args);
 });
 
 ipcMain.on('req-del-chatroom-message', (_, args) => {
