@@ -21,9 +21,7 @@ const DocumentContainer = () => {
   const [listMode, setListMode] = useState('N'); //Normal, Search
 
   useEffect(() => {
-    if (documents === null || !documents?.length) {
-      dispatch(getDocuments(id));
-    }
+    dispatch(getDocuments(id));
   }, [id]);
 
   useEffect(() => {
@@ -42,7 +40,6 @@ const DocumentContainer = () => {
 
   useEffect(() => {
     if (docList) {
-      // category => setting.category 로 변경시 보완작업 필요
       const data = docList.reduce(
         (result, item) => ({
           ...result,
