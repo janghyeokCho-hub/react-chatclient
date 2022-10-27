@@ -473,6 +473,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                       },
                       dispatch,
                     );
+                    clearLayer(dispatch);
                   }}
                 >
                   <span className="c_menu_ico c_menu_ico_06"></span>

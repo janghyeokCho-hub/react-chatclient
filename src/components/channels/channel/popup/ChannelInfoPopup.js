@@ -118,6 +118,7 @@ const ChannelInfoPopup = () => {
       const formData = new FormData();
       formData.append('fileName', icon);
       formData.append('roomId', roomId);
+      setIcon(null);
       dispatch(uploadChannelIcon(formData));
     }
 
@@ -139,7 +140,7 @@ const ChannelInfoPopup = () => {
       }),
     );
     handleClose();
-  }, [dispatch, roomId, description, displayName, category, secretKey]);
+  }, [dispatch, icon, roomId, description, displayName, category, secretKey]);
 
   return (
     <>
