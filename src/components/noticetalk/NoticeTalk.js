@@ -72,7 +72,11 @@ export default function NoticeTalk({ match, location, history }) {
     const selectTargets = [];
 
     targets.forEach(target => {
-      selectTargets.push({ targetCode: target.id, targetType: target.type });
+      selectTargets.push({
+        targetCode: target.id,
+        targetType: target.type,
+        targetName: target.name.substring(0, target.name.indexOf(';')),
+      });
     });
 
     const objLink = {
