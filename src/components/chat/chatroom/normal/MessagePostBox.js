@@ -510,7 +510,7 @@ const MessagePostBox = forwardRef(
             channel: 'onVNCRemoteHost',
             message: {
               options: useRemoteVNC?.hostOptions,
-              viewerOptions: useRemoteVNC?.viewerOptions,
+              repeaterURL: useRemoteVNC?.repeaterURL,
               roomId: roomID,
               isRepeater: useRepeater,
             },
@@ -613,7 +613,7 @@ const MessagePostBox = forwardRef(
           dispatch,
         );
       }
-    }, [remoteHost, useRepeater]);
+    }, [remoteHost, useRepeater, useRemoteVNC]);
 
     const callRemoteHost = useCallback(
       sessionKey => {

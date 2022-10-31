@@ -92,6 +92,7 @@ export const createRemoteVNCHost = (parentWin, vncArgs) => {
   const filePath = resolve(appPath, 'vncremote', 'winvnc.exe');
   let vncHostProcess = null;
   if (isRepeater) {
+    const repeaterURL = vncArgs?.repeaterURL;
     const roomId = vncArgs?.roomId;
 
     vncHostProcess = spawn(
@@ -101,13 +102,15 @@ export const createRemoteVNCHost = (parentWin, vncArgs) => {
         '-sc_exit',
         `-id:${matchDigit8(roomId)}`,
         '-connect',
-        'eum.covision.co.kr:5500',
+        repeaterURL,
         '-run',
       ],
       { shell: true },
     );
   } else {
-    vncHostProcess = spawn(`${filePath} ${options}`, [], { shell: true });
+    if (options)
+      vncHostProcess = spawn(`${filePath} ${options}`, [], { shell: true });
+    else vncHostProcess = spawn(`${filePath}`, [], { shell: true });
   }
 
   parentWin.webContents.send('onChangeRemote', true);
@@ -140,9 +143,8 @@ export const createRemoteVNC = (parentWin, vncArgs) => {
   let vncProcess = null;
   if (isRepeater) {
     const roomId = vncArgs?.roomId;
+    const viewerOptions = vncArgs?.viewerOptions;
 
-    // 기본 값 eum.covision.co.kr:5901 지정
-    const viewerOptions = vncArgs?.viewerOptions || 'eum.covision.co.kr:5901';
     vncProcess = spawn(
       `${filePath}`,
       [
