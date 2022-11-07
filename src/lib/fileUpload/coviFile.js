@@ -778,7 +778,7 @@ export const openFilePreview = (file, files, type, params) => {
     { file, files, type, params },
     670,
     770,
-    'center',
+    'sticky',
     true,
     { resize: true, minWidth: 600, minHeight: 550 },
   );
