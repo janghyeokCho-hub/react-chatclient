@@ -48,7 +48,7 @@ const InviteMember = ({
           });
         });
     } else {
-      if (currentRoom?.members) {
+      if (!isNewRoom && currentRoom?.members) {
         setOldMembers(currentRoom.members);
       } else {
         setOldMembers([
