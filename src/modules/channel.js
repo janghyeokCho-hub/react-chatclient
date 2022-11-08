@@ -343,7 +343,7 @@ function createReceiveMessageSaga() {
     }
   };
 }
-/* 2022-04-01 대화삭제 로직 보완 중복으로 주석처리.
+
 const deleteMessageSaga = createDeleteMessageSaga();
 function createDeleteMessageSaga() {
   return function* (action) {
@@ -363,7 +363,6 @@ function createDeleteMessageSaga() {
     }
   };
 }
-*/
 
 const receiveMessageSaga = createReceiveMessageSaga();
 
@@ -797,7 +796,7 @@ export function* channelSaga() {
   yield takeLatest(UPDATE_CHANNELS, updateChannelsSaga);
   yield takeLatest(GET_CHANNEL_CATEGORIES, getChannelCategoriesSaga);
   yield takeLatest(RECEIVE_MESSAGE, receiveMessageSaga);
-  // yield takeLatest(DELETE_MESSAGE, deleteMessageSaga);
+  yield takeLatest(DELETE_MESSAGE, deleteMessageSaga);
   yield takeLatest(OPEN_CHANNEL, openChannelSaga);
   yield takeLatest(GET_CHANNEL_INFO, getChannelInfoSaga);
   yield takeLatest(GET_CHANNEL_NOTICE, getChannelNoticeSaga);
@@ -914,7 +913,9 @@ const channel = handleActions(
               item.newWin = channel.newWin;
               item.winObj = channel.winObj;
               item.winName = channel.winName;
-              item.settingJSON = channel.settingJSON;
+              item.settingJSON = isJSONStr(channel.settingJSON)
+                ? JSON.parse(channel.settingJSON)
+                : channel.settingJSON;
 
               // 채널 아이콘
               if (channel.iconPath && !item.iconPath) {
@@ -1641,6 +1642,7 @@ const channel = handleActions(
           if (!payload?.deleteMessage || !payload?.lastMessage) {
             return;
           }
+          const mid = payload.lastMessage.messageID;
           // 삭제된 메시지가 답글이 달려있다면, 해당 답글의 본문 메시지 내용 지우기
           const originMsg = draft.messages.filter(msg => msg.replyID === mid);
 
