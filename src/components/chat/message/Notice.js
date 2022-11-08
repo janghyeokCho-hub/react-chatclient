@@ -256,7 +256,7 @@ const Notice = ({ type, value, title, func }) => {
 
   const drawFunc = useMemo(() => {
     if (func) {
-      if (func.data.hostId && func.data.hostId.id == loginId) {
+      if (func?.data?.hostId?.id && func.data.hostId.id === loginId) {
         return;
       }
       const handlerFunc = actionHandler(func.type, func.data);
