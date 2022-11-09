@@ -43,6 +43,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
   const [channelAuth, setChannelAuth] = useState(false);
   const [channelAdminMembers, setChannelAdminMembers] = useState([]);
   const forceDisableNoti = getConfig('ForceDisableNoti', 'N') === 'Y';
+  const viewType = useSelector(({ room }) => room.viewType);
 
   const dispatch = useDispatch();
 
@@ -349,7 +350,20 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
               }, // 채널 페쇄에 대한 후처리는 웹소켓에서.....
               // Admin에서 채널 폐쇄시와 동일하게 처리.
             ).then(response => {
-              if (response.data.status != 'SUCCESS') {
+              if (response.data.status === 'SUCCESS') {
+                if (DEVICE_TYPE === 'd') {
+                  if (viewType === 'M') {
+                    clearLayer(dispatch);
+                  } else {
+                    // 폐쇄한 채널 창 닫기
+                    evalConnector({
+                      method: 'window-close',
+                    });
+                  }
+                } else {
+                  clearLayer(dispatch);
+                }
+              } else {
                 openPopup(
                   {
                     type: 'Alert',
