@@ -22,6 +22,7 @@ import { setMessageLinkInfo } from '@/modules/channel';
 import { evalConnector } from '@/lib/deviceConnector';
 import { getConfig } from '@/lib/util/configUtil';
 import { createBookmark, getBookmarkList, deleteBookmark } from '@/lib/message';
+import { isSameDate, SEARCHVIEW_OPTIONS } from '@/lib/constants/searchView.constant';
 
 const MessageBox = ({
   message,
@@ -233,14 +234,25 @@ const MessageBox = ({
         : message.senderInfo;
     }
 
-    if (searchOptionState?.type === 'Context') {
+    if (searchOptionState?.type === SEARCHVIEW_OPTIONS.CONTEXT) {
+      // 내용 검색
       _marking = marking;
     } else if (
-      searchOptionState?.type === 'Note_Sender' &&
+      searchOptionState?.type === SEARCHVIEW_OPTIONS.SENDER &&
       searchOptionState?.value &&
       message?.sender
     ) {
+      // 이름 검색
       if (message.sender === searchOptionState.value) {
+        _marking = '.*';
+      }
+    } else if (
+      searchOptionState?.type === SEARCHVIEW_OPTIONS.DATE &&
+      searchOptionState?.value &&
+      message?.sendDate
+    ) {
+      // 날짜 검색
+      if (isSameDate(searchOptionState?.value, message?.sendDate)) {
         _marking = '.*';
       }
     }

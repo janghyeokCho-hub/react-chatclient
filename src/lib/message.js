@@ -1,5 +1,6 @@
 import { chatsvr, chatbotsvr, managesvr, filesvr, imgsvr } from '@/lib/api';
 import { getConfig } from './util/configUtil';
+import { SEARCHVIEW_OPTIONS } from './constants/searchView.constant';
 
 export const sendMessage = params => {
   if (params.roomType === 'B') {
@@ -147,7 +148,9 @@ export const searchMessage = params => {
   let requestMethod = 'get';
   let requestURL;
   let requestBody = {};
-  if (params?.searchOption === 'Note_Sender') {
+  if (params?.searchOption === SEARCHVIEW_OPTIONS.CONTEXT) {
+    requestURL = `/messages/search/${params.search}?roomID=${params.roomId}&loadCnt=${params.loadCnt}`;
+  } else if (params?.searchOption === SEARCHVIEW_OPTIONS.SENDER) {
     requestMethod = 'post';
     requestURL = '/messages/sender/search';
     requestBody = {
@@ -155,8 +158,14 @@ export const searchMessage = params => {
       loadCnt: params.loadCnt,
       searchId: params.search,
     };
-  } else {
-    requestURL = `/messages/search/${params.search}?roomID=${params.roomId}&loadCnt=${params.loadCnt}`;
+  }  else if (params?.searchOption === SEARCHVIEW_OPTIONS.DATE) {
+    requestMethod = 'post';
+    requestURL = '/messages/date/search';
+    requestBody = {
+      roomId: params.roomId,
+      loadCnt: params.loadCnt,
+      search: params.search,
+    };
   }
   return managesvr(requestMethod, requestURL, requestBody);
 };
@@ -186,7 +195,9 @@ export const searchChannelMessage = params => {
   let requestMethod = 'get';
   let requestURL;
   let requestBody = {};
-  if (params?.searchOption === 'Note_Sender') {
+  if (params?.searchOption === SEARCHVIEW_OPTIONS.CONTEXT) {
+    requestURL = `/channel/messages/search?roomID=${params.roomId}&loadCnt=${params.loadCnt}&searchText=${searchText}`;
+  } else if (params?.searchOption === SEARCHVIEW_OPTIONS.SENDER) {
     requestMethod = 'post';
     requestURL = '/channel/sender/search';
     requestBody = {
@@ -197,8 +208,14 @@ export const searchChannelMessage = params => {
       // 2022-06-14 윤기현 대리가 쿼리에서 서브쿼리로 messageId 를 가져오도록 수정하기로 함.
       // messageId: params.messageId,
     };
-  } else {
-    requestURL = `/channel/messages/search?roomID=${params.roomId}&loadCnt=${params.loadCnt}&searchText=${searchText}`;
+  } else if (params?.searchOption === SEARCHVIEW_OPTIONS.DATE) {
+    requestMethod = 'post';
+    requestURL = '/channel/date/search';
+    requestBody = {
+      roomId: params.roomId,
+      loadCnt: params.loadCnt,
+      search: params.search,
+    };
   }
   return managesvr(requestMethod, requestURL, requestBody);
 };
