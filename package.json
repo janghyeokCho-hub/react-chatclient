@@ -114,6 +114,7 @@
     "node-notifier": "file:lib/noti-prod/node-notifier",
     "preact": "^10.5.13",
     "query-string": "^7.1.1",
+    "react-calendar": "^3.9.0",
     "react-color": "2.19.3",
     "react-helmet": "^6.1.0",
     "react-tooltip": "^4.2.21",
