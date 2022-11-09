@@ -89,7 +89,7 @@ const SearchView = ({ onSearchBox }) => {
         setSearchResult(data.search);
       }
     } else {
-      setSearchText('');
+      // ...
     }
 
     setLoading(false);
@@ -120,7 +120,6 @@ const SearchView = ({ onSearchBox }) => {
         const response = await requestSearchMessage(param, isChannel);
         if (response?.data?.status !== 'SUCCESS' || !response?.data?.search) {
           setMoveMessagesData(response.data);
-          setSearchText('');
           common.openPopup(
             {
               type: 'Alert',

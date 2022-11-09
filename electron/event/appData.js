@@ -2021,8 +2021,6 @@ const selectBetweenMessages = async params => {
 export const reqGetSearchMessages = async (event, args) => {
   logger.info('reqGetSearchMessages:: ' + JSON.stringify(args || {}));
 
-  // args.option: 'Context' | 'Name';
-  // default: 'Context'
   const searchOption = args?.searchOption || 'Context';
   const returnObj = {};
 
@@ -2030,10 +2028,12 @@ export const reqGetSearchMessages = async (event, args) => {
     try {
       let messages = null;
       let search = [];
-      if (searchOption === 'Note_Sender') {
-        search = await searchMessagesByName(args);
-      } else {
+      if (searchOption === 'Context') {
         search = await searchMessages(args);
+      } else if (searchOption === 'Note_Sender') {
+        search = await searchMessagesByName(args);
+      } else if (searchOption === 'Date') {
+        search = await searchMessagesByDate(args);
       }
       if (search.length > 0) {
         search = search.map(item => item.messageId);
@@ -2087,6 +2087,23 @@ export const searchMessagesByName = async param => {
 
   return search;
 };
+
+export const searchMessagesByDate = async param => {
+  const dbCon = await db.getConnection(dbPath, loginInfo.getData().id);
+
+  const search = dbCon
+    .select('messageId')
+    .from('message')
+    .where('roomId', param?.roomID)
+    .andWhere('messageId', '<=', param.messageId)
+    // Date(date, 'unixepoch) statement returns => 'yyyy-MM-dd'
+    .whereRaw(`DATE(sendDate/1000, 'unixepoch') = '${param.search}'`)
+    .andWhere('messageType', 'N')
+    .orderBy('messageId', 'asc')
+    .limit(param?.loadCnt || 100);
+
+  return search; 
+}
 
 export const updateLinkInfo = async (messageId, linkInfo) => {
   logger.info('updateLinkInfo');
