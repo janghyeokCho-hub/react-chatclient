@@ -309,13 +309,8 @@ export const handleDisconnect = dispatch => {
 export const handleChannelClosure = dispatch => {
   return data => {
     const json_data = JSON.parse(data);
-
-    console.dir(json_data);
-
     json_data.senderInfo = 'ccn';
-
     dispatch(receiveChannelMessage(json_data));
-
     dispatch(channelClosure(json_data));
   };
 };
