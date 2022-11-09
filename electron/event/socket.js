@@ -24,6 +24,7 @@ export const reqSocketConnect = (event, args) => {
     onChannelExit: socketAction.onChannelExit,
     onChannelInvitation: socketAction.onChannelInvitation,
     onRoomSettingChanged: payload => {},
+    onChannelClosure: payload => {},
   };
 
   if (CONN_SOCKET == null || CONN_SOCKET.disconnect) {
