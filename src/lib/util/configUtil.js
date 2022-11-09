@@ -120,6 +120,21 @@ export const getConfig = (key, defaultValue) => {
   else return defaultValue;
 };
 
+function _validateFlag(option) {
+  if (Array.isArray(option)) {
+    return option.some(_validateFlag);
+  }
+  return option === true || option === 'Y';
+}
+
+export const getUseFlag = (key, defaultFlag = false) => {
+  const val = getConfig(key);
+  return (
+    _validateFlag([val, val?.isUse, val?.IsUse, val?.use]) ||
+    Boolean(defaultFlag)
+  );
+};
+
 export const getDic = (key, defaultValue) => {
   const searchConfig = search(covi.dic, key);
   if (searchConfig != undefined) return searchConfig;

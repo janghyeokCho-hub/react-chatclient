@@ -1,9 +1,31 @@
 import React, { useRef, useEffect, useState } from 'react';
+import Calendar from 'react-calendar';
+
+/**
+ * react-calendar 사용 범위 확대시 상위 콘텍스트로 import statement 이동해야함
+ */
+import 'react-calendar/dist/Calendar.css';
+
 import SearchIcon from '@/icons/svg/Search';
 import SearchDeleteIcon from '@/icons/svg/SearchDelete';
-import { getConfig } from '@/lib/util/configUtil';
+import { getUseFlag } from '@/lib/util/configUtil';
 import SuggestionLayer from '@C/channels/channel/layer/SuggestionLayer';
 import { getDictionary, openPopup } from '@/lib/common';
+import {
+  convertDate,
+  getCurrentDate,
+  isValidDate,
+  parseDate,
+  SEARCHVIEW_OPTIONS,
+} from '@/lib/constants/searchView.constant';
+
+/**
+ * 2022.10.17 변수 구분
+ *
+ * searchText: input 검색값 state
+ * searchTarget: input 외부의 View 에서 마지막으로 선택했던 대상 (검색성공 이후 input onChange가 발생하면 다시 초기화됨)
+ * inputFocused: input 외부의 View 표시여부
+ */
 
 const SearchHeader = ({
   searchText,
@@ -16,34 +38,35 @@ const SearchHeader = ({
   currMember,
 }) => {
   const searchInput = useRef(null);
-  const [searchOption, setSearchOption] = useState('Context');
+  const [searchOption, setSearchOption] = useState(SEARCHVIEW_OPTIONS.CONTEXT);
+  // 옵션 선택뷰 flag
   const [openSelectBox, setOpenSelectBox] = useState(false);
+  // 각 옵션별 input 선택영역 표기 flag
   const [inputFocused, setInputFocused] = useState(false);
-  const [targetId, setTargetId] = useState('');
+  const [searchTarget, setSearchTarget] = useState('');
   const hideSearchBox = () => {
     onSearchBox();
   };
   const handleSearch = (option = searchOption, text = null) => {
     if (!text) {
-      if (option === 'Context') {
+      if (option === SEARCHVIEW_OPTIONS.CONTEXT) {
         text = searchText;
-      } else if (option === 'Note_Sender') {
-        text = targetId;
+      } else {
+        text = searchTarget;
       }
     }
-    if (option === 'Context' && text) {
-      onSearch(option, text);
-    } else if (option === 'Note_Sender' && text) {
+    if (text) {
       onSearch(option, text);
     }
   };
-  const useSearchMessageByName = getConfig('UseSearchMessageByName') || {
-    use: false,
-  };
+  const useSearchMessageByName = getUseFlag('UseSearchMessageByName') || false;
+  const useSearchMessageByDate = getUseFlag('UseSearchMessageByDate') || false;
+
   const clearSearch = () => {
     onChange('');
-    setTargetId('');
+    setSearchTarget('');
   };
+
   useEffect(() => {
     searchInput.current.focus();
   }, [searchOption]);
@@ -84,22 +107,35 @@ const SearchHeader = ({
           >
             <li
               onClick={() => {
-                setSearchOption('Context');
+                setSearchOption(SEARCHVIEW_OPTIONS.CONTEXT);
                 onChange('');
                 setOpenSelectBox(false);
               }}
             >
-              {covi.getDic('Context', '내용')}
+              {covi.getDic(SEARCHVIEW_OPTIONS.CONTEXT, '내용')}
             </li>
-            {useSearchMessageByName?.use && (
+            {useSearchMessageByName && (
               <li
                 onClick={() => {
-                  setSearchOption('Note_Sender');
+                  setSearchOption(SEARCHVIEW_OPTIONS.SENDER);
                   onChange('');
                   setOpenSelectBox(false);
                 }}
               >
-                {covi.getDic('Note_Sender', '보낸사람')}
+                {covi.getDic(SEARCHVIEW_OPTIONS.SENDER, '보낸사람')}
+              </li>
+            )}
+            {useSearchMessageByDate && (
+              <li
+                onClick={() => {
+                  const currentDate = getCurrentDate();
+                  setSearchOption(SEARCHVIEW_OPTIONS.DATE);
+                  onChange(currentDate);
+                  setSearchTarget(currentDate);
+                  setOpenSelectBox(false);
+                }}
+              >
+                {covi.getDic(SEARCHVIEW_OPTIONS.DATE, '날짜')}
               </li>
             )}
           </ul>
@@ -120,11 +156,34 @@ const SearchHeader = ({
             disabled={disabled}
             onChange={e => {
               onChange(e.target.value);
-              setTargetId('');
+              setSearchTarget('');
             }}
             onKeyDown={e => {
+              // Handle input submit
               if (e.keyCode == 13) {
-                if (searchOption === 'Note_Sender' && !targetId) {
+                switch (searchOption) {
+                  case SEARCHVIEW_OPTIONS.SENDER:
+                    // searchTarget가 초기화된 상태인 경우 empty target 문구 팝업
+                    if (!searchTarget) {
+                      onEmptyTarget?.();
+                      return;
+                    }
+                    break;
+                  case SEARCHVIEW_OPTIONS.DATE:
+                    if (isValidDate(searchText)) {
+                      const trimmedDate = convertDate(searchText.trim());
+                      onChange(trimmedDate);
+                      setSearchTarget(trimmedDate);
+                      setInputFocused(null);
+                    } else {
+                      // @TODO handle invalid date
+                      // ...
+                    }
+                    break;
+                  default:
+                }
+                // 검색 input이 빈값인 경우 empty target 문구 팝업
+                if (!searchText) {
                   onEmptyTarget?.();
                   return;
                 }
@@ -133,10 +192,10 @@ const SearchHeader = ({
             }}
             onFocus={() => {
               // 이름검색 모드 && input focus시에 SuggestionLayer 렌더링
-              if (searchOption === 'Note_Sender') {
-                setInputFocused(true);
+              if (searchOption === SEARCHVIEW_OPTIONS.CONTEXT) {
+                setInputFocused(null);
               } else {
-                setInputFocused(false);
+                setInputFocused(searchOption);
               }
             }}
           />
@@ -156,7 +215,7 @@ const SearchHeader = ({
           {covi.getDic('Cancel', '취소')}
         </button>
       </div>
-      {inputFocused && (
+      {inputFocused === SEARCHVIEW_OPTIONS.SENDER && (
         <SuggestionLayer
           roomId={roomId}
           currMember={currMember}
@@ -165,19 +224,41 @@ const SearchHeader = ({
              * onMentionClick을 사용할 경우 UserInfoBox의 onClick보다 text input의 onBlur가 먼저 트리거 됨 (즉 클릭 처리가 동작하지 않음)
              * => onBlur보다 먼저 클릭처리를 하기 위해 MouseDown을 사용하였음
              */
-            console.log('onMentionMouseDown >> ', member);
             if (member) {
               onChange(getDictionary(member.name));
-              setTargetId(member.id);
+              setSearchTarget(member.id);
               handleSearch(searchOption, member.id);
             }
-            setInputFocused(false);
+            setInputFocused(null);
           }}
           onSuggestionMembers={() => {}}
           messageContext={searchText}
           skipKeyword
           sticky="top"
         ></SuggestionLayer>
+      )}
+      {inputFocused === SEARCHVIEW_OPTIONS.DATE && (
+        <section
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+            position: 'absolute',
+            zIndex: 101,
+          }}
+        >
+          <Calendar
+            onClickDay={date => {
+              const dateFormat = parseDate(date);
+              onChange(dateFormat);
+              setSearchTarget(dateFormat);
+              handleSearch(searchOption, dateFormat);
+              setInputFocused(null);
+            }}
+            value={isValidDate(searchText) && new Date(searchText)}
+          />
+        </section>
       )}
     </>
   );
