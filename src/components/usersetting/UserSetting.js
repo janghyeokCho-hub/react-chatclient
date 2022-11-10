@@ -41,6 +41,7 @@ import {
   useChatFontType,
   useMyChatFontColor,
 } from '@/hooks/useChat';
+import { setUserDefinedSettings } from '@/lib/setting';
 
 const getJobInfoName = jobInfo => {
   switch (jobInfo) {
@@ -456,10 +457,14 @@ const UserSetting = ({ history }) => {
     );
   };
 
-  const selectTheme = color => {
+  const selectTheme = async color => {
     // APP_SETTING 저장
     if (DEVICE_TYPE == 'd') handleConfig({ theme: color });
     else if (DEVICE_TYPE == 'b') localStorage.setItem('covi_user_theme', color);
+
+    await setUserDefinedSettings({
+      theme: color
+    });
 
     if (covi.settings) covi.settings.theme = color;
     dispatch(changeTheme(color));
@@ -1151,7 +1156,7 @@ const UserSetting = ({ history }) => {
                               'Msg_ApplyAndRefresh',
                               '적용을 위해 모든창이 닫히고 앱이 새로고침 됩니다. 진행하시겠습니까?',
                             ),
-                            callback: result => {
+                            callback: async result => {
                               if (result) {
                                 localStorage.setItem(
                                   'covi_user_lang',
@@ -1159,6 +1164,9 @@ const UserSetting = ({ history }) => {
                                 );
                                 if (DEVICE_TYPE == 'd') {
                                   handleConfig({ lang: item.value });
+                                  await setUserDefinedSettings({
+                                    clientLang: item.value
+                                  });
                                   evalConnector({
                                     method: 'send',
                                     channel: 'reload-app',

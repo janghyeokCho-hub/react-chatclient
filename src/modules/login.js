@@ -1,14 +1,14 @@
+import produce from 'immer';
 import { createAction, handleActions } from 'redux-actions';
 import { takeLatest, call, put } from 'redux-saga/effects';
-import { startLoading, finishLoading } from '@/modules/loading';
 
+import { startLoading, finishLoading } from '@/modules/loading';
 import { setContacts } from '@/modules/contact';
 import { setRooms } from '@/modules/room';
-import createRequestSaga, {
+import {
   createRequestActionTypes,
   exceptionHandler,
 } from '@/lib/createRequestSaga';
-
 import {
   evalConnector,
   closeSocket,
@@ -16,34 +16,27 @@ import {
   getEmitter,
   getExtension,
 } from '@/lib/deviceConnector';
-
 import * as loginApi from '@/lib/login';
 import * as presenceApi from '@/lib/presence';
 import * as contactApi from '@/lib/contact';
 import * as roomApi from '@/lib/room';
 import { getFixedUserData } from '@/lib/presenceUtil';
-
-import produce from 'immer';
 import { setFixedUsers, addFixedUsers } from './presence';
-
 // 채널
 import { setChannels } from '@/modules/channel';
 import * as channelApi from '@/lib/channel';
-
 // 익스텐션
 import { extensionSet } from '@/modules/extension';
-
 import { clearZoomData } from '@/lib/util/localStorageUtil';
 import {
   refreshAccessToken,
   accessTokenExpired,
   startRefreshInterval,
 } from '@/lib/zoomService';
-
 // ChineseWall
 import { getChineseWall } from '@/lib/orgchart';
-
 import { getConfig } from '@/lib/util/configUtil';
+import { syncUserDefinedSettings } from '@/lib/userSettingUtil';
 
 const MobileDetect = require('mobile-detect'),
   agentDetect = new MobileDetect(window.navigator.userAgent);
@@ -122,7 +115,8 @@ function createLoginRequestSaga(loginType, syncType) {
         yield put(finishLoading(loginType));
         if (response.data.status == 'SUCCESS') {
           if (response.data.result && response.data.token) {
-            yield put(setLocalStorage(response.data));
+            yield put(startLoading(syncType));
+
             /**
              * 2020.12.30
              * SaaS 버전 대응
@@ -133,7 +127,7 @@ function createLoginRequestSaga(loginType, syncType) {
             // localStorage.setItem('covi_user_access_token', response.data.token);
             // login 후처리 시작
             // 동기화 시작
-            yield put(startLoading(syncType));
+            yield put(setLocalStorage(response.data));
 
             // LOGIN SUCCESS 처리 전 hook
             yield put(preLoginSuccess(response.data?.result));
@@ -323,15 +317,12 @@ function createExtLoginRequestSaga(loginType, syncType) {
         yield put(finishLoading(loginType));
         if (response.data.status == 'SUCCESS') {
           if (response.data.result && response.data.token) {
-            // localStorage에 token 세팅
-            localStorage.setItem('covi_user_access_token', response.data.token);
-            localStorage.setItem(
-              'covi_user_access_id',
-              response.data.result.id,
-            );
             // login 후처리 시작
             // 동기화 시작
             yield put(startLoading(syncType));
+
+            // localStorage에 token 세팅
+            yield put(setLocalStorage(response.data));
 
             // LOGIN SUCCESS 처리 전 hook
             yield put(preLoginSuccess(response.data?.result));
@@ -656,6 +647,16 @@ const reSyncRequestSaga = createReSyncRequestSaga();
 
 function* preLoginSuccessSaga(action) {
   const isSaaSClient = getConfig('IsSaaSClient', 'N') === 'Y';
+  const useUserSettingSync = getConfig('UseUserSettingSync', 'N') === 'Y';
+
+  // 서버에 저장된 settings 값과 동기화 시작
+  if (useUserSettingSync && action.payload?.settings) {
+    const settings = JSON.parse(action.payload.settings);
+    const desktopSettings = JSON.parse(settings?.desktop);
+    if (desktopSettings) {
+      yield call(syncUserDefinedSettings, desktopSettings);
+    }
+  }
   if (isSaaSClient && action.payload?.CompanyCode) {
     /**
      * @TODO fetch SaaS configurations
