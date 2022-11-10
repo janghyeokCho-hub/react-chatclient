@@ -458,6 +458,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                       },
                       dispatch,
                     );
+                    clearLayer(dispatch);
                   }}
                 >
                   <span className="c_menu_ico c_menu_ico_06"></span>
@@ -471,7 +472,7 @@ const ChannelMenuBox = ({ channelInfo, isNewWin }) => {
                 {covi.getDic('PhotoSummary', '사진 모아보기')}
               </a>
             </li>
-            <li className={useBookmark === false ? 'divideline' :  undefined}>
+            <li className={useBookmark === false ? 'divideline' : undefined}>
               <a onClick={handleFileSummary}>
                 <span className="c_menu_ico c_menu_ico_03"></span>
                 {covi.getDic('FileSummary', '파일 모아보기')}
