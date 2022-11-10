@@ -19,3 +19,5 @@ export const changeNotificationBlockOption = params => {
 export const getLatestLogin = () => {
   return managesvr('get', '/latest/login');
 };
+export const setUserDefinedSettings = params =>
+  managesvr('post', '/user/setting', { deviceType: 'd', settings: params });
