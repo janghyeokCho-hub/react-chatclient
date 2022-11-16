@@ -10,8 +10,8 @@ const {
   getRemote,
   existsSync,
   writeFile,
+  getInitialBounds
 } = require(`@/lib/${DEVICE_TYPE}/connector`);
-const { getInitialBounds } = require(`@/lib/${DEVICE_TYPE}/bound`);
 
 // 2020.12.21
 // for '@C/chat/chatroom/normal/MessagePostBox' Component

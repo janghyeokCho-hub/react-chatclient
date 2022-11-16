@@ -45,7 +45,6 @@ import {
   getMacAddr,
   getPublicIPAddr,
 } from './utils/commonUtils';
-import { getInitialBounds } from '../src/lib/d/bound';
 
 import AutoLaunch from 'auto-launch';
 import * as window from './utils/window';
