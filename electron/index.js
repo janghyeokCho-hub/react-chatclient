@@ -490,17 +490,11 @@ const createWindow = async (isLoading, domainInfo) => {
     }
   }
 
-  //NOTE: electron-window-state 대체 검토 필요
-  const bounds = getInitialBounds('latestAppBounds', defaultSize);
   const windowState = require('electron-window-state');
   let mainWindowState = windowState({
     defaultWidth: defaultSize.width,
     defaultHeight: defaultSize.height,
   });
-  console.log(' @ @ @ @ : bounds : ', bounds);
-  console.log(' @ @ @ @ : windowState : ', mainWindowState);
-
-  console.log(bounds);
 
   // Create the browser window.
   win = new BrowserWindow({
