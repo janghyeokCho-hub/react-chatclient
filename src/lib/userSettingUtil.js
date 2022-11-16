@@ -120,7 +120,7 @@ export function* syncUserDefinedSettings(settings) {
   for (const serverSideKey in settings) {
     const settingInfo = USER_SETTINGS_MAP?.[serverSideKey];
     let serverSideValue = settings?.[serverSideKey];
-    if (!serverSideValue || settingInfo) {
+    if (!serverSideValue || !settingInfo) {
       continue;
     }
     const { mismatchTrigger, storageKey, onUpdate } = settingInfo;
