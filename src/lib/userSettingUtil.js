@@ -118,12 +118,12 @@ export function* syncUserDefinedSettings(settings) {
 
   // eslint-disable-next-line no-unused-vars
   for (const serverSideKey in settings) {
+    const settingInfo = USER_SETTINGS_MAP?.[serverSideKey];
     let serverSideValue = settings?.[serverSideKey];
-    if (!serverSideValue) {
+    if (!serverSideValue || settingInfo) {
       continue;
     }
-    const { mismatchTrigger, storageKey, onUpdate } =
-      USER_SETTINGS_MAP[serverSideKey];
+    const { mismatchTrigger, storageKey, onUpdate } = settingInfo;
     const clientSideValue = localStorage.getItem(storageKey.localStorage);
     const [serverSideEmpty, clientSideEmpty] = [
       isEmptyValue(serverSideValue),
