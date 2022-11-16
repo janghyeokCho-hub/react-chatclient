@@ -650,7 +650,7 @@ function* preLoginSuccessSaga(action) {
   const useUserSettingSync = getConfig('UseUserSettingSync', 'N') === 'Y';
 
   // 서버에 저장된 settings 값과 동기화 시작
-  if (useUserSettingSync && action.payload?.settings) {
+  if (DEVICE_TYPE === 'd' && useUserSettingSync && action.payload?.settings) {
     const settings = JSON.parse(action.payload.settings);
     const desktopSettings = JSON.parse(settings?.desktop);
     if (desktopSettings) {
