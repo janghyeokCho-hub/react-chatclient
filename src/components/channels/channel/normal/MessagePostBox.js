@@ -83,9 +83,12 @@ const MessagePostBox = forwardRef(
 
     const tempFiles = useSelector(({ message }) => message.tempFiles);
     const currentChannel = useSelector(({ channel }) => channel.currentChannel);
+    const roomID = currentChannel?.roomId;
     const selectEmoticon = useSelector(({ channel }) => channel.selectEmoticon);
 
     const { PC } = getConfig('FileAttachMode') || {};
+    const ShareDoc = getConfig('ShareDoc') || {};
+    const useShareDoc = ShareDoc?.use === 'Y';
 
     const [inputLock, setInputLock] = useState(isLock);
     const [useEmoji, setUseEmoji] = useState(false);
@@ -485,7 +488,9 @@ const MessagePostBox = forwardRef(
             fileUploadControl.current.click();
           },
         },
-        {
+      ];
+      if (useShareDoc && roomID) {
+        menus.push({
           cose: 'create-document',
           name: '공동 문서 생성',
           isline: false,
@@ -497,16 +502,16 @@ const MessagePostBox = forwardRef(
               dispatch,
             );
           },
-        },
-        {
+        });
+        menus.push({
           cose: 'share-document',
           name: '공동 문서 공유',
           isline: false,
           onClick: () => {
             handleDocumentControl();
           },
-        },
-      ];
+        });
+      }
       return menus;
     }, [fileUploadControl]);
 
