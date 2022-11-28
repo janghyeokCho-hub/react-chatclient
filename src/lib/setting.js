@@ -1,4 +1,6 @@
 import { managesvr } from '@/lib/api';
+import { getUseFlag } from '@/lib/util/configUtil';
+
 export const modifyUserPassword = params => {
   return managesvr('put', '/login/change/password', params);
 };
@@ -19,5 +21,17 @@ export const changeNotificationBlockOption = params => {
 export const getLatestLogin = () => {
   return managesvr('get', '/latest/login');
 };
-export const setUserDefinedSettings = params =>
-  managesvr('post', '/user/setting', { deviceType: 'd', settings: params });
+export const setUserDefinedSettings = async params => {
+  const useUserSettingSync = getUseFlag('UseUserSettingSync');
+  if (DEVICE_TYPE !== 'd' || !useUserSettingSync) {
+    return;
+  }
+  try {
+    return await managesvr('post', '/user/setting', {
+      deviceType: 'd',
+      settings: params,
+    });
+  } catch (err) {
+    return;
+  }
+};
