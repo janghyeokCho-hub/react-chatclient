@@ -5,7 +5,13 @@ import Plain from '@C/chat/message/types/Plain';
 import { getJobInfo } from '@/lib/common';
 import useMemberInfo from '@/hooks/useMemberInfo';
 
-const Mention = ({ marking, mentionInfo, type, targetId }) => {
+const Mention = ({
+  marking,
+  mentionInfo,
+  type,
+  targetId,
+  useAction = true,
+}) => {
   // chatIsMine 내가 보낸 메시지인지
   const dispatch = useDispatch();
   const [value, setValue] = useState('');
@@ -75,7 +81,7 @@ const Mention = ({ marking, mentionInfo, type, targetId }) => {
             fontWeight: 'bold',
             cursor: 'pointer',
           }}
-          onClick={handleClick}
+          onClick={useAction ? handleClick : null}
         >
           <Plain marking={marking} text={value}></Plain>
         </span>
