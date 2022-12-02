@@ -127,6 +127,7 @@ export const convertChildren = ({
   style,
   marking,
   mentionInfo = {},
+  useAction = true,
 }) => {
   const returnJSX = [];
   let txt = '';
@@ -208,6 +209,7 @@ export const convertChildren = ({
                 key={returnJSX.length}
                 marking={marking}
                 mentionInfo={mentionInfo}
+                useAction={useAction}
                 {...attrs}
               ></Mention>
             );
@@ -230,6 +232,11 @@ export const convertChildren = ({
         ></Plain>,
       );
     }
+  }
+
+  // 멘션이 앞에 올 경우 더미 element가 생성됨으로 제거
+  while (returnJSX.length && returnJSX[0].props?.text === '') {
+    returnJSX.shift();
   }
   return returnJSX;
 };
