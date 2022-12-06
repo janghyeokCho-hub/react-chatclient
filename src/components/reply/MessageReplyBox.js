@@ -87,6 +87,9 @@ const ReplyContextDiv = styled(ContentDiv)`
     text-overflow: ellipsis;
     text-decoration: none;
   }
+  span:not(:first-child) {
+    display: none;
+  }
 `;
 
 /**
@@ -279,6 +282,7 @@ const MessageReplyBox = ({ replyID, replyInfo, goToOriginMsg, roomType }) => {
                 convertChildren({
                   children: context,
                   mentionInfo: processMsg?.mentionInfo,
+                  useAction: false,
                 })}
             </ReplyContextDiv>
           )}
