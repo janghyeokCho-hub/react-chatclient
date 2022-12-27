@@ -1,4 +1,5 @@
 # chatclient
+Restful : 1.14.1 이전 버전의 호환을 위한 클라이언트
 ## chatclient (PC)
 PC앱의 경우 react + electron을 기반으로 제작됨.
 + 작업 Process
