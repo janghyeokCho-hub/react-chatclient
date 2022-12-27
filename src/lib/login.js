@@ -13,8 +13,7 @@ const { _loginRequest } = require(`@/lib/${DEVICE_TYPE}/login`);
  */
 
 export const loginRequest = async params => {
-  const isLegacyAutoLoginAPI =
-    (getConfig('Legacy_AutoLogin') || false) === true;
+  const isLegacyAutoLoginAPI = getConfig('Legacy_AutoLogin', 'N') === 'Y';
   const url =
     !isLegacyAutoLoginAPI && params?.isAuto ? '/na/r/m/login' : '/na/m/login';
   if (isLegacyAutoLoginAPI) {
@@ -34,8 +33,7 @@ export const loginRequest = async params => {
 };
 
 export const extLoginRequest = params => {
-  const isLegacyAutoLoginAPI =
-    (getConfig('Legacy_AutoLogin') || false) === true;
+  const isLegacyAutoLoginAPI = getConfig('Legacy_AutoLogin', 'N') === 'Y';
   const url =
     !isLegacyAutoLoginAPI && params?.isAuto
       ? '/na/r/m/extlogin'

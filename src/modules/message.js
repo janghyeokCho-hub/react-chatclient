@@ -13,7 +13,6 @@ const [SEND_MESSAGE, SEND_MESSAGE_SUCCESS, SEND_MESSAGE_FAILURE] =
   createRequestActionTypes('message/SEND_MESSAGE');
 
 const RESEND_MESSAGE = 'message/RESEND_MESSAGE';
-const RESEND_CHANNEL_MESSAGE = 'message/RESEND_CHANNEL_MESSAGE';
 
 const UPDATE_TEMPMESSAGE = 'message/UPDATE_TEMPMESSAGE';
 const REMOVE_TEMPMESSAGE = 'message/REMOVE_TEMPMESSAGE';
@@ -48,7 +47,6 @@ export const setMoveView = createAction(SET_MOVE_VIEW);
 
 // 채널
 export const sendChannelMessage = createAction(SEND_CHANNEL_MESSAGE);
-export const reSendChannelMessage = createAction(RESEND_CHANNEL_MESSAGE);
 export const updateChannelTempMessage = createAction(
   UPDATE_CHANNEL_TEMPMESSAGE,
 );
@@ -123,8 +121,8 @@ function createSendMessageSaga(request, fileRequest, linkRequest) {
 
 // 채널
 function createSendChannelMessageSaga(request, fileRequest, linkRequest) {
-  const SUCCESS = `message/SEND_CHANNEL_MESSAGE_SUCCESS`;
-  const FAILURE = `message/SEND_CHANNEL_MESSAGE_FAILURE`;
+  const SUCCESS = `message/SEND_MESSAGE_SUCCESS`;
+  const FAILURE = `message/SEND_MESSAGE_FAILURE`;
 
   return function* (action) {
     try {
@@ -218,19 +216,12 @@ const sendChannelMessageSaga = createSendChannelMessageSaga(
   messageApi.getURLThumbnail,
 );
 
-const reSendChannelMessageSaga = createSendChannelMessageSaga(
-  messageApi.sendChannelMessage,
-  messageApi.uploadFile,
-  messageApi.getURLThumbnail,
-);
-
 export function* messageSaga() {
   yield takeEvery(SEND_MESSAGE, sendMessageSaga);
   yield takeLatest(RESEND_MESSAGE, reSendMessageSaga);
 
   // 채널
   yield takeEvery(SEND_CHANNEL_MESSAGE, sendChannelMessageSaga);
-  yield takeLatest(RESEND_CHANNEL_MESSAGE, reSendChannelMessageSaga);
 }
 
 const initialState = {
@@ -287,7 +278,7 @@ const message = handleActions(
         // 해당 메시지를 tempMessage에 넣고 상태를 send으로 지정
         const sendData = action.payload;
         sendData.status = 'send';
-        sendData.tempId = (action.payload.roomID*10000) + tempId++; //임시 메세지 고유키
+        sendData.tempId = action.payload.roomID * 10000 + tempId++; //임시 메세지 고유키
         draft.tempMessage.push(sendData);
       });
     },
@@ -316,8 +307,10 @@ const message = handleActions(
         //     console.dir(pair[1]);
         //   }
         // }
-        
-        draft.tempMessage = draft.tempMessage.filter( m => m.tempId !== action.payload);
+
+        draft.tempMessage = draft.tempMessage.filter(
+          m => m.tempId !== action.payload,
+        );
 
         // draft.tempMessage.splice(
         //   draft.tempMessage.findIndex(m => m.tempId === action.payload),
@@ -366,7 +359,7 @@ const message = handleActions(
         // 해당 채널 메시지를 tempMessage에 넣고 상태를 send으로 지정
         const sendData = action.payload;
         sendData.status = 'send';
-        sendData.tempId = (action.payload.roomID*10000) + tempId++;
+        sendData.tempId = action.payload.roomID * 10000 + tempId++;
         const isLegacyChannelAPI =
           (getConfig('Legacy_ChannelTemp') || false) === true;
         if (!isLegacyChannelAPI) {
@@ -396,16 +389,6 @@ const message = handleActions(
         sendData.status = 'fail';
       });
     },
-    [RESEND_CHANNEL_MESSAGE]: (state, action) => {
-      return produce(state, draft => {
-        // 해당 메시지를 tempChannelMessage에 넣고 상태를 send으로 지정
-        const sendData = draft.tempChannelMessage.find(
-          m => m.tempId === action.payload.tempId,
-        );
-
-        sendData.status = 'send';
-      });
-    },
     [REMOVE_CHANNEL_TEMPMESSAGE]: (state, action) => {
       return produce(state, draft => {
         // const sendData = draft.tempMessage.find(
@@ -419,7 +402,9 @@ const message = handleActions(
         //     console.dir(pair[1]);
         //   }
         // }
-        draft.tempChannelMessage = draft.tempChannelMessage.filter( m => m.tempId !== action.payload);
+        draft.tempChannelMessage = draft.tempChannelMessage.filter(
+          m => m.tempId !== action.payload,
+        );
       });
     },
   },

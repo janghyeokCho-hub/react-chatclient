@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import loadable from '@loadable/component';
 
 import MessageBox from '@C/channels/message/MessageBox';
-import TempMessageBox from '@C/chat/message/TempMessageBox';
 import SystemMessageBox from '@C/chat/message/SystemMessageBox';
 import NoticeMessageBox from '@C/chat/message/NoticeMessageBox'; // 그대로 사용
 const ListScrollBox = loadable(() =>
@@ -23,7 +22,6 @@ import {
   convertEumTalkProtocol,
 } from '@/lib/common';
 import { scrollIntoView } from '@/lib/util/domUtil';
-import { updateChannelLastMessage } from '@/modules/channel';
 
 const MessageList = ({ onExtension, viewExtension }) => {
   const tempMessage = useSelector(({ message }) => message.tempChannelMessage);
@@ -364,18 +362,6 @@ const MessageList = ({ onExtension, viewExtension }) => {
     }
   }, [messages]);
 
-  const drawTempMessage = useMemo(() => {
-    return tempMessage.map(message => {
-      if (message.roomID == currentChannel.roomId)
-        return (
-          <TempMessageBox
-            key={message.tempId}
-            message={message}
-          ></TempMessageBox>
-        );
-    });
-  }, [tempMessage, currentChannel]);
-
   const handleClick = useCallback(() => {
     onExtension('');
   }, [onExtension]);
@@ -411,10 +397,7 @@ const MessageList = ({ onExtension, viewExtension }) => {
             isShowNewMessageSeperator={showNewMessageSeperator}
             handleShowNewMessageSeperator={setShowNewMessageSeperator}
           >
-            <ul className="messages-chat-list">
-              {messages && drawMessage}
-              {tempMessage && drawTempMessage}
-            </ul>
+            <ul className="messages-chat-list">{messages && drawMessage}</ul>
           </ListScrollBox>
           {showNewMessageSeperator && (
             <a className="NewMessageBtn">

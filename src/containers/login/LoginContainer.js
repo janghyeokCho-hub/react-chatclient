@@ -33,7 +33,7 @@ const LoginContainer = ({ history, location }) => {
 
   const passwordBox = useRef(null);
 
-  const isLegacyAutoLoginAPI = (getConfig('Legacy_AutoLogin') || false) === true;
+  const isLegacyAutoLoginAPI = getConfig('Legacy_AutoLogin', 'N') === 'Y';
 
   const handleLogin = () => {
     const AESUtil = getAesUtil();
@@ -166,7 +166,10 @@ const LoginContainer = ({ history, location }) => {
 
       if (DEVICE_TYPE == 'd') {
         const AESUtil = getAesUtil();
-        const encryptPassword = AESUtil.encrypt(password, !isLegacyAutoLoginAPI);
+        const encryptPassword = AESUtil.encrypt(
+          password,
+          !isLegacyAutoLoginAPI,
+        );
 
         const data = {
           autoLoginId: userId,
