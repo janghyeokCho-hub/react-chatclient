@@ -340,6 +340,25 @@ const appReady = async () => {
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   }
+
+  let waTime = 0;
+  let workaround;
+
+  app.on('browser-window-blur', () => {
+    workaround = setInterval(() => {
+      waTime += 1;
+      if (waTime >= 3600) {
+        logger.info(`== Workaround Close ==`);
+        app.quit();
+        app.exit();
+      }
+    }, 1000);
+  });
+
+  app.on('browser-window-focus', () => {
+    waTime = 0;
+    clearInterval(workaround);
+  });
 };
 
 const lockScreenEvt = () => {
