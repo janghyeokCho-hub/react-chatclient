@@ -438,7 +438,7 @@ const Notice = ({ type, value, title, func }) => {
           {drawText}
         </div>
       )}
-      {type === 'A' && (
+      {(type === 'A' || type === 'C') && (
         <div className="msgtxt" style={{ color: '#000', fontSize }}>
           <span className="sys-tit" style={{ fontSize: fontSize + 2 }}>
             {(title && getDictionary(title)) ||
