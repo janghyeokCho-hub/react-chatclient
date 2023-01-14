@@ -161,30 +161,32 @@ const SocketContainer = ({ history, location }) => {
         socketConnector.closeSocket(true);
       }
 
-      openPopup(
-        {
-          type: 'Alert',
-          message: covi.getDic(
-            'Msg_NetworkConnect',
-            '네트워크 문제로 연결이 종료되었습니다.',
-          ),
-          callback: () => {
-            // disconnected
-            dispatch(logout());
+      if (deviceConnector.isMainWindow()) {
+        openPopup(
+          {
+            type: 'Alert',
+            message: covi.getDic(
+              'Msg_NetworkConnect',
+              '네트워크 문제로 연결이 종료되었습니다.',
+            ),
+            callback: () => {
+              // disconnected
+              dispatch(logout());
 
-            if (DEVICE_TYPE == 'd') {
-              // history.push('/client/autoLogin');
-              if (deviceConnector.isMainWindow()) {
-                socketUtil.clearCheck();
-                history.push('/client/autoLogin');
-              } else deviceConnector.closeWindow();
-            } else {
-              history.push('/client');
-            }
+              if (DEVICE_TYPE == 'd') {
+                // history.push('/client/autoLogin');
+                if (deviceConnector.isMainWindow()) {
+                  socketUtil.clearCheck();
+                  history.push('/client/autoLogin');
+                } else deviceConnector.closeWindow();
+              } else {
+                history.push('/client');
+              }
+            },
           },
-        },
-        dispatch,
-      );
+          dispatch,
+        );
+      }
     }
   }, [connected]);
 
