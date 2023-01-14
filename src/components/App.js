@@ -1,7 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch } from 'react-router-dom';
-import { closeWindow, evalConnector, isMainWindow } from '@/lib/deviceConnector';
+import {
+  closeWindow,
+  evalConnector,
+  isMainWindow,
+} from '@/lib/deviceConnector';
 import TokenChecker from '@COMMON/TokenChecker';
 import URLChecker from '@COMMON/URLChecker';
 import SocketContainer from '@/containers/socket/SocketContainer';
@@ -49,7 +53,7 @@ class App extends Component {
 
   setEscEventListner = () => {
     window.addEventListener('keydown', e => {
-      if (e.key  == 'Escape') {
+      if (e.key == 'Escape') {
         const { layer, popLayer } = this.props;
         if (layer.length == 1) {
           popLayer();

@@ -373,6 +373,7 @@ const lockScreenEvt = () => {
 
 const unlockScreenEvt = () => {
   POWER = 'ACTIVE';
+  logger.info(`unlockScreenEvt POWER - ${POWER}`);
 
   const lock = USER_SETTING.get('useSecondPassword');
 
@@ -419,6 +420,17 @@ const unlockScreenEvt = () => {
         logger.info(
           'unlock screen :: disconnected socket :: check network & redirect auto login',
         );
+
+        if (APP_SECURITY_SETTING.config?.autoLogin || exportProps.isAutoLogin) {
+          // Force Auto Login
+          logger.info('onPresenceChanged - Force Auto Login');
+          win.webContents.send('force-auto-login');
+        } else {
+          // Force Logout
+          logger.info('onPresenceChanged - Force Logout');
+          const { loginId, tk } = APP_SECURITY_SETTING?.config;
+          win.webContents.send('force-logout', { id: loginId, token: tk });
+        }
       }
     }
   }

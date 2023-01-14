@@ -468,14 +468,14 @@ function createLogoutRequestSaga(type, api) {
       try {
         if (DEVICE_TYPE == 'd') {
           // db close
-          const returnVal = yield call(evalConnector, {
+          call(evalConnector, {
             method: 'sendSync',
             channel: 'req-logout',
             message: '',
           });
         }
 
-        const response = yield call(api, action.payload);
+        call(api, action.payload);
         // logout event trigger
         if (DEVICE_TYPE == 'd') {
           // socket close

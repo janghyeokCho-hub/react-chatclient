@@ -1,22 +1,17 @@
 import React, { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-
 import LeftMenu from '@C/LeftMenu';
 import Content from '@C/Content';
 import MultiView from '@C/MultiView';
 import GadgetView from '@C/GadgetView';
-
-import LoadingWrap from '@COMMON/LoadingWrap';
 import LayerTemplate from '@COMMON/layer/LayerTemplate';
-
-import { changeRemoteStatus } from '@/modules/remote';
 import {
   closeWinRoom,
   changeViewType,
   resetUnreadCount,
   checkRoomMove,
   modifyRoomNameList,
-  getRoomInfoSuccess
+  getRoomInfoSuccess,
 } from '@/modules/room';
 import { changeMyPhotoPath, changeMyInfo, reSync } from '@/modules/login';
 import {
@@ -42,6 +37,7 @@ import {
 } from '@/lib/channelUtil';
 import { useChatFontType } from '../hooks/useChat';
 import { SyncFavoriteIPC } from '../hooks/useSyncFavorite';
+import { logoutRequest } from '@/modules/login';
 
 const AppTemplate = () => {
   const viewType = useSelector(({ room }) => room.viewType);
@@ -76,14 +72,14 @@ const AppTemplate = () => {
         if (getRoomResponse.status === 'SUCCESS') {
           dispatch(getRoomInfoSuccess(getRoomResponse));
         }
-      }
+      },
     });
     return () => {
       evalConnector({
         method: 'removeListener',
         channel: 'onCreateChatRoom',
       });
-    }
+    };
   }, []);
 
   useEffect(() => {
@@ -102,14 +98,14 @@ const AppTemplate = () => {
           data.members,
           true, //isDoubleClick
         ]);
-      }
+      },
     });
     return () => {
       evalConnector({
         method: 'removeListener',
         channel: 'onOpenChatRoomView',
       });
-    }
+    };
   }, [rooms, viewType]);
 
   useEffect(() => {
@@ -242,6 +238,37 @@ const AppTemplate = () => {
                     },
                     dispatch,
                   );
+                },
+              },
+              dispatch,
+            );
+          }
+        },
+      });
+      /** Auto login 하면서 토큰 재발급 하기 위함 */
+      evalConnector({
+        method: 'on',
+        channel: 'force-auto-login',
+        callback: () => {
+          if (DEVICE_TYPE === 'd') {
+            location.href = '#/client/autoLogin';
+          }
+        },
+      });
+      evalConnector({
+        method: 'on',
+        channel: 'force-logout',
+        callback: (_, data) => {
+          if (DEVICE_TYPE === 'd') {
+            openPopup(
+              {
+                type: 'Alert',
+                message:
+                  '로그인 정보가 만료되었습니다.\r\n다시 로그인 해주세요.',
+                callback: () => {
+                  // 전체 store init
+                  dispatch(logoutRequest(data));
+                  location.href = '#/client';
                 },
               },
               dispatch,
