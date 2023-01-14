@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { evalConnector } from '@/lib/deviceConnector';
+import { closeSocket, evalConnector } from '@/lib/deviceConnector';
 import { withRouter, useLocation } from 'react-router-dom';
 import SyncWrap from '@C/login/SyncWrap';
 import { useSelector } from 'react-redux';
 import useActions from '@/lib/useActions';
 import { loginRequest, extLoginRequest } from '@/modules/login';
 import LoadingWrap from '@COMMON/LoadingWrap';
+import { closeAllChildWindow } from '@/lib/deviceConnector';
 
 const AutoLogin = ({ history }) => {
   const { loading, authFail, token, sync } = useSelector(
@@ -57,7 +58,7 @@ const AutoLogin = ({ history }) => {
           da: process.arch,
           al: 'Y',
           isAuto: true,
-          nip_slevel: `${nip_slevel}`
+          nip_slevel: `${nip_slevel}`,
         };
       } else {
         data = {
@@ -89,7 +90,7 @@ const AutoLogin = ({ history }) => {
       let defaultMenu = isExtUser ? 'channellist' : 'contactlist';
       if (DEVICE_TYPE == 'd') {
         const data = {
-          tk: token
+          tk: token,
         };
 
         evalConnector({
@@ -107,6 +108,8 @@ const AutoLogin = ({ history }) => {
         if (firstMenu) defaultMenu = firstMenu;
       }
 
+      closeAllChildWindow();
+      closeSocket();
       history.push(`/client/main/${defaultMenu}`);
     }
   }, [authFail, token]);
