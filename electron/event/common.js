@@ -276,7 +276,7 @@ export const reqSubPop = (event, args) => {
 };
 
 export const setBeforePresence = (event, args) => {
-  BEFORE_PRESENCE = args;
+  BEFORE_PRESENCE = args === 'away' ? 'online' : args;
 };
 
 function requestHead(url) {
