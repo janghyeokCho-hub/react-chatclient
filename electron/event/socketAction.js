@@ -72,23 +72,30 @@ export const onNewMessage = payload => {
 
 export const onPresenceChanged = payload => {
   // TODO: AppData 저장 여부값 조건 추가 필요
-  if (
-    APP_SECURITY_SETTING?.config?.loginId === payload?.userId &&
-    payload?.state === 'offline' &&
-    payload?.beforeState !== 'away'
-  ) {
-    const parentWin = BrowserWindow.fromId(1);
-    if (APP_SECURITY_SETTING.config?.autoLogin || exportProps.isAutoLogin) {
-      // Force Auto Login
-      logger.info('onPresenceChanged - Force Auto Login');
-      parentWin.webContents.send('force-auto-login');
-    } else {
-      // Force Logout
-      logger.info('onPresenceChanged - Force Logout');
-      appData.reqSetPresence({ params: [payload] });
-      const { loginId, tk } = APP_SECURITY_SETTING?.config;
-      parentWin.webContents.send('force-logout', { id: loginId, token: tk });
+  const useAccessTokenExpire =
+    SERVER_SECURITY_SETTING?.config?.config?.UseAccessTokenExpire === 'Y';
+
+  if (useAccessTokenExpire) {
+    if (
+      APP_SECURITY_SETTING?.config?.loginId === payload?.userId &&
+      payload?.state === 'offline' &&
+      payload?.beforeState !== 'away'
+    ) {
+      const parentWin = BrowserWindow.fromId(1);
+      if (APP_SECURITY_SETTING.config?.autoLogin || exportProps.isAutoLogin) {
+        // Force Auto Login
+        logger.info('onPresenceChanged - Force Auto Login');
+        parentWin.webContents.send('force-auto-login');
+      } else {
+        // Force Logout
+        logger.info('onPresenceChanged - Force Logout');
+        appData.reqSetPresence({ params: [payload] });
+        const { loginId, tk } = APP_SECURITY_SETTING?.config;
+        parentWin.webContents.send('force-logout', { id: loginId, token: tk });
+      }
     }
+  } else {
+    appData.reqSetPresence({ params: [payload] });
   }
 };
 
