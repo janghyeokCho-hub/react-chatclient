@@ -193,7 +193,8 @@ export const reqSubPop = (event, args) => {
     slashes: true,
   })}${args.path}`;
 
-  const parentBounds = BrowserWindow.fromId(1).getBounds();
+  const parentId = args.parentId || 1;
+  const parentBounds = BrowserWindow.fromId(parentId).getBounds();
   const bounds = getSubPopupBound(
     parentBounds,
     { width: args.width, height: args.height },
