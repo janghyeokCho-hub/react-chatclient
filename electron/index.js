@@ -421,6 +421,10 @@ const unlockScreenEvt = () => {
           'unlock screen :: disconnected socket :: check network & redirect auto login',
         );
 
+        const useAccessTokenExpire =
+          SERVER_SECURITY_SETTING?.config?.config?.UseAccessTokenExpire === 'Y';
+        console.log('useAccessTokenExpire : ', useAccessTokenExpire);
+
         if (APP_SECURITY_SETTING.config?.autoLogin || exportProps.isAutoLogin) {
           // Force Auto Login
           logger.info('onPresenceChanged - Force Auto Login');
