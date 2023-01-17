@@ -44,8 +44,6 @@ import {
   getMacAddr,
   getPublicIPAddr,
 } from './utils/commonUtils';
-import { getInitialBounds } from '../src/lib/d/bound';
-
 import AutoLaunch from 'auto-launch';
 import * as window from './utils/window/modal';
 import {
@@ -54,7 +52,6 @@ import {
   createRemoteVNC,
   createRemoteVNCHost,
 } from './utils/remoteAssistanceUtil';
-
 import { openNoteWindow } from './utils/note';
 import axios from 'axios';
 import Jimp from 'jimp';
@@ -423,7 +420,6 @@ const unlockScreenEvt = () => {
 
         const useAccessTokenExpire =
           SERVER_SECURITY_SETTING?.config?.config?.UseAccessTokenExpire === 'Y';
-        console.log('useAccessTokenExpire : ', useAccessTokenExpire);
 
         if (APP_SECURITY_SETTING.config?.autoLogin || exportProps.isAutoLogin) {
           // Force Auto Login

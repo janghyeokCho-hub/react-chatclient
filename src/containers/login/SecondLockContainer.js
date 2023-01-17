@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
-
 import { getAesUtil } from '@/lib/aesUtil';
 import { getDictionary, getJobInfo, openPopup } from '@/lib/common';
-
+import { updateMyPresence } from '@/lib/presenceUtil';
 import * as loginApi from '@/lib/login';
+import { useEffect } from 'react';
 
 const SecondLockWrap = styled.div`
   display: flex;
@@ -50,9 +50,20 @@ const SecondPasswordConfirmBox = styled.button`
 const SecondLockContainer = ({ theme, secondLockHandler }) => {
   const userInfo = useSelector(({ login }) => login.userInfo);
   const userId = useSelector(({ login }) => login.id);
-
   const [password, setPassword] = useState('');
   const [viewImage, setViewImage] = useState(true);
+  const [beforePresence, setBeforePresence] = useState(); // 잠금 실행 전 프레젠스 값 state
+
+  const handleLockPresenceChange = () => {
+    setBeforePresence(
+      userInfo.presence === 'away' ? 'online' : userInfo.presence,
+    );
+    updateMyPresence(dispatch, userId, 'away', 'A');
+  };
+
+  useEffect(() => {
+    handleLockPresenceChange();
+  }, []);
 
   const handleUnlockWithLoginAPI = async pw => {
     const AESUtil = getAesUtil();
@@ -72,6 +83,7 @@ const SecondLockContainer = ({ theme, secondLockHandler }) => {
 
     if (response?.data?.status === 'SUCCESS') {
       secondLockHandler();
+      updateMyPresence(dispatch, userId, beforePresence, 'A');
     } else {
       openPopup(
         {
