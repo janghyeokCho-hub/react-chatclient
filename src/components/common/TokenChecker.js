@@ -46,7 +46,6 @@ const TokenChecker = ({ history, returnURL }) => {
           data.chineseWall = [];
           data.blockList = [];
           const useChineseWall = getConfig('UseChineseWall', 'N') === 'Y';
-          console.log(useChineseWall);
           if (useChineseWall) {
             const { result, status, blockList } = await getChineseWall({
               userId: data.userInfo.id,

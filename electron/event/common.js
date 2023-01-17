@@ -276,7 +276,7 @@ export const reqSubPop = (event, args) => {
   }
 };
 
-export const setBeforePresence = (event, args) => {
+export const setBeforePresence = (_, args) => {
   BEFORE_PRESENCE = args === 'away' ? 'online' : args;
 };
 
