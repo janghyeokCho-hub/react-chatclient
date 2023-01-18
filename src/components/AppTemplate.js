@@ -263,8 +263,10 @@ const AppTemplate = () => {
             openPopup(
               {
                 type: 'Alert',
-                message:
-                  '로그인 정보가 만료되었습니다.\r\n다시 로그인 해주세요.',
+                message: covi.getDic(
+                  'Msg_loginExpired',
+                  '로그인 정보가 만료되었습니다.\n다시 로그인 해주세요.',
+                ),
                 callback: () => {
                   // 전체 store init
                   dispatch(logoutRequest(data));
