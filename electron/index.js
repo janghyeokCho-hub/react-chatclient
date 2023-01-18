@@ -421,15 +421,20 @@ const unlockScreenEvt = () => {
         const useAccessTokenExpire =
           SERVER_SECURITY_SETTING?.config?.config?.UseAccessTokenExpire === 'Y';
 
-        if (APP_SECURITY_SETTING.config?.autoLogin || exportProps.isAutoLogin) {
-          // Force Auto Login
-          logger.info('onPresenceChanged - Force Auto Login');
-          win.webContents.send('force-auto-login');
-        } else {
-          // Force Logout
-          logger.info('onPresenceChanged - Force Logout');
-          const { loginId, tk } = APP_SECURITY_SETTING?.config;
-          win.webContents.send('force-logout', { id: loginId, token: tk });
+        if (useAccessTokenExpire) {
+          if (
+            APP_SECURITY_SETTING.config?.autoLogin ||
+            exportProps.isAutoLogin
+          ) {
+            // Force Auto Login
+            logger.info('onPresenceChanged - Force Auto Login');
+            win.webContents.send('force-auto-login');
+          } else {
+            // Force Logout
+            logger.info('onPresenceChanged - Force Logout');
+            const { loginId, tk } = APP_SECURITY_SETTING?.config;
+            win.webContents.send('force-logout', { id: loginId, token: tk });
+          }
         }
       }
     }
