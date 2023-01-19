@@ -345,7 +345,16 @@ const MessagePostBox = forwardRef(
       [dispatch],
     );
 
-    const handleMention = useCallback(
+    const handleMention = mentionMember => {
+      const replaceContext =
+        context.substring(0, context.lastIndexOf('@')) +
+        `@${commonApi.getJobInfo(mentionMember, true)} `;
+      setContext(replaceContext);
+
+      ref.current.focus();
+    };
+    /*
+    useCallback(
       mentionMember => {
         const replaceContext =
           context.substring(0, context.lastIndexOf('@')) +
@@ -356,6 +365,7 @@ const MessagePostBox = forwardRef(
       },
       [context],
     );
+    */
 
     const handlePaste = useCallback(
       e => {
